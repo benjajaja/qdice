@@ -28,16 +28,17 @@ origin w h form =
 landForms : Int -> Int -> List Land.Land -> List Form
 landForms w h lands =
   let
-    hex = flip (hexagon 100) -- hexagon 100 y x
     foldLand land result =
-      landForm land.hexagons |> append result
+      landForm land.hexagons |> (\f -> f :: result)
   in
     foldl foldLand [] lands
 
 
-landForm : List Land.Hexagon -> List Form
+landForm : List Land.Hexagon -> Form
 landForm hexagons =
-  map (uncurry (hexagon 100) >> filled blue) hexagons
+  map (uncurry (hexagon 100)) hexagons
+  |> map (filled blue)
+  |> group
 
 -- gridLine : Int -> Int -> Int -> List Form
 -- gridLine w h row =

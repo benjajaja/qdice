@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "edice (WIP) project",
-    "repository": "https://bitbucket.org/gipsyking/edice",
+    "repository": "https://github.com/gipsy-king/edice.git",
     "license": "UNLICENSED",
     "source-directories": [
         "src"
