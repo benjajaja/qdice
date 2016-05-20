@@ -1,8 +1,7 @@
-module Land (..) where
+module Land exposing (..)
 
 import Maybe exposing (..)
-import List exposing(..)
-import List.Nonempty as NE exposing(..)
+import List.Nonempty as NE exposing (Nonempty, (:::))
 
 type alias Coord = (Int, Int)
 type alias Cells = NE.Nonempty Coord
@@ -18,11 +17,13 @@ nonemptyList list default =
 
 testLand : Map
 testLand =
-  nonemptyList [{hexagons =
-    (nonemptyList [ (0, 0), (1,0)--, (2,0), (3,0)
-    -- ,     (0,1), (1,1), (2,1)
-    -- ,        (1,2), (2,2), (3,2)
-    -- ,            (1,3), (2,3)
-    -- ,               (2,4)
+  NE.fromElement {hexagons =
+    (nonemptyList [
+       (0,0), (1,0), (2,0), (3,0)
+    ,     (0,1), (1,1), (2,1)
+    ,  (0,2), (1,2), (2,2), (3,2)
+    ,     (0, 3), (1,3), (2,3)
+    ,  (0,4),        (2,4)
+    ,                    (2,5)
     ] (0, 0))
-  }] {hexagons = (NE.fromElement (0,0))}
+  }
