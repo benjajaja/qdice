@@ -29,7 +29,7 @@ hexagon w h x y =
   in
     hexagonPoints x' y' w' h'
     |> roundPointList
-    |> Debug.log "points"
+    -- |> Debug.log "points"
 
 hexagonDimensionsCoord : Int -> Int -> Coord -> (Float, Float, Float, Float)
 hexagonDimensionsCoord w h coord = hexagonDimensions w h (fst coord) (snd coord)
