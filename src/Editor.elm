@@ -99,23 +99,42 @@ addSelectedLand model =
     selection = Land.filter (\l -> l.color == Land.Editor) map
     (map', land) = case selection of
       Nothing -> (map, Nothing)
-      Just s -> case Land.filter (\l -> not <| NE.member l s) map of
+      Just s -> case Land.filter (\l -> l.color /= Land.Editor) map of
         Nothing -> (map, Nothing)
         Just m ->
           let
+            _ = Debug.log "selection" (s)
             land = Land.concat s
           in
             (Land.append m { land | color = Land.Neutral }, Just land)
+
     userMap' = case land of
       Nothing -> userMap
       Just land -> List.append (filterDupes userMap land) [land]
-    board' = { board | map = map' }
+    board' = { board | map = checkDupes map' }
   in
     ({ model | board = board', userMap = userMap', output = mapElm userMap' }
     , case land of
       Just l -> Land.randomPlayerColor (RandomLandColor l)
       Nothing -> Cmd.none
     )
+
+checkDupes : Land.Map -> Land.Map
+checkDupes map =
+  let
+    cells = NE.map .hexagons map |> NE.concat
+  in
+    if NE.any (\l ->
+      NE.any (\c ->
+        let
+          matches = NE.filter (\o -> o == c) c cells
+          is = (NE.length matches) > 1
+          _ = if is then Debug.log "dupe at:" (c, NE.length matches) else (c, 0)
+        in
+          is
+      ) l.hexagons
+    ) map then Debug.crash "dupes!"
+    else map
 
 filterDupes : List Land.Land -> Land.Land -> List Land.Land
 filterDupes list land =

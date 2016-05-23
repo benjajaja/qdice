@@ -6,7 +6,6 @@ import List exposing (..)
 import List.Nonempty as NE exposing (Nonempty, (:::))
 import Random
 
-
 type Side = NW | NE | E | SE | SW | W
 type alias CubeCoord = (Int, Int, Int)
 type alias Coord = (Int, Int)
@@ -45,7 +44,8 @@ errorLand = Land (NE.fromElement (0,0)) Editor False
 
 fullCellMap : Int -> Int -> Map
 fullCellMap w h =
-  case List.map (\r ->
+  case 
+  List.map (\r ->
     List.map (\c ->
       { hexagons = NE.fromElement (r, c)
       , color = Neutral
@@ -53,6 +53,14 @@ fullCellMap w h =
     ) [0..w]
   ) [0..h]
   |> List.concat
+  -- |> List.filter (\l ->
+  --   let head = l.hexagons |> NE.head
+  --   in not (head == (1,1) || head == (1,0) || head == (0,1))
+  -- )
+  -- |> (::) 
+  -- [{ hexagons = (1,1) ::: (1,0) ::: NE.fromElement (0,1)
+  --   , color = Yellow
+  --   , selected = False}]
   |> NE.fromList of
     Just a -> a
     Nothing -> NE.fromElement errorLand
@@ -64,12 +72,13 @@ landColor map land color =
 highlight : Bool -> Map -> Land -> Map
 highlight highlight map land =
   -- map
-  let
-    land' = { land | selected = highlight }
-  in
-    case filter (\l -> l /= land) map of
-      Nothing -> NE.fromElement land'
-      Just a -> land' ::: a
+  NE.map (\l ->
+    if l == land then { land | selected = highlight }
+    else l 
+  ) map
+    -- case filter (\l -> l /= land) map of
+    --   Nothing -> NE.fromElement land'
+    --   Just a -> land' ::: a
 
 -- testLand =
 --   NE.fromElement {hexagons =
@@ -186,19 +195,18 @@ nextBorders cells coord origin side =
       let
         current = (coord, side)
         nside = nextSide side
-        -- _ = Debug.log "nextBorders" (coord, origin, side, List.length accum)
       in
-        if fuse == 0 then
-          let
-            _ = Debug.log "tco exhausted" (coord, side, List.reverse accum |> List.take 8)
-          in accum
+        if fst origin == coord && snd origin == side && List.length accum > 1 then
+          (current :: accum)
+        else if fuse == 0 then
+          let _ = Debug.crash "TCO exhausted" (coord, side, origin, accum |> List.take 32, cells) in accum
         else
           case cellOnBorder coord nside cells of
-            Just c -> tco cells c origin (nextSide (oppositeSide nside)) (List.append accum [current]) (fuse - 1)
-            Nothing -> if fst origin == coord && snd origin == nside then (List.append accum [current])
-                      else tco cells coord origin nside (List.append accum [current]) (fuse - 1)
+            Just c -> tco cells c origin (nextSide (oppositeSide nside)) (current :: accum) (fuse - 1)
+            Nothing -> tco cells coord origin nside (current :: accum) (fuse - 1)
   in
     tco cells coord origin side [(coord, side)] 1000
+    |> List.reverse
 
 
 nextSide : Side -> Side

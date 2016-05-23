@@ -93,33 +93,26 @@ landSvg land size =
   let
     path = landPath 2 1 land.hexagons
   in
-    g [] ([ polygon [ fill <| landColor land
+    g [] ([ polyline [ fill <| landColor land
       , stroke "black"
       , strokeLinejoin "round", strokeWidth (size / 15 |> toString)
       , points (landPointsString path size)
       , onClick (ClickLand (land, NE.head land.hexagons))
-      -- , onMouseOver (HoverLand land)
-      -- , onMouseOut (UnHoverLand land)
+      , onMouseOver (HoverLand land)
+      , onMouseOut (UnHoverLand land)
       ] []
     -- , text' [x x', y y'] [Svg.text <| x' ++ "," ++ y' ]
     ]
-    ++
-    (NE.map (\p ->
-      let
-        (x'', y'') = Hex.hexpoint (2, 1) p NW
-        x' = x'' * size |> toString
-        y' = y'' * size + size / 2 |> toString
-      in
-        text' [x x', y y'] [Svg.text <| (fst p |> toString) ++ "," ++ (snd p |> toString) ]
-      -- let
-      --   x' = (fst p |> toString)
-      --   y' = (snd p |> toString)
-      -- in
-      -- circle [ r "2", fill "red", cx x', cy y' ] []
-      -- ::: (text' [x x', y y'] [Svg.text <| x' ++ "," ++ y' ]
-      --     |> NE.fromElement)
-    ) land.hexagons
-    |> NE.toList)
+    -- ++
+    -- (NE.map (\p ->
+    --   let
+    --     (x'', y'') = Hex.hexpoint (2, 1) p NW
+    --     x' = x'' * size |> toString
+    --     y' = y'' * size + size / 2 |> toString
+    --   in
+    --     text' [x x', y y'] [Svg.text <| (fst p |> toString) ++ "," ++ (snd p |> toString) ]
+    -- ) land.hexagons
+    -- |> NE.toList)
     )
 
 landPointsString : Nonempty Hex.Point -> Float -> String
