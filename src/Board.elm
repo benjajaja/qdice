@@ -11,13 +11,13 @@ import Html
 import Html.App as Html
 
 import Hex exposing (landPath)
-import Land exposing (..)
+import Land exposing (Land, Map)
 
 
 
 type Msg
   = Resize (Int, Int)
-  | ClickLand (Land.Land, Land.Coord)
+  | ClickLand (Land.Land)
   | HoverLand Land.Land
   | UnHoverLand Land.Land
 
@@ -51,13 +51,13 @@ update msg model =
     case msg of
       Resize size ->
         (Model size map, Cmd.none)
-      ClickLand (land, cell) ->
-        (Model size (Land.landColor map land Editor), Cmd.none)
+      ClickLand (land) ->
+        (Model size (Land.landColor map land Land.Editor), Cmd.none)
       HoverLand land ->
         let
           map' = (Land.highlight True map land)
         in
-          if map' /= map then (Model (Debug.log "highlight" size) map', Cmd.none)
+          if map' /= map then (Model size map', Cmd.none)
           else (model, Cmd.none)
       UnHoverLand land ->
         let
@@ -97,7 +97,7 @@ landSvg land size =
       , stroke "black"
       , strokeLinejoin "round", strokeWidth (size / 15 |> toString)
       , points (landPointsString path size)
-      , onClick (ClickLand (land, NE.head land.hexagons))
+      , onClick (ClickLand (land))
       , onMouseOver (HoverLand land)
       , onMouseOut (UnHoverLand land)
       ] []
@@ -149,15 +149,15 @@ landColor land =
 svgColor : Bool -> Land.Color -> String
 svgColor highlight color =
   (case color of
-    Neutral -> Color.rgb 243 243 242
-    Editor  -> Color.rgb 255 0 0
-    Black   -> Color.rgb 52 52 52
-    Red     -> Color.rgb 196 2 51
-    Green   -> Color.rgb 0  159  107
-    Blue    -> Color.rgb 0  135  189
-    Yellow  -> Color.rgb 255  211  0
-    Magenta -> Color.rgb 187 86 149
-    Cyan    -> Color.rgb 103 189 170
+    Land.Neutral -> Color.rgb 243 243 242
+    Land.Editor  -> Color.rgb 255 0 0
+    Land.Black   -> Color.rgb 52 52 52
+    Land.Red     -> Color.rgb 196 2 51
+    Land.Green   -> Color.rgb 0  159  107
+    Land.Blue    -> Color.rgb 0  135  189
+    Land.Yellow  -> Color.rgb 255  211  0
+    Land.Magenta -> Color.rgb 187 86 149
+    Land.Cyan    -> Color.rgb 103 189 170
   )
   |> Color.Manipulate.lighten (if highlight then 0.2 else 0.0)
   |> Color.Convert.colorToCssRgb

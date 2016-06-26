@@ -1,15 +1,13 @@
 module Land exposing (..)
 
 import Maybe exposing (..)
-import Bitwise exposing (and)
 import List exposing (..)
 import List.Nonempty as NE exposing (Nonempty, (:::))
 import Random
+import Hexagons.Hex as HH exposing (Hex, Direction, (===))
+import Hexagons.Layout as HL exposing (offsetToHex)
 
-type Side = NW | NE | E | SE | SW | W
-type alias CubeCoord = (Int, Int, Int)
-type alias Coord = (Int, Int)
-type alias Cells = NE.Nonempty Coord
+type alias Cells = NE.Nonempty Hex
 
 type alias Land =
   { hexagons: Cells
@@ -18,7 +16,7 @@ type alias Land =
   }
 
 type alias Map = NE.Nonempty Land
-type alias Border = (Coord, Side)
+type alias Border = (Hex, Direction)
 type Color
   = Editor
   | Red
@@ -39,7 +37,7 @@ nonemptyList list default =
 
 
 errorLand : Land
-errorLand = Land (NE.fromElement (0,0)) Editor False
+errorLand = Land (NE.fromElement <| HL.offsetToHex (0, 0)) Editor False
 
 
 fullCellMap : Int -> Int -> Map
@@ -47,7 +45,7 @@ fullCellMap w h =
   case 
   List.map (\r ->
     List.map (\c ->
-      { hexagons = NE.fromElement (r, c)
+      { hexagons = NE.fromElement <| HL.offsetToHex (c, r)
       , color = Neutral
       , selected = False}
     ) [0..w]
@@ -64,7 +62,11 @@ fullCellMap w h =
   |> NE.fromList of
     Just a -> a
     Nothing -> NE.fromElement errorLand
-    
+
+offsetToHex : (Int, Int) -> Hex
+offsetToHex (col, row) =
+  HH.AxialHex (col - ((toFloat row) / 2 |> floor), row)
+
 landColor : Map -> Land -> Color -> Map
 landColor map land color =
   NE.map (\l -> {l | color = if land == l then color else l.color }) map
@@ -118,11 +120,18 @@ indexOf lst f =
     helper lst f 0
 
 
--- return land and land-index in map at coord
-at : Map -> Coord -> (Int, Land)
+-- return index of coord in map
+at : Map -> (Int, Int) -> Int
 at map coord =
-  (indexOf (NE.toList map) (\l -> NE.member coord l.hexagons)
-  , NE.foldl (\l -> \r -> if NE.member coord l.hexagons then l else r) (NE.head map) map)
+  let
+    hex = HH.intFactory coord
+    list : List Land
+    list = (NE.toList map)
+    cb : Hex -> Land -> Bool
+    cb hex land = NE.any (\h -> h === hex) land.hexagons
+    index = indexOf list (cb hex)
+  in
+    index
 
 
 -- concat all lands in map to a single land
@@ -168,65 +177,66 @@ setColor : Map -> Land -> Color -> Map
 setColor map land color =
   NE.map (\l -> if l == land then { land | color = color } else l) map
 
-allSides : Nonempty Side
-allSides = NW ::: NE ::: E ::: SE ::: SW ::: NE.fromElement W
+allSides : Nonempty Direction
+allSides = HH.NW ::: (HH.NE ::: (HH.E ::: (HH.SE ::: (HH.SW ::: (NE.fromElement HH.W)))))
 
 
-defaultSide : Side
-defaultSide = NW
+defaultSide : Direction
+defaultSide = HH.NW
 
   
 landBorders : Cells -> Nonempty Border
 landBorders cells =
   let
-    -- _ = Debug.log "landBorders" "?"
     (coord, side) = firstFreeBorder cells
   in
-    case nextBorders cells coord (coord, side) side |> NE.fromList of
-      Just a -> a
-      Nothing -> NE.fromElement (coord, side)
+    if False && NE.length cells == 1 then
+      (coord, rightSide side) ::: NE.fromElement (coord, side)
+    else
+      case nextBorders cells coord (coord, side) side [(coord, side)] |> NE.fromList of
+        Just a -> a
+        Nothing -> NE.fromElement (coord, side)
 
 
-nextBorders : Cells -> Coord -> Border -> Side -> List Border
-nextBorders cells coord origin side =
+nextBorders : Cells -> Hex -> Border -> Direction -> List Border -> List Border
+nextBorders cells coord origin side accum =
   let
-    tco : Cells -> Coord -> Border -> Side -> List Border -> Int -> List Border
+    tco : Cells -> Hex -> Border -> Direction -> List Border -> Int -> List Border
     tco cells coord origin side accum fuse =
       let
         current = (coord, side)
-        nside = nextSide side
       in
-        if fst origin == coord && snd origin == side && List.length accum > 1 then
+        if (fst origin === coord) && snd origin == side && List.length accum > 1 then
           (current :: accum)
         else if fuse == 0 then
           let _ = Debug.crash "TCO exhausted" (coord, side, origin, accum |> List.take 32, cells) in accum
         else
-          case cellOnBorder coord nside cells of
-            Just c -> tco cells c origin (nextSide (oppositeSide nside)) (current :: accum) (fuse - 1)
-            Nothing -> tco cells coord origin nside (current :: accum) (fuse - 1)
+          case cellOnBorder coord side cells of
+            Just c -> tco cells c origin (rightSide (oppositeSide side)) (accum) (fuse - 1)
+            Nothing -> tco cells coord origin (rightSide side) (current :: accum) (fuse - 1)
   in
-    tco cells coord origin side [(coord, side)] 1000
+    tco cells coord origin side [] 1000
     |> List.reverse
 
 
-nextSide : Side -> Side
-nextSide side =
+rightSide : Direction -> Direction
+rightSide side =
   case side of
-    NW -> NE
-    NE -> E
-    E -> SE
-    SE -> SW
-    SW -> W
-    W -> NW
+    HH.NW -> HH.NE
+    HH.NE -> HH.E
+    HH.E -> HH.SE
+    HH.SE -> HH.SW
+    HH.SW -> HH.W
+    HH.W -> HH.NW
 
 
-oppositeSide : Side -> Side
+oppositeSide : Direction -> Direction
 oppositeSide =
-  nextSide >> nextSide >> nextSide
+  rightSide >> rightSide >> rightSide
 
-hasCell : Cells -> Coord -> Bool
+hasCell : Cells -> Hex -> Bool
 hasCell cells coord =
-  NE.any (\c -> c == coord) cells
+  NE.any (\c -> c === coord) cells
 
 firstFreeBorder : Cells -> Border
 firstFreeBorder cells =
@@ -235,7 +245,7 @@ firstFreeBorder cells =
     Nothing -> NE.pop cells |> firstFreeBorder
 
 
-hasFreeBorder : Cells -> Coord -> Nonempty Side -> Maybe Side
+hasFreeBorder : Cells -> Hex -> Nonempty Direction -> Maybe Direction
 hasFreeBorder cells coord sides =
   let side = NE.head sides
   in
@@ -250,62 +260,35 @@ isNothing a =
     Nothing -> True
     Just a -> False
 
-cellOnBorder : Coord -> Side -> Cells -> Maybe Coord
+cellOnBorder : Hex -> Direction -> Cells -> Maybe Hex
 cellOnBorder coord side cells =
   if NE.head cells |> isBorderOnSide coord side then Just (NE.head cells)
   else if NE.length cells == 1 then Nothing
   else cellOnBorder coord side <| NE.pop cells
 
 
-isBorderOnSide : Coord -> Side -> Coord -> Bool
+isBorderOnSide : Hex -> Direction -> Hex -> Bool
 isBorderOnSide coord side other =
-  if coord == other then False
-  else cubeNeighbour (cubeCoord coord) side == (cubeCoord other)
+  if coord === other then False
+  else 
+    isBorderOnSideCube coord side other
 
 -- offset implementation - too messy but probably faster:
-isBorderOnSideCube : Coord -> Side -> Coord -> Bool
+isBorderOnSideCube : Hex -> Direction -> Hex -> Bool
 isBorderOnSideCube coord side other =
   let
-    (x, y) = coord
-    (x', y') = other
+    (x, y) = HL.hexToOffset coord
+    (x', y') = HL.hexToOffset other
     even = y % 2 == 0
   in
     case side of
-      W -> y' == y && x' == x - 1
-      E -> y' == y && x' == x + 1
-      NW -> if even then x' == x - 1 && y' == y - 1
+      HH.W -> y' == y && x' == x - 1
+      HH.E -> y' == y && x' == x + 1
+      HH.NW -> if even then x' == x - 1 && y' == y - 1
             else x' == x && y' == y - 1
-      NE -> if even then x' == x && y' == y - 1
+      HH.NE -> if even then x' == x && y' == y - 1
             else x' == x + 1 && y' == y - 1
-      SW -> if even then x' == x - 1 && y' == y + 1
+      HH.SW -> if even then x' == x - 1 && y' == y + 1
             else x' == x && y' == y + 1
-      SE -> if even then x' == x && y' == y + 1
+      HH.SE -> if even then x' == x && y' == y + 1
             else x' == x + 1 && y' == y + 1
-
-cubeCoord : Coord -> CubeCoord
-cubeCoord coord =
-  let
-    (col, row) = coord
-    x = (and row 1 |> (-) row |> toFloat) / 2 |> (-) (toFloat col) |> round
-    z = row
-    y = -(toFloat x) - (toFloat z) |> round
-  in
-    (x, y, z)
-
-cubeDirection : Side -> CubeCoord
-cubeDirection side =
-  case side of
-    NW -> (0, 1, -1)
-    NE -> (1, 0, -1)
-    E  -> (1, -1, 0)
-    SE -> (0, -1, 1)
-    SW -> (-1, 0, 1)
-    W  -> (-1, 1, 0)
-
-cubeNeighbour : CubeCoord -> Side -> CubeCoord
-cubeNeighbour coord side =
-  let
-    (x, y, z) = coord
-    (x', y', z') = cubeDirection side
-  in
-    (x + x', y + y', z + z')

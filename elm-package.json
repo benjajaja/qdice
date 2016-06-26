@@ -4,7 +4,8 @@
     "repository": "https://github.com/user/project.git",
     "license": "BSD3",
     "source-directories": [
-        "src"
+        "src",
+        "libs/hexagons"
     ],
     "exposed-modules": [],
     "dependencies": {
@@ -14,7 +15,8 @@
         "elm-lang/svg": "1.0.0 <= v < 2.0.0",
         "elm-lang/window": "1.0.0 <= v < 2.0.0",
         "eskimoblood/elm-color-extra": "3.0.2 <= v < 4.0.0",
-        "evancz/elm-graphics": "1.0.0 <= v < 2.0.0"
+        "evancz/elm-graphics": "1.0.0 <= v < 2.0.0",
+        "mgold/elm-nonempty-list": "2.0.1 <= v < 3.0.0"
     },
     "elm-version": "0.17.0 <= v < 0.18.0"
 }

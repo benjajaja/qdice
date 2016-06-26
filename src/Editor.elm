@@ -154,7 +154,7 @@ mapElm map =
     Just map ->
       List.map (\row ->
         let
-          cells = List.map (\col -> (fst <| Land.at map (col, row), col)) [0..30]
+          cells = List.map (\col -> (Land.at map (col, row), col)) [0..30]
           offset = if row % 2 == 0 then "" else "  "
         in
           offset ++ (String.join "" <| List.map (\c ->
