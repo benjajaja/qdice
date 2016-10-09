@@ -5,7 +5,6 @@ import Html.App as App
 import String
 import Dict
 import Task
-import List.Nonempty as NE exposing (Nonempty, (:::))
 
 import Board
 import Land
@@ -96,15 +95,17 @@ addSelectedLand model =
   let
     {size, board, userMap} = model
     map = board.map
-    selection = Land.filter (\l -> l.color == Land.Editor) map
+    selection : List Land.Land
+    selection = List.filter (\l -> l.color == Land.Editor) map
     (map', land) = case selection of
-      Nothing -> (map, Nothing)
-      Just s -> case Land.filter (\l -> l.color /= Land.Editor) map of
-        Nothing -> (map, Nothing)
-        Just m ->
+      [] -> (map, Nothing)
+      _ -> case List.filter (\l -> l.color /= Land.Editor) map of
+        [] -> (map, Nothing)
+        m ->
           let
-            _ = Debug.log "selection" (s)
-            land = Land.concat s
+            _ = Debug.log "selection" (selection)
+            land : Land.Land
+            land = Land.concat selection
           in
             (Land.append m { land | color = Land.Neutral }, Just land)
 
@@ -122,14 +123,14 @@ addSelectedLand model =
 checkDupes : Land.Map -> Land.Map
 checkDupes map =
   let
-    cells = NE.map .hexagons map |> NE.concat
+    cells = List.map .hexagons map |> List.concat
   in
-    if NE.any (\l ->
-      NE.any (\c ->
+    if List.any (\l ->
+      List.any (\c ->
         let
-          matches = NE.filter (\o -> o == c) c cells
-          is = (NE.length matches) > 1
-          _ = if is then Debug.log "dupe at:" (c, NE.length matches) else (c, 0)
+          matches = List.filter (\o -> o == c) cells
+          is = (List.length matches) > 1
+          _ = if is then Debug.log "dupe at:" (c, List.length matches) else (c, 0)
         in
           is
       ) l.hexagons
@@ -139,7 +140,7 @@ checkDupes map =
 filterDupes : List Land.Land -> Land.Land -> List Land.Land
 filterDupes list land =
   List.filter (\l ->
-    NE.any (\c -> NE.member c l.hexagons) land.hexagons
+    List.any (\c -> List.member c l.hexagons) land.hexagons
     |> not
   ) list
 
@@ -149,9 +150,9 @@ sizeToMsg size =
 
 mapElm : List Land.Land -> String
 mapElm map =
-  case NE.fromList map of
-    Nothing -> "{- empty -}"
-    Just map ->
+  case map of
+    [] -> "{- empty -}"
+    hd::_ ->
       List.map (\row ->
         let
           cells = List.map (\col -> (Land.at map (col, row), col)) [0..30]

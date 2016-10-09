@@ -2,12 +2,12 @@ module Land exposing (..)
 
 import Maybe exposing (..)
 import List exposing (..)
-import List.Nonempty as NE exposing (Nonempty, (:::))
+-- import List.Nonempty as NE exposing (Nonempty, (:::))
 import Random
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
 import Hexagons.Layout as HL exposing (offsetToHex)
 
-type alias Cells = NE.Nonempty Hex
+type alias Cells = List Hex
 
 type alias Land =
   { hexagons: Cells
@@ -15,7 +15,12 @@ type alias Land =
   , selected: Bool
   }
 
-type alias Map = NE.Nonempty Land
+type alias Map =
+  { lands: List Land
+  , width: Int
+  , height: Int
+  }
+
 type alias Border = (Hex, Direction)
 type Color
   = Editor
@@ -29,28 +34,21 @@ type Color
   | Neutral
 
 
-nonemptyList : List a -> a -> NE.Nonempty a
-nonemptyList list default =
-  case NE.fromList list of
-    Just a -> a
-    Nothing -> NE.fromElement default
-
-
 errorLand : Land
-errorLand = Land (NE.fromElement <| HL.offsetToHex (0, 0)) Editor False
+errorLand = Land [HL.offsetToHex (0, 0)] Editor False
 
 
 fullCellMap : Int -> Int -> Map
 fullCellMap w h =
-  case 
-  List.map (\r ->
-    List.map (\c ->
-      { hexagons = NE.fromElement <| HL.offsetToHex (c, r)
-      , color = Neutral
-      , selected = False}
-    ) [0..w]
-  ) [0..h]
-  |> List.concat
+  Map (List.map (\r ->
+      List.map (\c ->
+        { hexagons = [HL.offsetToHex (c, r)]
+        , color = Neutral
+        , selected = False}
+      ) [0..w]
+    ) [0..h]
+    |> List.concat)
+    w h
   -- |> List.filter (\l ->
   --   let head = l.hexagons |> NE.head
   --   in not (head == (1,1) || head == (1,0) || head == (0,1))
@@ -59,9 +57,6 @@ fullCellMap w h =
   -- [{ hexagons = (1,1) ::: (1,0) ::: NE.fromElement (0,1)
   --   , color = Yellow
   --   , selected = False}]
-  |> NE.fromList of
-    Just a -> a
-    Nothing -> NE.fromElement errorLand
 
 offsetToHex : (Int, Int) -> Hex
 offsetToHex (col, row) =
@@ -69,15 +64,14 @@ offsetToHex (col, row) =
 
 landColor : Map -> Land -> Color -> Map
 landColor map land color =
-  NE.map (\l -> {l | color = if land == l then color else l.color }) map
+  { map | lands = List.map (\l -> {l | color = if land == l then color else l.color }) map.lands }
 
 highlight : Bool -> Map -> Land -> Map
 highlight highlight map land =
-  -- map
-  NE.map (\l ->
-    if l == land then { land | selected = highlight }
-    else l 
-  ) map
+  { map | lands = List.map (\l ->
+    if l == land then { l | selected = highlight }
+    else l -- { l | selected = False }
+  ) map.lands }
     -- case filter (\l -> l /= land) map of
     --   Nothing -> NE.fromElement land'
     --   Just a -> land' ::: a
@@ -95,15 +89,11 @@ highlight highlight map land =
 --   }
 
 -- filter lands in map with lambda
-filter : (Land -> Bool) -> Map -> Maybe Map
-filter filter map =
-  NE.toList map
-  |> List.filter filter
-  |> NE.fromList
+
 
 append : Map -> Land -> Map
 append map land =
-  NE.append (NE.fromElement land) map
+  { map | lands = List.append [land] map.lands }
 
 -- indexOf helper
 indexOf : List a -> (a -> Bool) -> Int
@@ -125,34 +115,29 @@ at : Map -> (Int, Int) -> Int
 at map coord =
   let
     hex = HH.intFactory coord
-    list : List Land
-    list = (NE.toList map)
     cb : Hex -> Land -> Bool
-    cb hex land = NE.any (\h -> h === hex) land.hexagons
-    index = indexOf list (cb hex)
+    cb hex land = any (\h -> h === hex) land.hexagons
+    index = indexOf map.lands (cb hex)
   in
     index
 
 
--- concat all lands in map to a single land
+-- concat all cells in map to a single neutral land
 concat : Map -> Land
 concat map =
   let
-    firstLand = NE.head map
-    map' = NE.tail map |> NE.fromList
-    fold land result =
-      NE.append result land.hexagons
+    hexes : Cells
+    hexes = List.map (\l -> l.hexagons) map.lands |> List.concat
   in
-    case map' of
-      Nothing -> Land firstLand.hexagons Neutral False
-      Just m -> 
-        Land (NE.foldl fold (firstLand.hexagons) m) Neutral False
+    case head hexes of
+      Nothing -> Land [] Neutral False
+      Just hd -> Land hexes Neutral False
 
 
 -- set one color to neutral
 setNeutral : Map -> Color -> Map
 setNeutral map color =
-  NE.map (\l -> { l | color = (if l.color == color then Neutral else l.color) }) map
+  { map | lands = List.map (\l -> { l | color = (if l.color == color then Neutral else l.color) }) map.lands }
 
 
 playerColor : Int -> Color
@@ -175,27 +160,24 @@ randomPlayerColor v =
 
 setColor : Map -> Land -> Color -> Map
 setColor map land color =
-  NE.map (\l -> if l == land then { land | color = color } else l) map
+  { map | lands = List.map (\l -> if l == land then { land | color = color } else l) map.lands }
 
-allSides : Nonempty Direction
-allSides = HH.NW ::: (HH.NE ::: (HH.E ::: (HH.SE ::: (HH.SW ::: (NE.fromElement HH.W)))))
+allSides : List Direction
+allSides = [HH.NW, HH.NE, HH.E, HH.SE, HH.SW, HH.W]
 
 
 defaultSide : Direction
 defaultSide = HH.NW
 
   
-landBorders : Cells -> Nonempty Border
+landBorders : Cells -> List Border
 landBorders cells =
-  let
-    (coord, side) = firstFreeBorder cells
-  in
-    if False && NE.length cells == 1 then
-      (coord, rightSide side) ::: NE.fromElement (coord, side)
-    else
-      case nextBorders cells coord (coord, side) side [(coord, side)] |> NE.fromList of
-        Just a -> a
-        Nothing -> NE.fromElement (coord, side)
+  case firstFreeBorder cells of
+    Nothing -> []
+    Just (coord, side) -> 
+      if False && length cells == 1 then [(coord, rightSide side), (coord, side)]
+      else
+        nextBorders cells coord (coord, side) side [(coord, side)]
 
 
 nextBorders : Cells -> Hex -> Border -> Direction -> List Border -> List Border
@@ -236,22 +218,26 @@ oppositeSide =
 
 hasCell : Cells -> Hex -> Bool
 hasCell cells coord =
-  NE.any (\c -> c === coord) cells
+  any (\c -> c === coord) cells
 
-firstFreeBorder : Cells -> Border
+firstFreeBorder : Cells -> Maybe Border
 firstFreeBorder cells =
-  case hasFreeBorder cells (NE.head cells) allSides of
-    Just a -> (NE.head cells, a)
-    Nothing -> NE.pop cells |> firstFreeBorder
+  case cells of
+    [] -> Nothing
+    hd::tl -> 
+      case hasFreeBorder cells hd allSides of
+        Just a -> Just (hd, a)
+        Nothing -> firstFreeBorder tl
 
 
-hasFreeBorder : Cells -> Hex -> Nonempty Direction -> Maybe Direction
+hasFreeBorder : Cells -> Hex -> List Direction -> Maybe Direction
 hasFreeBorder cells coord sides =
-  let side = NE.head sides
-  in
-    if cellOnBorder coord side cells |> isNothing then Just side
-    else if NE.length sides == 1 then Just <| NE.head sides
-    else hasFreeBorder cells coord <| NE.pop sides
+  case sides of
+    [] -> Nothing
+    hd::tl ->
+      if cellOnBorder coord hd cells |> isNothing then Just hd
+      else if length sides == 1 then Just hd
+      else hasFreeBorder cells coord tl
 
 
 isNothing : Maybe a -> Bool
@@ -262,9 +248,15 @@ isNothing a =
 
 cellOnBorder : Hex -> Direction -> Cells -> Maybe Hex
 cellOnBorder coord side cells =
-  if NE.head cells |> isBorderOnSide coord side then Just (NE.head cells)
-  else if NE.length cells == 1 then Nothing
-  else cellOnBorder coord side <| NE.pop cells
+  case head cells of
+    Nothing -> Nothing
+    Just hd ->
+      case tail cells of
+        Nothing -> Nothing
+        Just tl -> 
+          if isBorderOnSide coord side hd then Just (hd)
+          else if length cells == 1 then Nothing
+          else cellOnBorder coord side tl
 
 
 isBorderOnSide : Hex -> Direction -> Hex -> Bool

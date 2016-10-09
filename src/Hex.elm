@@ -1,16 +1,16 @@
-module Hex exposing (landPath)
--- import List exposing (..)
-import List.Nonempty as NE exposing (Nonempty, (:::))
+module Hex exposing (landPath, Point)
+-- import List.Nonempty as NE exposing (Nonempty, (:::))
 
 import Land exposing (Cells, landBorders, allSides)
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
 import Hexagons.Layout as HL exposing (orientationLayoutPointy, Layout)
 
+type alias Point = HL.Point
 
-landPath : Int -> Int -> Cells -> Nonempty HL.Point
+landPath : Float -> Float -> Cells -> List HL.Point
 landPath w h cells =
   let
-    size = ((toFloat w) / 2, (toFloat h) / 2)
+    size = (w / 2.0, h / 2.0)
     layout : Layout
     layout = { orientation = orientationLayoutPointy
     , size = size
@@ -18,7 +18,7 @@ landPath w h cells =
     }
   in
     landBorders cells
-    |> NE.map (\(coord, side) -> polygonLeftCorner layout coord side)
+    |> List.map (\(coord, side) -> polygonLeftCorner layout coord side)
 
 {-| Left/counter-clockwise point of Hex edge |-}
 polygonLeftCorner : Layout -> Hex -> Direction -> HL.Point
