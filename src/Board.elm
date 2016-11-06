@@ -87,7 +87,15 @@ board (w, h) map =
         , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
         -- , Svg.Attributes.style "border: 1px solid red"
       ]
-      (List.map (landSvg (myLayout (cellWidth / sqrt(3), cellWidth * heightScale / 2) padding)) map.lands)
+      (List.concat [
+        List.map (landSvg (myLayout (cellWidth / sqrt(3), cellWidth * heightScale / 2) padding)) map.lands
+        , [Svg.defs [] [
+          Svg.radialGradient [ id "editorGradient" ] [
+            Svg.stop [ offset "0.8", stopColor "gold" ] []
+            , Svg.stop [ offset "0.9", stopColor (svgColor False Land.Neutral) ] []
+          ]
+        ]]
+      ])
       
       
 
@@ -130,13 +138,14 @@ pointToString (x, y) = (x |> toString) ++ "," ++ (y |> toString)
 
 landColor : Land -> String
 landColor land =
-  svgColor land.selected land.color
+  case land.color of
+    Land.Editor -> "url(#editorGradient)"
+    _ -> svgColor land.selected land.color
 
 svgColor : Bool -> Land.Color -> String
 svgColor highlight color =
   (case color of
-    Land.Neutral -> Color.rgb 243 0 242
-    Land.Editor  -> Color.rgb 255 0 0
+    Land.Neutral -> Color.rgb 243 243 243
     Land.Black   -> Color.rgb 52 52 52
     Land.Red     -> Color.rgb 196 2 51
     Land.Green   -> Color.rgb 0  159  107
@@ -144,6 +153,7 @@ svgColor highlight color =
     Land.Yellow  -> Color.rgb 255  211  0
     Land.Magenta -> Color.rgb 187 86 149
     Land.Cyan    -> Color.rgb 103 189 170
+    _            -> Color.rgb 255 0 0
   )
   |> Color.Manipulate.lighten (if highlight then 0.5 else 0.0)
   |> Color.Convert.colorToCssRgb
