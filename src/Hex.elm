@@ -1,37 +1,24 @@
-module Hex exposing (landPath, Point)
--- import List.Nonempty as NE exposing (Nonempty, (:::))
+module Hex exposing (Point, borderLeftCorner, center)
 
-import Land exposing (Cells, landBorders, allSides)
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
-import Hexagons.Layout as HL exposing (orientationLayoutPointy, Layout)
+import Hexagons.Layout as HL exposing (Point, Layout)
 
 type alias Point = HL.Point
 
-landPath : Float -> Float -> Cells -> List HL.Point
-landPath w h cells =
-  let
-    size = (w / 2.0, h / 2.0)
-    layout : Layout
-    layout = { orientation = orientationLayoutPointy
-    , size = size
-    , origin = (fst size + 0.1, snd size + 0.1)
-    }
-  in
-    landBorders cells
-    |> List.map (\(coord, side) -> polygonLeftCorner layout coord side)
-
-{-| Left/counter-clockwise point of Hex edge |-}
-polygonLeftCorner : Layout -> Hex -> Direction -> HL.Point
-polygonLeftCorner layout hex corner =
+{- Left/counter-clockwise point of Hex edge -}
+borderLeftCorner : Layout -> Hex -> Direction -> Point
+borderLeftCorner layout hex corner =
     let
-        (x, y) = HL.hexToPoint layout hex
-        offsetHex (x, y) (x_, y_) = (precision 2 <| x + x_, precision 2 <| y + y_) 
+        (x, y) = center layout hex
+        (x_, y_) = hexCornerOffset layout.size layout.orientation.start_angle corner
     in
-      (offsetHex (x, y)) <| hexCornerOffset layout corner
-        -- List.map  (offsetHex (x, y))
-        --     <| List.map () [0..5]
+        (precision 2 <| x + x_, precision 2 <| y + y_)
+        -- Debug.log "xy" <| (x + x_, y + y_)
 
-{-| Round Float number to some division -}
+center : Layout -> Hex -> Point
+center layout hex = HL.hexToPoint layout hex
+
+{- Round Float number to some division -}
 precision : Int -> Float -> Float
 precision division number =
     let
@@ -39,18 +26,16 @@ precision division number =
     in
         ((toFloat << round) (number * k)) / k
 
-{-| Calculate corner offset from a center of the Hex -}
-hexCornerOffset : Layout -> Direction -> HL.Point
-hexCornerOffset layout side =
+{- Calculate corner offset from a center of the Hex -}
+hexCornerOffset : (Float, Float) -> Float -> Direction -> Point
+hexCornerOffset (w, h) startAngle side =
     let
-        (xl, yl) = layout.size
-        startAngle = layout.orientation.start_angle
-        angle = ((2.0 * pi) * (toFloat (sideIndex side) + startAngle)) / 6
-        x = precision 2 <| xl * (cos angle)
-        y = precision 2 <| yl * (sin angle)
+        angle = sideAngle startAngle side
     in
-        (x, y)
+        (w * (cos angle), h * (sin angle))
 
+sideAngle : Float -> Direction -> Float
+sideAngle startAngle side = ((2.0 * pi) * (toFloat (sideIndex side) + startAngle)) / 6
 
 sideIndex : Direction -> Int
 sideIndex side =
@@ -61,12 +46,4 @@ sideIndex side =
     HH.NE -> 4
     HH.E -> 5
     HH.SE -> 6
-
--- angle : Int -> Float
--- angle i =
---   pi / 180 * angle_deg(i)
-
--- angle_deg : Int -> Float
--- angle_deg (i) =
---   60 * toFloat(i) + 30
 

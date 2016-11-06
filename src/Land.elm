@@ -5,7 +5,8 @@ import List exposing (..)
 -- import List.Nonempty as NE exposing (Nonempty, (:::))
 import Random
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
-import Hexagons.Layout as HL exposing (offsetToHex)
+import Hexagons.Layout as HL exposing (offsetToHex, orientationLayoutPointy, Layout)
+import Hex exposing (Point, borderLeftCorner, center)
 
 type alias Cells = List Hex
 
@@ -33,34 +34,38 @@ type Color
   | Black
   | Neutral
 
+landPath : Layout -> Cells -> List Point
+landPath layout cells =
+    landBorders cells |> List.map (uncurry <| borderLeftCorner layout)
+
+center : Layout -> Cells -> Point
+center layout cells =
+  case cells of
+    [] -> (-1, -1)
+    hd::_ -> Hex.center layout hd
 
 errorLand : Land
-errorLand = Land [HL.offsetToHex (0, 0)] Editor False
+errorLand = Land [offsetToHex (0, 0)] Editor False
 
 
 fullCellMap : Int -> Int -> Map
 fullCellMap w h =
   Map (List.map (\r ->
       List.map (\c ->
-        { hexagons = [HL.offsetToHex (c, r)]
+        { hexagons = [offsetToHex (c, r)]
         , color = Neutral
         , selected = False}
-      ) [0..w]
-    ) [0..h]
+      ) [1..w]
+    ) [1..h]
     |> List.concat)
     w h
-  -- |> List.filter (\l ->
-  --   let head = l.hexagons |> NE.head
-  --   in not (head == (1,1) || head == (1,0) || head == (0,1))
-  -- )
-  -- |> (::) 
-  -- [{ hexagons = (1,1) ::: (1,0) ::: NE.fromElement (0,1)
-  --   , color = Yellow
-  --   , selected = False}]
 
 offsetToHex : (Int, Int) -> Hex
 offsetToHex (col, row) =
-  HH.AxialHex (col - ((toFloat row) / 2 |> floor), row)
+  let
+    x = col - (round ((toFloat (row + ((abs row) % 2))) / 2))
+  in
+    HH.intFactory (x, row)
 
 landColor : Map -> Land -> Color -> Map
 landColor map land color =
@@ -70,25 +75,8 @@ highlight : Bool -> Map -> Land -> Map
 highlight highlight map land =
   { map | lands = List.map (\l ->
     if l == land then { l | selected = highlight }
-    else l -- { l | selected = False }
+    else { l | selected = False }
   ) map.lands }
-    -- case filter (\l -> l /= land) map of
-    --   Nothing -> NE.fromElement land'
-    --   Just a -> land' ::: a
-
--- testLand =
---   NE.fromElement {hexagons =
---     (nonemptyList [
---        (0,0), (1,0), (2,0), (3,0)
---     ,     (0,1), (1,1), (2,1), (3,1)
---     ,  (0,2), (1,2), (2,2), (3,2)
---     ,     (0, 3), (1,3), (2,3)
---     ,  (0,4),        (2,4)
---     ,                    (2,5)
---     ] (0, 0))
---   }
-
--- filter lands in map with lambda
 
 
 append : Map -> Land -> Map
@@ -165,6 +153,8 @@ setColor map land color =
 allSides : List Direction
 allSides = [HH.NW, HH.NE, HH.E, HH.SE, HH.SW, HH.W]
 
+cellBorder : Hex -> Direction -> (Hex, Direction)
+cellBorder hex border = (hex, border)
 
 defaultSide : Direction
 defaultSide = HH.NW
@@ -172,12 +162,14 @@ defaultSide = HH.NW
   
 landBorders : Cells -> List Border
 landBorders cells =
-  case firstFreeBorder cells of
-    Nothing -> []
-    Just (coord, side) -> 
-      if False && length cells == 1 then [(coord, rightSide side), (coord, side)]
-      else
-        nextBorders cells coord (coord, side) side [(coord, side)]
+  case cells of
+    [one] -> List.map (cellBorder one) (List.reverse allSides)
+    _ -> case firstFreeBorder cells of
+      Nothing -> []
+      Just (coord, side) -> 
+        if False && length cells == 1 then [(coord, rightSide side), (coord, side)]
+        else
+          nextBorders cells coord (coord, side) side [(coord, side)]
 
 
 nextBorders : Cells -> Hex -> Border -> Direction -> List Border -> List Border

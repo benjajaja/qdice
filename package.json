@@ -1,0 +1,35 @@
+{
+  "name": "edice",
+  "version": "0.0.1",
+  "description": "eDice - Elm dice game",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack --watch",
+    "dev": "webpack-dev-server --port 3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/gipsyking/edice.git"
+  },
+  "keywords": [
+    "edice",
+    "elm",
+    "dice"
+  ],
+  "author": "Benjamin Grosse",
+  "license": "UNLICENSED",
+  "private": true,
+  "homepage": "https://bitbucket.org/gipsyking/edice#readme",
+  "dependencies": {
+    "css-loader": "0.25.0",
+    "elm-css-webpack-loader": "2.0.1",
+    "elm-webpack-loader": "3.0.6",
+    "file-loader": "0.9.0",
+    "materialize-css": "0.97.7",
+    "muicss": "0.9.1",
+    "style-loader": "0.13.1",
+    "webpack": "1.13.2",
+    "webpack-dev-server": "1.16.2"
+  }
+}

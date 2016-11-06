@@ -8,8 +8,11 @@ import Color.Convert exposing (..)
 import Color.Manipulate exposing (..)
 import Html
 
-import Hex exposing (landPath)
-import Land exposing (Land, Map)
+import Hexagons.Layout exposing (orientationLayoutPointy, Layout)
+
+import Hex exposing (Point)
+import Land exposing (Land, Map, landPath, center)
+
 
 
 type Msg
@@ -26,7 +29,7 @@ type alias Model =
 
 init : (Model, Cmd Msg)
 init =
-  (Model (800, 600) (Land.fullCellMap 30 20), Cmd.none)
+  (Model (850, 600) (Land.fullCellMap 4 4), Cmd.none)
 
 view : Model -> Html.Html Msg
 view model =
@@ -47,7 +50,7 @@ update msg model =
           map' = Land.highlight True map land -- |> Debug.log "hilite"
         in
           if map' /= map then
-            let _ = Debug.log "hilite" ""
+            let _ = Debug.log "hilite" <| List.length map'.lands
             in (Model size map', Cmd.none)
           else (model, Cmd.none)
       UnHoverLand land ->
@@ -61,82 +64,69 @@ update msg model =
 subscriptions : Model -> Sub Msg 
 subscriptions model = Sub.none
 
+heightScale : Float
+heightScale = 0.5
+
+padding : Float
+padding = 3
+
 
 board : (Int, Int) -> Land.Map -> Svg Msg
-board size map =
+board (w, h) map =
   let
-    w = fst size |> (+) -1 |> toString
-    -- h = snd size |> (+) -100 |> toString
-    h = "500"
-    cellWidth = Debug.log "cellWidth" <| (fst size |> toFloat) / (toFloat map.width)
+    cellWidth = (toFloat w - padding) / (((toFloat map.width) + 0.5)) -- actual cell width
+    cellHeight = cellWidth * heightScale -- 0.75 + (cellWidth * 0.25) |> round |> toFloat
+    sWidth = toString w
+    sHeight = cellHeight * 0.75 * (toFloat map.height + 1 / 3) + padding |> toString
+    _ = Debug.log "height" (cellWidth |> floor, cellHeight |> floor, map.height, sHeight)
   in
     Svg.svg
-      [ width w, height h, viewBox ("0 0 " ++ w ++ " " ++ h) ]
-      -- (NE.append
-      (List.map (landSvg cellWidth) map.lands)
-      -- ++ (NE.toList (NE.concat <| NE.map pointSvg lands))
-      -- |> NE.toList
-      -- )
-      -- [ polyline [ fill "none", stroke "black", points (polyPoints w h ((NE.head lands) .hexagons)) ] [] ]
+      [
+        width sWidth
+        , height sHeight
+        , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
+        -- , Svg.Attributes.style "border: 1px solid red"
+      ]
+      (List.map (landSvg (myLayout (cellWidth / sqrt(3), cellWidth * heightScale / 2) padding)) map.lands)
+      
+      
 
+myLayout : (Float, Float) -> Float -> Hexagons.Layout.Layout
+myLayout (cellWidth, cellHeight) padding =
+  { orientation = orientationLayoutPointy
+  , size = Debug.log "size" (cellWidth, cellHeight)
+  , origin = (padding / 2, -cellHeight / 2 + padding / 2)
+  }
 
-
-landSvg : Float -> Land.Land -> Svg Msg
-landSvg cellWidth land =
+landSvg : Hexagons.Layout.Layout -> Land.Land -> Svg Msg
+landSvg layout land =
   let
-    path = landPath 1 0.5 land.hexagons
+    path = landPath layout land.hexagons
+    (x'', y'') = center layout land.hexagons
+    x' = toString x''
+    y' = toString y''
   in
-    g [] ([ polyline [ fill <| landColor land
+    g [] ([ polygon [ fill <| landColor land
       , stroke "black"
-      , strokeLinejoin "round", strokeWidth (cellWidth / 15 |> toString)
-      , points (landPointsString path cellWidth)
+      , strokeLinejoin "round", strokeWidth (2 |> toString)
+      , points (landPointsString path)
       , onClick (ClickLand (land))
       , onMouseOver (HoverLand land)
       , onMouseOut (UnHoverLand land)
       ] []
-    -- , text' [x x', y y'] [Svg.text <| x' ++ "," ++ y' ]
-    ]
-    -- ++
-    -- (NE.map (\p ->
-    --   let
-    --     (x'', y'') = Hex.hexpoint (2, 1) p NW
-    --     x' = x'' * size |> toString
-    --     y' = y'' * size + size / 2 |> toString
-    --   in
-    --     text' [x x', y y'] [Svg.text <| (fst p |> toString) ++ "," ++ (snd p |> toString) ]
-    -- ) land.hexagons
-    -- |> NE.toList)
-    )
+    -- , text' [x (toString (x'' + 10)), y (toString (y'' + 10))] [Svg.text <| x' ++ "," ++ y' ]
+    ])
 
-landPointsString : List Hex.Point -> Float -> String
-landPointsString path cellWidth =
---  "1,1 10,10"
-  path
-  |> List.map (\p -> ((fst p) * cellWidth, (snd p) * cellWidth))
-  -- |> closePath
-  |> List.map (\p -> (fst p |> toString) ++ "," ++ (snd p |> toString) ++ " ")
-  |> List.foldl (++) ""
-  -- |> Debug.log "svg attr path"
+landPointsString : List Hex.Point -> String
+landPointsString path =
+  path |> List.foldl addPointToString ""
 
--- closePath : List Hex.Point -> List Hex.Point
--- closePath cells =
---   case cells of
---     [] -> []
---     [one] -> [one]
---     hd::_ -> List.append cells [hd]
+addPointToString : Hex.Point -> String -> String
+addPointToString point path =
+  path ++ (pointToString point) ++ " "
 
--- pointSvg : Land.Land -> List (Svg msg)
--- pointSvg land =
---   landPath 100 50 land.hexagons
---   |> List.map (\p ->
---     let
---       x' = (fst p |> toString)
---       y' = (snd p |> toString)
---     in
---     circle [ r "2", fill "red", cx x', cy y' ] []
---     :: ([text' [x x', y y'] [Svg.text <| x' ++ "," ++ y' ]])
---   )
---   |> List.concat
+pointToString : Hex.Point -> String
+pointToString (x, y) = (x |> toString) ++ "," ++ (y |> toString)
 
 landColor : Land -> String
 landColor land =
