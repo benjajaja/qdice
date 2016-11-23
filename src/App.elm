@@ -6,6 +6,11 @@ import Html.Attributes as Html
 import Html.App as App
 import Task
 
+import Material
+import Material.Scheme
+import Material.Layout as Layout
+import Material.Button
+
 import Navigation
 import UrlParser exposing ((</>))
 import Hop
@@ -62,11 +67,13 @@ type Msg
   = Resize (Int, Int)
   | NavigateTo String
   | SetQuery Query
+  | Mdl (Material.Msg Msg)
   | Board Board.Msg
 
 type alias Model =
   { address : Address
   , route: Route
+  , mdl: Material.Model
   , size: (Int, Int)
   , board: Board.Model
   }
@@ -81,7 +88,7 @@ init (route, address) =
   let
     (board, boardFx) = Board.init
   in
-    (Model address route (0, 0) board
+    (Model address route Material.model  (0, 0) board
     , Cmd.batch [
       Cmd.map Board boardFx, Task.perform (\a -> Debug.log "?" a) sizeToMsg Window.size
       , hide "?"
@@ -123,33 +130,63 @@ update msg model =
                       |> Navigation.newUrl
           in
               ( model, command )
+      Mdl msg' -> Material.update msg' model
 
 urlUpdate : ( Route, Address ) -> Model -> ( Model, Cmd Msg )
 urlUpdate ( route, address ) model =
     ( { model | route = route, address = address }, Cmd.none )
 
-updateMap : Model -> Cmd Msg -> Land.Map -> (Model, Cmd Msg)    
-updateMap model cmd map =
-  let
-    {board} = model
-  in
-    ({ model | board = { board | map = map } }, cmd)
-
-
+type alias Mdl = 
+  Material.Model 
 view : Model -> Html.Html Msg
-view model = 
+view model =
   Html.div [css.id SharedStyles.Root] [
-    (Html.h1 [css.id SharedStyles.Logo] [Html.text "eDice"])
-    , App.map Board (Board.view model.board)
-    , (Html.button [Html.class "mui-button", Html.onClick (NavigateTo "editor")] [Html.text "Editor"])
-    , (Html.div [] [Html.text (
-      case model.route of
-        GameRoute -> "Game"
-        EditorRoute -> "Editor"
-        NotFoundRoute -> "404"
-    )])
+    Layout.render Mdl model.mdl
+      [ Layout.fixedHeader, Layout.scrolling ]
+      { header = header --[(Html.h1 [css.id SharedStyles.Logo] [Html.text "eDice"])]
+      , drawer = drawer model
+      , tabs = ([], [])
+      , main = [mainView model]
+      }
+    -- , mainView model
+    -- , Material.Button.render Mdl [0] model.mdl [ Material.Button.onClick (NavigateTo "editor") ] [ Html.text "Editor" ]
+    -- , (Html.button [ Html.onClick (NavigateTo "editor")] [Html.text "Editor"])
+    -- , (Html.div [] [Html.text (
+    --   case model.route of
+    --     GameRoute -> "Game"
+    --     EditorRoute -> "Editor"
+    --     NotFoundRoute -> "404"
+    -- )])
+  ]
+  |> Material.Scheme.top
+
+header : List (Html.Html Msg)
+header = [ Layout.row
+        [ ]
+        [ Layout.title [] [ Html.text "elm-dice" ]
+        , Layout.spacer
+        , Layout.navigation []
+            [ Layout.link
+              [ Layout.href "javascript:window.location.reload()"]
+              [ Html.text "reload" ]
+            , Layout.link
+                [ Layout.href "http://package.elm-lang.org/packages/debois/elm-mdl/latest/" ]
+                [ Html.text "elm-package" ]
+            ]
+        ]
+    ]
+
+drawer model =
+  [ Material.Button.render Mdl [0] model.mdl [ Material.Button.onClick (NavigateTo "") ] [ Html.text "Play" ]
+  , Material.Button.render Mdl [0] model.mdl [ Material.Button.onClick (NavigateTo "editor") ] [ Html.text "Editor" ]
   ]
 
+mainView : Model -> Html.Html Msg
+mainView model =
+  case model.route of
+    GameRoute -> Html.div [] [Html.text "game"]
+    EditorRoute -> App.map Board (Board.view model.board)
+    NotFoundRoute -> Html.text "404"
 
 
 subscriptions : Model -> Sub Msg
