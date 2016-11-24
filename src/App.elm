@@ -9,6 +9,7 @@ import Task
 import Material
 import Material.Scheme
 import Material.Layout as Layout
+import Material.Icon as Icon
 import Material.Button
 
 import Navigation
@@ -143,20 +144,11 @@ view model =
   Html.div [css.id SharedStyles.Root] [
     Layout.render Mdl model.mdl
       [ Layout.fixedHeader, Layout.scrolling ]
-      { header = header --[(Html.h1 [css.id SharedStyles.Logo] [Html.text "eDice"])]
+      { header = header
       , drawer = drawer model
       , tabs = ([], [])
       , main = [mainView model]
       }
-    -- , mainView model
-    -- , Material.Button.render Mdl [0] model.mdl [ Material.Button.onClick (NavigateTo "editor") ] [ Html.text "Editor" ]
-    -- , (Html.button [ Html.onClick (NavigateTo "editor")] [Html.text "Editor"])
-    -- , (Html.div [] [Html.text (
-    --   case model.route of
-    --     GameRoute -> "Game"
-    --     EditorRoute -> "Editor"
-    --     NotFoundRoute -> "404"
-    -- )])
   ]
   |> Material.Scheme.top
 
@@ -168,14 +160,15 @@ header = [ Layout.row
         , Layout.navigation []
             [ Layout.link
               [ Layout.href "javascript:window.location.reload()"]
-              [ Html.text "reload" ]
-            , Layout.link
-                [ Layout.href "http://package.elm-lang.org/packages/debois/elm-mdl/latest/" ]
-                [ Html.text "elm-package" ]
+              [ Icon.i "refresh" ]
+            -- , Layout.link
+            --     [ Layout.href "http://package.elm-lang.org/packages/debois/elm-mdl/latest/" ]
+            --     [ Html.text "elm-package" ]
             ]
         ]
     ]
 
+drawer : Model -> List (Html.Html Msg)
 drawer model =
   [ Material.Button.render Mdl [0] model.mdl [ Material.Button.onClick (NavigateTo "") ] [ Html.text "Play" ]
   , Material.Button.render Mdl [0] model.mdl [ Material.Button.onClick (NavigateTo "editor") ] [ Html.text "Editor" ]
