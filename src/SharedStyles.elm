@@ -4,14 +4,14 @@ import Html.CssHelpers exposing (withNamespace)
 
 
 type CssClasses
-  = NavLink
+    = NavLink
 
 
 type CssIds
-  = Root
-  | Logo
-  | BuyTickets
+    = Root
+    | Logo
+    | BuyTickets
 
 
 homepageNamespace =
-  withNamespace "homepage"
+    withNamespace "homepage"
