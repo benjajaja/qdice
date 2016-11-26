@@ -20,12 +20,8 @@ module.exports = {
       },
       {
         test: /\.elm$/,
-        exclude: [/elm-stuff/, /node_modules/, /Stylesheets.elm/],
+        exclude: [/elm-stuff/, /node_modules/],
         loader: 'elm-webpack'
-      },
-      {
-        test: /Stylesheets\.elm$/,
-        loader: "style!css!elm-css-webpack"
       },
       {
         test: /\.css$/,

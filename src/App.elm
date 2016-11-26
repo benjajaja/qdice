@@ -1,9 +1,8 @@
 port module Edice exposing (..)
 
+import Board
 import Window
 import Html
-import Html.Events as Html
-import Html.Attributes as Html
 import Html.App as App
 import Task
 import Material
@@ -15,18 +14,6 @@ import Navigation
 import UrlParser exposing ((</>))
 import Hop
 import Hop.Types exposing (Config, Address, Query)
-import HomepageCss
-import SharedStyles
-import Board
-import Land
-
-
-css =
-    SharedStyles.homepageNamespace
-
-
-
--- { id, class, classList } = SharedStyles.homepageNamespace
 
 
 urlParser : Navigation.Parser ( Route, Address )
@@ -165,16 +152,14 @@ type alias Mdl =
 
 view : Model -> Html.Html Msg
 view model =
-    Html.div [ css.id SharedStyles.Root ]
-        [ Layout.render Mdl
-            model.mdl
-            [ Layout.fixedHeader, Layout.scrolling ]
-            { header = header
-            , drawer = drawer model
-            , tabs = ( [], [] )
-            , main = [ mainView model ]
-            }
-        ]
+    Layout.render Mdl
+        model.mdl
+        [ Layout.fixedHeader, Layout.scrolling ]
+        { header = header
+        , drawer = drawer model
+        , tabs = ( [], [] )
+        , main = [ mainView model ]
+        }
         |> Material.Scheme.top
 
 
