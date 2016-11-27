@@ -1,8 +1,36 @@
 module Editor exposing (..)
 
+import Html
 import Dict
 import Board
-import Land
+
+
+type alias Msg =
+    Board.Msg
+
+
+type alias Model =
+    Board.Model
+
+
+init =
+    Board.init
+
+
+update =
+    Board.update
+
+
+subscriptions =
+    Board.subscriptions
+
+
+view : Model -> Html.Html Msg
+view model =
+    Html.div []
+        [ Html.text "game"
+        , Board.view model
+        ]
 
 
 symbolDict : Dict.Dict Int Char

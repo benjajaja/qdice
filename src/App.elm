@@ -1,6 +1,8 @@
 port module Edice exposing (..)
 
-import Board
+import Editor
+import Board.Types
+import Board.State
 import Window
 import Html
 import Html.App as App
@@ -64,7 +66,7 @@ type Msg
     | NavigateTo String
     | SetQuery Query
     | Mdl (Material.Msg Msg)
-    | Board Board.Msg
+    | BoardMsg Board.Types.Msg
 
 
 type alias Model =
@@ -72,7 +74,7 @@ type alias Model =
     , route : Route
     , mdl : Material.Model
     , size : ( Int, Int )
-    , board : Board.Model
+    , board : Board.Types.Model
     }
 
 
@@ -86,11 +88,11 @@ init : ( Route, Address ) -> ( Model, Cmd Msg )
 init ( route, address ) =
     let
         ( board, boardFx ) =
-            Board.init
+            Board.State.init
     in
         ( Model address route Material.model ( 0, 0 ) board
         , Cmd.batch
-            [ Cmd.map Board boardFx
+            [ Cmd.map BoardMsg boardFx
             , Task.perform (\a -> Debug.log "?" a) sizeToMsg Window.size
             , hide "?"
             ]
@@ -107,12 +109,12 @@ update msg model =
             Resize size ->
                 ( { model | board = { board | size = size } }, Cmd.none )
 
-            Board msg ->
+            BoardMsg msg ->
                 let
                     ( board, boardCmds ) =
-                        Board.update msg board
+                        Board.State.update msg board
                 in
-                    ( { model | board = board }, Cmd.map Board boardCmds )
+                    ( { model | board = board }, Cmd.map BoardMsg boardCmds )
 
             NavigateTo path ->
                 let
@@ -195,8 +197,9 @@ mainView model =
             Html.div [] [ Html.text "game" ]
 
         EditorRoute ->
-            App.map Board (Board.view model.board)
+            App.map BoardMsg (Editor.view model.board)
 
+        -- App.map Board (Board.view model.board)
         NotFoundRoute ->
             Html.text "404"
 
