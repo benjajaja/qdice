@@ -84,14 +84,17 @@ type Route
 init : ( Route, Address ) -> ( Model, Cmd Msg )
 init ( route, address ) =
     let
-        ( model, cmd ) =
+        ( editor, _ ) =
             Editor.init
+
+        model =
+            Model address route Material.model editor
+
+        cmd =
+            urlUpdate ( route, address ) model |> snd
     in
-        ( Model address route Material.model model
-        , Cmd.batch
-            [ Cmd.map EditorMsg cmd
-            , hide ""
-            ]
+        ( model
+        , Cmd.batch [ hide "", cmd ]
         )
 
 
@@ -134,7 +137,16 @@ update msg model =
 
 urlUpdate : ( Route, Address ) -> Model -> ( Model, Cmd Msg )
 urlUpdate ( route, address ) model =
-    ( { model | route = route, address = address }, Cmd.none )
+    let
+        cmd =
+            case route of
+                EditorRoute ->
+                    snd Editor.init |> Cmd.map EditorMsg
+
+                _ ->
+                    Cmd.none
+    in
+        ( { model | route = route, address = address }, cmd )
 
 
 type alias Mdl =
@@ -193,10 +205,20 @@ mainView model =
             Html.text "404"
 
 
+mainViewSubscriptions : Model -> Sub Msg
+mainViewSubscriptions model =
+    case model.route of
+        EditorRoute ->
+            Editor.subscriptions model.editor |> Sub.map EditorMsg
+
+        _ ->
+            Sub.none
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Editor.subscriptions model.editor |> Sub.map EditorMsg
+        [ mainViewSubscriptions model
         ]
 
 

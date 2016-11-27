@@ -40,7 +40,7 @@ update msg model =
                 model =
                     case boardMsg of
                         ClickLand land ->
-                            { model | selectedLands = land :: model.selectedLands }
+                            { model | selectedLands = Debug.log "selected" (land :: model.selectedLands) }
 
                         _ ->
                             model
