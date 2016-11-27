@@ -57,24 +57,21 @@ main =
         , urlUpdate = urlUpdate
         , subscriptions =
             subscriptions
-            --\_ -> Window.resizes sizeToMsg
         }
 
 
 type Msg
-    = Resize ( Int, Int )
-    | NavigateTo String
+    = NavigateTo String
     | SetQuery Query
     | Mdl (Material.Msg Msg)
-    | BoardMsg Board.Types.Msg
+    | EditorMsg Editor.Msg
 
 
 type alias Model =
     { address : Address
     , route : Route
     , mdl : Material.Model
-    , size : ( Int, Int )
-    , board : Board.Types.Model
+    , editor : Editor.Model
     }
 
 
@@ -87,60 +84,52 @@ type Route
 init : ( Route, Address ) -> ( Model, Cmd Msg )
 init ( route, address ) =
     let
-        ( board, boardFx ) =
-            Board.State.init
+        ( model, cmd ) =
+            Editor.init
     in
-        ( Model address route Material.model ( 0, 0 ) board
+        ( Model address route Material.model model
         , Cmd.batch
-            [ Cmd.map BoardMsg boardFx
-            , Task.perform (\a -> Debug.log "?" a) sizeToMsg Window.size
-            , hide "?"
+            [ Cmd.map EditorMsg cmd
+            , hide ""
             ]
         )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        { size, board } =
-            model
-    in
-        case msg of
-            Resize size ->
-                ( { model | board = { board | size = size } }, Cmd.none )
+    case msg of
+        EditorMsg msg ->
+            let
+                ( editor, editorCmd ) =
+                    Editor.update msg model.editor
+            in
+                ( { model | editor = editor }, Cmd.map EditorMsg editorCmd )
 
-            BoardMsg msg ->
-                let
-                    ( board, boardCmds ) =
-                        Board.State.update msg board
-                in
-                    ( { model | board = board }, Cmd.map BoardMsg boardCmds )
+        NavigateTo path ->
+            let
+                command =
+                    -- First generate the URL using your config (`outputFromPath`).
+                    -- Then generate a command using Navigation.newUrl.
+                    Hop.outputFromPath hopConfig path
+                        |> Navigation.newUrl
+            in
+                ( model, command )
 
-            NavigateTo path ->
-                let
-                    command =
-                        -- First generate the URL using your config (`outputFromPath`).
-                        -- Then generate a command using Navigation.newUrl.
-                        Hop.outputFromPath hopConfig path
-                            |> Navigation.newUrl
-                in
-                    ( model, command )
+        SetQuery query ->
+            let
+                command =
+                    -- First modify the current stored address record (setting the query)
+                    -- Then generate a URL using Hop.output
+                    -- Finally, create a command using Navigation.newUrl
+                    model.address
+                        |> Hop.setQuery query
+                        |> Hop.output hopConfig
+                        |> Navigation.newUrl
+            in
+                ( model, command )
 
-            SetQuery query ->
-                let
-                    command =
-                        -- First modify the current stored address record (setting the query)
-                        -- Then generate a URL using Hop.output
-                        -- Finally, create a command using Navigation.newUrl
-                        model.address
-                            |> Hop.setQuery query
-                            |> Hop.output hopConfig
-                            |> Navigation.newUrl
-                in
-                    ( model, command )
-
-            Mdl msg' ->
-                Material.update msg' model
+        Mdl msg ->
+            Material.update msg model
 
 
 urlUpdate : ( Route, Address ) -> Model -> ( Model, Cmd Msg )
@@ -194,10 +183,10 @@ mainView : Model -> Html.Html Msg
 mainView model =
     case model.route of
         GameRoute ->
-            Html.div [] [ Html.text "game" ]
+            Html.div [] [ Html.text "Game!" ]
 
         EditorRoute ->
-            App.map BoardMsg (Editor.view model.board)
+            App.map EditorMsg (Editor.view model.editor)
 
         -- App.map Board (Board.view model.board)
         NotFoundRoute ->
@@ -206,7 +195,9 @@ mainView model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Window.resizes sizeToMsg
+    Sub.batch
+        [ Editor.subscriptions model.editor |> Sub.map EditorMsg
+        ]
 
 
 routes : UrlParser.Parser (Route -> a) a
@@ -215,11 +206,6 @@ routes =
         [ UrlParser.format GameRoute (UrlParser.s "")
         , UrlParser.format EditorRoute (UrlParser.s "editor")
         ]
-
-
-sizeToMsg : Window.Size -> Msg
-sizeToMsg size =
-    Debug.log "size" (Resize ( size.width, size.height ))
 
 
 port hide : String -> Cmd msg

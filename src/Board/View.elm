@@ -1,4 +1,4 @@
-module Board.View exposing (view)
+module Board.View exposing (view, widthElementId)
 
 import Board.Types exposing (..)
 import Svg exposing (..)
@@ -14,9 +14,14 @@ import Hex exposing (Point)
 import Land exposing (Land, Map, landPath, center)
 
 
+widthElementId : String
+widthElementId =
+    "edice-board"
+
+
 view : Model -> Html.Html Msg
 view model =
-    board model.size model.map
+    board model.width model.map
 
 
 heightScale : Float
@@ -29,8 +34,8 @@ padding =
     3
 
 
-board : ( Int, Int ) -> Land.Map -> Svg Msg
-board ( w, h ) map =
+board : Int -> Land.Map -> Svg Msg
+board w map =
     let
         cellWidth =
             (toFloat w - padding) / (((toFloat map.width) + 0.5))
@@ -45,33 +50,32 @@ board ( w, h ) map =
 
         sHeight =
             cellHeight * 0.75 * (toFloat map.height + 1 / 3) + padding |> toString
-
-        _ =
-            Debug.log "height" ( cellWidth |> floor, cellHeight |> floor, map.height, sHeight )
     in
-        Svg.svg
-            [ width sWidth
-            , height sHeight
-            , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
-              -- , Svg.Attributes.style "border: 1px solid red"
-            ]
-            (List.concat
-                [ List.map (landSvg (myLayout ( cellWidth / sqrt (3), cellWidth * heightScale / 2 ) padding)) map.lands
-                , [ Svg.defs []
-                        [ Svg.radialGradient [ id "editorGradient" ]
-                            [ Svg.stop [ offset "0.8", stopColor "gold" ] []
-                            , Svg.stop [ offset "0.9", stopColor (svgColor False Land.Neutral) ] []
-                            ]
-                        ]
-                  ]
+        Html.div [ id widthElementId ]
+            [ Svg.svg
+                [ width sWidth
+                , height sHeight
+                , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
+                  -- , Svg.Attributes.style "border: 1px solid red"
                 ]
-            )
+                (List.concat
+                    [ List.map (landSvg (myLayout ( cellWidth / sqrt (3), cellWidth * heightScale / 2 ) padding)) map.lands
+                    , [ Svg.defs []
+                            [ Svg.radialGradient [ id "editorGradient" ]
+                                [ Svg.stop [ offset "0.8", stopColor "gold" ] []
+                                , Svg.stop [ offset "0.9", stopColor (svgColor False Land.Neutral) ] []
+                                ]
+                            ]
+                      ]
+                    ]
+                )
+            ]
 
 
 myLayout : ( Float, Float ) -> Float -> Hexagons.Layout.Layout
 myLayout ( cellWidth, cellHeight ) padding =
     { orientation = orientationLayoutPointy
-    , size = Debug.log "size" ( cellWidth, cellHeight )
+    , size = ( cellWidth, cellHeight )
     , origin = ( padding / 2, -cellHeight / 2 + padding / 2 )
     }
 

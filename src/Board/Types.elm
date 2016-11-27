@@ -4,13 +4,14 @@ import Land exposing (Map, Land)
 
 
 type Msg
-    = Resize ( Int, Int )
+    = WindowResize ( Int, Int )
+    | Resize Int
     | ClickLand Land
     | HoverLand Land
     | UnHoverLand Land
 
 
 type alias Model =
-    { size : ( Int, Int )
+    { width : Int
     , map : Map
     }
