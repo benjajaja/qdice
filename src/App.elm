@@ -1,12 +1,9 @@
 port module Edice exposing (..)
 
-import Editor
-import Board.Types
-import Board.State
-import Window
+import Types exposing (Msg(..), Model, Route(..))
+import Editor.Editor as Editor
 import Html
 import Html.App as App
-import Task
 import Material
 import Material.Scheme
 import Material.Layout as Layout
@@ -58,27 +55,6 @@ main =
         , subscriptions =
             subscriptions
         }
-
-
-type Msg
-    = NavigateTo String
-    | SetQuery Query
-    | Mdl (Material.Msg Msg)
-    | EditorMsg Editor.Msg
-
-
-type alias Model =
-    { address : Address
-    , route : Route
-    , mdl : Material.Model
-    , editor : Editor.Model
-    }
-
-
-type Route
-    = GameRoute
-    | EditorRoute
-    | NotFoundRoute
 
 
 init : ( Route, Address ) -> ( Model, Cmd Msg )
@@ -198,7 +174,7 @@ mainView model =
             Html.div [] [ Html.text "Game!" ]
 
         EditorRoute ->
-            App.map EditorMsg (Editor.view model.editor)
+            Editor.view model
 
         -- App.map Board (Board.view model.board)
         NotFoundRoute ->

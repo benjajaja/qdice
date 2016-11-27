@@ -8,6 +8,7 @@ import Color exposing (..)
 import Color.Convert exposing (..)
 import Color.Manipulate exposing (..)
 import Html
+import Html.Attributes
 import Hexagons.Layout exposing (orientationLayoutPointy, Layout)
 import Board.Types exposing (Msg, Model)
 import Hex exposing (Point)
@@ -21,7 +22,7 @@ widthElementId =
 
 view : Model -> Html.Html Msg
 view model =
-    board model.width model.map
+    board 100 model.map
 
 
 heightScale : Float
@@ -31,7 +32,7 @@ heightScale =
 
 padding : Float
 padding =
-    3
+    0
 
 
 board : Int -> Land.Map -> Svg Msg
@@ -53,10 +54,14 @@ board w map =
     in
         Html.div [ id widthElementId ]
             [ Svg.svg
-                [ width sWidth
-                , height sHeight
+                [ width "100%"
+                , height "100%"
+                , Html.Attributes.style
+                    [ ( "padding", "2px" )
+                    , ( "box-sizing", "border-box" )
+                    ]
                 , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
-                  -- , Svg.Attributes.style "border: 1px solid red"
+                , preserveAspectRatio "none"
                 ]
                 (List.concat
                     [ List.map (landSvg (myLayout ( cellWidth / sqrt (3), cellWidth * heightScale / 2 ) padding)) map.lands
@@ -101,6 +106,7 @@ landSvg layout land =
                 , stroke "black"
                 , strokeLinejoin "round"
                 , strokeWidth (2 |> toString)
+                , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
                 , points (landPointsString path)
                 , onClick (ClickLand land)
                 , onMouseOver (HoverLand land)

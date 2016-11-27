@@ -1,35 +1,28 @@
-module Editor exposing (..)
+module Editor.Editor exposing (..)
 
 import Html
 import Html.App
 import Dict
+import Material.Button as Button
+import Material.Icon as Icon
+import Editor.Types exposing (Msg(..), Model)
+import Types
 import Board
 import Board.Types exposing (Msg(..))
-import Land exposing (Land)
 
 
-type Msg
-    = BoardMsg Board.Msg
-
-
-type alias Model =
-    { board : Board.Model
-    , selectedLands : List Land
-    }
-
-
-init : ( Model, Cmd Msg )
+init : ( Model, Cmd Editor.Types.Msg )
 init =
     let
         ( board, cmd ) =
-            Board.init
+            Board.init 32 32
     in
         ( (Model board [])
         , Cmd.map BoardMsg cmd
         )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Editor.Types.Msg -> Model -> ( Model, Cmd Editor.Types.Msg )
 update msg model =
     case msg of
         BoardMsg boardMsg ->
@@ -48,15 +41,28 @@ update msg model =
                 ( { model | board = board }, Cmd.map BoardMsg boardCmd )
 
 
-view : Model -> Html.Html Msg
+view : Types.Model -> Html.Html Types.Msg
 view model =
-    Html.div []
-        [ Html.div [] [ Html.text "Editor mode" ]
-        , Html.App.map BoardMsg (Board.view model.board)
-        ]
+    let
+        board =
+            Html.App.map Types.EditorMsg (Html.App.map BoardMsg (Board.view model.editor.board))
+    in
+        Html.div []
+            [ Html.div [] [ Html.text "Editor mode" ]
+            , board
+            , Button.render Types.Mdl
+                [ 0 ]
+                model.mdl
+                [ Button.fab
+                , Button.colored
+                , Button.ripple
+                  -- , Button.onClick MyClickMsg
+                ]
+                [ Icon.i "add" ]
+            ]
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> Sub Editor.Types.Msg
 subscriptions model =
     Board.subscriptions model.board |> Sub.map BoardMsg
 
