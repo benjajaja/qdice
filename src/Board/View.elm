@@ -136,7 +136,7 @@ pointToString ( x, y ) =
 landColor : Land -> String
 landColor land =
     case land.color of
-        Land.Editor ->
+        Land.EditorSelected ->
             "url(#editorGradient)"
 
         _ ->
@@ -147,7 +147,7 @@ svgColor : Bool -> Land.Color -> String
 svgColor highlight color =
     (case color of
         Land.Neutral ->
-            Color.rgb 20 20 20
+            Color.rgb 240 240 240
 
         Land.Black ->
             Color.rgb 52 52 52
@@ -170,8 +170,11 @@ svgColor highlight color =
         Land.Cyan ->
             Color.rgb 103 189 170
 
-        _ ->
-            Color.rgb 255 0 0
+        Land.Editor ->
+            Color.rgb 255 128 0
+
+        Land.EditorSelected ->
+            Color.rgb 255 0 255
     )
         |> Color.Manipulate.lighten
             (if highlight then

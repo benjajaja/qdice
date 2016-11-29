@@ -31,7 +31,7 @@ type alias Border =
 
 
 type Color
-    = Editor
+    = Neutral
     | Red
     | Green
     | Blue
@@ -39,7 +39,8 @@ type Color
     | Magenta
     | Cyan
     | Black
-    | Neutral
+    | Editor
+    | EditorSelected
 
 
 landPath : Layout -> Cells -> List Point
@@ -62,15 +63,15 @@ errorLand =
     Land [ offsetToHex ( 0, 0 ) ] Editor False
 
 
-fullCellMap : Int -> Int -> Map
-fullCellMap w h =
+fullCellMap : Int -> Int -> Color -> Map
+fullCellMap w h color =
     Map
         (List.map
             (\r ->
                 List.map
                     (\c ->
                         { hexagons = [ offsetToHex ( c, r ) ]
-                        , color = Neutral
+                        , color = color
                         , selected = False
                         }
                     )
@@ -112,17 +113,21 @@ landColor map land color =
 
 highlight : Bool -> Map -> Land -> Map
 highlight highlight map land =
-    { map
-        | lands =
-            List.map
-                (\l ->
-                    if l == land then
-                        { l | selected = highlight }
-                    else
-                        { l | selected = False }
-                )
-                map.lands
-    }
+    map
+
+
+
+-- { map
+--     | lands =
+--         List.map
+--             (\l ->
+--                 if l == land then
+--                     { l | selected = highlight }
+--                 else
+--                     { l | selected = False }
+--             )
+--             map.lands
+-- }
 
 
 append : Map -> Land -> Map
@@ -152,18 +157,18 @@ indexOf lst f =
 
 {-| return index of coord in map
 -}
-at : Map -> ( Int, Int ) -> Int
-at map coord =
+at : List Land -> ( Int, Int ) -> Int
+at lands coord =
     let
         hex =
-            HH.intFactory coord
+            offsetToHex coord
 
         cb : Hex -> Land -> Bool
         cb hex land =
             any (\h -> h === hex) land.hexagons
 
         index =
-            indexOf map.lands (cb hex)
+            indexOf lands (cb hex)
     in
         index
 

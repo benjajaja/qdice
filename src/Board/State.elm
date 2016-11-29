@@ -9,7 +9,7 @@ import Land
 
 init : Int -> Int -> ( Model, Cmd Msg )
 init width height =
-    ( Model 850 (Land.fullCellMap width height)
+    ( Model 850 (Land.fullCellMap width height Land.Editor)
     , Task.perform (\a -> Debug.log "?" a) sizeToMsg Window.size
     )
 
@@ -27,21 +27,13 @@ update msg model =
             Resize width ->
                 ( Model (Debug.log "www" width) map, Cmd.none )
 
-            -- ClickLand land ->
-            --     ( Model width (Land.landColor map land Land.Editor), Cmd.none )
             HoverLand land ->
                 let
                     map' =
                         Land.highlight True map land
-
-                    -- |> Debug.log "hilite"
                 in
                     if map' /= map then
-                        let
-                            _ =
-                                Debug.log "hilite" <| List.length map'.lands
-                        in
-                            ( Model width map', Cmd.none )
+                        ( { model | map = map' }, Cmd.none )
                     else
                         ( model, Cmd.none )
 
