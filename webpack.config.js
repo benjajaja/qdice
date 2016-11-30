@@ -1,9 +1,11 @@
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
+
 module.exports = {
-  entry: './html/index.js',
+  entry: './html/elm-dice.js',
 
   output: {
     path: './dist',
-    filename: 'index.js'
+    filename: 'elm-dice.js'
   },
 
   resolve: {
@@ -14,7 +16,7 @@ module.exports = {
   module: {
     loaders: [
       {
-        test: /\.html$/,
+        test: /\.(html)$/,
         exclude: /node_modules/,
         loader: 'file?name=[name].[ext]'
       },
@@ -25,16 +27,27 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: "style!css"
+        loader: ExtractTextPlugin.extract('css-loader?importLoaders=1!postcss-loader'
+            // ].join('!') 
+        )
       }
     ],
 
     // noParse: /\.elm$/
   },
 
+  plugins: [
+    new ExtractTextPlugin('elm-dice.css', { allowChunks: true }),
+  ],
+
+  postcss: [
+    require('autoprefixer')({ browsers: ['last 200 versions'] }),
+  ],
+
   devServer: {
     inline: true,
-    stats: 'errors-only'
+    stats: 'errors-only',
+    contentBase: './html'
   }
 };
 

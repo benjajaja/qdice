@@ -1,0 +1,22 @@
+/* hello */
+.Main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+
+
+@media (min-width: 800px) and (max-width: 1100px) {
+  .Main {
+    padding: 0 calc(
+      10px +
+      100 *
+      (100vw - 800px) / (1100 - 800)
+    );
+  }
+}
+@media (min-width: 1100px) {
+  .Main {
+    padding: 0 100px;
+  }
+}

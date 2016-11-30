@@ -1,6 +1,7 @@
 'use strict';
 
 require('./index.html');
+require('./elm-dice.css');
 
 var Elm = require('../src/App');
 

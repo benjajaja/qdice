@@ -184,7 +184,7 @@ mapElm map =
                         let
                             cells : List Int
                             cells =
-                                List.map (\col -> Land.at lands ( col, row )) [0..map.width]
+                                List.map (\col -> Land.at lands ( col, row )) [1..map.width]
                                     |> Debug.log "cells"
                         in
                             List.map

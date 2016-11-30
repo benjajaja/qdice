@@ -3,6 +3,7 @@ port module Edice exposing (..)
 import Types exposing (Msg(..), Model, Route(..))
 import Editor.Editor as Editor
 import Html
+import Html.Attributes
 import Html.App as App
 import Material
 import Material.Scheme
@@ -137,7 +138,7 @@ view model =
         { header = header
         , drawer = drawer model
         , tabs = ( [], [] )
-        , main = [ mainView model ]
+        , main = [ Html.div [ Html.Attributes.class "Main" ] [ mainView model ] ]
         }
         |> Material.Scheme.top
 
