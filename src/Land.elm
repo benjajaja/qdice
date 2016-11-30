@@ -309,9 +309,10 @@ nextBorders cells coord origin side accum =
                 else if fuse == 0 then
                     let
                         _ =
-                            Debug.crash "TCO exhausted" ( coord, side, origin, accum |> List.take 32, cells )
+                            Debug.log "TCO exhausted"
+                                ( coord, side, origin, accum |> List.take 32, cells )
                     in
-                        accum
+                        Debug.crash "TCO exhausted"
                 else
                     case cellOnBorder coord side cells of
                         Just c ->
@@ -320,7 +321,7 @@ nextBorders cells coord origin side accum =
                         Nothing ->
                             tco cells coord origin (rightSide side) (current :: accum) (fuse - 1)
     in
-        tco cells coord origin side [] 1000
+        tco cells coord origin side [] 100000
             |> List.reverse
 
 

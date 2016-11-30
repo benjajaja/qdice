@@ -1,8 +1,9 @@
-module Editor.Editor exposing (..)
+port module Editor.Editor exposing (..)
 
 import Html
 import Html.App
 import Html.Attributes
+import Html.Events
 import Dict
 import String
 import Material
@@ -13,6 +14,9 @@ import Types
 import Board
 import Board.Types exposing (Msg(..))
 import Land
+
+
+port selectAll : String -> Cmd msg
 
 
 init : ( Model, Cmd Editor.Types.Msg )
@@ -69,6 +73,9 @@ update msg model =
         RandomLandColor land color ->
             Land.setColor model.board.map land color |> updateMap model Cmd.none
 
+        ClickOutput id ->
+            ( model, selectAll id )
+
 
 view : Types.Model -> Html.Html Types.Msg
 view model =
@@ -92,7 +99,8 @@ view model =
                 ]
                 [ Icon.i "add" ]
                 |> Html.App.map Types.EditorMsg
-            , Html.pre [] (renderSave model.editor.mapSave)
+            , Html.pre [ Html.Attributes.id "emoji-map", Html.Events.onClick <| ClickOutput "emoji-map" ] (renderSave model.editor.mapSave)
+                |> Html.App.map Types.EditorMsg
             ]
 
 
@@ -101,23 +109,44 @@ subscriptions model =
     Board.subscriptions model.board |> Sub.map BoardMsg
 
 
-renderSave : List (List Char) -> List (Html.Html Types.Msg)
+renderSave : List (List Char) -> List (Html.Html Editor.Types.Msg)
 renderSave save =
     List.indexedMap
         (\i ->
             \row ->
-                Html.div [ Html.Attributes.style [ ( "position", "relative" ), ( "left", ((i % 2) * 10 |> toString) ++ "px" ) ] ]
+                Html.div [ Html.Attributes.style [ ( "position", "relative" ), ( "left", ((i % 2) * -10 |> toString) ++ "px" ) ] ]
                     (List.map
                         (\c ->
                             Html.div
                                 [ Html.Attributes.style [ ( "display", "inline-block" ), ( "width", "20px" ) ]
                                 ]
-                                [ Html.text <| String.fromChar c ]
+                                [ Html.text <| emojiCharToString c ]
                         )
-                        row
+                        (offsetCharRow row i)
                     )
         )
         save
+
+
+emojiCharToString char =
+    case char of
+        ' ' ->
+            "  "
+
+        '\t' ->
+            " "
+
+        _ ->
+            String.fromChar char
+
+
+offsetCharRow row i =
+    case i % 2 of
+        1 ->
+            '\t' :: row
+
+        _ ->
+            row
 
 
 addSelectedLand : Model -> ( Model, Cmd Editor.Types.Msg )
@@ -173,6 +202,7 @@ mapElm map =
     let
         lands =
             List.filter (\l -> l.color /= Land.Editor) map.lands
+                |> List.reverse
     in
         case lands of
             [] ->

@@ -14,6 +14,14 @@ app.ports.queryWidth.subscribe(function(id) {
   setTimeout(function() {
     app.ports.width.send(document.getElementById(id).clientWidth);
   }, 0);
-})
+});
+
+app.ports.selectAll.subscribe(function(id) {
+  var selection = window.getSelection();
+  var range = document.createRange();
+  range.selectNodeContents(document.getElementById(id));
+  selection.removeAllRanges();
+  selection.addRange(range);
+});
 
 global.edice = app;

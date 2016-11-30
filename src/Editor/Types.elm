@@ -10,6 +10,7 @@ type Msg
     | BoardMsg Board.Msg
     | ClickAdd
     | RandomLandColor Land.Land Land.Color
+    | ClickOutput String
 
 
 type alias Model =
