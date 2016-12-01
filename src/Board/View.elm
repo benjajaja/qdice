@@ -12,7 +12,7 @@ import Html.Attributes
 import Hexagons.Layout exposing (orientationLayoutPointy, Layout)
 import Board.Types exposing (Msg, Model)
 import Hex exposing (Point)
-import Land exposing (Land, Map, landPath, center)
+import Land exposing (Land, Map, landPath, center, cellCenter)
 
 
 widthElementId : String
@@ -87,35 +87,23 @@ myLayout ( cellWidth, cellHeight ) padding =
 
 landSvg : Hexagons.Layout.Layout -> Land.Land -> Svg Msg
 landSvg layout land =
-    let
-        path =
-            landPath layout land.hexagons
-
-        ( x'', y'' ) =
-            center layout land.hexagons
-
-        x' =
-            toString x''
-
-        y' =
-            toString y''
-    in
-        g []
-            ([ polygon
-                [ fill <| landColor land
-                , stroke "black"
-                , strokeLinejoin "round"
-                , strokeWidth (2 |> toString)
-                , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
-                , points (landPointsString path)
-                , onClick (ClickLand land)
-                , onMouseOver (HoverLand land)
-                , onMouseOut (UnHoverLand land)
-                ]
-                []
-               -- , text' [x (toString (x'' + 10)), y (toString (y'' + 10))] [Svg.text <| x' ++ "," ++ y' ]
-             ]
-            )
+    g []
+        ((polygon
+            [ fill <| landColor land
+            , stroke "black"
+            , strokeLinejoin "round"
+            , strokeWidth (2 |> toString)
+            , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+            , landPath layout land.hexagons |> landPointsString |> points
+            , onClick (ClickLand land)
+            , onMouseOver (HoverLand land)
+            , onMouseOut (UnHoverLand land)
+            ]
+            []
+         )
+            :: []
+         --(landText layout land)
+        )
 
 
 landPointsString : List Hex.Point -> String
@@ -183,3 +171,28 @@ svgColor highlight color =
                 0.0
             )
         |> Color.Convert.colorToCssRgb
+
+
+landText : Hexagons.Layout.Layout -> Land -> List (Svg Msg)
+landText layout land =
+    let
+        ( x'', y'' ) =
+            center layout land.hexagons
+
+        x' =
+            toString x''
+
+        y' =
+            toString y''
+    in
+        List.map
+            (\c ->
+                let
+                    cellPoint =
+                        cellCenter layout c
+
+                    -- text' [ x (toString (x'' + 0)), y (toString (y'' + 0)) ] [ Svg.text <| x' ++ "," ++ y' ]
+                in
+                    text' [ x <| toString <| fst cellPoint, y <| toString <| snd cellPoint ] [ Svg.text <| toString <| Land.cellCubicCoords c ]
+            )
+            land.hexagons

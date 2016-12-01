@@ -25,3 +25,8 @@ app.ports.selectAll.subscribe(function(id) {
 });
 
 global.edice = app;
+
+window.onerror = function(messageOrEvent, source, lineno, colno, error) {
+  window.alert(messageOrEvent.toString());
+  return false; // let built in handler log it too
+}

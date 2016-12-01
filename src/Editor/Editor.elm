@@ -23,7 +23,7 @@ init : ( Model, Cmd Editor.Types.Msg )
 init =
     let
         ( board, cmd ) =
-            Board.init 32 32
+            Board.init 35 35
     in
         ( (Model Material.model board [] [ [] ])
         , Cmd.map BoardMsg cmd
@@ -167,9 +167,6 @@ addSelectedLand model =
 
         newLand =
             Land.Land selectedCells Land.Editor False
-
-        _ =
-            Debug.log "fst" ( List.head map.lands, model.selectedLands )
     in
         updateMap
             { model | selectedLands = [] }
@@ -215,7 +212,8 @@ mapElm map =
                             cells : List Int
                             cells =
                                 List.map (\col -> Land.at lands ( col, row )) [1..map.width]
-                                    |> Debug.log "cells"
+
+                            -- |> Debug.log "cells"
                         in
                             List.map
                                 (\c ->

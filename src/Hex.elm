@@ -1,4 +1,4 @@
-module Hex exposing (Point, borderLeftCorner, center)
+module Hex exposing (Point, borderLeftCorner, center, cellCubicCoords)
 
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
 import Hexagons.Layout as HL exposing (Point, Layout)
@@ -74,3 +74,8 @@ sideIndex side =
 
         HH.SE ->
             6
+
+
+cellCubicCoords : Hex -> ( Int, Int, Int )
+cellCubicCoords hex =
+    ( HH.intQ hex, HH.intR hex, HH.intS hex )

@@ -21,6 +21,9 @@
   }
 }
 
+#edice-board > svg {
+  font-size: 10%;
+}
 
 /*#edice-board {
   background: url(http://www2.luventicus.org/mapas/espanacomunidades.gif);

@@ -5,7 +5,7 @@ import List exposing (..)
 import Random
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
 import Hexagons.Layout as HL exposing (offsetToHex, orientationLayoutPointy, Layout)
-import Hex exposing (Point, borderLeftCorner, center)
+import Hex exposing (Point, borderLeftCorner, center, cellCubicCoords)
 
 
 type alias Cells =
@@ -56,6 +56,16 @@ center layout cells =
 
         hd :: _ ->
             Hex.center layout hd
+
+
+cellCenter : Layout -> Hex -> Point
+cellCenter layout hex =
+    Hex.center layout hex
+
+
+cellCubicCoords : Hex -> ( Int, Int, Int )
+cellCubicCoords hex =
+    Hex.cellCubicCoords hex
 
 
 errorLand : Land
@@ -286,43 +296,43 @@ landBorders cells =
         _ ->
             case firstFreeBorder cells of
                 Nothing ->
-                    []
+                    Debug.crash "Set of cells must have some outer borders"
 
                 Just ( coord, side ) ->
-                    if False && length cells == 1 then
-                        [ ( coord, rightSide side ), ( coord, side ) ]
-                    else
-                        nextBorders cells coord ( coord, side ) side [ ( coord, side ) ]
+                    nextBorders cells coord ( coord, side ) side [ ( coord, side ) ]
 
 
 nextBorders : Cells -> Hex -> Border -> Direction -> List Border -> List Border
 nextBorders cells coord origin side accum =
-    let
-        tco : Cells -> Hex -> Border -> Direction -> List Border -> Int -> List Border
-        tco cells coord origin side accum fuse =
-            let
-                current =
-                    ( coord, side )
-            in
-                if (fst origin === coord) && snd origin == side && List.length accum > 1 then
-                    (current :: accum)
-                else if fuse == 0 then
-                    let
-                        _ =
-                            Debug.log "TCO exhausted"
-                                ( coord, side, origin, accum |> List.take 32, cells )
-                    in
-                        Debug.crash "TCO exhausted"
-                else
-                    case cellOnBorder coord side cells of
-                        Just c ->
-                            tco cells c origin (rightSide (oppositeSide side)) (accum) (fuse - 1)
+    nextBorders_ cells coord (Debug.log "origin" origin) side [] 100000
 
-                        Nothing ->
-                            tco cells coord origin (rightSide side) (current :: accum) (fuse - 1)
+
+
+-- |> List.reverse
+
+
+nextBorders_ : Cells -> Hex -> Border -> Direction -> List Border -> Int -> List Border
+nextBorders_ cells coord origin side accum fuse =
+    let
+        current =
+            ( coord, side )
     in
-        tco cells coord origin side [] 100000
-            |> List.reverse
+        if (fst origin === coord) && snd origin == side && List.length accum > 1 then
+            (current :: accum)
+        else if fuse == 0 then
+            let
+                _ =
+                    Debug.log "Recursion exhausted"
+                        ( coord, side, origin, accum |> List.take 32, cells )
+            in
+                Debug.crash "Recursion exhausted"
+        else
+            case cellOnBorder coord side cells of
+                Just c ->
+                    nextBorders_ cells c origin (rightSide (oppositeSide side)) (accum) (fuse - 1)
+
+                Nothing ->
+                    nextBorders_ cells coord origin (rightSide side) (current :: accum) (fuse - 1)
 
 
 rightSide : Direction -> Direction
@@ -347,6 +357,28 @@ rightSide side =
             HH.NW
 
 
+leftSide : Direction -> Direction
+leftSide side =
+    case side of
+        HH.NW ->
+            HH.W
+
+        HH.NE ->
+            HH.NW
+
+        HH.E ->
+            HH.NE
+
+        HH.SE ->
+            HH.E
+
+        HH.SW ->
+            HH.SE
+
+        HH.W ->
+            HH.SW
+
+
 oppositeSide : Direction -> Direction
 oppositeSide =
     rightSide >> rightSide >> rightSide
@@ -359,17 +391,22 @@ hasCell cells coord =
 
 firstFreeBorder : Cells -> Maybe Border
 firstFreeBorder cells =
-    case cells of
+    firstFreeBorder_ cells cells
+
+
+firstFreeBorder_ : Cells -> Cells -> Maybe Border
+firstFreeBorder_ accum cells =
+    case accum of
         [] ->
             Nothing
 
-        hd :: tl ->
+        hd :: tail ->
             case hasFreeBorder cells hd allSides of
                 Just a ->
                     Just ( hd, a )
 
                 Nothing ->
-                    firstFreeBorder tl
+                    firstFreeBorder_ tail cells
 
 
 hasFreeBorder : Cells -> Hex -> List Direction -> Maybe Direction
@@ -380,8 +417,6 @@ hasFreeBorder cells coord sides =
 
         hd :: tl ->
             if cellOnBorder coord hd cells |> isNothing then
-                Just hd
-            else if length sides == 1 then
                 Just hd
             else
                 hasFreeBorder cells coord tl
