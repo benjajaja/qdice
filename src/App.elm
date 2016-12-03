@@ -140,7 +140,10 @@ view model =
         , tabs = ( [], [] )
         , main = [ Html.div [ Html.Attributes.class "Main" ] [ mainView model ] ]
         }
-        |> Material.Scheme.top
+
+
+
+-- |> Material.Scheme.top
 
 
 header : List (Html.Html Msg)
@@ -163,8 +166,15 @@ header =
 
 drawer : Model -> List (Html.Html Msg)
 drawer model =
-    [ Material.Button.render Mdl [ 0 ] model.mdl [ Material.Button.onClick (NavigateTo "") ] [ Html.text "Play" ]
-    , Material.Button.render Mdl [ 0 ] model.mdl [ Material.Button.onClick (NavigateTo "editor") ] [ Html.text "Editor" ]
+    [ Layout.title [] [ Html.text "Elm Dice" ]
+    , Layout.navigation []
+        [ Layout.link
+            [ Layout.href "#/", Layout.onClick (Layout.toggleDrawer Mdl) ]
+            [ Html.text "Play" ]
+        , Layout.link
+            [ Layout.href "#/editor", Layout.onClick (Layout.toggleDrawer Mdl) ]
+            [ Html.text "Editor (experimental)" ]
+        ]
     ]
 
 

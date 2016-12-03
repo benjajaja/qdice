@@ -151,30 +151,35 @@ offsetCharRow row i =
 
 addSelectedLand : Model -> ( Model, Cmd Editor.Types.Msg )
 addSelectedLand model =
-    let
-        { board } =
-            model
+    case model.selectedLands of
+        [] ->
+            ( model, Cmd.none )
 
-        map =
-            board.map
+        _ ->
+            let
+                { board } =
+                    model
 
-        selectedCells =
-            List.map (\l -> l.hexagons) model.selectedLands
-                |> List.concat
+                map =
+                    board.map
 
-        filterSelection lands =
-            List.filter (\l -> not <| containsAny l.hexagons selectedCells) lands
+                selectedCells =
+                    List.map (\l -> l.hexagons) model.selectedLands
+                        |> List.concat
 
-        newLand =
-            Land.Land selectedCells Land.Editor False
-    in
-        updateMap
-            { model | selectedLands = [] }
-            (RandomLandColor
-                newLand
-                |> Land.randomPlayerColor
-            )
-            { map | lands = newLand :: (filterSelection map.lands) }
+                filterSelection lands =
+                    List.filter (\l -> not <| containsAny l.hexagons selectedCells) lands
+
+                newLand =
+                    Land.Land selectedCells Land.Editor False
+            in
+                updateMap
+                    { model | selectedLands = [] }
+                    (RandomLandColor
+                        newLand
+                        |> Land.randomPlayerColor
+                    )
+                    { map | lands = newLand :: (filterSelection map.lands) }
 
 
 updateMap : Model -> Cmd Editor.Types.Msg -> Land.Map -> ( Model, Cmd Editor.Types.Msg )

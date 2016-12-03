@@ -4,7 +4,7 @@
   "description": "eDice - Elm dice game",
   "main": "index.js",
   "scripts": {
-    "build": "webpack",
+    "build": "rm -rf dist/* ; webpack",
     "watch": "webpack --watch",
     "start": "webpack-dev-server --port 3000"
   },
@@ -31,6 +31,7 @@
     "materialize-css": "0.97.7",
     "muicss": "0.9.1",
     "postcss-loader": "^1.1.1",
+    "postcss-partial-import": "^2.1.0",
     "precss": "^1.4.0",
     "style-loader": "0.13.1",
     "webpack": "1.13.2",
