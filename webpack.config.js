@@ -58,6 +58,7 @@ module.exports = {
   },
 
   devServer: {
+    port: 5000,
     inline: true,
     stats: 'errors-only',
     contentBase: './html'
