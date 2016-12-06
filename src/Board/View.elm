@@ -87,7 +87,7 @@ landSvg layout land =
             , strokeLinejoin "round"
             , strokeWidth (2 |> toString)
             , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
-            , landPath layout land.hexagons |> landPointsString |> points
+            , landPath layout land.cells |> landPointsString |> points
             , onClick (ClickLand land)
             , onMouseOver (HoverLand land)
             , onMouseOut (UnHoverLand land)

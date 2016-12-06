@@ -17,7 +17,7 @@ type alias Point =
 
 
 type alias Land =
-    { hexagons : Cells
+    { cells : Cells
     , color : Color
     , selected : Bool
     }
@@ -98,7 +98,7 @@ fullCellMap w h color =
             (\r ->
                 List.map
                     (\c ->
-                        { hexagons = [ offsetToHex ( c, r ) ]
+                        { cells = [ offsetToHex ( c, r ) ]
                         , color = color
                         , selected = False
                         }
@@ -193,7 +193,7 @@ at lands coord =
 
         cb : Hex -> Land -> Bool
         cb hex land =
-            any (\h -> h === hex) land.hexagons
+            any (\h -> h === hex) land.cells
 
         index =
             indexOf lands (cb hex)
@@ -208,7 +208,7 @@ concat map =
     let
         hexes : Cells
         hexes =
-            List.map (\l -> l.hexagons) map.lands |> List.concat
+            List.map (\l -> l.cells) map.lands |> List.concat
     in
         case head hexes of
             Nothing ->

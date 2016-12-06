@@ -23,7 +23,7 @@ init : ( Model, Cmd Editor.Types.Msg )
 init =
     let
         ( board, cmd ) =
-            Board.init 35 35
+            Board.init (Land.fullCellMap 30 30 Land.Editor)
     in
         ( (Model Material.model board [] [ [] ])
         , Cmd.map BoardMsg cmd
@@ -162,11 +162,11 @@ addSelectedLand model =
                     board.map
 
                 selectedCells =
-                    List.map (\l -> l.hexagons) model.selectedLands
+                    List.map (\l -> l.cells) model.selectedLands
                         |> List.concat
 
                 filterSelection lands =
-                    List.filter (\l -> not <| containsAny l.hexagons selectedCells) lands
+                    List.filter (\l -> not <| containsAny l.cells selectedCells) lands
 
                 newLand =
                     Land.Land selectedCells Land.Editor False

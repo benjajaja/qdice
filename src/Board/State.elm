@@ -7,9 +7,9 @@ import Board.View exposing (widthElementId)
 import Land
 
 
-init : Int -> Int -> ( Model, Cmd Msg )
-init width height =
-    ( Model 850 (Land.fullCellMap width height Land.Editor)
+init : Land.Map -> ( Model, Cmd Msg )
+init map =
+    ( Model 850 map
     , Task.perform (\a -> Debug.log "?" a) sizeToMsg Window.size
     )
 
