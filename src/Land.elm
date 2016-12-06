@@ -12,10 +12,20 @@ type alias Cells =
     List Hex
 
 
+type alias Point =
+    Hex.Point
+
+
 type alias Land =
     { hexagons : Cells
     , color : Color
     , selected : Bool
+    }
+
+
+type alias Layout =
+    { size : ( Float, Float )
+    , padding : Float
     }
 
 
@@ -45,10 +55,18 @@ type Color
 
 landPath : Layout -> Cells -> List Point
 landPath layout cells =
-    landBorders cells |> List.map (uncurry <| borderLeftCorner layout)
+    landBorders cells |> List.map (uncurry <| borderLeftCorner <| myLayout layout)
 
 
-center : Layout -> Cells -> Point
+myLayout : Layout -> HL.Layout
+myLayout { size, padding } =
+    { orientation = orientationLayoutPointy
+    , size = size
+    , origin = ( padding / 2, -(snd size) / 2 + padding / 2 )
+    }
+
+
+center : HL.Layout -> Cells -> Point
 center layout cells =
     case cells of
         [] ->
@@ -58,7 +76,7 @@ center layout cells =
             Hex.center layout hd
 
 
-cellCenter : Layout -> Hex -> Point
+cellCenter : HL.Layout -> Hex -> Point
 cellCenter layout hex =
     Hex.center layout hex
 

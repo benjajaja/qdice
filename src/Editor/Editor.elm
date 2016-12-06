@@ -83,7 +83,6 @@ view model =
         board =
             Board.view model.editor.board
                 |> Html.App.map BoardMsg
-                |> Html.App.map Types.EditorMsg
     in
         Html.div []
             [ Html.div [] [ Html.text "Editor mode" ]
@@ -98,10 +97,9 @@ view model =
                 , Button.onClick ClickAdd
                 ]
                 [ Icon.i "add" ]
-                |> Html.App.map Types.EditorMsg
             , Html.pre [ Html.Attributes.id "emoji-map", Html.Events.onClick <| ClickOutput "emoji-map" ] (renderSave model.editor.mapSave)
-                |> Html.App.map Types.EditorMsg
             ]
+            |> Html.App.map Types.EditorMsg
 
 
 subscriptions : Model -> Sub Editor.Types.Msg

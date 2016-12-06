@@ -1,15 +1,14 @@
 port module Edice exposing (..)
 
 import Types exposing (Msg(..), Model, Route(..))
+import Game.State
+import Game.View
 import Editor.Editor as Editor
 import Html
 import Html.Attributes
-import Html.App as App
 import Material
-import Material.Scheme
 import Material.Layout as Layout
 import Material.Icon as Icon
-import Material.Button
 import Navigation
 import UrlParser exposing ((</>))
 import Hop
@@ -61,11 +60,14 @@ main =
 init : ( Route, Address ) -> ( Model, Cmd Msg )
 init ( route, address ) =
     let
+        ( game, _ ) =
+            Game.State.init
+
         ( editor, _ ) =
             Editor.init
 
         model =
-            Model address route Material.model editor
+            Model address route Material.model game editor
 
         cmd =
             urlUpdate ( route, address ) model |> snd
@@ -78,6 +80,13 @@ init ( route, address ) =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GameMsg msg ->
+            let
+                ( model, gameCmd ) =
+                    Game.State.update msg model
+            in
+                ( model, Cmd.map GameMsg gameCmd )
+
         EditorMsg msg ->
             let
                 ( editor, editorCmd ) =
@@ -182,12 +191,11 @@ mainView : Model -> Html.Html Msg
 mainView model =
     case model.route of
         GameRoute ->
-            Html.div [] [ Html.text "Game!" ]
+            Game.View.view model
 
         EditorRoute ->
             Editor.view model
 
-        -- App.map Board (Board.view model.board)
         NotFoundRoute ->
             Html.text "404"
 
