@@ -1,5 +1,6 @@
 module Board.View exposing (view, widthElementId)
 
+import String
 import Board.Types exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -10,7 +11,7 @@ import Color.Manipulate exposing (..)
 import Html
 import Html.Attributes
 import Board.Types exposing (Msg, Model)
-import Land exposing (Land, Map, Point, landPath, center, cellCenter)
+import Land exposing (Land, Map, Point, landPath, cellCenter)
 
 
 widthElementId : String
@@ -80,20 +81,23 @@ board w map =
 
 landSvg : Land.Layout -> Land.Land -> Svg Msg
 landSvg layout land =
-    g []
-        [ polygon
+    g
+        [ onClick (ClickLand land)
+        , onMouseOver (HoverLand land)
+        , onMouseOut (UnHoverLand land)
+        ]
+        ((polygon
             [ fill <| landColor land
             , stroke "black"
             , strokeLinejoin "round"
-            , strokeWidth (2 |> toString)
+            , strokeWidth (1 |> toString)
             , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
             , landPath layout land.cells |> landPointsString |> points
-            , onClick (ClickLand land)
-            , onMouseOver (HoverLand land)
-            , onMouseOut (UnHoverLand land)
             ]
             []
-        ]
+         )
+            :: (landText layout land)
+        )
 
 
 landPointsString : List Point -> String
@@ -109,6 +113,25 @@ addPointToString point path =
 pointToString : Point -> String
 pointToString ( x, y ) =
     (x |> toString) ++ "," ++ (y |> toString)
+
+
+landText : Land.Layout -> Land.Land -> List (Svg Msg)
+landText layout land =
+    List.map
+        (\c ->
+            let
+                ( cx, cy ) =
+                    cellCenter layout c
+            in
+                Svg.text'
+                    [ x <| toString cx
+                    , y <| toString cy
+                    , textAnchor "middle"
+                    , alignmentBaseline "central"
+                    ]
+                    [ Html.text land.emoji ]
+        )
+        land.cells
 
 
 landColor : Land -> String

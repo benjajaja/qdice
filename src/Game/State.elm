@@ -13,13 +13,16 @@ import Land
 init : ( Game.Types.Model, Cmd Game.Types.Msg )
 init =
     let
+        ( map, mapCmd ) =
+            Maps.loadDefault
+
         ( board, cmd ) =
-            Board.init Maps.loadDefault
+            Board.init map
 
         -- (Land.fullCellMap 30 30 Land.Neutral)
     in
         ( (Game.Types.Model board)
-        , Cmd.map BoardMsg cmd
+        , Cmd.batch [ Cmd.map BoardMsg cmd, mapCmd ]
         )
 
 

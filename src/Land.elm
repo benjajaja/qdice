@@ -19,6 +19,7 @@ type alias Point =
 type alias Land =
     { cells : Cells
     , color : Color
+    , emoji : String
     , selected : Bool
     }
 
@@ -53,6 +54,11 @@ type Color
     | EditorSelected
 
 
+emptyEmoji : String
+emptyEmoji =
+    "\x3000"
+
+
 landPath : Layout -> Cells -> List Point
 landPath layout cells =
     landBorders cells |> List.map (uncurry <| borderLeftCorner <| myLayout layout)
@@ -76,9 +82,9 @@ center layout cells =
             Hex.center layout hd
 
 
-cellCenter : HL.Layout -> Hex -> Point
+cellCenter : Layout -> Hex -> Point
 cellCenter layout hex =
-    Hex.center layout hex
+    Hex.center (myLayout layout) hex
 
 
 cellCubicCoords : Hex -> ( Int, Int, Int )
@@ -88,7 +94,7 @@ cellCubicCoords hex =
 
 errorLand : Land
 errorLand =
-    Land [ offsetToHex ( 0, 0 ) ] Editor False
+    Land [ offsetToHex ( 0, 0 ) ] Editor emptyEmoji False
 
 
 fullCellMap : Int -> Int -> Color -> Map
@@ -100,6 +106,7 @@ fullCellMap w h color =
                     (\c ->
                         { cells = [ offsetToHex ( c, r ) ]
                         , color = color
+                        , emoji = emptyEmoji
                         , selected = False
                         }
                     )
@@ -210,12 +217,12 @@ concat map =
         hexes =
             List.map (\l -> l.cells) map.lands |> List.concat
     in
-        case head hexes of
-            Nothing ->
-                Land [] Neutral False
+        case hexes of
+            [] ->
+                Land [] Neutral emptyEmoji False
 
-            Just hd ->
-                Land hexes Neutral False
+            _ ->
+                Land hexes Neutral emptyEmoji False
 
 
 {-| set one color to neutral
@@ -322,7 +329,7 @@ landBorders cells =
 
 nextBorders : Cells -> Hex -> Border -> Direction -> List Border -> List Border
 nextBorders cells coord origin side accum =
-    nextBorders_ cells coord (Debug.log "origin" origin) side [] 100000
+    nextBorders_ cells coord origin side [] 100000
 
 
 

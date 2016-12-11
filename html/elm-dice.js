@@ -21,6 +21,10 @@ app.ports.selectAll.subscribe(function(id) {
   selection.addRange(range);
 });
 
+app.ports.consoleDebug.subscribe(function(string) {
+  console.debug(string);
+});
+
 global.edice = app;
 
 window.onerror = function(messageOrEvent, source, lineno, colno, error) {

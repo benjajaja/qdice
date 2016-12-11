@@ -3,7 +3,7 @@ port module Edice exposing (..)
 import Types exposing (Msg(..), Model, Route(..))
 import Game.State
 import Game.View
-import Editor.Editor as Editor
+import Editor.Editor
 import Html
 import Html.Attributes
 import Material
@@ -60,20 +60,25 @@ main =
 init : ( Route, Address ) -> ( Model, Cmd Msg )
 init ( route, address ) =
     let
-        ( game, _ ) =
+        ( game, gameCmd ) =
             Game.State.init
 
-        ( editor, _ ) =
-            Editor.init
+        ( editor, editorCmd ) =
+            Editor.Editor.init
 
         model =
             Model address route Material.model game editor
 
-        cmd =
-            urlUpdate ( route, address ) model |> snd
+        cmds =
+            Cmd.batch
+                [ urlUpdate ( route, address ) model |> snd
+                , hide "peekaboo"
+                , Cmd.map GameMsg gameCmd
+                , Cmd.map EditorMsg editorCmd
+                ]
     in
         ( model
-        , Cmd.batch [ hide "", cmd ]
+        , cmds
         )
 
 
@@ -90,7 +95,7 @@ update msg model =
         EditorMsg msg ->
             let
                 ( editor, editorCmd ) =
-                    Editor.update msg model.editor
+                    Editor.Editor.update msg model.editor
             in
                 ( { model | editor = editor }, Cmd.map EditorMsg editorCmd )
 
@@ -127,7 +132,7 @@ urlUpdate ( route, address ) model =
         cmd =
             case route of
                 EditorRoute ->
-                    snd Editor.init |> Cmd.map EditorMsg
+                    snd Editor.Editor.init |> Cmd.map EditorMsg
 
                 _ ->
                     Cmd.none
@@ -194,7 +199,7 @@ mainView model =
             Game.View.view model
 
         EditorRoute ->
-            Editor.view model
+            Editor.Editor.view model
 
         NotFoundRoute ->
             Html.text "404"
@@ -204,7 +209,7 @@ mainViewSubscriptions : Model -> Sub Msg
 mainViewSubscriptions model =
     case model.route of
         EditorRoute ->
-            Editor.subscriptions model.editor |> Sub.map EditorMsg
+            Editor.Editor.subscriptions model.editor |> Sub.map EditorMsg
 
         _ ->
             Sub.none

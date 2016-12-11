@@ -4,8 +4,6 @@ import Html
 import Html.App
 import Html.Attributes
 import Html.Events
-import Dict
-import String
 import Material
 import Material.Button as Button
 import Material.Icon as Icon
@@ -14,6 +12,7 @@ import Types
 import Board
 import Board.Types exposing (Msg(..))
 import Land
+import Maps
 
 
 port selectAll : String -> Cmd msg
@@ -23,7 +22,7 @@ init : ( Model, Cmd Editor.Types.Msg )
 init =
     let
         ( board, cmd ) =
-            Board.init (Land.fullCellMap 30 30 Land.Editor)
+            Board.init (Land.fullCellMap 20 20 Land.Editor)
     in
         ( (Model Material.model board [] [ [] ])
         , Cmd.map BoardMsg cmd
@@ -107,44 +106,32 @@ subscriptions model =
     Board.subscriptions model.board |> Sub.map BoardMsg
 
 
-renderSave : List (List Char) -> List (Html.Html Editor.Types.Msg)
+renderSave : List (List String) -> List (Html.Html Editor.Types.Msg)
 renderSave save =
     List.indexedMap
-        (\i ->
-            \row ->
-                Html.div [ Html.Attributes.style [ ( "position", "relative" ), ( "left", ((i % 2) * -10 |> toString) ++ "px" ) ] ]
-                    (List.map
-                        (\c ->
-                            Html.div
-                                [ Html.Attributes.style [ ( "display", "inline-block" ), ( "width", "20px" ) ]
-                                ]
-                                [ Html.text <| emojiCharToString c ]
+        (\row ->
+            \line ->
+                Html.div []
+                    (List.indexedMap
+                        (\col ->
+                            \char ->
+                                Html.div
+                                    [ Html.Attributes.style
+                                        [ ( "display", "inline-block" )
+                                        , ( "width"
+                                          , if row % 2 == 1 && col == 0 then
+                                                "10px"
+                                            else
+                                                "20px"
+                                          )
+                                        ]
+                                    ]
+                                    [ Html.text char ]
                         )
-                        (offsetCharRow row i)
+                        line
                     )
         )
         save
-
-
-emojiCharToString char =
-    case char of
-        ' ' ->
-            "  "
-
-        '\t' ->
-            " "
-
-        _ ->
-            String.fromChar char
-
-
-offsetCharRow row i =
-    case i % 2 of
-        1 ->
-            '\t' :: row
-
-        _ ->
-            row
 
 
 addSelectedLand : Model -> ( Model, Cmd Editor.Types.Msg )
@@ -169,7 +156,7 @@ addSelectedLand model =
                     List.filter (\l -> not <| containsAny l.cells selectedCells) lands
 
                 newLand =
-                    Land.Land selectedCells Land.Editor False
+                    Land.Land selectedCells Land.Editor "🍋" False
             in
                 updateMap
                     { model | selectedLands = [] }
@@ -188,123 +175,13 @@ updateMap model cmd map =
 
         newModel =
             { model | board = { board | map = map } }
+
+        debugCmd =
+            Maps.consoleLogMap map
     in
-        ( { newModel | mapSave = mapElm map }, cmd )
+        ( { newModel | mapSave = Maps.toCharList map }, Cmd.batch [ cmd, debugCmd ] )
 
 
 containsAny : List a -> List a -> Bool
 containsAny a b =
     List.any (\a -> List.member a b) a
-
-
-mapElm : Land.Map -> List (List Char)
-mapElm map =
-    let
-        lands =
-            List.filter (\l -> l.color /= Land.Editor) map.lands
-                |> List.reverse
-    in
-        case lands of
-            [] ->
-                [ [ ' ' ] ]
-
-            hd :: _ ->
-                List.map
-                    (\row ->
-                        let
-                            cells : List Int
-                            cells =
-                                List.map (\col -> Land.at lands ( col, row )) [1..map.width]
-
-                            -- |> Debug.log "cells"
-                        in
-                            List.map
-                                (\c ->
-                                    let
-                                        symbol =
-                                            indexSymbol c
-                                    in
-                                        symbol
-                                )
-                                cells
-                     -- |> List.map String.fromChar
-                     -- |> String.join ""
-                    )
-                    [1..map.height]
-
-
-
--- |> String.join "\n"
-
-
-symbolDict : Dict.Dict Int Char
-symbolDict =
-    List.indexedMap (,)
-        [ '💩'
-        , '🍋'
-        , '🔥'
-        , '😃'
-        , '🐙'
-        , '🐸'
-        , '☢'
-        , '😺'
-        , '🐵'
-        , '❤'
-        , '🚩'
-        , '🚬'
-        , '🚶'
-        , '💎'
-        , '⁉'
-        , '⌛'
-        , '☀'
-        , '☁'
-        , '☕'
-        , '🎩'
-        , '♨'
-        , '👙'
-        , '⚠'
-        , '⚡'
-        , '⚽'
-        , '⛄'
-        , '⭐'
-        , '🌙'
-        , '🌴'
-        , '🌵'
-        , '🍀'
-        , '💥'
-        , '🍒'
-        , '🍩'
-        , '🍷'
-        , '🍺'
-        , '🍏'
-        , '🎵'
-        , '🐟'
-        , '🐧'
-        , '🐰'
-        , '🍉'
-        , '👀'
-        , '👍'
-        , '👑'
-        , '👻'
-        , '💊'
-        , '💋'
-        , '💣'
-        , '💧'
-        , '💀'
-        , '🌎'
-        , '🐊'
-        , '✊'
-        , '⛔'
-        , '🍌'
-        ]
-        |> Dict.fromList
-
-
-indexSymbol : Int -> Char
-indexSymbol i =
-    case Dict.get i symbolDict of
-        Just c ->
-            c
-
-        Nothing ->
-            ' '

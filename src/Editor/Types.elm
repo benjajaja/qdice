@@ -17,5 +17,5 @@ type alias Model =
     { mdl : Material.Model
     , board : Board.Model
     , selectedLands : List Land
-    , mapSave : List (List Char)
+    , mapSave : List (List String)
     }
