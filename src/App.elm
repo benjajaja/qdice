@@ -164,7 +164,7 @@ header : List (Html.Html Msg)
 header =
     [ Layout.row
         []
-        [ Layout.title [] [ Html.text "elm-dice" ]
+        [ Layout.title [] [ Html.text "¡Qué Dice!" ]
         , Layout.spacer
         , Layout.navigation []
             [ Layout.link
