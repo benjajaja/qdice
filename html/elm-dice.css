@@ -34,6 +34,9 @@
 #edice-board svg > g {
   cursor: pointer;
 }
+#edice-board svg > g > text {
+  pointer-events: none;
+}
 
 /*#edice-board {
   background: url(http://www2.luventicus.org/mapas/espanacomunidades.gif);

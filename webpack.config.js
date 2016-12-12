@@ -1,4 +1,5 @@
 var fs = require('fs');
+var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
@@ -34,7 +35,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract('css-loader?importLoaders=1!postcss-loader'
+        loader: ExtractTextPlugin.extract('css-loader?importLoaders=1&minimize!postcss-loader'
         )
       }
     ],
@@ -44,7 +45,11 @@ module.exports = {
 
   plugins: [
     new ExtractTextPlugin('elm-dice.css', { allowChunks: true }),
-  ],
+  ].concat(process.env.NODE_ENV === 'production'
+    ? new webpack.optimize.UglifyJsPlugin({
+        compress: { warnings: false }
+      })
+    : []),
 
   postcss: function(webpack) {
     return [
@@ -53,7 +58,7 @@ module.exports = {
         addDependencyTo: webpack,
         prefix: '',
         extension: '',
-      })
+      }),
     ];
   },
 

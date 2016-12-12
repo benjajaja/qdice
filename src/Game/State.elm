@@ -18,8 +18,6 @@ init =
 
         ( board, cmd ) =
             Board.init map
-
-        -- (Land.fullCellMap 30 30 Land.Neutral)
     in
         ( (Game.Types.Model board)
         , Cmd.batch [ Cmd.map BoardMsg cmd, mapCmd ]
@@ -28,4 +26,18 @@ init =
 
 update : Msg -> Types.Model -> ( Types.Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        BoardMsg boardMsg ->
+            let
+                ( board, boardCmd ) =
+                    Board.update boardMsg model.game.board
+
+                game =
+                    { board = board }
+            in
+                ( { model | game = game }, Cmd.map BoardMsg boardCmd )
+
+
+
+-- _ ->
+--     ( model, Cmd.none )

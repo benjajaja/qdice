@@ -148,21 +148,17 @@ landColor map land color =
 
 highlight : Bool -> Map -> Land -> Map
 highlight highlight map land =
-    map
-
-
-
--- { map
---     | lands =
---         List.map
---             (\l ->
---                 if l == land then
---                     { l | selected = highlight }
---                 else
---                     { l | selected = False }
---             )
---             map.lands
--- }
+    { map
+        | lands =
+            List.map
+                (\l ->
+                    if l == land then
+                        { l | selected = highlight }
+                    else
+                        { l | selected = False }
+                )
+                map.lands
+    }
 
 
 append : Map -> Land -> Map

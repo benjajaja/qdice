@@ -4,6 +4,7 @@ import Game.Types exposing (Msg(..))
 import Game.Types
 import Html
 import Html.App
+import Material.Chip as Chip
 import Types exposing (Model, Msg)
 import Board
 
@@ -20,7 +21,10 @@ view model =
                 |> Html.App.map BoardMsg
     in
         Html.div []
-            [ Html.div [] [ Html.text "Game mode" ]
+            [ Chip.span []
+                [ Chip.content []
+                    [ Html.text "Game" ]
+                ]
             , board
             ]
             |> Html.App.map Types.GameMsg

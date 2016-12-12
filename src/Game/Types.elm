@@ -5,9 +5,10 @@ import Board
 import Land exposing (Land)
 
 
-type Msg
-    = Mdl (Material.Msg Msg)
-    | BoardMsg Board.Msg
+type
+    Msg
+    -- = Mdl (Material.Msg Msg)
+    = BoardMsg Board.Msg
 
 
 type alias Model =

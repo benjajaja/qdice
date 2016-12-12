@@ -25,12 +25,15 @@ update msg model =
                 ( model, queryWidth widthElementId )
 
             Resize width ->
-                ( Model (Debug.log "www" width) map, Cmd.none )
+                ( Model width map, Cmd.none )
 
             HoverLand land ->
                 let
                     map' =
                         Land.highlight True map land
+
+                    _ =
+                        Debug.log "hilite" land
                 in
                     if map' /= map then
                         ( { model | map = map' }, Cmd.none )
