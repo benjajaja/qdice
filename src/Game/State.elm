@@ -20,7 +20,10 @@ init =
             Board.init map
     in
         ( (Game.Types.Model board)
-        , Cmd.batch [ Cmd.map BoardMsg cmd, mapCmd ]
+        , Cmd.batch
+            [ Cmd.map BoardMsg cmd
+            , mapCmd
+            ]
         )
 
 

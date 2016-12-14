@@ -66,11 +66,23 @@ board w map =
                 , preserveAspectRatio "none"
                 ]
                 (List.concat
-                    [ List.map (landSvg layout) map.lands
+                    [ List.map (landElement layout) map.lands
                     , [ Svg.defs []
                             [ Svg.radialGradient [ id "editorGradient" ]
                                 [ Svg.stop [ offset "0.8", stopColor "gold" ] []
                                 , Svg.stop [ offset "0.9", stopColor (svgColor False Land.Neutral) ] []
+                                ]
+                            ]
+                      , Svg.defs []
+                            [ Svg.filter [ id "dropshadow", filterUnits "userSpaceOnUse", colorInterpolationFilters "sRGB" ]
+                                [ Svg.feComponentTransfer [ Html.Attributes.attribute "in" "SourceAlpha" ]
+                                    [ Svg.feFuncR [ Svg.Attributes.type' "discrete", tableValues "0" ] []
+                                    , Svg.feFuncG [ Svg.Attributes.type' "discrete", tableValues "0" ] []
+                                    , Svg.feFuncB [ Svg.Attributes.type' "discrete", tableValues "0" ] []
+                                    ]
+                                , Svg.feGaussianBlur [ stdDeviation "1" ] []
+                                , Svg.feOffset [ dx "0", dy "0", result "shadow" ] []
+                                , Svg.feComposite [ Html.Attributes.attribute "in" "SourceGraphic", in2 "shadow", operator "over" ] []
                                 ]
                             ]
                       ]
@@ -79,25 +91,30 @@ board w map =
             ]
 
 
-landSvg : Land.Layout -> Land.Land -> Svg Msg
-landSvg layout land =
+landElement : Land.Layout -> Land.Land -> Svg Msg
+landElement layout land =
     g
         [ onClick (ClickLand land)
         , onMouseOver (HoverLand land)
         , onMouseOut (UnHoverLand land)
         ]
         ((polygon
-            [ fill <| landColor land
-            , stroke "black"
-            , strokeLinejoin "round"
-            , strokeWidth (1 |> toString)
-            , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
-            , landPath layout land.cells |> landPointsString |> points
-            ]
+            (polygonAttrs layout land)
             []
          )
             :: (landText layout land)
         )
+
+
+polygonAttrs : Land.Layout -> Land.Land -> List (Svg.Attribute Msg)
+polygonAttrs layout land =
+    [ fill <| landColor land
+    , stroke "black"
+    , strokeLinejoin "round"
+    , strokeWidth (1 |> toString)
+    , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+    , landPath layout land.cells |> landPointsString |> points
+    ]
 
 
 landPointsString : List Point -> String

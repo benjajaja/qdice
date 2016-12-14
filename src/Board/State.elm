@@ -31,9 +31,6 @@ update msg model =
                 let
                     map' =
                         Land.highlight True map land
-
-                    _ =
-                        Debug.log "hilite" land
                 in
                     if map' /= map then
                         ( { model | map = map' }, Cmd.none )

@@ -82,10 +82,7 @@ loadDefault =
                        )
     in
         ( Land.Map lands width (List.length lines)
-        , Cmd.batch
-            [ cmd
-              -- , consoleDebug <| "raw map: " ++ Maps.Melchor.map
-            ]
+        , cmd
         )
 
 
