@@ -1,6 +1,7 @@
 port module Edice exposing (..)
 
-import Types exposing (Msg(..), Model, Route(..))
+import Task
+import Types exposing (Msg(..), Model, Route(..), GameRoute(..))
 import Game.State
 import Game.View
 import Editor.Editor
@@ -13,6 +14,8 @@ import Navigation
 import UrlParser exposing ((</>))
 import Hop
 import Hop.Types exposing (Config, Address, Query)
+import Backend
+import Tables exposing (Table(..))
 
 
 urlParser : Navigation.Parser ( Route, Address )
@@ -41,7 +44,7 @@ urlParser =
 hopConfig : Config
 hopConfig =
     { hash = True
-    , basePath = "edice"
+    , basePath = ""
     }
 
 
@@ -66,8 +69,14 @@ init ( route, address ) =
         ( editor, editorCmd ) =
             Editor.Editor.init
 
+        backend =
+            Backend.init
+
         model =
-            Model address route Material.model game editor
+            Model address route Material.model game editor backend Types.Anonymous
+
+        _ =
+            Debug.log "init" ( route, address )
 
         cmds =
             Cmd.batch
@@ -75,6 +84,7 @@ init ( route, address ) =
                 , hide "peekaboo"
                 , Cmd.map GameMsg gameCmd
                 , Cmd.map EditorMsg editorCmd
+                , Backend.connect
                 ]
     in
         ( model
@@ -99,6 +109,13 @@ update msg model =
             in
                 ( { model | editor = editor }, Cmd.map EditorMsg editorCmd )
 
+        BckMsg msg ->
+            let
+                ( model, bckCmd ) =
+                    Backend.update msg model
+            in
+                ( model, bckCmd )
+
         NavigateTo path ->
             let
                 command =
@@ -108,6 +125,9 @@ update msg model =
                         |> Navigation.newUrl
             in
                 ( model, command )
+
+        DrawerNavigateTo path ->
+            model ! msgsToCmds [ Layout.toggleDrawer Mdl, NavigateTo path ]
 
         SetQuery query ->
             let
@@ -124,6 +144,11 @@ update msg model =
 
         Mdl msg ->
             Material.update msg model
+
+
+msgsToCmds : List Msg -> List (Cmd Msg)
+msgsToCmds msgs =
+    List.map (\msg -> Task.perform (always msg) (always msg) (Task.succeed ())) msgs
 
 
 urlUpdate : ( Route, Address ) -> Model -> ( Model, Cmd Msg )
@@ -182,20 +207,24 @@ drawer : Model -> List (Html.Html Msg)
 drawer model =
     [ Layout.title [] [ Html.text "Elm Dice" ]
     , Layout.navigation []
-        [ Layout.link
-            [ Layout.href "#/", Layout.onClick (Layout.toggleDrawer Mdl) ]
-            [ Html.text "Play" ]
-        , Layout.link
-            [ Layout.href "#/editor", Layout.onClick (Layout.toggleDrawer Mdl) ]
-            [ Html.text "Editor (experimental)" ]
-        ]
+        (List.map
+            (\( label, path ) ->
+                Layout.link
+                    [ {- Layout.href <| "#" ++ path, -} Layout.onClick <| DrawerNavigateTo path ]
+                    [ Html.text label ]
+            )
+            [ ( "Play", "/" )
+            , ( "Editor (experimental)", "/editor" )
+            , ( "Table:Melchor (test)", "/Melchor" )
+            ]
+        )
     ]
 
 
 mainView : Model -> Html.Html Msg
 mainView model =
     case model.route of
-        GameRoute ->
+        GameRoutes gameRoute ->
             Game.View.view model
 
         EditorRoute ->
@@ -208,9 +237,8 @@ mainView model =
 mainViewSubscriptions : Model -> Sub Msg
 mainViewSubscriptions model =
     case model.route of
-        EditorRoute ->
-            Editor.Editor.subscriptions model.editor |> Sub.map EditorMsg
-
+        -- EditorRoute ->
+        --     Editor.Editor.subscriptions model.editor |> Sub.map EditorMsg
         _ ->
             Sub.none
 
@@ -219,15 +247,23 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
+        , Backend.subscriptions model
         ]
 
 
 routes : UrlParser.Parser (Route -> a) a
 routes =
     UrlParser.oneOf
-        [ UrlParser.format GameRoute (UrlParser.s "")
+        [ UrlParser.format GameRoutes (UrlParser.oneOf gameMatchers)
         , UrlParser.format EditorRoute (UrlParser.s "editor")
         ]
+
+
+gameMatchers : List (UrlParser.Parser (GameRoute -> a) a)
+gameMatchers =
+    [ UrlParser.format GameRoute (UrlParser.s "")
+    , UrlParser.format (GameTableRoute Melchor) (UrlParser.s "Melchor")
+    ]
 
 
 port hide : String -> Cmd msg

@@ -1,70 +1,36 @@
-port module Board.State exposing (init, update, subscriptions)
+port module Board.State exposing (init, update)
 
-import Window
-import Task
 import Board.Types exposing (..)
-import Board.View exposing (widthElementId)
 import Land
 
 
-init : Land.Map -> ( Model, Cmd Msg )
+init : Land.Map -> Model
 init map =
-    ( Model 850 map
-    , Task.perform (\a -> Debug.log "?" a) sizeToMsg Window.size
-    )
+    (Model map)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        { width, map } =
-            model
-    in
-        case msg of
-            WindowResize size ->
-                ( model, queryWidth widthElementId )
+    case msg of
+        HoverLand land ->
+            let
+                map =
+                    Land.highlight True model.map land
+            in
+                if map /= model.map then
+                    ( { model | map = map }, Cmd.none )
+                else
+                    ( model, Cmd.none )
 
-            Resize width ->
-                ( Model width map, Cmd.none )
+        UnHoverLand land ->
+            let
+                map =
+                    (Land.highlight False model.map land)
+            in
+                if map /= model.map then
+                    ( Model map, Cmd.none )
+                else
+                    ( model, Cmd.none )
 
-            HoverLand land ->
-                let
-                    map' =
-                        Land.highlight True map land
-                in
-                    if map' /= map then
-                        ( { model | map = map' }, Cmd.none )
-                    else
-                        ( model, Cmd.none )
-
-            UnHoverLand land ->
-                let
-                    map' =
-                        (Land.highlight False map land)
-                in
-                    if map' /= map then
-                        ( Model width map', Cmd.none )
-                    else
-                        ( model, Cmd.none )
-
-            _ ->
-                ( model, Cmd.none )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch
-        [ Window.resizes sizeToMsg
-        , width (\w -> (Resize w))
-        ]
-
-
-sizeToMsg : Window.Size -> Msg
-sizeToMsg size =
-    Debug.log "size" (WindowResize ( size.width, size.height ))
-
-
-port queryWidth : String -> Cmd msg
-
-
-port width : (Int -> msg) -> Sub msg
+        _ ->
+            ( model, Cmd.none )

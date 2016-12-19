@@ -1,16 +1,26 @@
 module Game.Types exposing (..)
 
-import Material
-import Board
-import Land exposing (Land)
+import Board exposing (Msg)
+import Land exposing (Color)
+import Tables exposing (Table)
 
 
-type
-    Msg
-    -- = Mdl (Material.Msg Msg)
+type Msg
     = BoardMsg Board.Msg
 
 
 type alias Model =
-    { board : Board.Model
+    { table : Table
+    , board : Board.Model
+    , players : List Player
     }
+
+
+type alias Player =
+    { name : PlayerName
+    , color : Color
+    }
+
+
+type alias PlayerName =
+    String

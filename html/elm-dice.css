@@ -9,7 +9,7 @@
 .Main {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 0 10px;
+  padding: 0 0;
 }
 
 
@@ -30,6 +30,7 @@
 
 #edice-board > svg {
   font-size: 10%;
+  overflow: visible;
 }
 #edice-board svg > g {
   cursor: pointer;

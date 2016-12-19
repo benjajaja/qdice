@@ -21,9 +21,5 @@ update =
     Board.State.update
 
 
-subscriptions =
-    Board.State.subscriptions
-
-
 view =
     Board.View.view

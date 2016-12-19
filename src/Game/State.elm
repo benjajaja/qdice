@@ -1,13 +1,11 @@
 module Game.State exposing (init, update)
 
-import Game.Types exposing (Model, Msg(..))
+import Game.Types exposing (..)
 import Types exposing (Model)
 import Board
-import Maps
-import Land
-
-
--- import Board.Types exposing (Msg(..))
+import Maps exposing (loadDefault)
+import Land exposing (Color)
+import Tables exposing (Table(..))
 
 
 init : ( Game.Types.Model, Cmd Game.Types.Msg )
@@ -16,31 +14,38 @@ init =
         ( map, mapCmd ) =
             Maps.loadDefault
 
-        ( board, cmd ) =
+        board =
             Board.init map
+
+        players =
+            [ mkPlayer "El Chaqueta", mkPlayer "El Chocolate", mkPlayer "Carmen Amaya", mkPlayer "Sabicas" ]
+
+        table =
+            Melchor
     in
-        ( (Game.Types.Model board)
-        , Cmd.batch
-            [ Cmd.map BoardMsg cmd
-            , mapCmd
-            ]
+        ( Game.Types.Model table board players
+        , mapCmd
         )
+
+
+mkPlayer : String -> Player
+mkPlayer name =
+    Player name Land.Neutral
 
 
 update : Msg -> Types.Model -> ( Types.Model, Cmd Msg )
 update msg model =
-    case msg of
-        BoardMsg boardMsg ->
-            let
-                ( board, boardCmd ) =
-                    Board.update boardMsg model.game.board
+    let
+        game =
+            model.game
+    in
+        case msg of
+            BoardMsg boardMsg ->
+                let
+                    ( board, boardCmd ) =
+                        Board.update boardMsg model.game.board
 
-                game =
-                    { board = board }
-            in
-                ( { model | game = game }, Cmd.map BoardMsg boardCmd )
-
-
-
--- _ ->
---     ( model, Cmd.none )
+                    game_ =
+                        { game | board = board }
+                in
+                    { model | game = game_ } ! [ Cmd.map BoardMsg boardCmd ]

@@ -63,10 +63,12 @@ module.exports = {
   },
 
   devServer: {
+    host: '0.0.0.0',
     port: 5000,
     inline: true,
     stats: 'errors-only',
-    contentBase: './html'
+    contentBase: './html',
+    historyApiFallback: true,
   }
 };
 

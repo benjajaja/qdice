@@ -21,12 +21,10 @@ port selectAll : String -> Cmd msg
 init : ( Model, Cmd Editor.Types.Msg )
 init =
     let
-        ( board, cmd ) =
+        board =
             Board.init (Land.fullCellMap 20 20 Land.Editor)
     in
-        ( (Model Material.model board [] [ [] ])
-        , Cmd.map BoardMsg cmd
-        )
+        ( (Model Material.model board [] [ [] ]), Cmd.none )
 
 
 update : Editor.Types.Msg -> Model -> ( Model, Cmd Editor.Types.Msg )
@@ -99,11 +97,6 @@ view model =
             , Html.pre [ Html.Attributes.id "emoji-map", Html.Events.onClick <| ClickOutput "emoji-map" ] (renderSave model.editor.mapSave)
             ]
             |> Html.App.map Types.EditorMsg
-
-
-subscriptions : Model -> Sub Editor.Types.Msg
-subscriptions model =
-    Board.subscriptions model.board |> Sub.map BoardMsg
 
 
 renderSave : List (List String) -> List (Html.Html Editor.Types.Msg)

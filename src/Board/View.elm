@@ -58,10 +58,10 @@ board w map =
             [ Svg.svg
                 [ width "100%"
                 , height "100%"
-                , Html.Attributes.style
-                    [ ( "padding", "2px" )
-                    , ( "box-sizing", "border-box" )
-                    ]
+                  -- , Html.Attributes.style
+                  --     [ ( "padding", "2px" )
+                  --     , ( "box-sizing", "border-box" )
+                  --     ]
                 , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
                 , preserveAspectRatio "none"
                 ]

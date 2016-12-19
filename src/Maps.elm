@@ -13,8 +13,12 @@ type alias EmojiLand =
     }
 
 
+type alias LineColRow =
+    ( Int, Int )
+
+
 type alias Line =
-    List ( ( Int, Int ), String )
+    List ( LineColRow, String )
 
 
 port consoleDebug : String -> Cmd msg
@@ -37,6 +41,7 @@ loadDefault =
             Maps.Melchor.map
                 |> String.lines
 
+        lines : List Line
         lines =
             raw
                 |> List.indexedMap charRow
@@ -44,28 +49,12 @@ loadDefault =
         widths : List Int
         widths =
             List.map
-                ((List.map (fst >> fst))
-                    >> List.maximum
-                )
+                ((List.map (\l -> fst l |> fst)) >> List.maximum)
                 lines
-                |> List.map
-                    (\l ->
-                        case l of
-                            Just a ->
-                                a
-
-                            Nothing ->
-                                0
-                    )
-                |> Debug.log "widths"
+                |> List.map (Maybe.withDefault 0)
 
         width =
-            case List.maximum widths of
-                Just w ->
-                    w
-
-                Nothing ->
-                    0
+            List.maximum widths |> Maybe.withDefault 0 |> Debug.log "max width"
 
         lands =
             List.map (List.filter (\t -> snd t /= Land.emptyEmoji && snd t /= "〿")) lines
