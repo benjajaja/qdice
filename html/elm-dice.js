@@ -1,5 +1,10 @@
 'use strict';
 
+window.onerror = function(messageOrEvent, source, lineno, colno, error) {
+  window.alert(messageOrEvent.toString());
+  return false; // let built in handler log it too
+};
+
 var Elm = require('../src/App');
 var mqtt = require('mqtt');
 
@@ -23,40 +28,40 @@ app.ports.consoleDebug.subscribe(function(string) {
 
 
 app.ports.mqttConnect.subscribe(function() {
-  var url = 'ws://' + window.location.hostname + ':8080'
-  var clientId = 'elm-dice_' + Math.random().toString(16).substr(2, 8);
-  var client = mqtt.connect(url, {
-    clientId: clientId,
-  });
-  client.on('connect', function (connack) {
-    app.ports.mqttOnConnect.send(clientId);
-  });
-
-  client.on('message', function (topic, message) {
-    app.ports.mqttOnMessage.send([topic, message.toString()]);
-  });
-
-  client.on('error', function (error) {
-    console.error('mqtt error:', error);
-  });
-
-  app.ports.mqttSubscribe.subscribe(function(args) {
-    client.subscribe(args, function(err, granted) {
-      if (err) throw err;
-      app.ports.mqttOnSubscribed.send(granted.shift().topic);
+  try {
+    var url = 'ws://' + window.location.hostname + ':8080'
+    var clientId = 'elm-dice_' + Math.random().toString(16).substr(2, 8);
+    var client = mqtt.connect(url, {
+      clientId: clientId,
     });
-  });
+    client.on('connect', function (connack) {
+      app.ports.mqttOnConnect.send(clientId);
+    });
 
-  app.ports.mqttPublish.subscribe(function(args) {
-    client.publish(args[0], args[1]);
-  });
+    client.on('message', function (topic, message) {
+      app.ports.mqttOnMessage.send([topic, message.toString()]);
+    });
+
+    client.on('error', function (error) {
+      console.error('mqtt error:', error);
+    });
+
+    app.ports.mqttSubscribe.subscribe(function(args) {
+      client.subscribe(args, function(err, granted) {
+        if (err) throw err;
+        app.ports.mqttOnSubscribed.send(granted.shift().topic);
+      });
+    });
+
+    app.ports.mqttPublish.subscribe(function(args) {
+      client.publish(args[0], args[1]);
+    });
+  } catch (e) {
+    console.error('MQTT connection error', e);
+  }
 });
 
 
 
 global.edice = app;
 
-window.onerror = function(messageOrEvent, source, lineno, colno, error) {
-  window.alert(messageOrEvent.toString());
-  return false; // let built in handler log it too
-}
