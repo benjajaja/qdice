@@ -43,7 +43,7 @@ urlParser =
 
 hopConfig : Config
 hopConfig =
-    { hash = True
+    { hash = False
     , basePath = ""
     }
 

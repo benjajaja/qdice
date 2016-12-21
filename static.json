@@ -1,4 +1,8 @@
 {
   "root": "dist",
-  "clean_urls": false
+  "clean_urls": false,
+  "routes": {
+    "/editor": "index.html",
+    "/Melchor": "index.html"
+  }
 }
