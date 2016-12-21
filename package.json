@@ -6,7 +6,8 @@
   "scripts": {
     "build": "rm -rf dist/* ; webpack",
     "watch": "webpack --watch",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "postinstall": "yarn build"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
   "dependencies": {
     "autoprefixer": "^6.5.3",
     "css-loader": "0.25.0",
+    "elm": "0.17",
     "elm-css-webpack-loader": "2.0.1",
     "elm-webpack-loader": "3.0.6",
     "extract-text-webpack-plugin": "^1.0.1",
