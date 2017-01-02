@@ -1,7 +1,9 @@
 'use strict';
 
 window.onerror = function(messageOrEvent, source, lineno, colno, error) {
-  window.alert(messageOrEvent.toString());
+  var element = document.createElement('div');
+  element.innerHTML = messageOrEvent.toString();
+  document.body.append(element);
   return false; // let built in handler log it too
 };
 
@@ -9,8 +11,13 @@ var Elm = require('../src/App');
 var mqtt = require('mqtt');
 
 var app = Elm.Edice.fullscreen();
+
 app.ports.hide.subscribe(function(msg) {
   document.getElementById('loading-indicator').remove();
+  window.onerror = function(messageOrEvent, source, lineno, colno, error) {
+    window.alert(messageOrEvent.toString());
+    return false; // let built in handler log it too
+  };
 });
 
 app.ports.selectAll.subscribe(function(id) {
@@ -44,6 +51,18 @@ app.ports.mqttConnect.subscribe(function() {
 
     client.on('error', function (error) {
       console.error('mqtt error:', error);
+    });
+
+    client.on('reconnect', function (error) {
+      console.error('mqtt reconnect:', error);
+    });
+
+    client.on('close', function (error) {
+      console.error('mqtt close:', error);
+    });
+
+    client.on('offline', function (error) {
+      console.error('mqtt offline:', error);
     });
 
     app.ports.mqttSubscribe.subscribe(function(args) {

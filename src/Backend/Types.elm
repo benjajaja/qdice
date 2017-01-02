@@ -6,7 +6,10 @@ import Tables exposing (Table(..))
 type Msg
     = Connect ClientId
     | Subscribed Topic
-    | Message Topic Command
+    | ClientMsg ClientMessage
+    | AllClientsMsg AllClientsMessage
+    | TableMsg Table TableMessage
+    | UnknownTopicMessage String String String
 
 
 type alias Model =
@@ -25,6 +28,17 @@ type Topic
     | Tables Table
 
 
-type Command
+type ClientMessage
+    = None
+
+
+type AllClientsMessage
     = PresentYourself
-    | Join
+
+
+type TableMessage
+    = Join User
+
+
+type alias User =
+    String

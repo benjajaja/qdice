@@ -1,7 +1,7 @@
 port module Edice exposing (..)
 
 import Task
-import Types exposing (Msg(..), Model, Route(..), GameRoute(..))
+import Types exposing (..)
 import Game.State
 import Game.View
 import Editor.Editor
@@ -174,7 +174,7 @@ view model =
     Layout.render Mdl
         model.mdl
         [ Layout.fixedHeader, Layout.scrolling ]
-        { header = header
+        { header = header model
         , drawer = drawer model
         , tabs = ( [], [] )
         , main = [ Html.div [ Html.Attributes.class "Main" ] [ mainView model ] ]
@@ -185,8 +185,8 @@ view model =
 -- |> Material.Scheme.top
 
 
-header : List (Html.Html Msg)
-header =
+header : Model -> List (Html.Html Msg)
+header model =
     [ Layout.row
         []
         [ Layout.title [] [ Html.text "¡Qué Dice!" ]
@@ -194,7 +194,15 @@ header =
         , Layout.navigation []
             [ Layout.link
                 [ Layout.href "javascript:window.location.reload()" ]
-                [ Icon.i "refresh" ]
+                [ Html.text <|
+                    case model.user of
+                        Logged user ->
+                            user.name
+
+                        Anonymous ->
+                            "Anon"
+                , Icon.i "profile"
+                ]
               -- , Layout.link
               --     [ Layout.href "http://package.elm-lang.org/packages/debois/elm-mdl/latest/" ]
               --     [ Html.text "elm-package" ]

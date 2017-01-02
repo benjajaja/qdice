@@ -23,7 +23,7 @@ init =
         table =
             Melchor
     in
-        ( Game.Types.Model table board players
+        ( Game.Types.Model table board players Paused
         , mapCmd
         )
 

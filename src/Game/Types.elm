@@ -9,10 +9,17 @@ type Msg
     = BoardMsg Board.Msg
 
 
+type GameStatus
+    = Paused
+    | Playing
+    | Finished
+
+
 type alias Model =
     { table : Table
     , board : Board.Model
     , players : List Player
+    , status : GameStatus
     }
 
 

@@ -4,7 +4,7 @@ import Json.Encode exposing (..)
 import String
 import Backend.Types exposing (..)
 import Types
-import Tables exposing (Table(..))
+import Tables exposing (Table(..), decodeTable)
 
 
 connect : Cmd msg
@@ -22,6 +22,13 @@ init =
 update : Msg -> Types.Model -> ( Types.Model, Cmd Types.Msg )
 update msg model =
     case Debug.log "Backend Msg" msg of
+        UnknownTopicMessage error topic message ->
+            let
+                _ =
+                    Debug.log ("Error in message: \"" ++ error ++ "\"") ( topic, message )
+            in
+                model ! []
+
         Connect clientId ->
             let
                 backend =
@@ -43,13 +50,13 @@ update msg model =
                     topic :: backend.subscribed
             in
                 ( { model | backend = { backend | subscribed = subscribed } }
-                , if subscribed == [ Client, AllClients ] then
+                , if hasDuplexSubscribed topic subscribed then
                     let
                         tableTopic =
                             "tables/" ++ toString model.game.table
                     in
                         Cmd.batch
-                            [ mqttPublish ( "presence", encode 0 (object [ ( "id", string model.backend.clientId ), ( "status", string "connected" ) ]) )
+                            [ mqttPublish ( "presence", "connected" )
                             , mqttSubscribe tableTopic
                             ]
                   else
@@ -61,97 +68,98 @@ update msg model =
                             Cmd.none
                 )
 
-        Message topic command ->
-            case topic of
-                AllClients ->
-                    case command of
-                        PresentYourself ->
-                            ( model, mqttPublish ( "presence", encode 0 (object [ ( "id", string model.backend.clientId ), ( "status", string "connected" ) ]) ) )
+        ClientMsg msg ->
+            model ! []
 
-                        _ ->
-                            ( model, Cmd.none )
+        AllClientsMsg msg ->
+            model ! []
 
-                Client ->
-                    ( model, Cmd.none )
-
-                Tables table ->
-                    case command of
-                        Join ->
-                            let
-                                _ =
-                                    Debug.log "someone joined"
-                            in
-                                ( model, Cmd.none )
-
-                        _ ->
-                            ( model, Cmd.none )
+        TableMsg table msg ->
+            let
+                _ =
+                    case msg of
+                        Join user ->
+                            Debug.log "joined" user
+            in
+                model ! []
 
 
 subscriptions : Types.Model -> Sub Types.Msg
 subscriptions model =
     Sub.batch
         [ mqttOnConnect (Connect >> Types.BckMsg)
-        , mqttOnSubscribed (decodeTopic model.backend.clientId >> Subscribed >> Types.BckMsg)
+        , mqttOnSubscribed (decodeSubscribed model.backend.clientId >> Types.BckMsg)
         , mqttOnMessage (decodeMessage model.backend.clientId >> Types.BckMsg)
         ]
 
 
+decodeSubscribed : ClientId -> String -> Msg
+decodeSubscribed clientId stringTopic =
+    case decodeTopic clientId stringTopic of
+        Just topic ->
+            Subscribed topic
+
+        Nothing ->
+            UnknownTopicMessage "unknown topic" stringTopic "*subscribed"
+
+
 decodeMessage : ClientId -> ( String, String ) -> Msg
 decodeMessage clientId ( stringTopic, message ) =
-    let
-        topic =
-            (decodeTopic clientId stringTopic)
-    in
-        case topic of
-            Client ->
-                crashUnknownMessage stringTopic message
+    case decodeTopic clientId stringTopic of
+        Just topic ->
+            case decodeTopicMessage topic message of
+                Just msg ->
+                    msg
 
-            AllClients ->
-                case message of
-                    "present" ->
-                        Message topic PresentYourself
+                Nothing ->
+                    UnknownTopicMessage "unrecognized message" stringTopic message
 
-                    _ ->
-                        crashUnknownMessage stringTopic message
-
-            Tables table ->
-                case message of
-                    "join" ->
-                        Message topic Join
-
-                    _ ->
-                        crashUnknownMessage stringTopic message
+        Nothing ->
+            UnknownTopicMessage "unrecognized topic" stringTopic message
 
 
-crashUnknownMessage : String -> String -> Msg
-crashUnknownMessage topic message =
-    Debug.crash <| "unknown message in topic \"" ++ topic ++ "\": " ++ message
+decodeTopicMessage topic message =
+    case topic of
+        Client ->
+            Nothing
+
+        AllClients ->
+            case message of
+                "present" ->
+                    Just <| AllClientsMsg PresentYourself
+
+                _ ->
+                    Nothing
+
+        Tables table ->
+            Just <| TableMsg Melchor <| Join "somebody"
 
 
-decodeTopic : ClientId -> String -> Topic
+decodeTopic : ClientId -> String -> Maybe Topic
 decodeTopic clientId string =
     if string == "client_" ++ clientId then
-        Client
+        Just Client
     else
         case string of
             "clients" ->
-                AllClients
+                Just AllClients
 
             _ ->
                 if String.startsWith "tables/" string then
-                    Tables <| decodeTable <| String.dropLeft (String.length "tables/") string
+                    Just <| Tables <| decodeTable <| String.dropLeft (String.length "tables/") string
                 else
-                    Debug.crash <| "Unknown topic: " ++ string
+                    let
+                        _ =
+                            Debug.log "Cannot decode topic" string
+                    in
+                        Nothing
 
 
-decodeTable : String -> Table
-decodeTable name =
-    case name of
-        "Melchor" ->
-            Melchor
-
-        _ ->
-            Debug.crash <| "unknown table: " ++ name
+hasDuplexSubscribed : Topic -> List Topic -> Bool
+hasDuplexSubscribed topic subscribed =
+    (topic == Client || topic == AllClients)
+        && subscribed
+        == [ Client, AllClients ]
 
 
 port mqttConnect : String -> Cmd msg
