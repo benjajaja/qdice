@@ -16,6 +16,7 @@ init : Model
 init =
     { clientId = ""
     , subscribed = []
+    , status = Offline
     }
 
 
@@ -29,7 +30,16 @@ update msg model =
             in
                 model ! []
 
-        Connect clientId ->
+        StatusConnect _ ->
+            (setStatus Connecting model) ! []
+
+        StatusReconnect attemptCount ->
+            (setStatus (Reconnecting attemptCount) model) ! []
+
+        StatusOffline _ ->
+            (setStatus Offline model) ! []
+
+        Connected clientId ->
             let
                 backend =
                     model.backend
@@ -87,7 +97,9 @@ update msg model =
 subscriptions : Types.Model -> Sub Types.Msg
 subscriptions model =
     Sub.batch
-        [ mqttOnConnect (Connect >> Types.BckMsg)
+        [ mqttOnConnect (StatusConnect >> Types.BckMsg)
+        , mqttOnReconnect (StatusReconnect >> Types.BckMsg)
+        , mqttOnConnected (Connected >> Types.BckMsg)
         , mqttOnSubscribed (decodeSubscribed model.backend.clientId >> Types.BckMsg)
         , mqttOnMessage (decodeMessage model.backend.clientId >> Types.BckMsg)
         ]
@@ -118,6 +130,7 @@ decodeMessage clientId ( stringTopic, message ) =
             UnknownTopicMessage "unrecognized topic" stringTopic message
 
 
+decodeTopicMessage : Topic -> String -> Maybe Msg
 decodeTopicMessage topic message =
     case topic of
         Client ->
@@ -155,6 +168,15 @@ decodeTopic clientId string =
                         Nothing
 
 
+setStatus : ConnectionStatus -> Types.Model -> Types.Model
+setStatus status model =
+    let
+        backend =
+            model.backend
+    in
+        { model | backend = { backend | status = status } }
+
+
 hasDuplexSubscribed : Topic -> List Topic -> Bool
 hasDuplexSubscribed topic subscribed =
     (topic == Client || topic == AllClients)
@@ -172,6 +194,15 @@ port mqttSubscribe : String -> Cmd msg
 
 
 port mqttOnConnect : (String -> msg) -> Sub msg
+
+
+port mqttOnReconnect : (String -> msg) -> Sub msg
+
+
+port mqttOnOffline : (String -> msg) -> Sub msg
+
+
+port mqttOnConnected : (String -> msg) -> Sub msg
 
 
 port mqttOnSubscribed : (String -> msg) -> Sub msg

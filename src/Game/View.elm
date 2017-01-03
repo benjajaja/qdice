@@ -8,8 +8,10 @@ import Material
 import Material.Chip as Chip
 import Material.Button as Button
 import Material.Icon as Icon
+import Material.Footer as Footer
 import Types exposing (Model, Msg)
 import Board
+import Backend.Types exposing (ConnectionStatus(..))
 
 
 -- import Board.Types exposing (Msg(..))
@@ -32,6 +34,7 @@ view model =
                     :: (playButtons model.mdl)
                 )
             , board |> Html.App.map Types.GameMsg
+            , footer model
             ]
 
 
@@ -56,3 +59,47 @@ playButtons mdl =
         ]
         [ Icon.i "remove" ]
     ]
+
+
+footer : Model -> Html.Html Types.Msg
+footer model =
+    Footer.mini []
+        { left =
+            Footer.left [] (statusMessage model.backend.status)
+        , right = Footer.right [] []
+        }
+
+
+statusMessage : ConnectionStatus -> List (Footer.Content Types.Msg)
+statusMessage status =
+    let
+        message =
+            case status of
+                Reconnecting attempts ->
+                    case attempts of
+                        "1" ->
+                            "Reconnecting..."
+
+                        count ->
+                            "Reconnecting... (" ++ attempts ++ " retries)"
+
+                _ ->
+                    toString status
+
+        icon =
+            case status of
+                Offline ->
+                    "signal_wifi_off"
+
+                Connecting ->
+                    "wifi"
+
+                Reconnecting _ ->
+                    "wifi_lock"
+
+                Online ->
+                    "network_wifi"
+    in
+        [ Footer.html <| Icon.i icon
+        , Footer.html <| Html.text message
+        ]

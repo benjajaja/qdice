@@ -4,7 +4,10 @@ import Tables exposing (Table(..))
 
 
 type Msg
-    = Connect ClientId
+    = Connected ClientId
+    | StatusConnect String
+    | StatusReconnect String
+    | StatusOffline String
     | Subscribed Topic
     | ClientMsg ClientMessage
     | AllClientsMsg AllClientsMessage
@@ -15,6 +18,7 @@ type Msg
 type alias Model =
     { clientId : ClientId
     , subscribed : List Topic
+    , status : ConnectionStatus
     }
 
 
@@ -26,6 +30,13 @@ type Topic
     = Client
     | AllClients
     | Tables Table
+
+
+type ConnectionStatus
+    = Offline
+    | Connecting
+    | Reconnecting String
+    | Online
 
 
 type ClientMessage

@@ -41,8 +41,14 @@ app.ports.mqttConnect.subscribe(function() {
     var client = mqtt.connect(url, {
       clientId: clientId,
     });
+
+    var connectionAttempts = 0;
+
+    app.ports.mqttOnConnect.send(connectionAttempts.toString());
+
     client.on('connect', function (connack) {
-      app.ports.mqttOnConnect.send(clientId);
+      app.ports.mqttOnConnected.send(clientId);
+      connectionAttempts = 0;
     });
 
     client.on('message', function (topic, message) {
@@ -53,16 +59,17 @@ app.ports.mqttConnect.subscribe(function() {
       console.error('mqtt error:', error);
     });
 
-    client.on('reconnect', function (error) {
-      console.error('mqtt reconnect:', error);
+    client.on('reconnect', function () {
+      connectionAttempts = connectionAttempts + 1;
+      app.ports.mqttOnReconnect.send(connectionAttempts.toString());
     });
 
-    client.on('close', function (error) {
-      console.error('mqtt close:', error);
-    });
+    // client.on('close', function (event) {
+    //   console.error('mqtt close:', event);
+    // });
 
-    client.on('offline', function (error) {
-      console.error('mqtt offline:', error);
+    client.on('offline', function () {
+      app.ports.mqttOnOffline.send(connectionAttempts.toString());
     });
 
     app.ports.mqttSubscribe.subscribe(function(args) {
