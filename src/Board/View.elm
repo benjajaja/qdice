@@ -10,6 +10,7 @@ import Color.Convert exposing (..)
 import Color.Manipulate exposing (..)
 import Html
 import Html.Attributes
+import Html.Lazy
 import Board.Types exposing (Msg, Model)
 import Land exposing (Land, Map, Point, landPath, cellCenter)
 
@@ -53,6 +54,9 @@ board w map =
 
         layout =
             Land.Layout ( cellWidth / sqrt (3), cellWidth * heightScale / 2 ) padding
+
+        land =
+            Html.Lazy.lazy <| landElement layout
     in
         Html.div [ id widthElementId ]
             [ Svg.svg
@@ -66,7 +70,7 @@ board w map =
                 , preserveAspectRatio "none"
                 ]
                 (List.concat
-                    [ List.map (landElement layout) map.lands
+                    [ List.map land map.lands
                     , [ Svg.defs []
                             [ Svg.radialGradient [ id "editorGradient" ]
                                 [ Svg.stop [ offset "0.8", stopColor "gold" ] []

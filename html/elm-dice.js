@@ -61,7 +61,7 @@ app.ports.mqttConnect.subscribe(function() {
 
     client.on('reconnect', function () {
       connectionAttempts = connectionAttempts + 1;
-      app.ports.mqttOnReconnect.send(connectionAttempts.toString());
+      app.ports.mqttOnReconnect.send(connectionAttempts);
     });
 
     // client.on('close', function (event) {

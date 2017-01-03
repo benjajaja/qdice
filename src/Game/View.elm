@@ -77,11 +77,11 @@ statusMessage status =
             case status of
                 Reconnecting attempts ->
                     case attempts of
-                        "1" ->
+                        1 ->
                             "Reconnecting..."
 
                         count ->
-                            "Reconnecting... (" ++ attempts ++ " retries)"
+                            "Reconnecting... (" ++ (toString attempts) ++ " retries)"
 
                 _ ->
                     toString status

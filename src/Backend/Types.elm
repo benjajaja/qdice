@@ -6,7 +6,7 @@ import Tables exposing (Table(..))
 type Msg
     = Connected ClientId
     | StatusConnect String
-    | StatusReconnect String
+    | StatusReconnect Int
     | StatusOffline String
     | Subscribed Topic
     | ClientMsg ClientMessage
@@ -35,7 +35,7 @@ type Topic
 type ConnectionStatus
     = Offline
     | Connecting
-    | Reconnecting String
+    | Reconnecting Int
     | Online
 
 

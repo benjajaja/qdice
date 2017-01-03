@@ -196,7 +196,7 @@ port mqttSubscribe : String -> Cmd msg
 port mqttOnConnect : (String -> msg) -> Sub msg
 
 
-port mqttOnReconnect : (String -> msg) -> Sub msg
+port mqttOnReconnect : (Int -> msg) -> Sub msg
 
 
 port mqttOnOffline : (String -> msg) -> Sub msg

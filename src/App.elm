@@ -75,12 +75,21 @@ init ( route, address ) =
         model =
             Model address route Material.model game editor backend Types.Anonymous
 
+        newRoute =
+            case route of
+                GameRoutes r ->
+                    GameRoutes <| GameTableRoute Melchor
+
+                _ ->
+                    route
+
         _ =
-            Debug.log "init" ( route, address )
+            Debug.log "init" ( route, address, newRoute )
 
         cmds =
             Cmd.batch
                 [ urlUpdate ( route, address ) model |> snd
+                , navigateTo newRoute
                 , hide "peekaboo"
                 , Cmd.map GameMsg gameCmd
                 , Cmd.map EditorMsg editorCmd
@@ -110,11 +119,7 @@ update msg model =
                 ( { model | editor = editor }, Cmd.map EditorMsg editorCmd )
 
         BckMsg msg ->
-            let
-                ( model, bckCmd ) =
-                    Backend.update msg model
-            in
-                ( model, bckCmd )
+            Backend.update msg model
 
         NavigateTo path ->
             let
@@ -124,7 +129,7 @@ update msg model =
                     Hop.outputFromPath hopConfig path
                         |> Navigation.newUrl
             in
-                ( model, command )
+                model ! [ command ]
 
         DrawerNavigateTo path ->
             model ! msgsToCmds [ Layout.toggleDrawer Mdl, NavigateTo path ]
@@ -167,6 +172,25 @@ urlUpdate ( route, address ) model =
 
 type alias Mdl =
     Material.Model
+
+
+navigateTo : Route -> Cmd Msg
+navigateTo route =
+    Navigation.newUrl <|
+        case route of
+            GameRoutes sub ->
+                case sub of
+                    GameRoute ->
+                        "/"
+
+                    GameTableRoute table ->
+                        "/" ++ (toString table)
+
+            EditorRoute ->
+                "/Editor"
+
+            NotFoundRoute ->
+                "/404"
 
 
 view : Model -> Html.Html Msg
