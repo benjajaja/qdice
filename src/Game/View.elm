@@ -2,6 +2,7 @@ module Game.View exposing (view)
 
 import Game.Types exposing (Msg(..))
 import Game.Types
+import Game.Chat
 import Html
 import Html.App
 import Material
@@ -34,6 +35,7 @@ view model =
                     :: (playButtons model.mdl)
                 )
             , board |> Html.App.map Types.GameMsg
+            , boardHistory model |> Html.App.map Types.GameMsg
             , footer model
             ]
 
@@ -59,6 +61,12 @@ playButtons mdl =
         ]
         [ Icon.i "remove" ]
     ]
+
+
+boardHistory : Model -> Html.Html Game.Types.Msg
+boardHistory model =
+    Html.div []
+        [ Game.Chat.chatBox model ]
 
 
 footer : Model -> Html.Html Types.Msg
@@ -92,14 +100,14 @@ statusMessage status =
                     "signal_wifi_off"
 
                 Connecting ->
-                    "wifi"
+                    "signal_wifi_off"
 
                 Reconnecting _ ->
-                    "wifi_lock"
+                    "wifi"
 
                 Online ->
                     "network_wifi"
     in
         [ Footer.html <| Icon.i icon
-        , Footer.html <| Html.text message
+          -- , Footer.html <| Html.text message
         ]

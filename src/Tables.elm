@@ -6,11 +6,11 @@ type Table
     | Cepero
 
 
-decodeTable : String -> Table
+decodeTable : String -> Maybe Table
 decodeTable name =
     case name of
         "Melchor" ->
-            Melchor
+            Just Melchor
 
         _ ->
-            Debug.crash <| "unknown table: " ++ name
+            Debug.log ("unknown table: " ++ name) Nothing

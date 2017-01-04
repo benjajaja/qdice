@@ -7,6 +7,9 @@ import Tables exposing (Table)
 
 type Msg
     = BoardMsg Board.Msg
+    | InputChat String
+    | SendChat String
+    | ClearChat
 
 
 type GameStatus
@@ -20,6 +23,7 @@ type alias Model =
     , board : Board.Model
     , players : List Player
     , status : GameStatus
+    , chatInput : String
     }
 
 

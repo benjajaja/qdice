@@ -16,10 +16,17 @@ type Msg
 
 
 type alias Model =
-    { clientId : ClientId
+    { clientId : Maybe ClientId
     , subscribed : List Topic
     , status : ConnectionStatus
+    , chatLog : List ChatLogEntry
     }
+
+
+type ChatLogEntry
+    = LogJoin User
+    | LogLeave User
+    | LogChat User String
 
 
 type alias ClientId =
@@ -27,9 +34,16 @@ type alias ClientId =
 
 
 type Topic
-    = Client
+    = Client ClientId
     | AllClients
-    | Tables Table
+    | Presence
+    | Tables Table TopicDirection
+
+
+type TopicDirection
+    = ClientDirection
+    | ServerDirection
+    | Broadcast
 
 
 type ConnectionStatus
@@ -49,6 +63,7 @@ type AllClientsMessage
 
 type TableMessage
     = Join User
+    | Chat User String
 
 
 type alias User =

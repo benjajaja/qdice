@@ -32,19 +32,26 @@ app.ports.consoleDebug.subscribe(function(string) {
   console.debug(string);
 });
 
-
+var mqttConfig = {
+  hostname: 'm21.cloudmqtt.com',
+  port: 31201,
+  username: 'client',
+  password: 'client',
+}
 
 app.ports.mqttConnect.subscribe(function() {
   try {
-    var url = 'ws://' + window.location.hostname + ':8080'
+    var url = 'wss://' + mqttConfig.hostname + ':' + mqttConfig.port;
     var clientId = 'elm-dice_' + Math.random().toString(16).substr(2, 8);
     var client = mqtt.connect(url, {
       clientId: clientId,
+      username: mqttConfig.username,
+      password: mqttConfig.password,
     });
 
     var connectionAttempts = 0;
 
-    app.ports.mqttOnConnect.send(connectionAttempts.toString());
+    app.ports.mqttOnConnect.send('');
 
     client.on('connect', function (connack) {
       app.ports.mqttOnConnected.send(clientId);
@@ -80,6 +87,7 @@ app.ports.mqttConnect.subscribe(function() {
     });
 
     app.ports.mqttPublish.subscribe(function(args) {
+      console.debug('publish', args[0], args[1])
       client.publish(args[0], args[1]);
     });
   } catch (e) {
