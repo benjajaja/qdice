@@ -88,7 +88,7 @@ update msg model =
                                             subscribed
                                             topic
                                     then
-                                        publish <| TableMsg table (Join "me")
+                                        publish <| TableMsg table <| Join <| Types.getUsername model
                                     else
                                         let
                                             _ =

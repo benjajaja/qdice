@@ -16,6 +16,7 @@ type Msg
     | EditorMsg Editor.Types.Msg
     | BckMsg Backend.Types.Msg
     | DrawerNavigateTo String
+    | LoggedIn (List String)
 
 
 type GameRoute
@@ -48,7 +49,19 @@ type User
 
 type alias LoggedUser =
     { name : Username
+    , email : String
+    , picture : String
     }
+
+
+getUsername : Model -> String
+getUsername model =
+    case model.user of
+        Anonymous ->
+            "Anonymous"
+
+        Logged user ->
+            user.name
 
 
 type alias Username =

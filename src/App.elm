@@ -121,6 +121,25 @@ update msg model =
         BckMsg msg ->
             Backend.update msg model
 
+        LoggedIn data ->
+            case data of
+                [ email, name, picture ] ->
+                    let
+                        user =
+                            Logged
+                                { email = email
+                                , name = name
+                                , picture = picture
+                                }
+
+                        _ =
+                            Debug.log "login" user
+                    in
+                        { model | user = user } ! []
+
+                _ ->
+                    model ! []
+
         NavigateTo path ->
             let
                 command =
@@ -217,16 +236,16 @@ header model =
         , Layout.spacer
         , Layout.navigation []
             [ Layout.link
-                [ Layout.href "javascript:window.location.reload()" ]
-                [ Html.text <|
-                    case model.user of
-                        Logged user ->
-                            user.name
+                [ Layout.href "javascript:window.login()" ]
+                (case model.user of
+                    Logged user ->
+                        [ Html.text <| user.name
+                        , Html.img [ Html.Attributes.src user.picture ] []
+                        ]
 
-                        Anonymous ->
-                            "Anon"
-                , Icon.i "profile"
-                ]
+                    Anonymous ->
+                        [ Icon.i "account_circle" ]
+                )
               -- , Layout.link
               --     [ Layout.href "http://package.elm-lang.org/packages/debois/elm-mdl/latest/" ]
               --     [ Html.text "elm-package" ]
@@ -280,6 +299,7 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
+        , onLogin LoggedIn
         ]
 
 
@@ -299,3 +319,6 @@ gameMatchers =
 
 
 port hide : String -> Cmd msg
+
+
+port onLogin : (List String -> msg) -> Sub msg

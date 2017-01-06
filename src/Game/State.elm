@@ -63,7 +63,7 @@ update msg model =
 
             SendChat string ->
                 model
-                    ! [ Backend.Types.Chat "anon" model.game.chatInput
+                    ! [ Backend.Types.Chat (Types.getUsername model) model.game.chatInput
                             |> Backend.Types.TableMsg model.game.table
                             |> Backend.publish
                       , Task.perform (always ClearChat) (always ClearChat) (Task.succeed ())
