@@ -15,7 +15,7 @@ var lock = new Auth0Lock('vxpcYiPeQ6A2CgYG1QiUwLjQiU9JLPvj', 'easyrider.eu.auth0
   allowedConnections: ['google-oauth2', 'github', 'bitbucket', 'twitter', 'facebook'],
   auth: {
     redirectUrl: [location.protocol, '//', location.hostname].join('')
-      + (location.port == '80' ? '' : ':' + location.port)
+      + (location.port && location.port != '80' ? ':' + location.port : '')
   },
   theme: {
     displayName: 'Login',
