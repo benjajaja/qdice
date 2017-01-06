@@ -87,7 +87,6 @@ app.ports.mqttConnect.subscribe(function() {
     });
 
     app.ports.mqttPublish.subscribe(function(args) {
-      console.debug('publish', args[0], args[1])
       client.publish(args[0], args[1]);
     });
   } catch (e) {

@@ -1,37 +1,58 @@
 module Game.Chat exposing (..)
 
-import Types exposing (Model, Msg)
+import Types exposing (Model, Msg(..))
 import Game.Types exposing (Msg(..))
 import Backend.Types exposing (ChatLogEntry(..))
 import Html exposing (..)
+import Html.App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Material.Card as Card
+import Material.Options as Options exposing (cs, css)
+import Material.Textfield as Textfield
 
 
-chatBox : Model -> Html Game.Types.Msg
+chatBox : Model -> Html Types.Msg
 chatBox model =
-    div []
-        [ div []
-            (List.map
-                (\c ->
-                    div []
-                        [ case c of
+    Card.view [ cs "chatbox" ]
+        [ Card.text []
+            [ div [ class "chatbox--log" ]
+                (List.map
+                    (\c ->
+                        case c of
                             LogChat user message ->
-                                Html.text <| user ++ ": " ++ message
+                                div [ class "chatbox--line--chat" ]
+                                    [ Html.span []
+                                        [ Html.text <| user ++ ":" ]
+                                    , Html.span []
+                                        [ Html.text message ]
+                                    ]
 
-                            _ ->
-                                Html.text "other"
-                        ]
+                            LogJoin user ->
+                                div [ class "chatbox--line--join" ]
+                                    [ Html.text <| user ++ " joined" ]
+
+                            LogLeave user ->
+                                div [ class "chatbox--line--leave" ]
+                                    [ Html.text <| user ++ " left" ]
+                    )
+                    model.backend.chatLog
                 )
-                model.backend.chatLog
-            )
-        , Html.form [ onSubmit (SendChat "hi") ]
-            [ input
-                [ placeholder "say something"
-                , value model.game.chatInput
-                , onInput InputChat
-                ]
-                []
-            , button [ type' "submit", hidden True ] [ text "->" ]
             ]
+        , Card.actions []
+            [ Html.form [ onSubmit (Types.GameMsg <| SendChat "hi") ]
+                [ input model
+                , button [ type' "submit", hidden True ] [ text "->" ]
+                ]
+            ]
+        ]
+
+
+input : Model -> Html Types.Msg
+input model =
+    Textfield.render
+        Types.Mdl
+        [ 0 ]
+        model.mdl
+        [ Textfield.onInput (Types.GameMsg << InputChat)
         ]

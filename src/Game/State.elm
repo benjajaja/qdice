@@ -9,6 +9,7 @@ import Land exposing (Color)
 import Tables exposing (Table(..))
 import Backend
 import Backend.Types exposing (Topic(..))
+import Material
 
 
 init : ( Game.Types.Model, Cmd Game.Types.Msg )

@@ -27,7 +27,7 @@ update msg model =
         UnknownTopicMessage error topic message ->
             let
                 _ =
-                    Debug.log ("Error in message: \"" ++ error ++ "\"") ( topic, message )
+                    Debug.log ("Error in message: \"" ++ error ++ "\"") topic
             in
                 model ! []
 
@@ -64,15 +64,37 @@ update msg model =
                             topic :: backend.subscribed
                     in
                         ( { model | backend = { backend | subscribed = subscribed } }
-                        , if hasDuplexSubscribed clientId topic subscribed then
+                        , if
+                            hasDuplexSubscribed
+                                [ Client clientId
+                                , AllClients
+                                ]
+                                subscribed
+                                topic
+                          then
                             Cmd.batch
                                 [ subscribe <| Tables model.game.table ClientDirection
+                                , subscribe <| Tables model.game.table ServerDirection
                                 , subscribe <| Tables model.game.table Broadcast
                                 ]
                           else
                             case topic of
                                 Tables table direction ->
-                                    publish <| TableMsg table (Join "me")
+                                    if
+                                        hasDuplexSubscribed
+                                            [ Tables table ClientDirection
+                                            , Tables table ServerDirection
+                                            ]
+                                            subscribed
+                                            topic
+                                    then
+                                        publish <| TableMsg table (Join "me")
+                                    else
+                                        let
+                                            _ =
+                                                Debug.log "not duplex table yet" subscribed
+                                        in
+                                            Cmd.none
 
                                 _ ->
                                     Cmd.none
@@ -87,20 +109,23 @@ update msg model =
         TableMsg table msg ->
             case msg of
                 Join user ->
-                    model ! []
+                    (updateBackendChatLog model <| LogJoin user) ! []
+
+                Leave user ->
+                    (updateBackendChatLog model <| LogLeave user) ! []
 
                 Chat user text ->
-                    (updateBackendChatLog model (List.append model.backend.chatLog [ LogChat user text ]))
-                        -- model
-                        !
-                            []
+                    (updateBackendChatLog model <| LogChat user text) ! []
 
 
-updateBackendChatLog : Types.Model -> List ChatLogEntry -> Types.Model
-updateBackendChatLog model chatLog =
+updateBackendChatLog : Types.Model -> ChatLogEntry -> Types.Model
+updateBackendChatLog model entry =
     let
         backend =
             model.backend
+
+        chatLog =
+            List.append model.backend.chatLog [ entry ]
 
         updated =
             { backend | chatLog = chatLog }
@@ -145,7 +170,7 @@ decodeMessage clientId ( stringTopic, message ) =
                 Just topic ->
                     case decodeTopicMessage topic message of
                         Ok msg ->
-                            Debug.log "decoded OK" msg
+                            msg
 
                         Err err ->
                             UnknownTopicMessage err stringTopic message
@@ -209,7 +234,7 @@ decodeDirection string =
         "clients" ->
             Just ClientDirection
 
-        "Server" ->
+        "server" ->
             Just ServerDirection
 
         "broadcast" ->
@@ -228,11 +253,10 @@ setStatus status model =
         { model | backend = { backend | status = status } }
 
 
-hasDuplexSubscribed : String -> Topic -> List Topic -> Bool
-hasDuplexSubscribed id topic subscribed =
-    (topic == Client id || topic == AllClients)
-        && subscribed
-        == [ Client id, AllClients ]
+hasDuplexSubscribed : List Topic -> List Topic -> Topic -> Bool
+hasDuplexSubscribed topics subscribed topic =
+    List.member topic topics
+        && List.all (flip List.member <| subscribed) topics
 
 
 port mqttConnect : String -> Cmd msg
@@ -240,7 +264,7 @@ port mqttConnect : String -> Cmd msg
 
 publish : Msg -> Cmd msg
 publish message =
-    encodeTopicMessage message |> mqttPublish
+    encodeTopicMessage message |> Debug.log "publish" |> mqttPublish
 
 
 port mqttPublish : ( String, String ) -> Cmd msg

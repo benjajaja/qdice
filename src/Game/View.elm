@@ -35,7 +35,7 @@ view model =
                     :: (playButtons model.mdl)
                 )
             , board |> Html.App.map Types.GameMsg
-            , boardHistory model |> Html.App.map Types.GameMsg
+            , boardHistory model
             , footer model
             ]
 
@@ -63,7 +63,7 @@ playButtons mdl =
     ]
 
 
-boardHistory : Model -> Html.Html Game.Types.Msg
+boardHistory : Model -> Html.Html Types.Msg
 boardHistory model =
     Html.div []
         [ Game.Chat.chatBox model ]

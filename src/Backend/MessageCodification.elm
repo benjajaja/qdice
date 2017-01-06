@@ -34,19 +34,45 @@ decodeTopicMessage topic message =
 
 decodeTableMessage : Table -> String -> Result String Msg
 decodeTableMessage table message =
-    case
-        decodeString
-            (object2 (,)
-                ("user" := Dec.string)
-                ("message" := Dec.string)
-            )
-            message
-    of
-        Ok chat ->
-            Ok (TableMsg table <| uncurry Chat <| chat)
-
+    case decodeString ("type" := Dec.string) message of
         Err err ->
             Err err
+
+        Ok mtype ->
+            case mtype of
+                "chat" ->
+                    case
+                        decodeString
+                            (object2 (,)
+                                ("user" := Dec.string)
+                                ("message" := Dec.string)
+                            )
+                            message
+                    of
+                        Ok chat ->
+                            Ok (TableMsg table <| uncurry Chat <| chat)
+
+                        Err err ->
+                            Err err
+
+                "join" ->
+                    case decodeString ("user" := Dec.string) message of
+                        Ok user ->
+                            Ok <| TableMsg table <| Join user
+
+                        Err err ->
+                            Err err
+
+                "leave" ->
+                    case decodeString ("user" := Dec.string) message of
+                        Ok user ->
+                            Ok <| TableMsg table <| Leave user
+
+                        Err err ->
+                            Err err
+
+                _ ->
+                    Err <| "unknown type \"" ++ mtype ++ "\""
 
 
 encodeTopicMessage : Msg -> ( String, String )
@@ -58,12 +84,22 @@ encodeTopicMessage msg =
                 case message of
                     Chat user text ->
                         object
-                            [ ( "user", Enc.string user )
+                            [ ( "type", Enc.string "chat" )
+                            , ( "user", Enc.string user )
                             , ( "message", Enc.string text )
                             ]
 
                     Join user ->
-                        object [ ( "join", Enc.string user ) ]
+                        object
+                            [ ( "type", Enc.string "join" )
+                            , ( "user", Enc.string user )
+                            ]
+
+                    Leave user ->
+                        object
+                            [ ( "type", Enc.string "leave" )
+                            , ( "user", Enc.string user )
+                            ]
             )
 
         _ ->

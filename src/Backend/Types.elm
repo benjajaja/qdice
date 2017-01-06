@@ -64,6 +64,7 @@ type AllClientsMessage
 type TableMessage
     = Join User
     | Chat User String
+    | Leave User
 
 
 type alias User =
