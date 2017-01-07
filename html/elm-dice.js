@@ -7,39 +7,9 @@ window.onerror = function(messageOrEvent, source, lineno, colno, error) {
   return false; // let built in handler log it too
 };
 
-
-var Auth0Lock = require('auth0-lock')['default'];
-
-var lock = new Auth0Lock('vxpcYiPeQ6A2CgYG1QiUwLjQiU9JLPvj', 'easyrider.eu.auth0.com', {
-  allowSignUp: false,
-  allowedConnections: ['google-oauth2', 'github', 'bitbucket', 'twitter', 'facebook'],
-  auth: {
-    redirectUrl: [location.protocol, '//', location.hostname].join('')
-      + (location.port && location.port != '80' ? ':' + location.port : '')
-  },
-  theme: {
-    displayName: 'Login',
-    logo: 'favicons/android-chrome-72x72.png'
-  }
+require('./auth.js')(function(profile) {
+  app.ports.onLogin.send([profile.email, profile.name, profile.picture]);
 });
-
-global.login = function() {
-  lock.show();
-};
-
-lock.on("authenticated", function(authResult) {
-  lock.getProfile(authResult.idToken, function(error, profile) {
-    if (error) {
-      console.error(error);
-      return;
-    }
-    localStorage.setItem('id_token', authResult.idToken);
-    // Display user information
-    console.log(profile);
-    app.ports.onLogin.send([profile.email, profile.name, profile.picture]);
-  });
-});
-
 
 var Elm = require('../src/App');
 var mqtt = require('mqtt');
@@ -129,4 +99,3 @@ app.ports.mqttConnect.subscribe(function() {
 });
 
 global.edice = app;
-

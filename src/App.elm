@@ -10,6 +10,7 @@ import Html.Attributes
 import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
+import Material.Options
 import Navigation
 import UrlParser exposing ((</>))
 import Hop
@@ -231,15 +232,17 @@ view model =
 header : Model -> List (Html.Html Msg)
 header model =
     [ Layout.row
-        []
+        [ Material.Options.cs "header" ]
         [ Layout.title [] [ Html.text "¡Qué Dice!" ]
         , Layout.spacer
         , Layout.navigation []
             [ Layout.link
-                [ Layout.href "javascript:window.login()" ]
+                [ Layout.href "javascript:window.login()"
+                , Material.Options.cs "header--profile-link"
+                ]
                 (case model.user of
                     Logged user ->
-                        [ Html.text <| user.name
+                        [ Html.div [] [ Html.text <| user.name ]
                         , Html.img [ Html.Attributes.src user.picture ] []
                         ]
 
