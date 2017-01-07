@@ -8,7 +8,7 @@ window.onerror = function(messageOrEvent, source, lineno, colno, error) {
 };
 
 require('./auth.js')(function(profile) {
-  app.ports.onLogin.send([profile.email, profile.name, profile.picture]);
+  app.ports.onLogin.send([profile.email || '', profile.name || '', profile.picture || '']);
 });
 
 var Elm = require('../src/App');
