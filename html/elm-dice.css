@@ -62,5 +62,33 @@
 }
 
 .chatbox {
-  
+  height: 20vw;
+  display: flex;
+}
+.chatbox--log {
+  background-color: white;
+  flex: 100 1 auto;
+  overflow: auto;
+  overflow-y: scroll;
+  padding: 8px;
+  font-size: 12px;
+}
+.chatbox--actions {
+  flex: 1 0 auto;
+  padding: 0 8px;
+}
+.chatbox--actions-form {
+  display: flex;
+}
+.chatbox--actions-input {
+  padding: 0;
+  width: auto;
+  flex: 2 0 auto;
+}
+.chatbox--actions-input .mdl-textfield__label:after {
+  bottom: 8px;
+}
+.chatbox--actions-button {
+    padding: 0;
+    min-width: auto;
 }
