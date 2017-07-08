@@ -44,9 +44,8 @@ chatBox model =
             )
         , Card.actions [ cs "chatbox--actions" ]
             [ Html.form [ onSubmit (Types.GameMsg <| SendChat "hi"), class "chatbox--actions-form" ]
-                [ --     input model
-                  -- ,
-                  Button.render
+                [ input model
+                , Button.render
                     Types.Mdl
                     [ 0 ]
                     model.mdl
@@ -62,14 +61,14 @@ chatBox model =
         ]
 
 
-
--- input : Model -> Html Types.Msg
--- input model =
---     Textfield.render
---         Types.Mdl
---         [ 0 ]
---         model.mdl
---         [ --Options.onInput (Types.GameMsg << InputChat)
---           Textfield.value model.game.chatInput
---         , cs "chatbox--actions-input"
---         ]
+input : Model -> Html Types.Msg
+input model =
+    Textfield.render
+        Types.Mdl
+        [ 0 ]
+        model.mdl
+        [ Options.onInput (Types.GameMsg << InputChat)
+        , Textfield.value model.game.chatInput
+        , cs "chatbox--actions-input"
+        ]
+        []
