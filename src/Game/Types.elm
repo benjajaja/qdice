@@ -24,6 +24,7 @@ type alias Model =
     , players : List Player
     , status : GameStatus
     , chatInput : String
+    , chatBoxId : String
     }
 
 

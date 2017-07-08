@@ -27,7 +27,7 @@ init =
         table =
             Melchor
     in
-        ( Game.Types.Model table board players Paused ""
+        ( Game.Types.Model table board players Paused "" ("chatbox-" ++ toString table)
         , mapCmd
         )
 

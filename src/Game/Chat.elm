@@ -7,7 +7,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Material.Card as Card
-import Material.Options as Options exposing (cs, css)
+import Material.Options as Options exposing (cs, css, id)
 import Material.Textfield as Textfield
 import Material.Elevation
 import Material.Icon as Icon
@@ -20,7 +20,7 @@ chatBox model =
         [ cs "chatbox"
         , Material.Elevation.e2
         ]
-        [ Card.media [ cs "chatbox--log" ]
+        [ Card.media [ cs "chatbox--log", Options.id model.game.chatBoxId ]
             (List.map
                 (\c ->
                     case c of

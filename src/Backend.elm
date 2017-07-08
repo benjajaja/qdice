@@ -109,16 +109,16 @@ update msg model =
         TableMsg table msg ->
             case msg of
                 Join user ->
-                    (updateBackendChatLog model <| LogJoin user) ! []
+                    updateBackendChatLog model <| LogJoin user
 
                 Leave user ->
-                    (updateBackendChatLog model <| LogLeave user) ! []
+                    updateBackendChatLog model <| LogLeave user
 
                 Chat user text ->
-                    (updateBackendChatLog model <| LogChat user text) ! []
+                    updateBackendChatLog model <| LogChat user text
 
 
-updateBackendChatLog : Types.Model -> ChatLogEntry -> Types.Model
+updateBackendChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
 updateBackendChatLog model entry =
     let
         backend =
@@ -130,7 +130,7 @@ updateBackendChatLog model entry =
         updated =
             { backend | chatLog = chatLog }
     in
-        { model | backend = updated }
+        { model | backend = updated } ! [ scrollChat model.game.chatBoxId ]
 
 
 subscriptions : Types.Model -> Sub Types.Msg
@@ -294,3 +294,6 @@ port mqttOnSubscribed : (String -> msg) -> Sub msg
 
 
 port mqttOnMessage : (( String, String ) -> msg) -> Sub msg
+
+
+port scrollChat : String -> Cmd msg
