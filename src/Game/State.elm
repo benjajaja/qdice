@@ -66,7 +66,7 @@ update msg model =
                     ! [ Backend.Types.Chat (Types.getUsername model) model.game.chatInput
                             |> Backend.Types.TableMsg model.game.table
                             |> Backend.publish
-                      , Task.perform (always ClearChat) (always ClearChat) (Task.succeed ())
+                      , Task.perform (always ClearChat) (Task.succeed ())
                       ]
 
             ClearChat ->

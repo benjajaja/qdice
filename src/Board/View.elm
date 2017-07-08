@@ -80,9 +80,9 @@ board w map =
                       , Svg.defs []
                             [ Svg.filter [ id "dropshadow", filterUnits "userSpaceOnUse", colorInterpolationFilters "sRGB" ]
                                 [ Svg.feComponentTransfer [ Html.Attributes.attribute "in" "SourceAlpha" ]
-                                    [ Svg.feFuncR [ Svg.Attributes.type' "discrete", tableValues "0" ] []
-                                    , Svg.feFuncG [ Svg.Attributes.type' "discrete", tableValues "0" ] []
-                                    , Svg.feFuncB [ Svg.Attributes.type' "discrete", tableValues "0" ] []
+                                    [ Svg.feFuncR [ Svg.Attributes.type_ "discrete", tableValues "0" ] []
+                                    , Svg.feFuncG [ Svg.Attributes.type_ "discrete", tableValues "0" ] []
+                                    , Svg.feFuncB [ Svg.Attributes.type_ "discrete", tableValues "0" ] []
                                     ]
                                 , Svg.feGaussianBlur [ stdDeviation "1" ] []
                                 , Svg.feOffset [ dx "0", dy "0", result "shadow" ] []
@@ -144,7 +144,7 @@ landText layout land =
                 ( cx, cy ) =
                     cellCenter layout c
             in
-                Svg.text'
+                Svg.text_
                     [ x <| toString cx
                     , y <| toString cy
                     , textAnchor "middle"

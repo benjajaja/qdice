@@ -26,7 +26,7 @@
     "auth0-lock": "^10.8.1",
     "autoprefixer": "^6.5.3",
     "css-loader": "0.25.0",
-    "elm": "0.17",
+    "elm": "0.18",
     "elm-css-webpack-loader": "2.0.1",
     "elm-webpack-loader": "3.0.6",
     "extract-text-webpack-plugin": "^1.0.1",

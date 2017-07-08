@@ -1,6 +1,9 @@
 port module Edice exposing (..)
 
 import Task
+import Navigation exposing (Location)
+import Routing exposing (parseLocation, navigateTo)
+import Helpers exposing (..)
 import Types exposing (..)
 import Game.State
 import Game.View
@@ -11,58 +14,23 @@ import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
-import Navigation
 import UrlParser exposing ((</>))
-import Hop
-import Hop.Types exposing (Config, Address, Query)
 import Backend
 import Tables exposing (Table(..))
 
 
-urlParser : Navigation.Parser ( Route, Address )
-urlParser =
-    let
-        -- A parse function takes the normalised path from Hop after taking
-        -- in consideration the basePath and the hash.
-        -- This function then returns a result.
-        parse path =
-            -- First we parse using UrlParser.parse.
-            -- Then we return the parsed route or NotFoundRoute if the parsed failed.
-            -- You can choose to return the parse return directly.
-            path
-                |> UrlParser.parse identity routes
-                |> Result.withDefault NotFoundRoute
-
-        resolver =
-            -- Create a function that parses and formats the URL
-            -- This function takes 2 arguments: The Hop Config and the parse function.
-            Hop.makeResolver hopConfig parse
-    in
-        -- Create a Navigation URL parser
-        Navigation.makeParser (.href >> resolver)
-
-
-hopConfig : Config
-hopConfig =
-    { hash = False
-    , basePath = ""
-    }
-
-
-main : Program Never
+main : Program Never Model Msg
 main =
-    Navigation.program urlParser
+    Navigation.program OnLocationChange
         { init = init
         , view = view
-        , update = update
-        , urlUpdate = urlUpdate
-        , subscriptions =
-            subscriptions
+        , update = updateWrapper
+        , subscriptions = subscriptions
         }
 
 
-init : ( Route, Address ) -> ( Model, Cmd Msg )
-init ( route, address ) =
+init : Location -> ( Model, Cmd Msg )
+init location =
     let
         ( game, gameCmd ) =
             Game.State.init
@@ -73,8 +41,11 @@ init ( route, address ) =
         backend =
             Backend.init
 
+        route =
+            Routing.parseLocation location
+
         model =
-            Model address route Material.model game editor backend Types.Anonymous
+            Model route Material.model game editor backend Types.Anonymous
 
         newRoute =
             case route of
@@ -85,13 +56,11 @@ init ( route, address ) =
                     route
 
         _ =
-            Debug.log "init" ( route, address, newRoute )
+            Debug.log "init" ( route, location, newRoute )
 
         cmds =
             Cmd.batch
-                [ urlUpdate ( route, address ) model |> snd
-                , navigateTo newRoute
-                , hide "peekaboo"
+                [ hide "peekaboo"
                 , Cmd.map GameMsg gameCmd
                 , Cmd.map EditorMsg editorCmd
                 , Backend.connect
@@ -102,15 +71,27 @@ init ( route, address ) =
         )
 
 
+updateWrapper : Msg -> Model -> ( Model, Cmd Msg )
+updateWrapper msg model =
+    let
+        ( model_, cmd ) =
+            update msg model
+
+        -- _ =
+        --     Debug.log "update" msg
+    in
+        ( model_, cmd )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GameMsg msg ->
             let
-                ( model, gameCmd ) =
+                ( newModel, gameCmd ) =
                     Game.State.update msg model
             in
-                ( model, Cmd.map GameMsg gameCmd )
+                ( newModel, Cmd.map GameMsg gameCmd )
 
         EditorMsg msg ->
             let
@@ -141,76 +122,56 @@ update msg model =
                 _ ->
                     model ! []
 
-        NavigateTo path ->
+        NavigateTo route ->
+            model ! [ navigateTo route ]
+
+        DrawerNavigateTo route ->
+            model ! msgsToCmds [ Layout.toggleDrawer Mdl, NavigateTo route ]
+
+        OnLocationChange location ->
             let
-                command =
-                    -- First generate the URL using your config (`outputFromPath`).
-                    -- Then generate a command using Navigation.newUrl.
-                    Hop.outputFromPath hopConfig path
-                        |> Navigation.newUrl
+                newRoute =
+                    parseLocation location
             in
-                model ! [ command ]
+                ( { model | route = newRoute }, Cmd.none )
 
-        DrawerNavigateTo path ->
-            model ! msgsToCmds [ Layout.toggleDrawer Mdl, NavigateTo path ]
-
-        SetQuery query ->
-            let
-                command =
-                    -- First modify the current stored address record (setting the query)
-                    -- Then generate a URL using Hop.output
-                    -- Finally, create a command using Navigation.newUrl
-                    model.address
-                        |> Hop.setQuery query
-                        |> Hop.output hopConfig
-                        |> Navigation.newUrl
-            in
-                ( model, command )
-
+        -- SetQuery query ->
+        --     let
+        --         command =
+        --             -- First modify the current stored address record (setting the query)
+        --             -- Then generate a URL using Hop.output
+        --             -- Finally, create a command using Navigation.newUrl
+        --             model.address
+        --                 |> Hop.setQuery query
+        --                 |> Hop.output hopConfig
+        --                 |> Navigation.newUrl
+        --     in
+        --         ( model, command )
         Mdl msg ->
-            Material.update msg model
+            Material.update Mdl msg model
 
 
 msgsToCmds : List Msg -> List (Cmd Msg)
 msgsToCmds msgs =
-    List.map (\msg -> Task.perform (always msg) (always msg) (Task.succeed ())) msgs
+    List.map (\msg -> Task.perform (always msg) (Task.succeed ())) msgs
 
 
-urlUpdate : ( Route, Address ) -> Model -> ( Model, Cmd Msg )
-urlUpdate ( route, address ) model =
-    let
-        cmd =
-            case route of
-                EditorRoute ->
-                    snd Editor.Editor.init |> Cmd.map EditorMsg
 
-                _ ->
-                    Cmd.none
-    in
-        ( { model | route = route, address = address }, cmd )
+-- urlUpdate : ( Route, Address ) -> Model -> ( Model, Cmd Msg )
+-- urlUpdate ( route, address ) model =
+--     let
+--         cmd =
+--             case route of
+--                 EditorRoute ->
+--                     Tuple.second Editor.Editor.init |> Cmd.map EditorMsg
+--                 _ ->
+--                     Cmd.none
+--     in
+--         ( { model | route = route, address = address }, cmd )
 
 
 type alias Mdl =
     Material.Model
-
-
-navigateTo : Route -> Cmd Msg
-navigateTo route =
-    Navigation.newUrl <|
-        case route of
-            GameRoutes sub ->
-                case sub of
-                    GameRoute ->
-                        "/"
-
-                    GameTableRoute table ->
-                        "/" ++ (toString table)
-
-            EditorRoute ->
-                "/Editor"
-
-            NotFoundRoute ->
-                "/404"
 
 
 view : Model -> Html.Html Msg
@@ -264,12 +225,12 @@ drawer model =
         (List.map
             (\( label, path ) ->
                 Layout.link
-                    [ {- Layout.href <| "#" ++ path, -} Layout.onClick <| DrawerNavigateTo path ]
+                    [ {- Layout.href <| "#" ++ path, -} Material.Options.onClick <| DrawerNavigateTo path ]
                     [ Html.text label ]
             )
-            [ ( "Play", "/" )
-            , ( "Editor (experimental)", "/editor" )
-            , ( "Table:Melchor (test)", "/Melchor" )
+            [ ( "Play", GameRoutes GameRoute )
+            , ( "Editor (experimental)", EditorRoute )
+            , ( "Table:Melchor (test)", GameRoutes <| GameTableRoute Melchor )
             ]
         )
     ]
@@ -306,19 +267,18 @@ subscriptions model =
         ]
 
 
-routes : UrlParser.Parser (Route -> a) a
-routes =
-    UrlParser.oneOf
-        [ UrlParser.format GameRoutes (UrlParser.oneOf gameMatchers)
-        , UrlParser.format EditorRoute (UrlParser.s "editor")
-        ]
 
-
-gameMatchers : List (UrlParser.Parser (GameRoute -> a) a)
-gameMatchers =
-    [ UrlParser.format GameRoute (UrlParser.s "")
-    , UrlParser.format (GameTableRoute Melchor) (UrlParser.s "Melchor")
-    ]
+-- routes : UrlParser.Parser (Route -> a) a
+-- routes =
+--     UrlParser.oneOf
+--         [ UrlParser.format GameRoutes (UrlParser.oneOf gameMatchers)
+--         , UrlParser.format EditorRoute (UrlParser.s "editor")
+--         ]
+-- gameMatchers : List (UrlParser.Parser (GameRoute -> a) a)
+-- gameMatchers =
+--     [ UrlParser.format GameRoute (UrlParser.s "")
+--     , UrlParser.format (GameTableRoute Melchor) (UrlParser.s "Melchor")
+--     ]
 
 
 port hide : String -> Cmd msg

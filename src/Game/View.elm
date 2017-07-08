@@ -4,7 +4,6 @@ import Game.Types exposing (Msg(..))
 import Game.Types
 import Game.Chat
 import Html
-import Html.App
 import Material
 import Material.Chip as Chip
 import Material.Button as Button
@@ -24,7 +23,7 @@ view model =
     let
         board =
             Board.view model.game.board
-                |> Html.App.map BoardMsg
+                |> Html.map BoardMsg
     in
         Html.div []
             [ Html.div []
@@ -34,7 +33,7 @@ view model =
                  )
                     :: (playButtons model.mdl)
                 )
-            , board |> Html.App.map Types.GameMsg
+            , board |> Html.map Types.GameMsg
             , boardHistory model
             , footer model
             ]

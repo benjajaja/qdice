@@ -1,11 +1,11 @@
 port module Editor.Editor exposing (..)
 
 import Html
-import Html.App
 import Html.Attributes
 import Html.Events
 import Material
 import Material.Button as Button
+import Material.Options as Options
 import Material.Icon as Icon
 import Editor.Types exposing (Msg(..), Model)
 import Types
@@ -31,14 +31,14 @@ update : Editor.Types.Msg -> Model -> ( Model, Cmd Editor.Types.Msg )
 update msg model =
     case msg of
         Mdl msg ->
-            Material.update msg model
+            Material.update Mdl msg model
 
         BoardMsg boardMsg ->
             let
                 ( board, boardCmd ) =
                     Board.update boardMsg model.board
 
-                model =
+                newModel =
                     case boardMsg of
                         ClickLand land ->
                             let
@@ -62,7 +62,7 @@ update msg model =
                         _ ->
                             { model | board = board }
             in
-                ( model, Cmd.map BoardMsg boardCmd )
+                ( newModel, Cmd.map BoardMsg boardCmd )
 
         ClickAdd ->
             addSelectedLand model
@@ -79,7 +79,7 @@ view model =
     let
         board =
             Board.view model.editor.board
-                |> Html.App.map BoardMsg
+                |> Html.map BoardMsg
     in
         Html.div []
             [ Html.div [] [ Html.text "Editor mode" ]
@@ -91,12 +91,12 @@ view model =
                 [ Button.fab
                 , Button.colored
                 , Button.ripple
-                , Button.onClick ClickAdd
+                , Options.onClick ClickAdd
                 ]
                 [ Icon.i "add" ]
             , Html.pre [ Html.Attributes.id "emoji-map", Html.Events.onClick <| ClickOutput "emoji-map" ] (renderSave model.editor.mapSave)
             ]
-            |> Html.App.map Types.EditorMsg
+            |> Html.map Types.EditorMsg
 
 
 renderSave : List (List String) -> List (Html.Html Editor.Types.Msg)

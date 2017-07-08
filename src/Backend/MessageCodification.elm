@@ -34,7 +34,7 @@ decodeTopicMessage topic message =
 
 decodeTableMessage : Table -> String -> Result String Msg
 decodeTableMessage table message =
-    case decodeString ("type" := Dec.string) message of
+    case decodeString (field "type" Dec.string) message of
         Err err ->
             Err err
 
@@ -43,9 +43,9 @@ decodeTableMessage table message =
                 "chat" ->
                     case
                         decodeString
-                            (object2 (,)
-                                ("user" := Dec.string)
-                                ("message" := Dec.string)
+                            (map2 (,)
+                                (field "user" Dec.string)
+                                (field "message" Dec.string)
                             )
                             message
                     of
@@ -56,7 +56,7 @@ decodeTableMessage table message =
                             Err err
 
                 "join" ->
-                    case decodeString ("user" := Dec.string) message of
+                    case decodeString (field "user" Dec.string) message of
                         Ok user ->
                             Ok <| TableMsg table <| Join user
 
@@ -64,7 +64,7 @@ decodeTableMessage table message =
                             Err err
 
                 "leave" ->
-                    case decodeString ("user" := Dec.string) message of
+                    case decodeString (field "user" Dec.string) message of
                         Ok user ->
                             Ok <| TableMsg table <| Leave user
 

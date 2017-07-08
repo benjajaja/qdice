@@ -5,6 +5,7 @@ import String
 import Land exposing (Cells)
 import Maps.Melchor exposing (map)
 import Regex
+import Helpers exposing (..)
 
 
 type alias EmojiLand =
@@ -19,9 +20,6 @@ type alias LineColRow =
 
 type alias Line =
     List ( LineColRow, String )
-
-
-port consoleDebug : String -> Cmd msg
 
 
 emojiRegex : Regex.Regex
@@ -49,7 +47,7 @@ loadDefault =
         widths : List Int
         widths =
             List.map
-                ((List.map (\l -> fst l |> fst)) >> List.maximum)
+                ((List.map (\l -> Tuple.first l |> Tuple.first)) >> List.maximum)
                 lines
                 |> List.map (Maybe.withDefault 0)
 
@@ -57,7 +55,7 @@ loadDefault =
             List.maximum widths |> Maybe.withDefault 0 |> Debug.log "max width"
 
         lands =
-            List.map (List.filter (\t -> snd t /= Land.emptyEmoji && snd t /= "〿")) lines
+            List.map (List.filter (\t -> Tuple.second t /= Land.emptyEmoji && Tuple.second t /= "〿")) lines
                 |> foldLines
                 |> List.foldr dedupeEmojis []
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji False)
@@ -66,7 +64,7 @@ loadDefault =
             consoleDebug <|
                 "lines:"
                     ++ (String.join (String.fromChar '\n') <|
-                            List.map (\l -> String.join "" <| List.map snd l) <|
+                            List.map (\l -> String.join "" <| List.map Tuple.second l) <|
                                 lines
                        )
     in
@@ -134,12 +132,12 @@ toCharList map =
             hd :: _ ->
                 List.map
                     (\row ->
-                        List.map (\col -> Land.at lands ( col, row )) [1..map.width]
+                        List.map (\col -> Land.at lands ( col, row )) (List.range 1 map.width)
                             |> List.map indexSymbol
                             |> offsetCharRow row
                             |> trimRight
                     )
-                    [1..map.height]
+                    (List.range 1 map.height)
 
 
 toEmojiString : List (List String) -> String
@@ -160,14 +158,14 @@ offsetCharRow row line =
 
 trimRight : List String -> List String
 trimRight line =
-    fst <|
+    Tuple.first <|
         List.foldr
             (\c ->
                 \a ->
-                    if snd a || c /= Land.emptyEmoji then
-                        ( c :: fst a, True )
+                    if Tuple.second a || c /= Land.emptyEmoji then
+                        ( c :: Tuple.first a, True )
                     else
-                        ( fst a, False )
+                        ( Tuple.first a, False )
             )
             ( [], False )
             line

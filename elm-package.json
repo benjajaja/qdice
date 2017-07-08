@@ -8,19 +8,15 @@
     ],
     "exposed-modules": [],
     "dependencies": {
-        "Voronchuk/hexagons": "2.0.1 <= v < 3.0.0",
-        "debois/elm-mdl": "7.6.0 <= v < 8.0.0",
-        "elm-community/elm-test": "1.1.0 <= v < 2.0.0",
-        "elm-lang/core": "4.0.0 <= v < 5.0.0",
-        "elm-lang/html": "1.0.0 <= v < 2.0.0",
-        "elm-lang/navigation": "1.0.0 <= v < 2.0.0",
-        "elm-lang/svg": "1.0.0 <= v < 2.0.0",
-        "elm-lang/window": "1.0.0 <= v < 2.0.0",
-        "eskimoblood/elm-color-extra": "3.0.2 <= v < 4.0.0",
-        "evancz/elm-graphics": "1.0.0 <= v < 2.0.0",
-        "evancz/url-parser": "1.0.0 <= v < 2.0.0",
-        "mgold/elm-nonempty-list": "2.0.1 <= v < 3.0.0",
-        "sporto/hop": "6.0.0 <= v < 7.0.0"
+        "Voronchuk/hexagons": "2.0.2 <= v < 3.0.0",
+        "debois/elm-mdl": "8.1.0 <= v < 9.0.0",
+        "elm-lang/core": "5.1.1 <= v < 6.0.0",
+        "elm-lang/html": "2.0.0 <= v < 3.0.0",
+        "elm-lang/navigation": "2.1.0 <= v < 3.0.0",
+        "elm-lang/svg": "2.0.0 <= v < 3.0.0",
+        "elm-lang/window": "1.0.1 <= v < 2.0.0",
+        "eskimoblood/elm-color-extra": "4.0.0 <= v < 5.0.0",
+        "evancz/url-parser": "2.0.1 <= v < 3.0.0"
     },
-    "elm-version": "0.17.1 <= v < 0.18.0"
+    "elm-version": "0.18.0 <= v < 0.19.0"
 }

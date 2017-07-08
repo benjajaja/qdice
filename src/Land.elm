@@ -68,7 +68,7 @@ myLayout : Layout -> HL.Layout
 myLayout { size, padding } =
     { orientation = orientationLayoutPointy
     , size = size
-    , origin = ( padding / 2, -(snd size) / 2 + padding / 2 )
+    , origin = ( padding / 2, -(Tuple.second size) / 2 + padding / 2 )
     }
 
 
@@ -110,9 +110,9 @@ fullCellMap w h color =
                         , selected = False
                         }
                     )
-                    [1..w]
+                    (List.range 1 w)
             )
-            [1..h]
+            (List.range 1 h)
             |> List.concat
         )
         w
@@ -338,7 +338,7 @@ nextBorders_ cells coord origin side accum fuse =
         current =
             ( coord, side )
     in
-        if (fst origin === coord) && snd origin == side && List.length accum > 1 then
+        if (Tuple.first origin === coord) && Tuple.second origin == side && List.length accum > 1 then
             (current :: accum)
         else if fuse == 0 then
             let
@@ -489,7 +489,7 @@ isBorderOnSideCube coord side other =
         ( x, y ) =
             HL.hexToOffset coord
 
-        ( x', y' ) =
+        ( x_, y_ ) =
             HL.hexToOffset other
 
         even =
@@ -497,31 +497,31 @@ isBorderOnSideCube coord side other =
     in
         case side of
             HH.W ->
-                y' == y && x' == x - 1
+                y_ == y && x_ == x - 1
 
             HH.E ->
-                y' == y && x' == x + 1
+                y_ == y && x_ == x + 1
 
             HH.NW ->
                 if even then
-                    x' == x - 1 && y' == y - 1
+                    x_ == x - 1 && y_ == y - 1
                 else
-                    x' == x && y' == y - 1
+                    x_ == x && y_ == y - 1
 
             HH.NE ->
                 if even then
-                    x' == x && y' == y - 1
+                    x_ == x && y_ == y - 1
                 else
-                    x' == x + 1 && y' == y - 1
+                    x_ == x + 1 && y_ == y - 1
 
             HH.SW ->
                 if even then
-                    x' == x - 1 && y' == y + 1
+                    x_ == x - 1 && y_ == y + 1
                 else
-                    x' == x && y' == y + 1
+                    x_ == x && y_ == y + 1
 
             HH.SE ->
                 if even then
-                    x' == x && y' == y + 1
+                    x_ == x && y_ == y + 1
                 else
-                    x' == x + 1 && y' == y + 1
+                    x_ == x + 1 && y_ == y + 1

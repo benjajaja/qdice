@@ -1,6 +1,6 @@
 module Types exposing (..)
 
-import Hop.Types exposing (Address, Query)
+import Navigation exposing (Location)
 import Material
 import Game.Types
 import Editor.Types
@@ -9,13 +9,14 @@ import Tables exposing (Table)
 
 
 type Msg
-    = NavigateTo String
-    | SetQuery Query
+    = NavigateTo Route
+      -- | SetQuery Query
+    | OnLocationChange Location
     | Mdl (Material.Msg Msg)
     | GameMsg Game.Types.Msg
     | EditorMsg Editor.Types.Msg
     | BckMsg Backend.Types.Msg
-    | DrawerNavigateTo String
+    | DrawerNavigateTo Route
     | LoggedIn (List String)
 
 
@@ -31,8 +32,8 @@ type Route
 
 
 type alias Model =
-    { address : Address
-    , route : Route
+    -- { address : Address
+    { route : Route
     , mdl :
         Material.Model
     , game : Game.Types.Model

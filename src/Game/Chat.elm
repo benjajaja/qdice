@@ -4,7 +4,6 @@ import Types exposing (Model, Msg(..))
 import Game.Types exposing (Msg(..))
 import Backend.Types exposing (ChatLogEntry(..))
 import Html exposing (..)
-import Html.App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Material.Card as Card
@@ -45,15 +44,16 @@ chatBox model =
             )
         , Card.actions [ cs "chatbox--actions" ]
             [ Html.form [ onSubmit (Types.GameMsg <| SendChat "hi"), class "chatbox--actions-form" ]
-                [ input model
-                , Button.render
+                [ --     input model
+                  -- ,
+                  Button.render
                     Types.Mdl
                     [ 0 ]
                     model.mdl
                     [ Button.primary
                     , Button.colored
                     , Button.ripple
-                    , Button.type' "submit"
+                    , Button.type_ "submit"
                     , cs "chatbox--actions-button"
                     ]
                     [ Icon.i "keyboard_return" ]
@@ -62,13 +62,14 @@ chatBox model =
         ]
 
 
-input : Model -> Html Types.Msg
-input model =
-    Textfield.render
-        Types.Mdl
-        [ 0 ]
-        model.mdl
-        [ Textfield.onInput (Types.GameMsg << InputChat)
-        , Textfield.value model.game.chatInput
-        , cs "chatbox--actions-input"
-        ]
+
+-- input : Model -> Html Types.Msg
+-- input model =
+--     Textfield.render
+--         Types.Mdl
+--         [ 0 ]
+--         model.mdl
+--         [ --Options.onInput (Types.GameMsg << InputChat)
+--           Textfield.value model.game.chatInput
+--         , cs "chatbox--actions-input"
+--         ]
