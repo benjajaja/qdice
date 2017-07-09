@@ -62,15 +62,15 @@ navigateTo route =
     Navigation.newUrl <|
         case route of
             GameRoute table ->
-                "/#" ++ (toString table)
+                "#" ++ (toString table)
 
             StaticPageRoute page ->
                 case page of
                     Help ->
-                        "#/static/help"
+                        "#static/help"
 
             EditorRoute ->
-                "/#editor"
+                "#editor"
 
             NotFoundRoute ->
-                "/#404"
+                "#404"
