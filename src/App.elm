@@ -52,7 +52,7 @@ init location =
                 [ hide "peekaboo"
                 , Cmd.map GameMsg gameCmd
                 , Cmd.map EditorMsg editorCmd
-                -- , Backend.connect
+                  -- , Backend.connect
                 ]
     in
         ( model
@@ -99,7 +99,6 @@ update msg model =
                                 , name = name
                                 , picture = picture
                                 }
-
                     in
                         { model | user = user } ! []
 
@@ -114,9 +113,11 @@ update msg model =
 
         OnLocationChange location ->
             let
-                newRoute = parseLocation location
+                newRoute =
+                    parseLocation location
 
-                newModel = { model | route = newRoute }
+                newModel =
+                    { model | route = newRoute }
             in
                 case newRoute of
                     GameRoute table ->
@@ -191,7 +192,7 @@ header model =
 
 drawer : Model -> List (Html.Html Msg)
 drawer model =
-    [ Layout.title [] [ Html.text "Elm Dice" ]
+    [ Layout.title [] [ Html.text "¡Qué Dice!" ]
     , Layout.navigation []
         (List.map
             (\( label, path ) ->

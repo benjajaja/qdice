@@ -7,6 +7,13 @@ window.onerror = function(messageOrEvent, source, lineno, colno, error) {
   return false; // let built in handler log it too
 };
 
+if (window.navigator.standalone === true) {
+  var fragment = document.createElement('div');
+  fragment.style.height = '10px';
+  fragment.style.background = '#2196f3';
+  document.body.insertBefore(fragment, document.body.childNodes[0]);
+}
+
 require('./auth.js')(function(profile) {
   app.ports.onLogin.send([profile.email || '', profile.name || '', profile.picture || '']);
 });
