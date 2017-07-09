@@ -20,14 +20,14 @@ type Msg
     | LoggedIn (List String)
 
 
-type GameRoute
-    = GameRoute
-    | GameTableRoute Table
+type StaticPage
+    = Help
 
 
 type Route
-    = GameRoutes GameRoute
+    = GameRoute Table
     | EditorRoute
+    | StaticPageRoute StaticPage
     | NotFoundRoute
 
 

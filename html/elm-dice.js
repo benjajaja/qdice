@@ -99,8 +99,8 @@ app.ports.mqttConnect.subscribe(function() {
 });
 
 app.ports.scrollChat.subscribe(function(id) {
-  console.debug('scroll', id)
   var element = document.getElementById(id);
+  if (!element) return console.error('cannot scroll #' + id);
   var height = element.clientHeight;
   var scroll = element.scrollTop;
   var innerHeight = element.scrollHeight;
@@ -108,7 +108,6 @@ app.ports.scrollChat.subscribe(function(id) {
     setTimeout(function() {
       element.scrollTop = innerHeight;
     }, 100);
-    console.log('autoscroll')
   }
 });
 

@@ -1,10 +1,10 @@
-module Game.State exposing (init, update)
+module Game.State exposing (init, update, setTable)
 
 import Task
 import Game.Types exposing (..)
 import Types exposing (Model)
 import Board
-import Maps exposing (loadDefault)
+import Maps exposing (load)
 import Land exposing (Color)
 import Tables exposing (Table(..))
 import Backend
@@ -12,20 +12,17 @@ import Backend.Types exposing (Topic(..))
 import Material
 
 
-init : ( Game.Types.Model, Cmd Game.Types.Msg )
-init =
+init : Table -> ( Game.Types.Model, Cmd Game.Types.Msg )
+init table =
     let
         ( map, mapCmd ) =
-            Maps.loadDefault
+            Maps.load table
 
         board =
             Board.init map
 
         players =
             [ mkPlayer "El Chaqueta", mkPlayer "El Chocolate", mkPlayer "Carmen Amaya", mkPlayer "Sabicas" ]
-
-        table =
-            Melchor
     in
         ( Game.Types.Model table board players Paused "" ("chatbox-" ++ toString table)
         , mapCmd
@@ -44,6 +41,13 @@ update msg model =
             model.game
     in
         case msg of
+            ChangeTable table ->
+                let
+                    game_ =
+                        { game | table = table }
+                in
+                    { model | game = game_ } ! []
+
             BoardMsg boardMsg ->
                 let
                     ( board, boardCmd ) =
@@ -75,3 +79,12 @@ update msg model =
                         { game | chatInput = "" }
                 in
                     { model | game = game_ } ! []
+
+
+setTable : Game.Types.Model -> Table -> Game.Types.Model
+setTable model table =
+    let
+        board =
+            Board.init <| Tuple.first <| Maps.load table
+    in
+        { model | table = table, board = board }

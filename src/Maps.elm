@@ -1,11 +1,17 @@
-port module Maps exposing (loadDefault, toCharList, consoleLogMap)
+module Maps exposing (load, toCharList, consoleLogMap)
 
 import Dict
 import String
 import Land exposing (Cells)
-import Maps.Melchor exposing (map)
+import Maps.Melchor
+import Maps.Miño
 import Regex
 import Helpers exposing (..)
+import Tables exposing (Table(..))
+
+
+type alias MapSource =
+    String
 
 
 type alias EmojiLand =
@@ -22,6 +28,16 @@ type alias Line =
     List ( LineColRow, String )
 
 
+mapSourceString : Table -> MapSource
+mapSourceString table =
+    case table of
+        Melchor ->
+            Maps.Melchor.map
+
+        Miño ->
+            Maps.Miño.map
+
+
 emojiRegex : Regex.Regex
 emojiRegex =
     Regex.regex "〿|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]"
@@ -32,11 +48,14 @@ consoleLogMap map =
     consoleDebug <| toEmojiString <| toCharList map
 
 
-loadDefault : ( Land.Map, Cmd msg )
-loadDefault =
+load : Table -> ( Land.Map, Cmd msg )
+load table =
     let
+        _ =
+            Debug.log "load!" table
+
         raw =
-            Maps.Melchor.map
+            mapSourceString table
                 |> String.lines
 
         lines : List Line

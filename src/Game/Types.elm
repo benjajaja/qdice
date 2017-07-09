@@ -6,7 +6,8 @@ import Tables exposing (Table)
 
 
 type Msg
-    = BoardMsg Board.Msg
+    = ChangeTable Table
+    | BoardMsg Board.Msg
     | InputChat String
     | SendChat String
     | ClearChat

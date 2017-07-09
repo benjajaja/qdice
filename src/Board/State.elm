@@ -6,7 +6,7 @@ import Land
 
 init : Land.Map -> Model
 init map =
-    (Model map)
+    Model map
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

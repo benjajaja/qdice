@@ -29,7 +29,9 @@ view model =
             [ Html.div []
                 ((Chip.chip Html.div
                     []
-                    [ Chip.text [] ("Game: " ++ (toString model.game.status)) ]
+                    [ Chip.text [] ("Game: " ++ (toString model.game.status))
+                    , Chip.text [] ("Table: " ++ (toString model.game.table))
+                    ]
                  )
                     :: (playButtons model.mdl)
                 )

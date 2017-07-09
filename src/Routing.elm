@@ -3,21 +3,42 @@ module Routing exposing (..)
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 import Types exposing (..)
+import Tables exposing (Table(..), decodeTable)
 
 
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map (GameRoutes GameRoute) top
-          -- , map GameTableRoute (string)
-          -- , tableMatcher
+        [ map (GameRoute Melchor) top
+          -- , map GameTableRoute tableMatcher
+        , tableMatcher
+        , map StaticPageRoute (s "static" </> staticPageMatcher)
         , map EditorRoute (s "editor")
         ]
 
 
+staticPageMatcher : Parser (StaticPage -> a) a
+staticPageMatcher =
+    UrlParser.custom "STATIC_PAGE" <|
+        \segment ->
+            case segment of
+                "help" ->
+                    Ok Help
 
--- tableMatcher : Parser (Route -> a) a
--- tableMatcher =
+                _ ->
+                    Err segment
+
+
+tableMatcher : Parser (Route -> a) a
+tableMatcher =
+    UrlParser.custom "GAME" <|
+        \segment ->
+            case decodeTable segment of
+                Just table ->
+                    Ok (GameRoute table)
+
+                Nothing ->
+                    Err <| "No such table: " ++ segment
 
 
 parseLocation : Location -> Route
@@ -41,13 +62,13 @@ navigateTo : Route -> Cmd Msg
 navigateTo route =
     Navigation.newUrl <|
         case route of
-            GameRoutes sub ->
-                case sub of
-                    GameRoute ->
-                        "/#"
+            GameRoute table ->
+                "/#" ++ (toString table)
 
-                    GameTableRoute table ->
-                        "/#" ++ (toString table)
+            StaticPageRoute page ->
+                case page of
+                    Help ->
+                        "#/static/help"
 
             EditorRoute ->
                 "/#editor"
