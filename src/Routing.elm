@@ -10,7 +10,6 @@ matchers : Parser (Route -> a) a
 matchers =
     oneOf
         [ map (GameRoute Melchor) top
-          -- , map GameTableRoute tableMatcher
         , tableMatcher
         , map StaticPageRoute (s "static" </> staticPageMatcher)
         , map EditorRoute (s "editor")

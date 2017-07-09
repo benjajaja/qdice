@@ -4,7 +4,6 @@ import Task
 import Maybe
 import Navigation exposing (Location)
 import Routing exposing (parseLocation, navigateTo)
-import Helpers exposing (..)
 import Types exposing (..)
 import Game.State
 import Game.View
@@ -16,7 +15,6 @@ import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
-import UrlParser exposing ((</>))
 import Backend
 import Tables exposing (Table(..))
 
@@ -49,16 +47,6 @@ init location =
         model =
             Model route Material.model game editor backend Types.Anonymous
 
-        -- newRoute =
-        --     case route of
-        --         GameRoute table ->
-        --             let
-        --                 _ =
-        --                     Debug.log "GameRoute r" r
-        --             in
-        --                 GameRoutes <| GameTableRoute Melchor
-        --         _ ->
-        --             route
         _ =
             Debug.log "init" ( route, location )
 
@@ -80,9 +68,6 @@ updateWrapper msg model =
     let
         ( model_, cmd ) =
             update msg model
-
-        -- _ =
-        --     Debug.log "update" msg
     in
         ( model_, cmd )
 
@@ -151,18 +136,6 @@ update msg model =
                     _ ->
                         newModel ! []
 
-        -- SetQuery query ->
-        --     let
-        --         command =
-        --             -- First modify the current stored address record (setting the query)
-        --             -- Then generate a URL using Hop.output
-        --             -- Finally, create a command using Navigation.newUrl
-        --             model.address
-        --                 |> Hop.setQuery query
-        --                 |> Hop.output hopConfig
-        --                 |> Navigation.newUrl
-        --     in
-        --         ( model, command )
         Mdl msg ->
             Material.update Mdl msg model
 
@@ -182,20 +155,6 @@ currentTable route =
             Nothing
 
 
-
--- urlUpdate : ( Route, Address ) -> Model -> ( Model, Cmd Msg )
--- urlUpdate ( route, address ) model =
---     let
---         cmd =
---             case route of
---                 EditorRoute ->
---                     Tuple.second Editor.Editor.init |> Cmd.map EditorMsg
---                 _ ->
---                     Cmd.none
---     in
---         ( { model | route = route, address = address }, cmd )
-
-
 type alias Mdl =
     Material.Model
 
@@ -210,10 +169,6 @@ view model =
         , tabs = ( [], [] )
         , main = [ Html.div [ Html.Attributes.class "Main" ] [ mainView model ] ]
         }
-
-
-
--- |> Material.Scheme.top
 
 
 header : Model -> List (Html.Html Msg)
@@ -236,9 +191,6 @@ header model =
                     Anonymous ->
                         [ Icon.i "account_circle" ]
                 )
-              -- , Layout.link
-              --     [ Layout.href "http://package.elm-lang.org/packages/debois/elm-mdl/latest/" ]
-              --     [ Html.text "elm-package" ]
             ]
         ]
     ]

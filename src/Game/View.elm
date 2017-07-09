@@ -27,14 +27,19 @@ view model =
     in
         Html.div []
             [ Html.div []
-                ((Chip.chip Html.div
-                    []
-                    [ Chip.text [] ("Game: " ++ (toString model.game.status))
-                    , Chip.text [] ("Table: " ++ (toString model.game.table))
+                [ Chip.span []
+                    [ Chip.content []
+                        [ Html.text <| "Game: " ++ (toString model.game.status) ]
                     ]
-                 )
-                    :: (playButtons model.mdl)
-                )
+                , Chip.span []
+                    [ Chip.content []
+                        [ Html.text <| "Table: " ++ (toString model.game.table) ]
+                    ]
+                ]
+              -- (--List.append
+              --  (Chip.chip Html.div [] [ Chip.text [] ("Game: " ++ (toString model.game.status)) ])
+              --     (Chip.chip Html.div [] [ Chip.text [] ("Table: " ++ (toString model.game.table)) ])
+              -- )
             , board |> Html.map Types.GameMsg
             , boardHistory model
             , footer model
