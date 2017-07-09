@@ -47,15 +47,12 @@ init location =
         model =
             Model route Material.model game editor backend Types.Anonymous
 
-        _ =
-            Debug.log "init" ( route, location )
-
         cmds =
             Cmd.batch
                 [ hide "peekaboo"
                 , Cmd.map GameMsg gameCmd
                 , Cmd.map EditorMsg editorCmd
-                , Backend.connect
+                -- , Backend.connect
                 ]
     in
         ( model
@@ -103,8 +100,6 @@ update msg model =
                                 , picture = picture
                                 }
 
-                        _ =
-                            Debug.log "login" user
                     in
                         { model | user = user } ! []
 
@@ -119,11 +114,9 @@ update msg model =
 
         OnLocationChange location ->
             let
-                newRoute =
-                    Debug.log "newRoute" <| parseLocation location
+                newRoute = parseLocation location
 
-                newModel =
-                    { model | route = newRoute }
+                newModel = { model | route = newRoute }
             in
                 case newRoute of
                     GameRoute table ->

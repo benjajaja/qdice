@@ -51,9 +51,6 @@ consoleLogMap map =
 load : Table -> ( Land.Map, Cmd msg )
 load table =
     let
-        _ =
-            Debug.log "load!" table
-
         raw =
             mapSourceString table
                 |> String.lines
@@ -71,7 +68,7 @@ load table =
                 |> List.map (Maybe.withDefault 0)
 
         width =
-            List.maximum widths |> Maybe.withDefault 0 |> Debug.log "max width"
+            List.maximum widths |> Maybe.withDefault 0
 
         lands =
             List.map (List.filter (\t -> Tuple.second t /= Land.emptyEmoji && Tuple.second t /= "〿")) lines
@@ -81,7 +78,7 @@ load table =
 
         cmd =
             consoleDebug <|
-                "lines:"
+                "Emoji map"
                     ++ (String.join (String.fromChar '\n') <|
                             List.map (\l -> String.join "" <| List.map Tuple.second l) <|
                                 lines

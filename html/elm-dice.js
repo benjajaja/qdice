@@ -33,7 +33,10 @@ app.ports.selectAll.subscribe(function(id) {
 });
 
 app.ports.consoleDebug.subscribe(function(string) {
-  console.debug(string);
+  var lines = string.split('\n');
+  console.groupCollapsed(lines.shift());
+  console.debug(lines.join('\n'));
+  console.groupEnd();
 });
 
 var mqttConfig = {
