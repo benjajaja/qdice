@@ -10,7 +10,6 @@ import Tables exposing (Table)
 
 type Msg
     = NavigateTo Route
-      -- | SetQuery Query
     | OnLocationChange Location
     | Mdl (Material.Msg Msg)
     | GameMsg Game.Types.Msg
@@ -32,7 +31,6 @@ type Route
 
 
 type alias Model =
-    -- { address : Address
     { route : Route
     , mdl :
         Material.Model

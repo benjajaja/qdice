@@ -1,6 +1,8 @@
 port module Backend exposing (connect, init, update, subscriptions, publish)
 
 import String
+import Http
+import Json.Decode exposing (list, string)
 import Backend.Types exposing (..)
 import Backend.MessageCodification exposing (..)
 import Types
@@ -12,13 +14,15 @@ connect =
     mqttConnect ""
 
 
-init : Model
-init =
-    { clientId = Nothing
-    , subscribed = []
-    , status = Offline
-    , chatLog = []
-    }
+init : Table -> ( Model, Cmd Msg )
+init table =
+    ( { clientId = Nothing
+      , subscribed = []
+      , status = Offline
+      , chatLog = []
+      }
+    , joinTable table
+    )
 
 
 update : Msg -> Types.Model -> ( Types.Model, Cmd Types.Msg )
@@ -116,6 +120,27 @@ update msg model =
 
                 Chat user text ->
                     updateBackendChatLog model <| LogChat user text
+
+        JoinTable table ->
+            model ! [ Cmd.map Types.BckMsg <| joinTable table ]
+
+        Joined (Ok response) ->
+            model ! []
+
+        Joined (Err _) ->
+            model ! []
+
+
+joinTable : Table -> Cmd Msg
+joinTable table =
+    let
+        request =
+            Http.post ("http://localhost:8080/tables/" ++ (toString table)) Http.emptyBody (string)
+
+        --decTab
+    in
+        -- Cmd.map Types.BckMsg <|
+        Http.send (Joined) request
 
 
 updateBackendChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )

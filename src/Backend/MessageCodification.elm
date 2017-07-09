@@ -1,4 +1,4 @@
-module Backend.MessageCodification exposing (decodeTopicMessage, encodeTopic, encodeTopicMessage)
+module Backend.MessageCodification exposing (..)
 
 import Backend.Types exposing (..)
 import Tables exposing (Table(..))

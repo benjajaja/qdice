@@ -35,14 +35,17 @@ init location =
         route =
             Routing.parseLocation location
 
+        table =
+            Maybe.withDefault Melchor <| currentTable route
+
         ( game, gameCmd ) =
-            Game.State.init <| Maybe.withDefault Melchor <| currentTable route
+            Game.State.init <| table
 
         ( editor, editorCmd ) =
             Editor.Editor.init
 
-        backend =
-            Backend.init
+        ( backend, backendCmd ) =
+            Backend.init table
 
         model =
             Model route Material.model game editor backend Types.Anonymous
@@ -52,6 +55,7 @@ init location =
                 [ hide "peekaboo"
                 , Cmd.map GameMsg gameCmd
                 , Cmd.map EditorMsg editorCmd
+                , Cmd.map BckMsg backendCmd
                   -- , Backend.connect
                 ]
     in
@@ -202,9 +206,9 @@ drawer model =
             )
             [ ( "Play", GameRoute Melchor )
             , ( "Help", StaticPageRoute Help )
-            , ( "Editor (experimental)", EditorRoute )
-            , ( "Table:Melchor (test)", GameRoute Melchor )
+            , ( "Table:Melchor", GameRoute Melchor )
             , ( "Table:Miño", GameRoute Miño )
+            , ( "Editor (experimental)", EditorRoute )
             ]
         )
     ]

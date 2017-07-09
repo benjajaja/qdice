@@ -1,5 +1,6 @@
 module Backend.Types exposing (..)
 
+import Http
 import Tables exposing (Table(..))
 
 
@@ -13,6 +14,8 @@ type Msg
     | AllClientsMsg AllClientsMessage
     | TableMsg Table TableMessage
     | UnknownTopicMessage String String String
+    | JoinTable Table
+    | Joined (Result Http.Error String)
 
 
 type alias Model =
