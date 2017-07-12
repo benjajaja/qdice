@@ -12,8 +12,17 @@ if (window.navigator.standalone === true) {
   fragment.style.height = '10px';
   fragment.style.background = '#2196f3';
   document.body.insertBefore(fragment, document.body.childNodes[0]);
+  // mobile app
+  document.body.classList.add('navigator-standalone');
+  document.addEventListener('contextmenu', function (event) { event.preventDefault(); });
+  var viewportmeta = document.querySelector('meta[name="viewport"]');
+  viewportmeta.content = 'user-scalable=NO, width=device-width, initial-scale=1.0'
 }
 
+var fastclick = require('fastclick');
+document.addEventListener('DOMContentLoaded', function() {
+  FastClick.attach(document.body);
+}, false);
 require('./auth.js')(function(profile) {
   app.ports.onLogin.send([profile.email || '', profile.name || '', profile.picture || '']);
 });
