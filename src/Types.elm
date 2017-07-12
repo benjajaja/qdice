@@ -38,6 +38,7 @@ type alias Model =
     , editor : Editor.Types.Model
     , backend : Backend.Types.Model
     , user : User
+    , tableList : List Table
     }
 
 

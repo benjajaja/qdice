@@ -1,12 +1,16 @@
-port module Backend exposing (connect, init, update, subscriptions, publish)
+port module Backend exposing (connect, init, update, subscriptions, publish, joinTable)
 
 import String
 import Http
 import Json.Decode exposing (list, string)
 import Backend.Types exposing (..)
+import Backend.Decoding exposing (..)
+import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
 import Types
 import Tables exposing (Table(..), decodeTable)
+import Game.Types exposing (Player)
+import Land exposing (Color(..))
 
 
 connect : Cmd msg
@@ -21,7 +25,7 @@ init table =
       , status = Offline
       , chatLog = []
       }
-    , joinTable table
+    , connect
     )
 
 
@@ -122,21 +126,45 @@ update msg model =
                     updateBackendChatLog model <| LogChat user text
 
         JoinTable table ->
-            model ! [ Cmd.map Types.BckMsg <| joinTable table ]
+            model ! [ Cmd.map Types.BckMsg <| joinTable model.user table ]
 
         Joined (Ok response) ->
-            model ! []
+            let
+                game =
+                    model.game
+
+                game_ =
+                    { game | players = response.players }
+            in
+                { model | game = game_ } ! []
 
         Joined (Err _) ->
             model ! []
 
 
-joinTable : Table -> Cmd Msg
-joinTable table =
+joinTable : Types.User -> Table -> Cmd Msg
+joinTable user table =
     let
-        request =
-            Http.post ("http://localhost:8080/tables/" ++ (toString table)) Http.emptyBody (string)
+        _ =
+            Debug.log "joinTable Backend.elm" user
 
+        request =
+            Http.post ("http://localhost:5001/tables/" ++ (toString table))
+                (Player
+                    (case user of
+                        Types.Anonymous ->
+                            "Anonymous"
+
+                        Types.Logged user ->
+                            user.name
+                    )
+                    Neutral
+                    |> playerEncoder
+                    |> Http.jsonBody
+                )
+                tableDecoder
+
+        --(string)
         --decTab
     in
         -- Cmd.map Types.BckMsg <|

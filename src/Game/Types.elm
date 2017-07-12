@@ -37,3 +37,8 @@ type alias Player =
 
 type alias PlayerName =
     String
+
+
+type alias TableStatus =
+    { players : List Player
+    }

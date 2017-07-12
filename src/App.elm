@@ -16,7 +16,7 @@ import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
 import Backend
-import Tables exposing (Table(..))
+import Tables exposing (Table(..), tableList)
 
 
 main : Program Never Model Msg
@@ -38,7 +38,7 @@ init location =
         table =
             Maybe.withDefault Melchor <| currentTable route
 
-        ( game, gameCmd ) =
+        ( game, gameCmds ) =
             Game.State.init <| table
 
         ( editor, editorCmd ) =
@@ -48,16 +48,17 @@ init location =
             Backend.init table
 
         model =
-            Model route Material.model game editor backend Types.Anonymous
+            Model route Material.model game editor backend Types.Anonymous tableList
 
         cmds =
-            Cmd.batch
-                [ hide "peekaboo"
-                , Cmd.map GameMsg gameCmd
-                , Cmd.map EditorMsg editorCmd
-                , Cmd.map BckMsg backendCmd
-                  -- , Backend.connect
-                ]
+            Cmd.batch <|
+                List.append
+                    gameCmds
+                    [ hide "peekaboo"
+                    , Cmd.map EditorMsg editorCmd
+                    , Cmd.map BckMsg backendCmd
+                      -- , Backend.connect
+                    ]
     in
         ( model
         , cmds
@@ -104,7 +105,7 @@ update msg model =
                                 , picture = picture
                                 }
                     in
-                        { model | user = user } ! []
+                        { model | user = user } ! [ Cmd.map BckMsg <| Backend.joinTable user model.game.table ]
 
                 _ ->
                     model ! []
@@ -126,10 +127,14 @@ update msg model =
                 case newRoute of
                     GameRoute table ->
                         let
-                            ( game, gameCmd ) =
+                            ( game, gameCmds ) =
                                 Game.State.init table
+
+                            joinCmd : Cmd Msg
+                            joinCmd =
+                                Cmd.map BckMsg <| Backend.joinTable model.user table
                         in
-                            { newModel | game = game } ! [ Cmd.map GameMsg gameCmd ]
+                            { newModel | game = game } ! (joinCmd :: gameCmds)
 
                     _ ->
                         newModel ! []

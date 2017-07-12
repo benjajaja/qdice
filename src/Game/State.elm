@@ -2,17 +2,16 @@ module Game.State exposing (init, update, setTable)
 
 import Task
 import Game.Types exposing (..)
-import Types exposing (Model)
+import Types exposing (Model, User(Anonymous))
 import Board
 import Maps exposing (load)
 import Land exposing (Color)
 import Tables exposing (Table(..))
 import Backend
 import Backend.Types exposing (Topic(..))
-import Material
 
 
-init : Table -> ( Game.Types.Model, Cmd Game.Types.Msg )
+init : Table -> ( Game.Types.Model, List (Cmd Types.Msg) )
 init table =
     let
         ( map, mapCmd ) =
@@ -22,10 +21,10 @@ init table =
             Board.init map
 
         players =
-            [ mkPlayer "El Chaqueta", mkPlayer "El Chocolate", mkPlayer "Carmen Amaya", mkPlayer "Sabicas" ]
+            []
     in
         ( Game.Types.Model table board players Paused "" ("chatbox-" ++ toString table)
-        , mapCmd
+        , [ mapCmd ]
         )
 
 

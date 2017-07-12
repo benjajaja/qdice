@@ -5,11 +5,14 @@ import Game.Types
 import Game.Chat
 import Html
 import Material
+import Material.Options as Options
 import Material.Chip as Chip
 import Material.Button as Button
 import Material.Icon as Icon
 import Material.Footer as Footer
+import Material.List as Lists
 import Types exposing (Model, Msg)
+import Tables exposing (Table, tableList)
 import Board
 import Backend.Types exposing (ConnectionStatus(..))
 
@@ -41,6 +44,7 @@ view model =
               --     (Chip.chip Html.div [] [ Chip.text [] ("Table: " ++ (toString model.game.table)) ])
               -- )
             , board |> Html.map Types.GameMsg
+            , Html.div [] <| List.map (playerChip model) model.game.players
             , boardHistory model
             , footer model
             ]
@@ -69,6 +73,14 @@ playButtons mdl =
     ]
 
 
+playerChip : Model -> Game.Types.Player -> Html.Html Types.Msg
+playerChip model player =
+    Chip.span []
+        [ Chip.content []
+            [ Html.text <| player.name ]
+        ]
+
+
 boardHistory : Model -> Html.Html Types.Msg
 boardHistory model =
     Html.div []
@@ -80,8 +92,38 @@ footer model =
     Footer.mini []
         { left =
             Footer.left [] (statusMessage model.backend.status)
-        , right = Footer.right [] []
+        , right = Footer.right [] (listOfTables model tableList)
         }
+
+
+listOfTables : Model -> List Table -> List (Footer.Content Types.Msg)
+listOfTables model tables =
+    [ Footer.html <|
+        Lists.ul [] <|
+            List.indexedMap
+                (\i ->
+                    \table ->
+                        Lists.li [ Lists.withSubtitle ]
+                            [ Lists.content []
+                                [ Html.text <| toString table
+                                , Lists.subtitle [] [ Html.text "Unknown" ]
+                                ]
+                            , joinTableButton model table i
+                            ]
+                )
+                tables
+    ]
+
+
+joinTableButton : Model -> Table -> Int -> Html.Html Types.Msg
+joinTableButton model table i =
+    Button.render Types.Mdl
+        [ i ]
+        model.mdl
+        [ Button.icon
+        , Options.onClick (Types.NavigateTo <| Types.GameRoute table)
+        ]
+        [ Icon.i "chevron_right" ]
 
 
 statusMessage : ConnectionStatus -> List (Footer.Content Types.Msg)

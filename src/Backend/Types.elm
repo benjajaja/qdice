@@ -2,6 +2,7 @@ module Backend.Types exposing (..)
 
 import Http
 import Tables exposing (Table(..))
+import Game.Types exposing (TableStatus)
 
 
 type Msg
@@ -15,7 +16,7 @@ type Msg
     | TableMsg Table TableMessage
     | UnknownTopicMessage String String String
     | JoinTable Table
-    | Joined (Result Http.Error String)
+    | Joined (Result Http.Error TableStatus)
 
 
 type alias Model =
