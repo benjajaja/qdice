@@ -23,12 +23,12 @@ var fastclick = require('fastclick');
 document.addEventListener('DOMContentLoaded', function() {
   FastClick.attach(document.body);
 }, false);
+
 require('./auth.js')(function(profile) {
   app.ports.onLogin.send([profile.email || '', profile.name || '', profile.picture || '']);
 });
 
 var Elm = require('../src/App');
-var mqtt = require('mqtt');
 
 var app = Elm.Edice.fullscreen();
 
@@ -55,66 +55,22 @@ app.ports.consoleDebug.subscribe(function(string) {
   console.groupEnd();
 });
 
-var mqttConfig = {
-  hostname: 'm21.cloudmqtt.com',
-  port: 31201,
-  username: 'client',
-  password: 'client',
-}
+
 
 app.ports.mqttConnect.subscribe(function() {
-  try {
-    var url = 'wss://' + mqttConfig.hostname + ':' + mqttConfig.port;
-    var clientId = 'elm-dice_' + Math.random().toString(16).substr(2, 8);
-    var client = mqtt.connect(url, {
-      clientId: clientId,
-      username: mqttConfig.username,
-      password: mqttConfig.password,
-    });
-
-    var connectionAttempts = 0;
-
-    app.ports.mqttOnConnect.send('');
-
-    client.on('connect', function (connack) {
-      app.ports.mqttOnConnected.send(clientId);
-      connectionAttempts = 0;
-    });
-
-    client.on('message', function (topic, message) {
-      app.ports.mqttOnMessage.send([topic, message.toString()]);
-    });
-
-    client.on('error', function (error) {
-      console.error('mqtt error:', error);
-    });
-
-    client.on('reconnect', function () {
-      connectionAttempts = connectionAttempts + 1;
-      app.ports.mqttOnReconnect.send(connectionAttempts);
-    });
-
-    // client.on('close', function (event) {
-    //   console.error('mqtt close:', event);
-    // });
-
-    client.on('offline', function () {
-      app.ports.mqttOnOffline.send(connectionAttempts.toString());
-    });
-
-    app.ports.mqttSubscribe.subscribe(function(args) {
-      client.subscribe(args, function(err, granted) {
-        if (err) throw err;
-        app.ports.mqttOnSubscribed.send(granted.shift().topic);
-      });
-    });
-
-    app.ports.mqttPublish.subscribe(function(args) {
-      client.publish(args[0], args[1]);
-    });
-  } catch (e) {
-    console.error('MQTT connection error', e);
-  }
+  var Worker = require('worker-loader!./elm-dice-webworker.js');
+  var worker = new Worker();
+  worker.postMessage({type: 'connect', url: location.href});
+  worker.addEventListener('message', function(event) {
+    var action = event.data;
+    app.ports[action.type].send(action.payload);
+  });
+  app.ports.mqttSubscribe.subscribe(function(args) {
+    worker.postMessage({type: 'subscribe', payload: args});
+  })
+  app.ports.mqttPublish.subscribe(function(args) {
+    worker.postMessage({type: 'publish', payload: args});
+  })
 });
 
 app.ports.scrollChat.subscribe(function(id) {
