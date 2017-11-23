@@ -40,7 +40,7 @@ init location =
             Maybe.withDefault Melchor <| currentTable route
 
         ( game, gameCmds ) =
-            Game.State.init <| table
+            Game.State.init Nothing table
 
         ( editor, editorCmd ) =
             Editor.Editor.init
@@ -129,13 +129,9 @@ update msg model =
                     GameRoute table ->
                         let
                             ( game, gameCmds ) =
-                                Game.State.init table
-
-                            joinCmd : Cmd Msg
-                            joinCmd =
-                                Cmd.map BckMsg <| Backend.joinTable model.user table
+                                Game.State.init (Just newModel) table
                         in
-                            { newModel | game = game } ! (joinCmd :: gameCmds)
+                            { newModel | game = game } ! gameCmds
 
                     _ ->
                         newModel ! []

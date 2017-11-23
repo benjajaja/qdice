@@ -42,12 +42,13 @@ tableMatcher =
 
 parseLocation : Location -> Route
 parseLocation location =
-    case (parseHash matchers location) of
+    case (parseHash matchers (Debug.log "location" location)) of
         Just route ->
             route
 
         Nothing ->
             NotFoundRoute
+
 
 navigateTo : Route -> Cmd Msg
 navigateTo route =

@@ -11,8 +11,8 @@ import Backend
 import Backend.Types exposing (Topic(..))
 
 
-init : Table -> ( Game.Types.Model, List (Cmd Types.Msg) )
-init table =
+init : Maybe Types.Model -> Table -> ( Game.Types.Model, List (Cmd Types.Msg) )
+init model table =
     let
         ( map, mapCmd ) =
             Maps.load table
@@ -22,9 +22,21 @@ init table =
 
         players =
             []
+
+        cmds =
+            mapCmd
+                :: case model of
+                    Just model ->
+                        [ Cmd.map Types.BckMsg <| Backend.joinTable model.user table
+                        , Cmd.map Types.BckMsg <| Backend.publish <| Backend.Types.TableMsg model.game.table <| Backend.Types.Leave <| Types.getUsername model
+                        , Cmd.map Types.BckMsg <| Backend.publish <| Backend.Types.TableMsg table <| Backend.Types.Join <| Types.getUsername model
+                        ]
+
+                    Nothing ->
+                        []
     in
         ( Game.Types.Model table board players Paused "" ("chatbox-" ++ toString table)
-        , [ mapCmd ]
+        , cmds
         )
 
 
