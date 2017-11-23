@@ -9,6 +9,7 @@ module.exports = function(callback) {
       sso: true,
       redirectUrl: [location.protocol, '//', location.hostname].join('')
         + (location.port && location.port != '80' ? ':' + location.port : '')
+        + (location.pathname || '')
     },
     theme: {
       displayName: 'Login',

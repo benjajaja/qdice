@@ -66,7 +66,7 @@ server.listen(5001, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
 
-var client  = mqtt.connect('tcp://localhost:1883')
+var client = mqtt.connect('tcp://localhost:1883')
  
 client.on('connect', function () {
   Object.keys(tables).forEach(key => {
