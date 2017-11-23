@@ -10,6 +10,7 @@ import Game.View
 import Static.View
 import Editor.Editor
 import Html
+import Html.Lazy
 import Html.Attributes
 import Material
 import Material.Layout as Layout
@@ -162,13 +163,18 @@ type alias Mdl =
     Material.Model
 
 
+lazyList : (a -> List (Html.Html Msg)) -> a -> List (Html.Html Msg)
+lazyList view =
+    Html.Lazy.lazy (\model -> Html.div [] (view model)) >> (\html -> [ html ])
+
+
 view : Model -> Html.Html Msg
 view model =
     Layout.render Mdl
         model.mdl
         [ Layout.fixedHeader, Layout.scrolling ]
-        { header = header model
-        , drawer = drawer model
+        { header = (lazyList header) model
+        , drawer = (lazyList drawer) model
         , tabs = ( [], [] )
         , main = [ Html.div [ Html.Attributes.class "Main" ] [ mainView model ] ]
         }

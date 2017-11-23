@@ -40,7 +40,7 @@ body.navigator-standalone textarea {
 }
 
 #edice-board > svg {
-  font-size: 10%;
+  font-size: 33%;
   overflow: visible;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }

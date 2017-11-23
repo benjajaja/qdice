@@ -12,7 +12,7 @@ import Html
 import Html.Attributes
 import Html.Lazy
 import Board.Types exposing (Msg, Model)
-import Land exposing (Land, Map, Point, landPath, cellCenter)
+import Land exposing (Land, Map, Point, landPath, cellCenter, landCenter)
 
 
 widthElementId : String
@@ -138,21 +138,39 @@ pointToString ( x, y ) =
 
 landText : Land.Layout -> Land.Land -> List (Svg Msg)
 landText layout land =
-    List.map
-        (\c ->
-            let
-                ( cx, cy ) =
-                    cellCenter layout c
-            in
-                Svg.text_
-                    [ x <| toString cx
-                    , y <| toString cy
-                    , textAnchor "middle"
-                    , alignmentBaseline "central"
+    landCenter layout land.cells
+        |> (\c ->
+                let
+                    ( cx, cy ) =
+                        c
+                in
+                    [ Svg.text_
+                        [ x <| toString cx
+                        , y <| toString cy
+                        , textAnchor "middle"
+                        , alignmentBaseline "central"
+                        ]
+                        [ Html.text land.emoji ]
                     ]
-                    [ Html.text land.emoji ]
-        )
-        land.cells
+           )
+
+
+
+--List.map
+--(\c ->
+--let
+--( cx, cy ) =
+--cellCenter layout c
+--in
+--Svg.text_
+--[ x <| toString cx
+--, y <| toString cy
+--, textAnchor "middle"
+--, alignmentBaseline "central"
+--]
+--[ Html.text land.emoji ]
+--)
+--land.cells
 
 
 landColor : Land -> String

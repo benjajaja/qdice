@@ -1,5 +1,6 @@
 module Board exposing (..)
 
+import Html.Lazy
 import Board.Types
 import Board.State
 import Board.View
@@ -22,4 +23,4 @@ update =
 
 
 view =
-    Board.View.view
+    Html.Lazy.lazy Board.View.view

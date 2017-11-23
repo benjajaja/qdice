@@ -72,14 +72,28 @@ myLayout { size, padding } =
     }
 
 
-center : HL.Layout -> Cells -> Point
-center layout cells =
+landCenter : Layout -> Cells -> Point
+landCenter layout cells =
     case cells of
         [] ->
             ( -1, -1 )
 
-        hd :: _ ->
-            Hex.center layout hd
+        list ->
+            centerPoint layout cells
+
+
+centerPoint : Layout -> Cells -> Point
+centerPoint layout cells =
+    let
+        lx =
+            List.map (center (myLayout layout) >> Tuple.first) cells
+
+        ly =
+            List.map (center (myLayout layout) >> Tuple.second) cells
+    in
+        ( ((List.sum lx)) / toFloat (List.length lx)
+        , ((List.sum ly)) / toFloat (List.length ly)
+        )
 
 
 cellCenter : Layout -> Hex -> Point
