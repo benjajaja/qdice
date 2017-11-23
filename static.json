@@ -3,6 +3,8 @@
   "clean_urls": false,
   "routes": {
     "/editor": "index.html",
+    "/help": "index.html",
+    "/Miño": "index.html",
     "/Melchor": "index.html"
   }
 }
