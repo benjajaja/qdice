@@ -4,6 +4,7 @@ import Game.Types exposing (Msg(..))
 import Game.Types
 import Game.Chat
 import Html
+import Html.Attributes exposing (class)
 import Material
 import Material.Options as Options
 import Material.Chip as Chip
@@ -17,10 +18,6 @@ import Board
 import Backend.Types exposing (ConnectionStatus(..))
 
 
--- import Board.Types exposing (Msg(..))
--- import Land
-
-
 view : Model -> Html.Html Types.Msg
 view model =
     let
@@ -28,21 +25,8 @@ view model =
             Board.view model.game.board
                 |> Html.map BoardMsg
     in
-        Html.div []
-            [ Html.div []
-                [ Chip.span []
-                    [ Chip.content []
-                        [ Html.text <| "Game: " ++ (toString model.game.status) ]
-                    ]
-                , Chip.span []
-                    [ Chip.content []
-                        [ Html.text <| "Table: " ++ (toString model.game.table) ]
-                    ]
-                ]
-              -- (--List.append
-              --  (Chip.chip Html.div [] [ Chip.text [] ("Game: " ++ (toString model.game.status)) ])
-              --     (Chip.chip Html.div [] [ Chip.text [] ("Table: " ++ (toString model.game.table)) ])
-              -- )
+        Html.div [ class "ed-game" ]
+            [ header model
             , board |> Html.map Types.GameMsg
             , Html.div [] <| List.map (playerChip model) model.game.players
             , boardHistory model
@@ -50,27 +34,42 @@ view model =
             ]
 
 
-playButtons : Material.Model -> List (Html.Html Types.Msg)
-playButtons mdl =
-    [ Button.render
+header : Model -> Html.Html Types.Msg
+header model =
+    Html.div [ class "edGameHeader" ]
+        [ Html.span [ class "edGameHeader__chip" ]
+            [ Html.text "Table "
+            , Html.span [ class "edGameHeader__chip--strong" ]
+                [ Html.text <| toString model.game.table
+                ]
+            ]
+        , Html.span [ class "edGameHeader__chip" ]
+            [ Html.text ", "
+            , Html.span [ class "edGameHeader__chip--strong" ]
+                [ Html.text <| toString model.game.playerCount
+                ]
+            , Html.text " player game is "
+            , Html.span [ class "edGameHeader__chip--strong" ]
+                [ Html.text <| toString model.game.status
+                ]
+            ]
+        , playButton model
+        ]
+
+
+playButton : Model -> Html.Html Types.Msg
+playButton model =
+    Button.render
         Types.Mdl
         [ 0 ]
-        mdl
-        [ Button.primary
+        model.mdl
+        [ Button.raised
         , Button.colored
         , Button.ripple
+        , Options.cs "edGameHeader__button"
+        , Options.onClick <| Types.GameMsg JoinGame
         ]
-        [ Icon.i "add" ]
-    , Button.render
-        Types.Mdl
-        [ 0 ]
-        mdl
-        [ Button.primary
-        , Button.colored
-        , Button.ripple
-        ]
-        [ Icon.i "remove" ]
-    ]
+        [ Html.text "Join game" ]
 
 
 playerChip : Model -> Game.Types.Player -> Html.Html Types.Msg

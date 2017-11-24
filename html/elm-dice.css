@@ -39,18 +39,33 @@ body.navigator-standalone textarea {
   }
 }
 
-#edice-board > svg {
+.ed-board--svg {
   font-size: 33%;
   overflow: visible;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
-#edice-board svg > g {
+.ed-board--svg g {
   cursor: pointer;
 }
-#edice-board svg > g > text {
+.ed-board--svg g > text {
   pointer-events: none;
 }
 
+.edGameHeader {
+  display: flex;
+  padding-left: 4px;
+}
+.edGameHeader__chip {
+  padding-top: 4px;
+}
+.edGameHeader__chip--strong {
+  font-weight: bold;
+}
+.edGameHeader__button {
+  height: 20px;
+  line-height: 20px;
+  margin: 4px 8px;
+}
 /*#edice-board {
   background: url(http://www2.luventicus.org/mapas/espanacomunidades.gif);
   background-size: 50% 50%;

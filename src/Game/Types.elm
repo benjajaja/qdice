@@ -11,6 +11,7 @@ type Msg
     | InputChat String
     | SendChat String
     | ClearChat
+    | JoinGame
 
 
 type GameStatus
@@ -24,6 +25,7 @@ type alias Model =
     , board : Board.Model
     , players : List Player
     , status : GameStatus
+    , playerCount : Int
     , chatInput : String
     , chatBoxId : String
     }

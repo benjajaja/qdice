@@ -35,7 +35,7 @@ init model table =
                     Nothing ->
                         []
     in
-        ( Game.Types.Model table board players Paused "" ("chatbox-" ++ toString table)
+        ( Game.Types.Model table board players Paused 2 "" ("chatbox-" ++ toString table)
         , cmds
         )
 
@@ -90,6 +90,10 @@ update msg model =
                         { game | chatInput = "" }
                 in
                     { model | game = game_ } ! []
+
+            JoinGame ->
+                model
+                    ! []
 
 
 setTable : Game.Types.Model -> Table -> Game.Types.Model

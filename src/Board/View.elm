@@ -1,4 +1,4 @@
-module Board.View exposing (view, widthElementId)
+module Board.View exposing (view)
 
 import String
 import Board.Types exposing (..)
@@ -13,11 +13,6 @@ import Html.Attributes
 import Html.Lazy
 import Board.Types exposing (Msg, Model)
 import Land exposing (Land, Map, Point, landPath, cellCenter, landCenter)
-
-
-widthElementId : String
-widthElementId =
-    "edice-board"
 
 
 view : Model -> Html.Html Msg
@@ -58,7 +53,7 @@ board w map =
         land =
             Html.Lazy.lazy <| landElement layout
     in
-        Html.div [ id widthElementId ]
+        Html.div [ class "ed-board" ]
             [ Svg.svg
                 [ width "100%"
                 , height "100%"
@@ -68,6 +63,7 @@ board w map =
                   --     ]
                 , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
                 , preserveAspectRatio "none"
+                , class "ed-board--svg"
                 ]
                 (List.concat
                     [ List.map land map.lands
