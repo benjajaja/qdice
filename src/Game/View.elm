@@ -24,7 +24,7 @@ view model =
             Board.view model.game.board
                 |> Html.map BoardMsg
     in
-        Html.div [ class "ed-game" ]
+        Html.div [ class "edGame" ]
             [ header model
             , board
               --|> Html.map Types.GameMsg

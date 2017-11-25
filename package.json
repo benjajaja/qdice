@@ -37,7 +37,6 @@
     "muicss": "0.9.1",
     "postcss-loader": "^1.1.1",
     "postcss-partial-import": "^2.1.0",
-    "precss": "^1.4.0",
     "style-loader": "0.13.1",
     "webpack": "1.13.2",
     "webpack-dev-server": "1.16.2",
