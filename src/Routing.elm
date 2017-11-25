@@ -1,5 +1,6 @@
 module Routing exposing (..)
 
+import Http
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 import Types exposing (..)
@@ -32,9 +33,14 @@ tableMatcher : Parser (Route -> a) a
 tableMatcher =
     UrlParser.custom "GAME" <|
         \segment ->
-            case decodeTable segment of
-                Just table ->
-                    Ok (GameRoute table)
+            case Http.decodeUri segment of
+                Just decoded ->
+                    case decodeTable decoded of
+                        Just table ->
+                            Ok (GameRoute table)
+
+                        Nothing ->
+                            Err <| "No such table: " ++ decoded
 
                 Nothing ->
                     Err <| "No such table: " ++ segment
