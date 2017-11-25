@@ -1,7 +1,6 @@
 module Game.Chat exposing (..)
 
 import Types exposing (Model, Msg(..))
-import Game.Types exposing (Msg(..))
 import Backend.Types exposing (ChatLogEntry(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -43,7 +42,7 @@ chatBox model =
                 model.backend.chatLog
             )
         , Card.actions [ cs "chatbox--actions" ]
-            [ Html.form [ onSubmit (Types.GameMsg <| SendChat "hi"), class "chatbox--actions-form" ]
+            [ Html.form [ onSubmit (SendChat "hi"), class "chatbox--actions-form" ]
                 [ input model
                 , Button.render
                     Types.Mdl
@@ -67,7 +66,7 @@ input model =
         Types.Mdl
         [ 0 ]
         model.mdl
-        [ Options.onInput (Types.GameMsg << InputChat)
+        [ Options.onInput InputChat
         , Textfield.value model.game.chatInput
         , cs "chatbox--actions-input"
         ]

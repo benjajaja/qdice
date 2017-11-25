@@ -5,15 +5,6 @@ import Land exposing (Color)
 import Tables exposing (Table)
 
 
-type Msg
-    = ChangeTable Table
-    | BoardMsg Board.Msg
-    | InputChat String
-    | SendChat String
-    | ClearChat
-    | JoinGame
-
-
 type GameStatus
     = Paused
     | Playing

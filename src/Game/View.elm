@@ -1,6 +1,5 @@
 module Game.View exposing (view)
 
-import Game.Types exposing (Msg(..))
 import Game.Types
 import Game.Chat
 import Html
@@ -12,7 +11,7 @@ import Material.Button as Button
 import Material.Icon as Icon
 import Material.Footer as Footer
 import Material.List as Lists
-import Types exposing (Model, Msg)
+import Types exposing (Model, Msg(..))
 import Tables exposing (Table, tableList)
 import Board
 import Backend.Types exposing (ConnectionStatus(..))
@@ -27,7 +26,8 @@ view model =
     in
         Html.div [ class "ed-game" ]
             [ header model
-            , board |> Html.map Types.GameMsg
+            , board
+              --|> Html.map Types.GameMsg
             , Html.div [] <| List.map (playerChip model) model.game.players
             , boardHistory model
             , footer model
@@ -67,7 +67,7 @@ playButton model =
         , Button.colored
         , Button.ripple
         , Options.cs "edGameHeader__button"
-        , Options.onClick <| Types.GameMsg JoinGame
+        , Options.onClick JoinGame
         ]
         [ Html.text "Join game" ]
 

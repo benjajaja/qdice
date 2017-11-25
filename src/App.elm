@@ -7,6 +7,7 @@ import Routing exposing (parseLocation, navigateTo)
 import Types exposing (..)
 import Game.State
 import Game.View
+import Board
 import Static.View
 import Editor.Editor
 import Html
@@ -17,6 +18,7 @@ import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
 import Backend
+import Backend.Types
 import Tables exposing (Table(..), tableList)
 
 
@@ -78,13 +80,6 @@ updateWrapper msg model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GameMsg msg ->
-            let
-                ( newModel, gameCmd ) =
-                    Game.State.update msg model
-            in
-                ( newModel, Cmd.map GameMsg gameCmd )
-
         EditorMsg msg ->
             let
                 ( editor, editorCmd ) =
@@ -138,6 +133,58 @@ update msg model =
 
         Mdl msg ->
             Material.update Mdl msg model
+
+        ChangeTable table ->
+            (Game.State.setter model (\g -> { g | table = table })) ! []
+
+        BoardMsg boardMsg ->
+            let
+                game =
+                    model.game
+
+                ( board, boardCmd ) =
+                    Board.update boardMsg model.game.board
+
+                game_ =
+                    { game | board = board }
+            in
+                { model | game = game_ } ! [ Cmd.map BoardMsg boardCmd ]
+
+        InputChat text ->
+            let
+                game =
+                    model.game
+
+                game_ =
+                    { game | chatInput = text }
+            in
+                { model | game = game_ } ! []
+
+        SendChat string ->
+            let
+                game =
+                    model.game
+            in
+                model
+                    ! [ Backend.Types.Chat (Types.getUsername model) model.game.chatInput
+                            |> Backend.Types.TableMsg model.game.table
+                            |> Backend.publish
+                      , Task.perform (always ClearChat) (Task.succeed ())
+                      ]
+
+        ClearChat ->
+            let
+                game =
+                    model.game
+
+                game_ =
+                    { game | chatInput = "" }
+            in
+                { model | game = game_ } ! []
+
+        JoinGame ->
+            model
+                ! []
 
 
 msgsToCmds : List Msg -> List (Cmd Msg)

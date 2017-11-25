@@ -5,6 +5,7 @@ import Material
 import Game.Types
 import Editor.Types
 import Backend.Types
+import Board exposing (Msg)
 import Tables exposing (Table)
 
 
@@ -12,11 +13,16 @@ type Msg
     = NavigateTo Route
     | OnLocationChange Location
     | Mdl (Material.Msg Msg)
-    | GameMsg Game.Types.Msg
     | EditorMsg Editor.Types.Msg
     | BckMsg Backend.Types.Msg
     | DrawerNavigateTo Route
     | LoggedIn (List String)
+    | ChangeTable Table
+    | BoardMsg Board.Msg
+    | InputChat String
+    | SendChat String
+    | ClearChat
+    | JoinGame
 
 
 type StaticPage

@@ -1,8 +1,8 @@
-module Game.State exposing (init, update, setTable)
+module Game.State exposing (init, setter, setTable)
 
 import Task
 import Game.Types exposing (..)
-import Types exposing (Model, User(Anonymous))
+import Types exposing (Model, Msg(..), User(Anonymous))
 import Board
 import Maps exposing (load)
 import Land exposing (Color)
@@ -40,60 +40,14 @@ init model table =
         )
 
 
+setter : Types.Model -> (Game.Types.Model -> Game.Types.Model) -> Types.Model
+setter model setter =
+    { model | game = (setter model.game) }
+
+
 mkPlayer : String -> Player
 mkPlayer name =
     Player name Land.Neutral
-
-
-update : Msg -> Types.Model -> ( Types.Model, Cmd Msg )
-update msg model =
-    let
-        game =
-            model.game
-    in
-        case msg of
-            ChangeTable table ->
-                let
-                    game_ =
-                        { game | table = table }
-                in
-                    { model | game = game_ } ! []
-
-            BoardMsg boardMsg ->
-                let
-                    ( board, boardCmd ) =
-                        Board.update boardMsg model.game.board
-
-                    game_ =
-                        { game | board = board }
-                in
-                    { model | game = game_ } ! [ Cmd.map BoardMsg boardCmd ]
-
-            InputChat text ->
-                let
-                    game_ =
-                        { game | chatInput = text }
-                in
-                    { model | game = game_ } ! []
-
-            SendChat string ->
-                model
-                    ! [ Backend.Types.Chat (Types.getUsername model) model.game.chatInput
-                            |> Backend.Types.TableMsg model.game.table
-                            |> Backend.publish
-                      , Task.perform (always ClearChat) (Task.succeed ())
-                      ]
-
-            ClearChat ->
-                let
-                    game_ =
-                        { game | chatInput = "" }
-                in
-                    { model | game = game_ } ! []
-
-            JoinGame ->
-                model
-                    ! []
 
 
 setTable : Game.Types.Model -> Table -> Game.Types.Model
