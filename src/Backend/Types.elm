@@ -15,6 +15,7 @@ type ChatLogEntry
     = LogJoin User
     | LogLeave User
     | LogChat User String
+    | LogError String
 
 
 type alias ClientId =

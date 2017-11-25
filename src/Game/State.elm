@@ -45,8 +45,8 @@ setter model setter =
     { model | game = (setter model.game) }
 
 
-updateCommandResponse : Types.Model -> TableStatus -> ( Types.Model, Cmd Msg )
-updateCommandResponse model result =
+updateCommandResponse : Table -> PlayerAction -> Types.Model -> ( Types.Model, Cmd Msg )
+updateCommandResponse table action model =
     model ! []
 
 

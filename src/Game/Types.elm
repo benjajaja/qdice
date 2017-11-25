@@ -11,6 +11,10 @@ type GameStatus
     | Finished
 
 
+type PlayerAction
+    = Join
+
+
 type alias Model =
     { table : Table
     , board : Board.Model

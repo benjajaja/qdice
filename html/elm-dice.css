@@ -131,3 +131,11 @@ body.navigator-standalone textarea {
     padding: 0;
     min-width: auto;
 }
+.chatbox--line--chat {}
+.chatbox--line--join {
+  color: #666;
+}
+.chatbox--line--error {
+  color: #a00;
+}
+

@@ -4,7 +4,7 @@ import Navigation exposing (Location)
 import Http
 import Material
 import Game.Types
-import Game.Types exposing (TableStatus)
+import Game.Types exposing (TableStatus, PlayerAction)
 import Editor.Types
 import Backend.Types
 import Board exposing (Msg)
@@ -24,7 +24,7 @@ type Msg
     | InputChat String
     | SendChat String
     | ClearChat
-    | GameCommand
+    | GameCmd PlayerAction
       -- backend
     | Connected Backend.Types.ClientId
     | StatusConnect String
@@ -37,7 +37,7 @@ type Msg
     | UnknownTopicMessage String String String
     | JoinTable Table
     | Joined (Result Http.Error TableStatus)
-    | GameCommandResponse Table (Result Http.Error TableStatus)
+    | GameCommandResponse Table PlayerAction (Result Http.Error ())
 
 
 type StaticPage

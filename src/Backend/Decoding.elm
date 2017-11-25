@@ -5,7 +5,7 @@ module Backend.Decoding exposing (..)
 import Tables exposing (Table(..))
 import Game.Types exposing (TableStatus, Player)
 import Land exposing (Color, playerColor)
-import Json.Decode exposing (int, string, float, list, Decoder, map)
+import Json.Decode exposing (int, string, float, list, Decoder, map, succeed)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
@@ -30,6 +30,11 @@ playersDecoder =
 colorDecoder : Decoder Color
 colorDecoder =
     map playerColor int
+
+
+accknowledgeDecoder : Decoder ()
+accknowledgeDecoder =
+    succeed ()
 
 
 

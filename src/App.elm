@@ -7,6 +7,7 @@ import Routing exposing (parseLocation, navigateTo)
 import Types exposing (..)
 import Game.State
 import Game.View
+import Game.Chat
 import Board
 import Static.View
 import Editor.Editor
@@ -178,19 +179,15 @@ update msg model =
             in
                 { model | game = game_ } ! []
 
-        GameCommand ->
+        GameCmd playerAction ->
             model
-                ! [ Backend.gameCommand model.game.table ]
+                ! [ Backend.gameCommand model.game.table playerAction ]
 
-        GameCommandResponse table (Ok response) ->
-            Game.State.updateCommandResponse model response
+        GameCommandResponse table action (Ok ()) ->
+            Game.State.updateCommandResponse table action model
 
-        GameCommandResponse table (Err err) ->
-            let
-                _ =
-                    Debug.log "Command error" err
-            in
-                model ! []
+        GameCommandResponse table action (Err err) ->
+            Backend.updateChatLog model <| Backend.Types.LogError <| Game.Chat.toChatError table action err
 
         UnknownTopicMessage error topic message ->
             let

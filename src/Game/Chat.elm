@@ -5,12 +5,15 @@ import Backend.Types exposing (ChatLogEntry(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Http exposing (Error(..))
 import Material.Card as Card
 import Material.Options as Options exposing (cs, css, id)
 import Material.Textfield as Textfield
 import Material.Elevation
 import Material.Icon as Icon
 import Material.Button as Button
+import Game.Types exposing (PlayerAction(..))
+import Tables exposing (Table)
 
 
 chatBox : Model -> Html Types.Msg
@@ -38,6 +41,10 @@ chatBox model =
                         LogLeave user ->
                             div [ class "chatbox--line--leave" ]
                                 [ Html.text <| user ++ " left" ]
+
+                        LogError error ->
+                            div [ class "chatbox--line--error" ]
+                                [ Html.text <| error ]
                 )
                 model.backend.chatLog
             )
@@ -71,3 +78,25 @@ input model =
         , cs "chatbox--actions-input"
         ]
         []
+
+
+toChatError : Table -> PlayerAction -> Http.Error -> String
+toChatError table action err =
+    (toString action)
+        ++ " failed: "
+        ++ (case err of
+                NetworkError ->
+                    "No connection"
+
+                Timeout ->
+                    "Timed out (network)"
+
+                BadStatus response ->
+                    "Server error: " ++ (toString response)
+
+                BadPayload error response ->
+                    "Client error: " ++ error
+
+                BadUrl error ->
+                    "Missing URL: " ++ error
+           )

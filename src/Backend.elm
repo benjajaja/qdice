@@ -9,7 +9,7 @@ import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
 import Types exposing (Msg(..))
 import Tables exposing (Table(..), decodeTable)
-import Game.Types exposing (Player)
+import Game.Types exposing (Player, PlayerAction)
 import Land exposing (Color(..))
 
 
@@ -122,9 +122,23 @@ joinTable user table =
         Http.send (Joined) request
 
 
-gameCommand : Table -> Cmd Msg
-gameCommand table =
-    Http.send (GameCommandResponse table) <| Http.post ("http://localhost:5001/tables/" ++ (toString table)) Http.emptyBody tableDecoder
+gameCommand : Table -> PlayerAction -> Cmd Msg
+gameCommand table playerAction =
+    Http.send (GameCommandResponse table playerAction) <|
+        Http.post
+            ("http://localhost:5001/tables/"
+                ++ (toString table)
+                ++ "/"
+                ++ (toString playerAction)
+            )
+            Http.emptyBody
+            --(case playerAction of
+            --Game.Types.Join ->
+            accknowledgeDecoder
+
+
+
+--)
 
 
 updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )

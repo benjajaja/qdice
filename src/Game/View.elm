@@ -1,6 +1,6 @@
 module Game.View exposing (view)
 
-import Game.Types
+import Game.Types exposing (PlayerAction(..))
 import Game.Chat
 import Html
 import Html.Attributes exposing (class)
@@ -67,7 +67,7 @@ playButton model =
         , Button.colored
         , Button.ripple
         , Options.cs "edGameHeader__button"
-        , Options.onClick GameCommand
+        , Options.onClick <| GameCmd Join
         ]
         [ Html.text "Join game" ]
 
