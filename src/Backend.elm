@@ -122,6 +122,11 @@ joinTable user table =
         Http.send (Joined) request
 
 
+gameCommand : Table -> Cmd Msg
+gameCommand table =
+    Http.send (GameCommandResponse table) <| Http.post ("http://localhost:5001/tables/" ++ (toString table)) Http.emptyBody tableDecoder
+
+
 updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
 updateChatLog model entry =
     let

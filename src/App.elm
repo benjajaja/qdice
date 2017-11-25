@@ -178,9 +178,19 @@ update msg model =
             in
                 { model | game = game_ } ! []
 
-        JoinGame ->
+        GameCommand ->
             model
-                ! []
+                ! [ Backend.gameCommand model.game.table ]
+
+        GameCommandResponse table (Ok response) ->
+            Game.State.updateCommandResponse model response
+
+        GameCommandResponse table (Err err) ->
+            let
+                _ =
+                    Debug.log "Command error" err
+            in
+                model ! []
 
         UnknownTopicMessage error topic message ->
             let

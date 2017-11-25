@@ -1,4 +1,4 @@
-module Game.State exposing (init, setter, setTable)
+module Game.State exposing (..)
 
 import Task
 import Game.Types exposing (..)
@@ -43,6 +43,11 @@ init model table =
 setter : Types.Model -> (Game.Types.Model -> Game.Types.Model) -> Types.Model
 setter model setter =
     { model | game = (setter model.game) }
+
+
+updateCommandResponse : Types.Model -> TableStatus -> ( Types.Model, Cmd Msg )
+updateCommandResponse model result =
+    model ! []
 
 
 mkPlayer : String -> Player

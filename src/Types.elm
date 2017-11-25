@@ -15,16 +15,16 @@ type Msg
     = NavigateTo Route
     | OnLocationChange Location
     | Mdl (Material.Msg Msg)
-    | EditorMsg Editor.Types.Msg
     | DrawerNavigateTo Route
     | LoggedIn (List String)
+    | EditorMsg Editor.Types.Msg
       -- game
     | ChangeTable Table
     | BoardMsg Board.Msg
     | InputChat String
     | SendChat String
     | ClearChat
-    | JoinGame
+    | GameCommand
       -- backend
     | Connected Backend.Types.ClientId
     | StatusConnect String
@@ -37,6 +37,7 @@ type Msg
     | UnknownTopicMessage String String String
     | JoinTable Table
     | Joined (Result Http.Error TableStatus)
+    | GameCommandResponse Table (Result Http.Error TableStatus)
 
 
 type StaticPage

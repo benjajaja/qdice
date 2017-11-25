@@ -67,7 +67,7 @@ playButton model =
         , Button.colored
         , Button.ripple
         , Options.cs "edGameHeader__button"
-        , Options.onClick JoinGame
+        , Options.onClick GameCommand
         ]
         [ Html.text "Join game" ]
 
