@@ -1,5 +1,6 @@
 module Backend.MessageCodification exposing (..)
 
+import Types exposing (Msg(..))
 import Backend.Types exposing (..)
 import Tables exposing (Table(..))
 import Json.Decode as Dec exposing (..)

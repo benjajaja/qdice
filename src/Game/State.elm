@@ -27,9 +27,9 @@ init model table =
             mapCmd
                 :: case model of
                     Just model ->
-                        [ Cmd.map Types.BckMsg <| Backend.joinTable model.user table
-                        , Cmd.map Types.BckMsg <| Backend.publish <| Backend.Types.TableMsg model.game.table <| Backend.Types.Leave <| Types.getUsername model
-                        , Cmd.map Types.BckMsg <| Backend.publish <| Backend.Types.TableMsg table <| Backend.Types.Join <| Types.getUsername model
+                        [ Backend.joinTable model.user table
+                        , Backend.publish <| TableMsg model.game.table <| Backend.Types.Leave <| Types.getUsername model
+                        , Backend.publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model
                         ]
 
                     Nothing ->

@@ -18,7 +18,7 @@ import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
 import Backend
-import Backend.Types
+import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionStatus(..))
 import Tables exposing (Table(..), tableList)
 
 
@@ -59,8 +59,7 @@ init location =
                     gameCmds
                     [ hide "peekaboo"
                     , Cmd.map EditorMsg editorCmd
-                    , Cmd.map BckMsg backendCmd
-                      -- , Backend.connect
+                    , backendCmd
                     ]
     in
         ( model
@@ -87,9 +86,6 @@ update msg model =
             in
                 ( { model | editor = editor }, Cmd.map EditorMsg editorCmd )
 
-        BckMsg msg ->
-            Backend.update msg model
-
         LoggedIn data ->
             case data of
                 [ email, name, picture ] ->
@@ -101,7 +97,7 @@ update msg model =
                                 , picture = picture
                                 }
                     in
-                        { model | user = user } ! [ Cmd.map BckMsg <| Backend.joinTable user model.game.table ]
+                        { model | user = user } ! [ Backend.joinTable user model.game.table ]
 
                 _ ->
                     model ! []
@@ -167,7 +163,7 @@ update msg model =
             in
                 model
                     ! [ Backend.Types.Chat (Types.getUsername model) model.game.chatInput
-                            |> Backend.Types.TableMsg model.game.table
+                            |> TableMsg model.game.table
                             |> Backend.publish
                       , Task.perform (always ClearChat) (Task.succeed ())
                       ]
@@ -185,6 +181,61 @@ update msg model =
         JoinGame ->
             model
                 ! []
+
+        UnknownTopicMessage error topic message ->
+            let
+                _ =
+                    Debug.log ("Error in message: \"" ++ error ++ "\"") topic
+            in
+                model ! []
+
+        StatusConnect _ ->
+            (Backend.setStatus Connecting model) ! []
+
+        StatusReconnect attemptCount ->
+            (Backend.setStatus (Reconnecting attemptCount) model) ! []
+
+        StatusOffline _ ->
+            (Backend.setStatus Offline model) ! []
+
+        Connected clientId ->
+            Backend.updateConnected model clientId
+
+        Subscribed topic ->
+            Backend.updateSubscribed model topic
+
+        ClientMsg msg ->
+            model ! []
+
+        AllClientsMsg msg ->
+            model ! []
+
+        TableMsg table msg ->
+            case msg of
+                Backend.Types.Join user ->
+                    Backend.updateChatLog model <| Backend.Types.LogJoin user
+
+                Backend.Types.Leave user ->
+                    Backend.updateChatLog model <| Backend.Types.LogLeave user
+
+                Backend.Types.Chat user text ->
+                    Backend.updateChatLog model <| Backend.Types.LogChat user text
+
+        JoinTable table ->
+            model ! [ Backend.joinTable model.user table ]
+
+        Joined (Ok response) ->
+            let
+                game =
+                    model.game
+
+                game_ =
+                    { game | players = response.players }
+            in
+                { model | game = game_ } ! []
+
+        Joined (Err _) ->
+            model ! []
 
 
 msgsToCmds : List Msg -> List (Cmd Msg)

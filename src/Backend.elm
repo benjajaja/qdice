@@ -1,4 +1,4 @@
-port module Backend exposing (connect, init, update, subscriptions, publish, joinTable)
+port module Backend exposing (..)
 
 import String
 import Http
@@ -7,7 +7,7 @@ import Backend.Types exposing (..)
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
-import Types
+import Types exposing (Msg(..))
 import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (Player)
 import Land exposing (Color(..))
@@ -29,117 +29,68 @@ init table =
     )
 
 
-update : Msg -> Types.Model -> ( Types.Model, Cmd Types.Msg )
-update msg model =
-    case Debug.log "Backend Msg" msg of
-        UnknownTopicMessage error topic message ->
-            let
-                _ =
-                    Debug.log ("Error in message: \"" ++ error ++ "\"") topic
-            in
-                model ! []
+updateConnected : Types.Model -> String -> ( Types.Model, Cmd Msg )
+updateConnected model clientId =
+    let
+        backend =
+            model.backend
+    in
+        setStatus Online ({ model | backend = { backend | clientId = Just clientId } })
+            ! [ subscribe <| Client clientId
+              , subscribe AllClients
+              ]
 
-        StatusConnect _ ->
-            (setStatus Connecting model) ! []
 
-        StatusReconnect attemptCount ->
-            (setStatus (Reconnecting attemptCount) model) ! []
+updateSubscribed : Types.Model -> Topic -> ( Types.Model, Cmd Msg )
+updateSubscribed model topic =
+    case model.backend.clientId of
+        Nothing ->
+            model ! []
 
-        StatusOffline _ ->
-            (setStatus Offline model) ! []
-
-        Connected clientId ->
+        Just clientId ->
             let
                 backend =
                     model.backend
+
+                subscribed =
+                    topic :: backend.subscribed
             in
-                setStatus Online ({ model | backend = { backend | clientId = Just clientId } })
-                    ! [ subscribe <| Client clientId
-                      , subscribe AllClients
-                      ]
-
-        Subscribed topic ->
-            case model.backend.clientId of
-                Nothing ->
-                    model ! []
-
-                Just clientId ->
-                    let
-                        backend =
-                            model.backend
-
-                        subscribed =
-                            topic :: backend.subscribed
-                    in
-                        ( { model | backend = { backend | subscribed = subscribed } }
-                        , if
-                            hasDuplexSubscribed
-                                [ Client clientId
-                                , AllClients
-                                ]
-                                subscribed
-                                topic
-                          then
-                            Cmd.batch
-                                [ subscribe <| Tables model.game.table ClientDirection
-                                , subscribe <| Tables model.game.table ServerDirection
-                                , subscribe <| Tables model.game.table Broadcast
-                                ]
-                          else
-                            case topic of
-                                Tables table direction ->
-                                    if
-                                        hasDuplexSubscribed
-                                            [ Tables table ClientDirection
-                                            , Tables table ServerDirection
-                                            ]
-                                            subscribed
-                                            topic
-                                    then
-                                        publish <| TableMsg table <| Join <| Types.getUsername model
-                                    else
-                                        let
-                                            _ =
-                                                Debug.log "not duplex table yet" subscribed
-                                        in
-                                            Cmd.none
-
-                                _ ->
+                ( { model | backend = { backend | subscribed = subscribed } }
+                , if
+                    hasDuplexSubscribed
+                        [ Client clientId
+                        , AllClients
+                        ]
+                        subscribed
+                        topic
+                  then
+                    Cmd.batch
+                        [ subscribe <| Tables model.game.table ClientDirection
+                        , subscribe <| Tables model.game.table ServerDirection
+                        , subscribe <| Tables model.game.table Broadcast
+                        ]
+                  else
+                    case topic of
+                        Tables table direction ->
+                            if
+                                hasDuplexSubscribed
+                                    [ Tables table ClientDirection
+                                    , Tables table ServerDirection
+                                    ]
+                                    subscribed
+                                    topic
+                            then
+                                publish <| TableMsg table <| Join <| Types.getUsername model
+                            else
+                                let
+                                    _ =
+                                        Debug.log "not duplex table yet" subscribed
+                                in
                                     Cmd.none
-                        )
 
-        ClientMsg msg ->
-            model ! []
-
-        AllClientsMsg msg ->
-            model ! []
-
-        TableMsg table msg ->
-            case msg of
-                Join user ->
-                    updateBackendChatLog model <| LogJoin user
-
-                Leave user ->
-                    updateBackendChatLog model <| LogLeave user
-
-                Chat user text ->
-                    updateBackendChatLog model <| LogChat user text
-
-        JoinTable table ->
-            model ! [ Cmd.map Types.BckMsg <| joinTable model.user table ]
-
-        Joined (Ok response) ->
-            let
-                game =
-                    model.game
-
-                game_ =
-                    { game | players = response.players }
-            in
-                { model | game = game_ } ! []
-
-        Joined (Err _) ->
-            model ! []
+                        _ ->
+                            Cmd.none
+                )
 
 
 joinTable : Types.User -> Table -> Cmd Msg
@@ -171,8 +122,8 @@ joinTable user table =
         Http.send (Joined) request
 
 
-updateBackendChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
-updateBackendChatLog model entry =
+updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
+updateChatLog model entry =
     let
         backend =
             model.backend
@@ -189,11 +140,11 @@ updateBackendChatLog model entry =
 subscriptions : Types.Model -> Sub Types.Msg
 subscriptions model =
     Sub.batch
-        [ mqttOnConnect (StatusConnect >> Types.BckMsg)
-        , mqttOnReconnect (StatusReconnect >> Types.BckMsg)
-        , mqttOnConnected (Connected >> Types.BckMsg)
-        , mqttOnSubscribed (decodeSubscribed model.backend.clientId >> Types.BckMsg)
-        , mqttOnMessage (decodeMessage model.backend.clientId >> Types.BckMsg)
+        [ mqttOnConnect StatusConnect
+        , mqttOnReconnect StatusReconnect
+        , mqttOnConnected Connected
+        , mqttOnSubscribed <| decodeSubscribed model.backend.clientId
+        , mqttOnMessage <| decodeMessage model.backend.clientId
         ]
 
 
