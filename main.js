@@ -99,6 +99,12 @@ server.post('/tables/:name', function(req, res, next) {
   next();
 });
 
+server.post('/tables/:name/:command', function(req, res, next) {
+  res.send(204);
+  next();
+});
+
+
 server.listen(process.env.PORT || 5001, function() {
   console.log('%s listening at %s port %s', server.name, server.url);
 });
