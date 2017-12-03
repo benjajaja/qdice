@@ -3,6 +3,7 @@
 window.onerror = function(messageOrEvent, source, lineno, colno, error) {
   var element = document.createElement('div');
   element.innerHTML = messageOrEvent.toString();
+  element.className = 'GLOBAL_ERROR';
   document.body.append(element);
   return false; // let built in handler log it too
 };
@@ -24,10 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
   FastClick.attach(document.body);
 }, false);
 
-require('./auth.js')(function(profile) {
-  app.ports.onLogin.send([profile.email || '', profile.name || '', profile.picture || '']);
-});
-
 var Elm = require('../src/App');
 
 var app = Elm.Edice.fullscreen();
@@ -39,6 +36,13 @@ app.ports.hide.subscribe(function(msg) {
     return false; // let built in handler log it too
   };
 });
+
+var auth = require('./auth.js');
+var onSession = function(token, profile) {
+  app.ports.onAuth.send([token || '', profile.email || '', profile.name || '', profile.picture || '']);
+};
+
+app.ports.auth.subscribe(auth(onSession));
 
 app.ports.selectAll.subscribe(function(id) {
   var selection = window.getSelection();

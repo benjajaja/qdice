@@ -48,6 +48,12 @@ body.navigator-standalone textarea {
     padding: 0 100px;
   }
 }
+.GLOBAL_ERROR {
+  background-color: light-red;
+  font-size: 2em;
+  padding: 2em;
+  font-weight: bold;
+}
 
 .ed-board--svg {
   font-size: 33%;
@@ -91,6 +97,7 @@ body.navigator-standalone textarea {
   display: flex;
   flex-direction: row;
   align-items: center;
+  cursor: pointer;
 }
 .header .header--profile-link img {
   flex: 0 0 auto;

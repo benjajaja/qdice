@@ -3,6 +3,7 @@ module Types exposing (..)
 import Navigation exposing (Location)
 import Http
 import Material
+import OAuth
 import Game.Types
 import Game.Types exposing (TableStatus, PlayerAction)
 import Editor.Types
@@ -18,6 +19,10 @@ type Msg
     | DrawerNavigateTo Route
     | LoggedIn (List String)
     | EditorMsg Editor.Types.Msg
+      -- oauth
+    | Nop
+    | Authorize
+    | GetProfile (Result Http.Error LoggedUser)
       -- game
     | ChangeTable Table
     | BoardMsg Board.Msg
@@ -55,6 +60,7 @@ type alias Model =
     { route : Route
     , mdl :
         Material.Model
+    , oauth : MyOAuthModel
     , game : Game.Types.Model
     , editor : Editor.Types.Model
     , backend : Backend.Types.Model
@@ -72,6 +78,14 @@ type alias LoggedUser =
     { name : Username
     , email : String
     , picture : String
+    }
+
+
+type alias MyOAuthModel =
+    { clientId : String
+    , redirectUri : String
+    , error : Maybe String
+    , token : Maybe OAuth.Token
     }
 
 

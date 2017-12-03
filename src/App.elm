@@ -4,13 +4,6 @@ import Task
 import Maybe
 import Navigation exposing (Location)
 import Routing exposing (parseLocation, navigateTo)
-import Types exposing (..)
-import Game.State
-import Game.View
-import Game.Chat
-import Board
-import Static.View
-import Editor.Editor
 import Html
 import Html.Lazy
 import Html.Attributes
@@ -18,9 +11,17 @@ import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
+import Types exposing (..)
+import Game.State
+import Game.View
+import Game.Chat
+import Board
+import Static.View
+import Editor.Editor
 import Backend
 import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionStatus(..))
 import Tables exposing (Table(..), tableList)
+import MyOauth
 
 
 main : Program Never Model Msg
@@ -51,21 +52,32 @@ init location =
         ( backend, backendCmd ) =
             Backend.init table
 
+        ( oauth, oauthCmds ) =
+            MyOauth.init location
+
         model =
-            Model route Material.model game editor backend Types.Anonymous tableList
+            Model
+                route
+                Material.model
+                oauth
+                game
+                editor
+                backend
+                Types.Anonymous
+                tableList
 
         cmds =
             Cmd.batch <|
-                List.append
-                    gameCmds
-                    [ hide "peekaboo"
-                    , Cmd.map EditorMsg editorCmd
-                    , backendCmd
+                List.concat
+                    [ gameCmds
+                    , [ hide "peekaboo"
+                      , Cmd.map EditorMsg editorCmd
+                      , backendCmd
+                      ]
+                    , oauthCmds
                     ]
     in
-        ( model
-        , cmds
-        )
+        ( model, cmds )
 
 
 updateWrapper : Msg -> Model -> ( Model, Cmd Msg )
@@ -89,7 +101,7 @@ update msg model =
 
         LoggedIn data ->
             case data of
-                [ email, name, picture ] ->
+                [ token, email, name, picture ] ->
                     let
                         user =
                             Logged
@@ -97,11 +109,37 @@ update msg model =
                                 , name = name
                                 , picture = picture
                                 }
+
+                        oauth =
+                            model.oauth
                     in
-                        { model | user = user } ! [ Backend.joinTable user model.game.table ]
+                        { model | user = user }
+                            ! [ Backend.joinTable user model.game.table ]
 
                 _ ->
                     model ! []
+
+        Nop ->
+            model ! []
+
+        GetProfile res ->
+            let
+                oauth =
+                    model.oauth
+            in
+                case res of
+                    Err err ->
+                        let
+                            oauth_ =
+                                { oauth | error = Just "unable to fetch user profile ¯\\_(ツ)_/¯" }
+                        in
+                            { model | oauth = oauth_ } ! []
+
+                    Ok profile ->
+                        { model | user = Logged profile } ! [ auth [ profile.email, profile.name, profile.picture ] ]
+
+        Authorize ->
+            MyOauth.authorize model
 
         NavigateTo route ->
             model ! [ navigateTo route ]
@@ -289,8 +327,9 @@ header model =
         , Layout.spacer
         , Layout.navigation []
             [ Layout.link
-                [ Layout.href "javascript:window.login()"
-                , Material.Options.cs "header--profile-link"
+                [ Material.Options.cs "header--profile-link"
+                , Material.Options.onClick
+                    Authorize
                 ]
                 (case model.user of
                     Logged user ->
@@ -356,11 +395,14 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
-        , onLogin LoggedIn
+        , onAuth LoggedIn
         ]
 
 
 port hide : String -> Cmd msg
 
 
-port onLogin : (List String -> msg) -> Sub msg
+port auth : List String -> Cmd msg
+
+
+port onAuth : (List String -> msg) -> Sub msg

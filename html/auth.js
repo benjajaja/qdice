@@ -1,50 +1,20 @@
 module.exports = function(callback) {
-  var Auth0Lock = require('auth0-lock')['default'];
 
-  var lock = new Auth0Lock('vxpcYiPeQ6A2CgYG1QiUwLjQiU9JLPvj', 'easyrider.eu.auth0.com', {
-    allowSignUp: false,
-    allowedConnections: ['google-oauth2', 'github', 'bitbucket', 'twitter', 'facebook'],
-    auth: {
-      responseType: 'token',
-      sso: true,
-      redirectUrl: [location.protocol, '//', location.hostname].join('')
-        + (location.port && location.port != '80' ? ':' + location.port : '')
-        + (location.pathname || '')
-    },
-    theme: {
-      displayName: 'Login',
-      logo: 'favicons/android-chrome-72x72.png'
-    }
-  });
-
-  global.login = function() {
-    var token = localStorage.getItem('id_token');
-    if (token) {
-      localStorage.removeItem('id_token');
-      localStorage.removeItem('profile');
-      window.location.reload();
+  //if (window.location.hash.indexOf('#access_token=') !== 0) {
+    //var token = localStorage.getItem('id_token');
+    //if (token) {
+      //var profile = JSON.parse(localStorage.getItem('profile'));
+      //setTimeout(callback.bind(null, token, profile));
+    //}
+  //}
+  return function(strings) {
+    if (strings.length === 1) {
+      localStorage.setItem('id_token', strings[0]);
+    } else if (strings.length === 3) {
+      var profile = { email: strings[0], name: strings[1], picture: strings[2] };
+      localStorage.setItem('profile', JSON.stringify(profile));
     } else {
-      lock.show();
+      throw Error('could not persist session');
     }
   };
-
-  lock.on("authenticated", function(authResult) {
-    lock.getProfile(authResult.idToken, function(error, profile) {
-      if (error) {
-        console.error(error);
-        return;
-      }
-      localStorage.setItem('id_token', authResult.idToken);
-      localStorage.setItem('profile', JSON.stringify(profile));
-      // Display user information
-      console.log(profile);
-      callback(profile);
-    });
-  });
-
-  var token = localStorage.getItem('id_token');
-  if (token) {
-    var profile = JSON.parse(localStorage.getItem('profile'));
-    setTimeout(callback.bind(null, profile));
-  }
-};
+}
