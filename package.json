@@ -1,0 +1,15 @@
+{
+  "name": "server-nodejs",
+  "version": "1.0.0",
+  "description": "elm-dice nodejs server",
+  "main": "main.js",
+  "author": "Benjamin Große",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "dependencies": {
+    "mqtt": "^2.9.1",
+    "request": "^2.83.0",
+    "restify": "4"
+  }
+}
