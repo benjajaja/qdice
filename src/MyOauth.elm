@@ -5,7 +5,7 @@ import Task
 import Navigation
 import Json.Decode as Json
 import OAuth
-import OAuth.Implicit
+import OAuth.AuthorizationCode
 import Types exposing (MyOAuthModel, Msg(..), LoggedUser)
 
 
@@ -29,12 +29,13 @@ init location =
             , token = Nothing
             }
     in
-        case OAuth.Implicit.parse location of
-            Ok { token } ->
-                ( ({ oauth | token = Just token })
+        case OAuth.AuthorizationCode.parse location of
+            Ok { code } ->
+                --( ({ oauth | token = Just token })
+                ( oauth
                 , [ Navigation.modifyUrl oauth.redirectUri
                     --, Http.send GetProfile cliReq
-                  , Task.perform (always <| Authenticate token) (Task.succeed ())
+                  , Task.perform (always <| Authenticate code) (Task.succeed ())
                   ]
                 )
 
@@ -52,10 +53,10 @@ init location =
 
 authorize model =
     model
-        ! [ OAuth.Implicit.authorize
+        ! [ OAuth.AuthorizationCode.authorize
                 { clientId = model.oauth.clientId
                 , redirectUri = model.oauth.redirectUri
-                , responseType = OAuth.Token
+                , responseType = OAuth.Code
                 , scope = [ "email", "profile" ]
                 , state = Nothing
                 , url = authorizationEndpoint

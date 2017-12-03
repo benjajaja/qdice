@@ -4,7 +4,6 @@ import String
 import Http
 import Navigation exposing (Location)
 import Json.Decode exposing (list, string)
-import OAuth exposing (Token)
 import Backend.Types exposing (..)
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -96,12 +95,12 @@ updateSubscribed model topic =
                 )
 
 
-authenticate : Model -> OAuth.Token -> Cmd Msg
-authenticate model token =
+authenticate : Model -> String -> Cmd Msg
+authenticate model code =
     let
         request =
             Http.post (model.baseUrl ++ "/login")
-                (toString token |> Http.stringBody "text/plain")
+                (code |> Http.stringBody "text/plain")
                 profileDecoder
     in
         Http.send (GetProfile) request

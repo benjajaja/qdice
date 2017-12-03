@@ -6,8 +6,9 @@
   "scripts": {
     "build": "rm -rf dist/* ; webpack",
     "watch": "webpack --watch",
-    "start": "webpack-dev-server",
-    "postinstall": "yarn build"
+    "webpack": "webpack-dev-server",
+    "postinstall": "yarn build",
+    "start": "node server-nodejs/main.js"
   },
   "repository": {
     "type": "git",

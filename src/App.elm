@@ -141,8 +141,8 @@ update msg model =
         Authorize ->
             MyOauth.authorize model
 
-        Authenticate token ->
-            model ! [ Backend.authenticate model.backend token ]
+        Authenticate code ->
+            model ! [ Backend.authenticate model.backend code ]
 
         Authenticated (Ok response) ->
             model ! []

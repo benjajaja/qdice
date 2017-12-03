@@ -1,3 +1,6 @@
+const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
+if (!GOOGLE_OAUTH_SECRET) throw new Error('GOOGLE_OAUTH_SECRET env var not found');
+
 var restify = require('restify');
 var mqtt = require('mqtt');
 var request = require('request');
@@ -31,9 +34,6 @@ server.use(restify.throttle({
 }));
 server.use(restify.conditionalRequest());
 
-server.get('/hello/:name', respond);
-server.head('/hello/:name', respond);
-
 const Table = name => ({
   name,
   players: [],
@@ -49,18 +49,37 @@ var tables = ['Melchor', 'Miño'].reduce((acc, key) => {
 
 server.post('/login', function(req, res, next) {
   request({
-    url: 'https://www.googleapis.com/oauth2/v1/userinfo',
-    headers: {
-      authorization: req.body,
-    },
+    url: 'https://www.googleapis.com/oauth2/v4/token',
+    method: 'POST',
+    //headers: {
+      //authorization: req.body,
+    //},
+    form: {
+      code: req.body,
+      client_id: '1000163928607-54qf4s6gf7ukjoevlkfpdetepm59176n.apps.googleusercontent.com',
+      client_secret: GOOGLE_OAUTH_SECRET,
+      scope: ['email', 'profile'],
+      grant_type: 'authorization_code',
+      redirect_uri: req.headers.referer,
+    }
   }, function(err, response, body) {
     var json = JSON.parse(body);
-    res.send(200, {
-      name: json.name,
-      email: json.email,
-      picture: json.picture,
+    request({
+      url: 'https://www.googleapis.com/userinfo/v2/me',
+      method: 'GET',
+      headers: {
+        authorization: json.token_type + ' ' + json.access_token,
+      },
+    }, function(err, response, body) {
+      var profile = JSON.parse(body);
+      console.log(profile);
+      res.send(200, {
+        name: profile.name,
+        email: profile.email,
+        picture: profile.picture,
+      });
+      next();
     });
-    next();
   });
 });
 

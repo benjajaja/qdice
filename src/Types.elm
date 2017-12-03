@@ -22,7 +22,7 @@ type Msg
       -- oauth
     | Nop
     | Authorize
-    | Authenticate OAuth.Token
+    | Authenticate String
     | GetProfile (Result Http.Error LoggedUser)
       -- game
     | ChangeTable Table
