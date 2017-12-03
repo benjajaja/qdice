@@ -19,9 +19,17 @@ connect =
     mqttConnect ""
 
 
+baseUrl : Location -> String
+baseUrl location =
+    if String.endsWith "herokuapp.com" location.hostname then
+        "https://elm-dice-server.herokuapp.com"
+    else
+        location.protocol ++ "//" ++ location.hostname ++ ":5000"
+
+
 init : Location -> Table -> ( Model, Cmd Msg )
 init location table =
-    ( { baseUrl = location.protocol ++ "//" ++ location.hostname ++ ":5000"
+    ( { baseUrl = baseUrl location
       , clientId = Nothing
       , subscribed = []
       , status = Offline
