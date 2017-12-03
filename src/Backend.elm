@@ -24,7 +24,7 @@ baseUrl location =
     if String.endsWith "herokuapp.com" location.hostname then
         "https://elm-dice-server.herokuapp.com"
     else
-        location.protocol ++ "//" ++ location.hostname ++ ":5000"
+        location.protocol ++ "//" ++ location.hostname ++ ":5001"
 
 
 init : Location -> Table -> ( Model, Cmd Msg )

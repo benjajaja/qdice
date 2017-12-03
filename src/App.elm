@@ -101,7 +101,7 @@ update msg model =
 
         LoggedIn data ->
             case data of
-                [ token, email, name, picture ] ->
+                [ email, name, picture ] ->
                     let
                         user =
                             Logged

@@ -23,8 +23,8 @@ loginDecoder =
 profileDecoder : Decoder LoggedUser
 profileDecoder =
     Json.Decode.map3 LoggedUser
-        (Json.Decode.field "email" Json.Decode.string)
         (Json.Decode.field "name" Json.Decode.string)
+        (Json.Decode.field "email" Json.Decode.string)
         (Json.Decode.field "picture" Json.Decode.string)
 
 
