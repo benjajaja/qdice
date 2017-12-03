@@ -27,7 +27,7 @@ init model table =
             mapCmd
                 :: case model of
                     Just model ->
-                        [ Backend.joinTable model.user table
+                        [ Backend.joinTable model.backend model.user table
                         , Backend.publish <| TableMsg model.game.table <| Backend.Types.Leave <| Types.getUsername model
                         , Backend.publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model
                         ]

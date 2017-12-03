@@ -92,7 +92,7 @@ toChatError table action err =
                     "Timed out (network)"
 
                 BadStatus response ->
-                    "Server error: " ++ (toString response)
+                    "Server error " ++ (toString response.status.code) ++ " " ++ response.status.message
 
                 BadPayload error response ->
                     "Client error: " ++ error

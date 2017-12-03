@@ -1,5 +1,6 @@
 var restify = require('restify');
 var mqtt = require('mqtt');
+var request = require('request');
 
 function respond(req, res, next) {
   res.send('hello ' + req.params.name);
@@ -46,6 +47,23 @@ var tables = ['Melchor', 'Miño'].reduce((acc, key) => {
   return acc;
 }, {});
 
+server.post('/login', function(req, res, next) {
+  request({
+    url: 'https://www.googleapis.com/oauth2/v1/userinfo',
+    headers: {
+      authorization: req.body,
+    },
+  }, function(err, response, body) {
+    var json = JSON.parse(body);
+    res.send(200, {
+      name: json.name,
+      email: json.email,
+      picture: json.picture,
+    });
+    next();
+  });
+});
+
 server.post('/tables/:name', function(req, res, next) {
   var player = req.body;
   var table = tables[req.params.name];
@@ -79,6 +97,6 @@ client.on('connect', function () {
 
 client.on('message', function (topic, message) {
   // message is Buffer 
-  console.log(message.toString())
+  //console.log(message.toString())
   // client.end()
 })

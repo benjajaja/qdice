@@ -2,7 +2,9 @@ port module Backend exposing (..)
 
 import String
 import Http
+import Navigation exposing (Location)
 import Json.Decode exposing (list, string)
+import OAuth exposing (Token)
 import Backend.Types exposing (..)
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -18,9 +20,10 @@ connect =
     mqttConnect ""
 
 
-init : Table -> ( Model, Cmd Msg )
-init table =
-    ( { clientId = Nothing
+init : Location -> Table -> ( Model, Cmd Msg )
+init location table =
+    ( { baseUrl = location.protocol ++ "//" ++ location.hostname ++ ":5001"
+      , clientId = Nothing
       , subscribed = []
       , status = Offline
       , chatLog = []
@@ -93,14 +96,22 @@ updateSubscribed model topic =
                 )
 
 
-joinTable : Types.User -> Table -> Cmd Msg
-joinTable user table =
+authenticate : Model -> OAuth.Token -> Cmd Msg
+authenticate model token =
     let
-        _ =
-            Debug.log "joinTable Backend.elm" user
-
         request =
-            Http.post ("http://localhost:5001/tables/" ++ (toString table))
+            Http.post (model.baseUrl ++ "/login")
+                (toString token |> Http.stringBody "text/plain")
+                profileDecoder
+    in
+        Http.send (GetProfile) request
+
+
+joinTable : Model -> Types.User -> Table -> Cmd Msg
+joinTable model user table =
+    let
+        request =
+            Http.post (model.baseUrl ++ "/tables/" ++ (toString table))
                 (Player
                     (case user of
                         Types.Anonymous ->
@@ -122,11 +133,12 @@ joinTable user table =
         Http.send (Joined) request
 
 
-gameCommand : Table -> PlayerAction -> Cmd Msg
-gameCommand table playerAction =
+gameCommand : Model -> Table -> PlayerAction -> Cmd Msg
+gameCommand model table playerAction =
     Http.send (GameCommandResponse table playerAction) <|
         Http.post
-            ("http://localhost:5001/tables/"
+            (model.baseUrl
+                ++ "/tables/"
                 ++ (toString table)
                 ++ "/"
                 ++ (toString playerAction)

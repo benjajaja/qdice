@@ -1,6 +1,7 @@
 module MyOauth exposing (..)
 
 import Http
+import Task
 import Navigation
 import Json.Decode as Json
 import OAuth
@@ -30,23 +31,12 @@ init location =
     in
         case OAuth.Implicit.parse location of
             Ok { token } ->
-                let
-                    req =
-                        Http.request
-                            { method = "GET"
-                            , body = Http.emptyBody
-                            , headers = OAuth.use token []
-                            , withCredentials = False
-                            , url = profileEndpoint
-                            , expect = Http.expectJson profileDecoder
-                            , timeout = Nothing
-                            }
-                in
-                    ( ({ oauth | token = Just token })
-                    , [ Navigation.modifyUrl oauth.redirectUri
-                      , Http.send GetProfile req
-                      ]
-                    )
+                ( ({ oauth | token = Just token })
+                , [ Navigation.modifyUrl oauth.redirectUri
+                    --, Http.send GetProfile cliReq
+                  , Task.perform (always <| Authenticate token) (Task.succeed ())
+                  ]
+                )
 
             Err (OAuth.Empty) ->
                 ( oauth, [] )
@@ -58,14 +48,6 @@ init location =
 
             Err _ ->
                 ( { oauth | error = Just "parsing error" }, [] )
-
-
-profileDecoder : Json.Decoder LoggedUser
-profileDecoder =
-    Json.map3 LoggedUser
-        (Json.field "email" Json.string)
-        (Json.field "name" Json.string)
-        (Json.field "picture" Json.string)
 
 
 authorize model =

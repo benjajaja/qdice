@@ -4,7 +4,8 @@ import Tables exposing (Table)
 
 
 type alias Model =
-    { clientId : Maybe ClientId
+    { baseUrl : String
+    , clientId : Maybe ClientId
     , subscribed : List Topic
     , status : ConnectionStatus
     , chatLog : List ChatLogEntry

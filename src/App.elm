@@ -50,7 +50,7 @@ init location =
             Editor.Editor.init
 
         ( backend, backendCmd ) =
-            Backend.init table
+            Backend.init location table
 
         ( oauth, oauthCmds ) =
             MyOauth.init location
@@ -114,7 +114,7 @@ update msg model =
                             model.oauth
                     in
                         { model | user = user }
-                            ! [ Backend.joinTable user model.game.table ]
+                            ! [ Backend.joinTable model.backend user model.game.table ]
 
                 _ ->
                     model ! []
@@ -140,6 +140,15 @@ update msg model =
 
         Authorize ->
             MyOauth.authorize model
+
+        Authenticate token ->
+            model ! [ Backend.authenticate model.backend token ]
+
+        Authenticated (Ok response) ->
+            model ! []
+
+        Authenticated (Err err) ->
+            model ! []
 
         NavigateTo route ->
             model ! [ navigateTo route ]
@@ -219,7 +228,7 @@ update msg model =
 
         GameCmd playerAction ->
             model
-                ! [ Backend.gameCommand model.game.table playerAction ]
+                ! [ Backend.gameCommand model.backend model.game.table playerAction ]
 
         GameCommandResponse table action (Ok ()) ->
             Game.State.updateCommandResponse table action model
@@ -267,7 +276,7 @@ update msg model =
                     Backend.updateChatLog model <| Backend.Types.LogChat user text
 
         JoinTable table ->
-            model ! [ Backend.joinTable model.user table ]
+            model ! [ Backend.joinTable model.backend model.user table ]
 
         Joined (Ok response) ->
             let

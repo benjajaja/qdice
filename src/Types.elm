@@ -22,6 +22,7 @@ type Msg
       -- oauth
     | Nop
     | Authorize
+    | Authenticate OAuth.Token
     | GetProfile (Result Http.Error LoggedUser)
       -- game
     | ChangeTable Table
@@ -32,6 +33,7 @@ type Msg
     | GameCmd PlayerAction
       -- backend
     | Connected Backend.Types.ClientId
+    | Authenticated (Result Http.Error ())
     | StatusConnect String
     | StatusReconnect Int
     | StatusOffline String
