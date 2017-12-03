@@ -6,10 +6,8 @@
   "scripts": {
     "build": "rm -rf dist/* ; webpack",
     "watch": "webpack --watch",
-    "postinstall": "cd server-nodejs ; yarn install",
-    "webpack": "webpack-dev-server",
-    "heroku-postbuild": "yarn build",
-    "start": "node server-nodejs/main.js"
+    "start": "webpack-dev-server",
+    "heroku-postbuild": "yarn build"
   },
   "repository": {
     "type": "git",
