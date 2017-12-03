@@ -99,8 +99,8 @@ server.post('/tables/:name', function(req, res, next) {
   next();
 });
 
-server.listen(5001, function() {
-  console.log('%s listening at %s', server.name, server.url);
+server.listen(process.env.PORT || 5001, function() {
+  console.log('%s listening at %s port %s', server.name, server.url);
 });
 
 var client = mqtt.connect('tcp://m21.cloudmqtt.com:11201', {

@@ -7,7 +7,7 @@
     "build": "rm -rf dist/* ; webpack",
     "watch": "webpack --watch",
     "webpack": "webpack-dev-server",
-    "postinstall": "yarn build",
+    "heroku-postbuild": "yarn build",
     "start": "node server-nodejs/main.js"
   },
   "repository": {

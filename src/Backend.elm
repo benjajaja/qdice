@@ -21,7 +21,7 @@ connect =
 
 init : Location -> Table -> ( Model, Cmd Msg )
 init location table =
-    ( { baseUrl = location.protocol ++ "//" ++ location.hostname ++ ":5001"
+    ( { baseUrl = location.protocol ++ "//" ++ location.hostname ++ ":5000"
       , clientId = Nothing
       , subscribed = []
       , status = Offline
