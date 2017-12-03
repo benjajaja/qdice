@@ -103,19 +103,29 @@ server.listen(5001, function() {
   console.log('%s listening at %s', server.name, server.url);
 });
 
-var client = mqtt.connect('tcp://localhost:1883')
+var client = mqtt.connect('tcp://m21.cloudmqtt.com:11201', {
+  username: 'web',
+  password: 'web',
+})
  
 client.on('connect', function () {
-  Object.keys(tables).forEach(key => {
-    client.subscribe('tables/' + key + '/server');
-    client.subscribe('tables/' + key + '/broadcast');
-  });
-  client.subscribe('presence')
-  client.publish('presence', 'Hello mqtt')
-})
+  console.log('mqtt connected');
+
+  client.subscribe(
+    Object.keys(tables).map(table => 'tables/' + table + '/server')
+      .concat(Object.keys(tables).map(table => 'tables/' + table + '/broadcast'))
+      .concat(['presence']),
+    (err, granted) => {
+      console.log(err, granted)
+      client.publish('presence', 'Hello mqtt', undefined, (err) => console.log(err, 'published presence'));
+    });
+});
 
 client.on('message', function (topic, message) {
   // message is Buffer 
-  //console.log(message.toString())
+  console.log(message.toString())
   // client.end()
-})
+});
+
+client.on('error', err => console.error(err));
+

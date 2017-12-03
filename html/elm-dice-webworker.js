@@ -2,12 +2,12 @@ console.log('worker here');
 var mqtt = require('mqtt');
 
 var mqttConfig = {
-  protocol: 'ws',
-  hostname: 'localhost',
-  port: 8083,
+  protocol: 'wss',
+  hostname: 'm21.cloudmqtt.com',
+  port: 31201,
   path: 'mqtt',
-  username: 'client',
-  password: 'client',
+  username: 'web',
+  password: 'web',
 }
 
 var client;
@@ -53,9 +53,9 @@ self.addEventListener('message', function(event){
         self.postMessage({ type: 'mqttOnReconnect', payload: connectionAttempts});
       });
 
-      // client.on('close', function (event) {
-      //   console.error('mqtt close:', event);
-      // });
+       client.on('close', function (event) {
+         console.error('mqtt close:', event);
+       });
 
       client.on('offline', function () {
         self.postMessage({ type: 'mqttOnOffline', payload: connectionAttempts.toString()});
