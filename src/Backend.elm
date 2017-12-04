@@ -121,7 +121,7 @@ loadMe model =
     Http.send GetProfile <|
         Http.request
             { method = "GET"
-            , headers = Debug.log "header" [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
+            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
             , url = (model.baseUrl ++ "/me")
             , body = Http.emptyBody
             , expect =
@@ -131,35 +131,9 @@ loadMe model =
             }
 
 
-joinTable : Model -> Types.User -> Table -> Cmd Msg
-joinTable model user table =
-    let
-        request =
-            Http.post (model.baseUrl ++ "/tables/" ++ (toString table))
-                (Player
-                    (case user of
-                        Types.Anonymous ->
-                            "Anonymous"
-
-                        Types.Logged user ->
-                            user.name
-                    )
-                    Neutral
-                    |> playerEncoder
-                    |> Http.jsonBody
-                )
-                tableDecoder
-
-        --(string)
-        --decTab
-    in
-        -- Cmd.map Types.BckMsg <|
-        Http.send (Joined) request
-
-
 gameCommand : Model -> Table -> PlayerAction -> Cmd Msg
 gameCommand model table playerAction =
-    Http.send (GameCommandResponse table playerAction) <|
+    Http.send (GameCommandResponse table <| Debug.log "cmd" <| playerAction) <|
         Http.request
             { method = "POST"
             , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]

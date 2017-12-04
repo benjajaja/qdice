@@ -12,7 +12,8 @@ type GameStatus
 
 
 type PlayerAction
-    = Join
+    = Enter
+    | Join
 
 
 type alias Model =

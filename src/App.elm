@@ -12,6 +12,7 @@ import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
 import Types exposing (..)
+import Game.Types exposing (PlayerAction(..))
 import Game.State
 import Game.View
 import Game.Chat
@@ -124,6 +125,7 @@ update msg model =
                             , backend = { backend | jwt = profile.token }
                         }
                             ! [ auth [ profile.token ]
+                              , Backend.gameCommand model.backend model.game.table Enter
                               ]
 
         Authorize ->
@@ -266,22 +268,6 @@ update msg model =
 
                 Backend.Types.Chat user text ->
                     Backend.updateChatLog model <| Backend.Types.LogChat user text
-
-        JoinTable table ->
-            model ! [ Backend.joinTable model.backend model.user table ]
-
-        Joined (Ok response) ->
-            let
-                game =
-                    model.game
-
-                game_ =
-                    { game | players = response.players }
-            in
-                { model | game = game_ } ! []
-
-        Joined (Err _) ->
-            model ! []
 
 
 msgsToCmds : List Msg -> List (Cmd Msg)

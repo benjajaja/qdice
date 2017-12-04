@@ -41,8 +41,6 @@ type Msg
     | AllClientsMsg Backend.Types.AllClientsMessage
     | TableMsg Table Backend.Types.TableMessage
     | UnknownTopicMessage String String String
-    | JoinTable Table
-    | Joined (Result Http.Error TableStatus)
     | GameCommandResponse Table PlayerAction (Result Http.Error ())
 
 
