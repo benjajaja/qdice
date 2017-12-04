@@ -8,8 +8,13 @@
     "start": "node main.js"
   },
   "dependencies": {
+    "bluebird": "^3.5.1",
+    "jsonwebtoken": "^8.1.0",
     "mqtt": "^2.9.1",
+    "redis": "^2.8.0",
     "request": "^2.83.0",
-    "restify": "4"
+    "restify": "4",
+    "restify-cors-middleware": "^1.0.1",
+    "restify-jwt": "^0.4.0"
   }
 }
