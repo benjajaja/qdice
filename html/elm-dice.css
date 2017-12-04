@@ -49,8 +49,7 @@ body.navigator-standalone textarea {
   }
 }
 .GLOBAL_ERROR {
-  background-color: light-red;
-  font-size: 2em;
+  background-color: #ffcccc;
   padding: 2em;
   font-weight: bold;
 }

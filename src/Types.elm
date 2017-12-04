@@ -17,7 +17,6 @@ type Msg
     | OnLocationChange Location
     | Mdl (Material.Msg Msg)
     | DrawerNavigateTo Route
-    | LoggedIn (List String)
     | EditorMsg Editor.Types.Msg
       -- oauth
     | Nop
@@ -32,8 +31,8 @@ type Msg
     | ClearChat
     | GameCmd PlayerAction
       -- backend
+    | LoadToken String
     | Connected Backend.Types.ClientId
-    | Authenticated (Result Http.Error ())
     | StatusConnect String
     | StatusReconnect Int
     | StatusOffline String
@@ -80,6 +79,7 @@ type alias LoggedUser =
     { name : Username
     , email : String
     , picture : String
+    , token : String
     }
 
 

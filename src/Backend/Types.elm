@@ -5,6 +5,7 @@ import Tables exposing (Table)
 
 type alias Model =
     { baseUrl : String
+    , jwt : String
     , clientId : Maybe ClientId
     , subscribed : List Topic
     , status : ConnectionStatus

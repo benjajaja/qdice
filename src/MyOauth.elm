@@ -31,10 +31,8 @@ init location =
     in
         case OAuth.AuthorizationCode.parse location of
             Ok { code } ->
-                --( ({ oauth | token = Just token })
                 ( oauth
                 , [ Navigation.modifyUrl oauth.redirectUri
-                    --, Http.send GetProfile cliReq
                   , Task.perform (always <| Authenticate code) (Task.succeed ())
                   ]
                 )

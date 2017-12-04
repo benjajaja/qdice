@@ -37,12 +37,18 @@ app.ports.hide.subscribe(function(msg) {
   };
 });
 
-var auth = require('./auth.js');
-var onSession = function(token, profile) {
-  app.ports.onAuth.send([token || '', profile.email || '', profile.name || '', profile.picture || '']);
-};
 
-app.ports.auth.subscribe(auth(onSession));
+if (window.location.hash.indexOf('#access_token=') !== 0) {
+  var token = localStorage.getItem('jwt_token');
+  if (token) {
+    setTimeout(app.ports.onToken.send.bind(app.ports.onToken, token));
+  }
+}
+app.ports.auth.subscribe(function(token) {
+  if (token) {
+    localStorage.setItem('jwt_token', token);
+  }
+});
 
 app.ports.selectAll.subscribe(function(id) {
   var selection = window.getSelection();

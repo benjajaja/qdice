@@ -1,7 +1,5 @@
 module Backend.Decoding exposing (..)
 
--- import Backend.Types exposing (..)
-
 import Types exposing (LoggedUser)
 import Tables exposing (Table(..))
 import Game.Types exposing (TableStatus, Player)
@@ -10,22 +8,27 @@ import Json.Decode exposing (int, string, float, list, Decoder, map, succeed)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
--- decodeTableMessage : Table -> Decoder string
--- decodeTableMessage table =
---     Decoder string
-
-
 loginDecoder : Decoder ()
 loginDecoder =
     succeed ()
 
 
-profileDecoder : Decoder LoggedUser
-profileDecoder =
-    Json.Decode.map3 LoggedUser
-        (Json.Decode.field "name" Json.Decode.string)
-        (Json.Decode.field "email" Json.Decode.string)
-        (Json.Decode.field "picture" Json.Decode.string)
+profileDecoder : Maybe String -> Decoder LoggedUser
+profileDecoder existingToken =
+    case existingToken of
+        Just token ->
+            decode LoggedUser
+                |> required "name" string
+                |> required "email" string
+                |> required "picture" string
+                |> optional "token" string token
+
+        Nothing ->
+            Json.Decode.map4 LoggedUser
+                (Json.Decode.field "name" Json.Decode.string)
+                (Json.Decode.field "email" Json.Decode.string)
+                (Json.Decode.field "picture" Json.Decode.string)
+                (Json.Decode.field "token" Json.Decode.string)
 
 
 tableDecoder : Decoder TableStatus
@@ -49,10 +52,3 @@ colorDecoder =
 accknowledgeDecoder : Decoder ()
 accknowledgeDecoder =
     succeed ()
-
-
-
--- decode Player
---     string
--- decode (list string)
---     |> required "players" string

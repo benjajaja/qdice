@@ -99,26 +99,6 @@ update msg model =
             in
                 ( { model | editor = editor }, Cmd.map EditorMsg editorCmd )
 
-        LoggedIn data ->
-            case data of
-                [ email, name, picture ] ->
-                    let
-                        user =
-                            Logged
-                                { email = email
-                                , name = name
-                                , picture = picture
-                                }
-
-                        oauth =
-                            model.oauth
-                    in
-                        { model | user = user }
-                            ! [ Backend.joinTable model.backend user model.game.table ]
-
-                _ ->
-                    model ! []
-
         Nop ->
             model ! []
 
@@ -126,6 +106,9 @@ update msg model =
             let
                 oauth =
                     model.oauth
+
+                backend =
+                    model.backend
             in
                 case res of
                     Err err ->
@@ -136,19 +119,29 @@ update msg model =
                             { model | oauth = oauth_ } ! []
 
                     Ok profile ->
-                        { model | user = Logged profile } ! [ auth [ profile.email, profile.name, profile.picture ] ]
+                        { model
+                            | user = Logged profile
+                            , backend = { backend | jwt = profile.token }
+                        }
+                            ! [ auth [ profile.token ]
+                              ]
 
         Authorize ->
             MyOauth.authorize model
 
+        LoadToken token ->
+            let
+                backend =
+                    model.backend
+
+                backend_ =
+                    { backend | jwt = token }
+            in
+                { model | backend = backend_ }
+                    ! [ Backend.loadMe backend_ ]
+
         Authenticate code ->
             model ! [ Backend.authenticate model.backend code ]
-
-        Authenticated (Ok response) ->
-            model ! []
-
-        Authenticated (Err err) ->
-            model ! []
 
         NavigateTo route ->
             model ! [ navigateTo route ]
@@ -227,8 +220,7 @@ update msg model =
                 { model | game = game_ } ! []
 
         GameCmd playerAction ->
-            model
-                ! [ Backend.gameCommand model.backend model.game.table playerAction ]
+            model ! [ Backend.gameCommand model.backend model.game.table playerAction ]
 
         GameCommandResponse table action (Ok ()) ->
             Game.State.updateCommandResponse table action model
@@ -404,7 +396,6 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
-        , onAuth LoggedIn
         ]
 
 
@@ -412,6 +403,3 @@ port hide : String -> Cmd msg
 
 
 port auth : List String -> Cmd msg
-
-
-port onAuth : (List String -> msg) -> Sub msg

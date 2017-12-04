@@ -30,6 +30,7 @@ baseUrl location =
 init : Location -> Table -> ( Model, Cmd Msg )
 init location table =
     ( { baseUrl = baseUrl location
+      , jwt = ""
       , clientId = Nothing
       , subscribed = []
       , status = Offline
@@ -109,9 +110,25 @@ authenticate model code =
         request =
             Http.post (model.baseUrl ++ "/login")
                 (code |> Http.stringBody "text/plain")
-                profileDecoder
+            <|
+                profileDecoder Nothing
     in
         Http.send (GetProfile) request
+
+
+loadMe : Model -> Cmd Msg
+loadMe model =
+    Http.send GetProfile <|
+        Http.request
+            { method = "GET"
+            , headers = Debug.log "header" [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
+            , url = (model.baseUrl ++ "/me")
+            , body = Http.emptyBody
+            , expect =
+                Http.expectJson <| profileDecoder <| Just model.jwt
+            , timeout = Nothing
+            , withCredentials = False
+            }
 
 
 joinTable : Model -> Types.User -> Table -> Cmd Msg
@@ -143,17 +160,23 @@ joinTable model user table =
 gameCommand : Model -> Table -> PlayerAction -> Cmd Msg
 gameCommand model table playerAction =
     Http.send (GameCommandResponse table playerAction) <|
-        Http.post
-            (model.baseUrl
-                ++ "/tables/"
-                ++ (toString table)
-                ++ "/"
-                ++ (toString playerAction)
-            )
-            Http.emptyBody
-            --(case playerAction of
-            --Game.Types.Join ->
-            accknowledgeDecoder
+        Http.request
+            { method = "POST"
+            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
+            , url =
+                (model.baseUrl
+                    ++ "/tables/"
+                    ++ (toString table)
+                    ++ "/"
+                    ++ (toString playerAction)
+                )
+            , body = Http.emptyBody
+            , expect =
+                Http.expectJson accknowledgeDecoder
+                -- (\_ -> Ok ())
+            , timeout = Nothing
+            , withCredentials = False
+            }
 
 
 
@@ -183,6 +206,7 @@ subscriptions model =
         , mqttOnConnected Connected
         , mqttOnSubscribed <| decodeSubscribed model.backend.clientId
         , mqttOnMessage <| decodeMessage model.backend.clientId
+        , onToken LoadToken
         ]
 
 
@@ -315,6 +339,9 @@ port mqttPublish : ( String, String ) -> Cmd msg
 subscribe : Topic -> Cmd msg
 subscribe topic =
     mqttSubscribe <| encodeTopic topic
+
+
+port onToken : (String -> msg) -> Sub msg
 
 
 port mqttSubscribe : String -> Cmd msg
