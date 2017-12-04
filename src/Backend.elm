@@ -140,9 +140,9 @@ gameCommand model table playerAction =
             , url =
                 (model.baseUrl
                     ++ "/tables/"
-                    ++ (toString table)
+                    ++ (msgToUrlPath table)
                     ++ "/"
-                    ++ (toString playerAction)
+                    ++ (msgToUrlPath playerAction)
                 )
             , body = Http.emptyBody
             , expect =
@@ -313,6 +313,11 @@ port mqttPublish : ( String, String ) -> Cmd msg
 subscribe : Topic -> Cmd msg
 subscribe topic =
     mqttSubscribe <| encodeTopic topic
+
+
+msgToUrlPath : a -> String
+msgToUrlPath =
+    toString >> String.toLower
 
 
 port onToken : (String -> msg) -> Sub msg
