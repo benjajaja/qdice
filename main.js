@@ -1,4 +1,5 @@
 if (process.env.NODE_ENV !== 'production') {
+  console.log('Loading local .env vars')
   require('./envs');
 }
 
@@ -31,7 +32,7 @@ server.use(restify.throttle({
 server.use(restify.conditionalRequest());
 const cors = corsMiddleware({
   preflightMaxAge: 5, //Optional
-  origins: ['http:localhost:5000', 'http://lvh.me:5000', 'http://elm-dice.herokuapp.com'],
+  origins: ['http:localhost:5000', 'http://lvh.me:5000', 'http://elm-dice.herokuapp.com/', 'https://elm-dice.herokuapp.com/'],
   allowHeaders: ['authorization'],
   exposeHeaders: ['authorization']
 });
