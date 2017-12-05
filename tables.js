@@ -34,6 +34,9 @@ module.exports.command = function(req, res, next) {
     case 'Join':
       join(req.user, table, req);
       break;
+    case 'Leave':
+      leave(req.user, table, req);
+      break;
     default:
       throw new Error('Unknown command: ' + command);
   }
@@ -56,10 +59,20 @@ const enter = (user, table) => {
 const join = (user, table) => {
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
-    //throw new Error('already joined');
-    console.error('already joinded');
+    throw new Error('already joined');
   } else {
     table.players.push(Player(user));
+  }
+  publishTableStatus(table);
+};
+
+
+const leave = (user, table) => {
+  const existing = table.players.filter(p => p.id === user.id).pop();
+  if (!existing) {
+    throw new Error('not joined');
+  } else {
+    table.players = table.players.filter(p => p !== existing);
   }
   publishTableStatus(table);
 };
@@ -75,7 +88,7 @@ module.exports.setMqtt = client_ => {
     if (!table) throw new Error('table not found: ' + tableName);
     const { type, payload } = JSON.parse(message);
     console.log('table message', tableName, channel);
-    publishTableStatus(table);
+    //publishTableStatus(table);
   });
 };
 
