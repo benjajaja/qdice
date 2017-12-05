@@ -58,7 +58,6 @@ exports.login = function(req, res, next) {
 };
 
 exports.me = function(req, res, next) {
-  console.log('me', req.user);
   res.send(200, Object.assign({ token: null }, req.user));
   next();
 };
