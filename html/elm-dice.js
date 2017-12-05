@@ -44,9 +44,11 @@ if (window.location.hash.indexOf('#access_token=') !== 0) {
     setTimeout(app.ports.onToken.send.bind(app.ports.onToken, token));
   }
 }
-app.ports.auth.subscribe(function(token) {
-  if (token) {
-    localStorage.setItem('jwt_token', token);
+app.ports.auth.subscribe(function(args) {
+  if (args.length === 1) {
+    localStorage.setItem('jwt_token', args);
+  } else {
+    localStorage.removeItem('jwt_token');
   }
 });
 

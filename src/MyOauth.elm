@@ -30,15 +30,15 @@ init location =
             }
     in
         case OAuth.AuthorizationCode.parse location of
+            Err (OAuth.Empty) ->
+                ( oauth, [] )
+
             Ok { code } ->
                 ( oauth
                 , [ Navigation.modifyUrl oauth.redirectUri
                   , Task.perform (always <| Authenticate code) (Task.succeed ())
                   ]
                 )
-
-            Err (OAuth.Empty) ->
-                ( oauth, [] )
 
             Err (OAuth.OAuthErr err) ->
                 ( { oauth | error = Just <| OAuth.showErrCode err.error }

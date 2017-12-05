@@ -24,6 +24,7 @@ type Msg
     | Authenticate String
     | GetToken (Result Http.Error String)
     | GetProfile (Result Http.Error LoggedUser)
+    | Logout
       -- game
     | ChangeTable Table
     | BoardMsg Board.Msg

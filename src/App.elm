@@ -164,6 +164,17 @@ update msg model =
         Authenticate code ->
             model ! [ Backend.authenticate model.backend code ]
 
+        Logout ->
+            let
+                backend =
+                    model.backend
+
+                backend_ =
+                    { backend | jwt = "" }
+            in
+                { model | user = Anonymous, backend = backend_ }
+                    ! [ auth [] ]
+
         NavigateTo route ->
             model ! [ navigateTo route ]
 
@@ -337,8 +348,13 @@ header model =
         , Layout.navigation []
             [ Layout.link
                 [ Material.Options.cs "header--profile-link"
-                , Material.Options.onClick
-                    Authorize
+                , Material.Options.onClick <|
+                    case model.user of
+                        Anonymous ->
+                            Authorize
+
+                        Logged _ ->
+                            Logout
                 ]
                 (case model.user of
                     Logged user ->
