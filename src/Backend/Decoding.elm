@@ -8,27 +8,18 @@ import Json.Decode exposing (int, string, float, list, Decoder, map, succeed)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
-loginDecoder : Decoder ()
-loginDecoder =
-    succeed ()
+tokenDecoder : Decoder String
+tokenDecoder =
+    string
 
 
-profileDecoder : Maybe String -> Decoder LoggedUser
-profileDecoder existingToken =
-    case existingToken of
-        Just token ->
-            decode LoggedUser
-                |> required "name" string
-                |> required "email" string
-                |> required "picture" string
-                |> optional "token" string token
-
-        Nothing ->
-            Json.Decode.map4 LoggedUser
-                (Json.Decode.field "name" Json.Decode.string)
-                (Json.Decode.field "email" Json.Decode.string)
-                (Json.Decode.field "picture" Json.Decode.string)
-                (Json.Decode.field "token" Json.Decode.string)
+profileDecoder : Decoder LoggedUser
+profileDecoder =
+    decode LoggedUser
+        |> required "id" string
+        |> required "name" string
+        |> required "email" string
+        |> required "picture" string
 
 
 tableDecoder : Decoder TableStatus
@@ -40,6 +31,7 @@ tableDecoder =
 playersDecoder : Decoder Player
 playersDecoder =
     decode Player
+        |> required "id" string
         |> required "name" string
         |> required "color" colorDecoder
 

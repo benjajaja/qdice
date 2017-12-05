@@ -107,10 +107,16 @@ updateSubscribed model topic =
 updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
 updateTableStatus model status =
     let
+        game =
+            model.game
+
+        game_ =
+            { game | players = status.players }
+
         _ =
             Debug.log "status" status
     in
-        model ! []
+        { model | game = game_ } ! []
 
 
 authenticate : Model -> String -> Cmd Msg
@@ -120,9 +126,9 @@ authenticate model code =
             Http.post (model.baseUrl ++ "/login")
                 (code |> Http.stringBody "text/plain")
             <|
-                profileDecoder Nothing
+                tokenDecoder
     in
-        Http.send (GetProfile) request
+        Http.send (GetToken) request
 
 
 loadMe : Model -> Cmd Msg
@@ -134,7 +140,7 @@ loadMe model =
             , url = (model.baseUrl ++ "/me")
             , body = Http.emptyBody
             , expect =
-                Http.expectJson <| profileDecoder <| Just model.jwt
+                Http.expectJson <| profileDecoder
             , timeout = Nothing
             , withCredentials = False
             }

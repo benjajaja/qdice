@@ -14,6 +14,7 @@ type GameStatus
 type PlayerAction
     = Enter
     | Join
+    | Leave
 
 
 type alias Model =
@@ -28,9 +29,14 @@ type alias Model =
 
 
 type alias Player =
-    { name : PlayerName
+    { id : PlayerId
+    , name : PlayerName
     , color : Color
     }
+
+
+type alias PlayerId =
+    String
 
 
 type alias PlayerName =

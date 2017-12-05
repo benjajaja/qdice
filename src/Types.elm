@@ -22,6 +22,7 @@ type Msg
     | Nop
     | Authorize
     | Authenticate String
+    | GetToken (Result Http.Error String)
     | GetProfile (Result Http.Error LoggedUser)
       -- game
     | ChangeTable Table
@@ -74,10 +75,10 @@ type User
 
 
 type alias LoggedUser =
-    { name : Username
+    { id : UserId
+    , name : Username
     , email : String
     , picture : String
-    , token : String
     }
 
 
@@ -97,6 +98,10 @@ getUsername model =
 
         Logged user ->
             user.name
+
+
+type alias UserId =
+    String
 
 
 type alias Username =

@@ -103,6 +103,31 @@ update msg model =
         Nop ->
             model ! []
 
+        GetToken res ->
+            case res of
+                Err err ->
+                    let
+                        oauth =
+                            model.oauth
+
+                        oauth_ =
+                            { oauth | error = Just "unable to fetch user profile ¯\\_(ツ)_/¯" }
+                    in
+                        { model | oauth = oauth_ } ! []
+
+                Ok token ->
+                    let
+                        backend =
+                            model.backend
+
+                        backend_ =
+                            { backend | jwt = token }
+                    in
+                        { model | backend = backend_ }
+                            ! [ auth [ token ]
+                              , Backend.loadMe backend_
+                              ]
+
         GetProfile res ->
             let
                 oauth =
@@ -120,12 +145,8 @@ update msg model =
                             { model | oauth = oauth_ } ! []
 
                     Ok profile ->
-                        { model
-                            | user = Logged profile
-                            , backend = { backend | jwt = profile.token }
-                        }
-                            ! [ auth [ profile.token ]
-                              , Backend.gameCommand model.backend model.game.table Enter
+                        { model | user = Logged profile }
+                            ! [ Backend.gameCommand model.backend model.game.table Enter
                               ]
 
         Authorize ->

@@ -53,12 +53,17 @@ header model =
                 [ Html.text <| toString model.game.status
                 ]
             ]
-        , playButton model
+        , (if isPlayerInGame model then
+            leaveButton
+           else
+            joinButton
+          )
+            model
         ]
 
 
-playButton : Model -> Html.Html Types.Msg
-playButton model =
+joinButton : Model -> Html.Html Types.Msg
+joinButton model =
     Button.render
         Types.Mdl
         [ 0 ]
@@ -70,6 +75,21 @@ playButton model =
         , Options.onClick <| GameCmd Join
         ]
         [ Html.text "Join game" ]
+
+
+leaveButton : Model -> Html.Html Types.Msg
+leaveButton model =
+    Button.render
+        Types.Mdl
+        [ 0 ]
+        model.mdl
+        [ Button.raised
+        , Button.colored
+        , Button.ripple
+        , Options.cs "edGameHeader__button"
+        , Options.onClick <| GameCmd Leave
+        ]
+        [ Html.text "Leave game" ]
 
 
 playerChip : Model -> Game.Types.Player -> Html.Html Types.Msg
@@ -107,15 +127,15 @@ listOfTables model tables =
                                 [ Html.text <| toString table
                                 , Lists.subtitle [] [ Html.text "Unknown" ]
                                 ]
-                            , joinTableButton model table i
+                            , goToTableButton model table i
                             ]
                 )
                 tables
     ]
 
 
-joinTableButton : Model -> Table -> Int -> Html.Html Types.Msg
-joinTableButton model table i =
+goToTableButton : Model -> Table -> Int -> Html.Html Types.Msg
+goToTableButton model table i =
     Button.render Types.Mdl
         [ i ]
         model.mdl
@@ -158,3 +178,12 @@ statusMessage status =
         [ Footer.html <| Icon.i icon
           -- , Footer.html <| Html.text message
         ]
+
+
+isPlayerInGame : Model -> Bool
+isPlayerInGame model =
+    --let
+    --_ =
+    --Debug.log "is" ( model.game.players, model.user )
+    --in
+    False

@@ -50,11 +50,6 @@ updateCommandResponse table action model =
     model ! []
 
 
-mkPlayer : String -> Player
-mkPlayer name =
-    Player name Land.Neutral
-
-
 setTable : Game.Types.Model -> Table -> Game.Types.Model
 setTable model table =
     let
