@@ -1,4 +1,4 @@
-console.log('worker here');
+console.log('elm-dice-webworker reporting in');
 var mqtt = require('mqtt');
 
 var mqttConfig = {

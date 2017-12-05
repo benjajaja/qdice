@@ -10,7 +10,7 @@ import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
 import Types exposing (Msg(..))
 import Tables exposing (Table(..), decodeTable)
-import Game.Types exposing (Player, PlayerAction)
+import Game.Types exposing (Player, PlayerAction(..))
 import Land exposing (Color(..))
 
 
@@ -91,17 +91,26 @@ updateSubscribed model topic =
                                     subscribed
                                     topic
                             then
-                                publish <| TableMsg table <| Join <| Types.getUsername model
-                            else
                                 let
                                     _ =
-                                        Debug.log "not duplex table yet" subscribed
+                                        Debug.log "duplex table" table
                                 in
-                                    Cmd.none
+                                    publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model
+                            else
+                                Cmd.none
 
                         _ ->
                             Cmd.none
                 )
+
+
+updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
+updateTableStatus model status =
+    let
+        _ =
+            Debug.log "status" status
+    in
+        model ! []
 
 
 authenticate : Model -> String -> Cmd Msg
@@ -133,7 +142,7 @@ loadMe model =
 
 gameCommand : Model -> Table -> PlayerAction -> Cmd Msg
 gameCommand model table playerAction =
-    Http.send (GameCommandResponse table <| Debug.log "cmd" <| playerAction) <|
+    Http.send (GameCommandResponse table playerAction) <|
         Http.request
             { method = "POST"
             , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
@@ -145,16 +154,10 @@ gameCommand model table playerAction =
                     ++ (msgToUrlPath playerAction)
                 )
             , body = Http.emptyBody
-            , expect =
-                Http.expectJson accknowledgeDecoder
-                -- (\_ -> Ok ())
+            , expect = Http.expectStringResponse (\_ -> Ok ())
             , timeout = Nothing
             , withCredentials = False
             }
-
-
-
---)
 
 
 updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
@@ -210,7 +213,7 @@ decodeMessage clientId ( stringTopic, message ) =
                 Just topic ->
                     case decodeTopicMessage topic message of
                         Ok msg ->
-                            msg
+                            Debug.log "message" <| msg
 
                         Err err ->
                             UnknownTopicMessage err stringTopic message
@@ -317,7 +320,7 @@ subscribe topic =
 
 msgToUrlPath : a -> String
 msgToUrlPath =
-    toString >> String.toLower
+    toString
 
 
 port onToken : (String -> msg) -> Sub msg

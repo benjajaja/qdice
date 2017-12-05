@@ -48,7 +48,7 @@ tableMatcher =
 
 parseLocation : Location -> Route
 parseLocation location =
-    case (parseHash matchers (Debug.log "location" location)) of
+    case parseHash matchers location of
         Just route ->
             route
 

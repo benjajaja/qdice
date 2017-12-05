@@ -5,6 +5,7 @@ import Backend.Types exposing (..)
 import Tables exposing (Table(..))
 import Json.Decode as Dec exposing (..)
 import Json.Encode as Enc exposing (..)
+import Backend.Decoding exposing (..)
 
 
 type alias ChatMessage =
@@ -72,6 +73,14 @@ decodeTableMessage table message =
                         Err err ->
                             Err err
 
+                "update" ->
+                    case decodeString (field "payload" tableDecoder) message of
+                        Ok update ->
+                            Ok <| TableMsg table <| Update update
+
+                        Err err ->
+                            Err err
+
                 _ ->
                     Err <| "unknown type \"" ++ mtype ++ "\""
 
@@ -100,6 +109,11 @@ encodeTopicMessage msg =
                         object
                             [ ( "type", Enc.string "leave" )
                             , ( "user", Enc.string user )
+                            ]
+
+                    Update status ->
+                        object
+                            [ ( "type", Enc.string "status" )
                             ]
             )
 

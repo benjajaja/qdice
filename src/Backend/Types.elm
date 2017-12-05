@@ -1,6 +1,7 @@
 module Backend.Types exposing (..)
 
 import Tables exposing (Table)
+import Game.Types
 
 
 type alias Model =
@@ -56,6 +57,7 @@ type TableMessage
     = Join User
     | Chat User String
     | Leave User
+    | Update Game.Types.TableStatus
 
 
 type alias User =

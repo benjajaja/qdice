@@ -224,7 +224,7 @@ update msg model =
         GameCmd playerAction ->
             model ! [ Backend.gameCommand model.backend model.game.table playerAction ]
 
-        GameCommandResponse table action (Ok ()) ->
+        GameCommandResponse table action (Ok response) ->
             Game.State.updateCommandResponse table action model
 
         GameCommandResponse table action (Err err) ->
@@ -268,6 +268,9 @@ update msg model =
 
                 Backend.Types.Chat user text ->
                     Backend.updateChatLog model <| Backend.Types.LogChat user text
+
+                Backend.Types.Update status ->
+                    Backend.updateTableStatus model status
 
 
 msgsToCmds : List Msg -> List (Cmd Msg)
