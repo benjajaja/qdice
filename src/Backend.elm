@@ -46,7 +46,7 @@ updateConnected model clientId =
         backend =
             model.backend
     in
-        setStatus Online ({ model | backend = { backend | clientId = Just clientId } })
+        setStatus Subscribing ({ model | backend = { backend | clientId = Just clientId } })
             ! [ subscribe <| Client clientId
               , subscribe AllClients
               ]
@@ -60,27 +60,26 @@ updateSubscribed model topic =
 
         Just clientId ->
             let
-                backend =
-                    model.backend
+                model_ =
+                    addSubscribed model topic
 
                 subscribed =
-                    topic :: backend.subscribed
+                    model_.backend.subscribed
             in
-                ( { model | backend = { backend | subscribed = subscribed } }
-                , if
+                if
                     hasDuplexSubscribed
                         [ Client clientId
                         , AllClients
                         ]
                         subscribed
                         topic
-                  then
-                    Cmd.batch
-                        [ subscribe <| Tables model.game.table ClientDirection
-                        , subscribe <| Tables model.game.table ServerDirection
-                        , subscribe <| Tables model.game.table Broadcast
-                        ]
-                  else
+                then
+                    model_
+                        ! [ subscribe <| Tables model_.game.table ClientDirection
+                          , subscribe <| Tables model_.game.table ServerDirection
+                          , subscribe <| Tables model_.game.table Broadcast
+                          ]
+                else
                     case topic of
                         Tables table direction ->
                             if
@@ -91,17 +90,27 @@ updateSubscribed model topic =
                                     subscribed
                                     topic
                             then
-                                let
-                                    _ =
-                                        Debug.log "duplex table" table
-                                in
-                                    publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model
+                                setStatus Online model_
+                                    ! [ publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
+                                      , gameCommand model.backend model_.game.table Enter
+                                      ]
                             else
-                                Cmd.none
+                                model_ ! []
 
                         _ ->
-                            Cmd.none
-                )
+                            model_ ! []
+
+
+addSubscribed : Types.Model -> Topic -> Types.Model
+addSubscribed model topic =
+    let
+        backend =
+            model.backend
+
+        subscribed =
+            topic :: backend.subscribed
+    in
+        { model | backend = { backend | subscribed = subscribed } }
 
 
 updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )

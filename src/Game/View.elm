@@ -53,12 +53,22 @@ header model =
                 [ Html.text <| toString model.game.status
                 ]
             ]
-        , (if isPlayerInGame model then
-            leaveButton
-           else
-            joinButton
-          )
-            model
+        , case model.backend.status of
+            Online ->
+                case model.user of
+                    Types.Anonymous ->
+                        Html.text ""
+
+                    Types.Logged user ->
+                        (if isPlayerInGame model then
+                            leaveButton
+                         else
+                            joinButton
+                        )
+                            model
+
+            _ ->
+                Html.text ""
         ]
 
 
@@ -125,7 +135,7 @@ listOfTables model tables =
                         Lists.li [ Lists.withSubtitle ]
                             [ Lists.content []
                                 [ Html.text <| toString table
-                                , Lists.subtitle [] [ Html.text "Unknown" ]
+                                , Lists.subtitle [] [ Html.text "0 playing" ]
                                 ]
                             , goToTableButton model table i
                             ]
@@ -167,23 +177,28 @@ statusMessage status =
                     "signal_wifi_off"
 
                 Connecting ->
-                    "signal_wifi_off"
+                    "wifi"
 
                 Reconnecting _ ->
                     "wifi"
+
+                Subscribing ->
+                    "perm_scan_wifi"
 
                 Online ->
                     "network_wifi"
     in
         [ Footer.html <| Icon.i icon
-          -- , Footer.html <| Html.text message
+          --, Footer.html <| Html.text message
         ]
 
 
 isPlayerInGame : Model -> Bool
 isPlayerInGame model =
-    --let
-    --_ =
-    --Debug.log "is" ( model.game.players, model.user )
-    --in
-    False
+    case model.user of
+        Types.Anonymous ->
+            False
+
+        Types.Logged user ->
+            List.map (.id) model.game.players
+                |> List.any (\id -> id == user.id)

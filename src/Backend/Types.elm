@@ -42,6 +42,7 @@ type ConnectionStatus
     = Offline
     | Connecting
     | Reconnecting Int
+    | Subscribing
     | Online
 
 

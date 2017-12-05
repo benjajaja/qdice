@@ -145,9 +145,7 @@ update msg model =
                             { model | oauth = oauth_ } ! []
 
                     Ok profile ->
-                        { model | user = Logged profile }
-                            ! [ Backend.gameCommand model.backend model.game.table Enter
-                              ]
+                        { model | user = Logged profile } ! []
 
         Authorize ->
             MyOauth.authorize model
