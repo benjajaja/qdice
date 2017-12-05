@@ -41,7 +41,7 @@ module.exports.command = function(req, res, next) {
   next();
 };
 
-const enter = (user, table, req) => {
+const enter = (user, table) => {
   const player = Player(user);
   const existing = table.spectators.filter(p => p.id === player.id).pop();
   if (existing) {
@@ -53,7 +53,7 @@ const enter = (user, table, req) => {
   publishTableStatus(table);
 };
 
-const join = (user, table, req) => {
+const join = (user, table) => {
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
     //throw new Error('already joined');
@@ -66,7 +66,18 @@ const join = (user, table, req) => {
 
 
 let client;
-module.exports.setMqtt = client_ => client = client_;
+module.exports.setMqtt = client_ => {
+  client = client_;
+  client.on('message', (topic, message) => {
+    if (topic.indexOf('tables/') !== 0) return;
+    const [ _, tableName, channel ] = topic.split('/');
+    const table = findTable(tables)(tableName);
+    if (!table) throw new Error('table not found: ' + tableName);
+    const { type, payload } = JSON.parse(message);
+    console.log('table message', tableName, channel);
+    publishTableStatus(table);
+  });
+};
 
 const publishTableStatus = table => {
   client.publish('tables/' + table.name + '/clients',

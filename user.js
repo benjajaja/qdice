@@ -50,8 +50,8 @@ exports.login = function(req, res, next) {
         email: profile.email,
         picture: profile.picture,
       };
-      const token = jwt.sign(profile, process.env.JWT_SECRET);
-      res.send(200, Object.assign({ token }, profile));
+      const token = jwt.sign(user, process.env.JWT_SECRET);
+      res.send(200, token); //Object.assign({ token }, user));
       next();
     });
   });
