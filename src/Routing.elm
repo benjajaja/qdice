@@ -14,6 +14,7 @@ matchers =
         , tableMatcher
         , map StaticPageRoute (s "static" </> staticPageMatcher)
         , map EditorRoute (s "editor")
+        , map MyProfileRoute (s "me")
         ]
 
 
@@ -73,3 +74,6 @@ navigateTo route =
 
             NotFoundRoute ->
                 "#404"
+
+            MyProfileRoute ->
+                "#me"

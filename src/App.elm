@@ -19,6 +19,7 @@ import Game.Chat
 import Board
 import Static.View
 import Editor.Editor
+import MyProfile.MyProfile
 import Backend
 import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionStatus(..))
 import Tables exposing (Table(..), tableList)
@@ -63,6 +64,7 @@ init location =
                 oauth
                 game
                 editor
+                { name = Nothing }
                 backend
                 Types.Anonymous
                 tableList
@@ -93,6 +95,9 @@ updateWrapper msg model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Nop ->
+            model ! []
+
         EditorMsg msg ->
             let
                 ( editor, editorCmd ) =
@@ -100,8 +105,8 @@ update msg model =
             in
                 ( { model | editor = editor }, Cmd.map EditorMsg editorCmd )
 
-        Nop ->
-            model ! []
+        MyProfileMsg msg ->
+            MyProfile.MyProfile.update model msg
 
         GetToken res ->
             case res of
@@ -382,8 +387,7 @@ drawer model =
             )
             [ ( "Play", GameRoute Melchor )
             , ( "Help", StaticPageRoute Help )
-            , ( "Table:Melchor", GameRoute Melchor )
-            , ( "Table:Miño", GameRoute Miño )
+            , ( "My profile", MyProfileRoute )
             , ( "Editor (experimental)", EditorRoute )
             ]
         )
@@ -404,6 +408,14 @@ mainView model =
 
         NotFoundRoute ->
             Html.text "404"
+
+        MyProfileRoute ->
+            case model.user of
+                Anonymous ->
+                    Html.text "404"
+
+                Logged user ->
+                    MyProfile.MyProfile.view model user
 
 
 mainViewSubscriptions : Model -> Sub Msg

@@ -7,6 +7,7 @@ import OAuth
 import Game.Types
 import Game.Types exposing (TableStatus, PlayerAction)
 import Editor.Types
+import MyProfile.Types
 import Backend.Types
 import Board exposing (Msg)
 import Tables exposing (Table(..))
@@ -18,6 +19,7 @@ type Msg
     | Mdl (Material.Msg Msg)
     | DrawerNavigateTo Route
     | EditorMsg Editor.Types.Msg
+    | MyProfileMsg MyProfile.Types.Msg
       -- oauth
     | Nop
     | Authorize
@@ -55,6 +57,7 @@ type Route
     | EditorRoute
     | StaticPageRoute StaticPage
     | NotFoundRoute
+    | MyProfileRoute
 
 
 type alias Model =
@@ -64,6 +67,7 @@ type alias Model =
     , oauth : MyOAuthModel
     , game : Game.Types.Model
     , editor : Editor.Types.Model
+    , myProfile : MyProfile.Types.Model
     , backend : Backend.Types.Model
     , user : User
     , tableList : List Table
