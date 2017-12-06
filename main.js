@@ -51,6 +51,7 @@ server.use(jwt({
 
 server.post('/login', require('./user').login);
 server.get('/me', require('./user').me);
+server.post('/profile', require('./user').profile);
 
 const tables = require('./tables');
 server.post('/tables/:tableName/:command', tables.command);

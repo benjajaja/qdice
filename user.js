@@ -58,7 +58,14 @@ exports.login = function(req, res, next) {
 };
 
 exports.me = function(req, res, next) {
-  res.send(200, Object.assign({ token: null }, req.user));
+  res.send(200, req.user);
+  next();
+};
+
+exports.profile = function(req, res, next) {
+  const profile = Object.assign({}, req.user, { name: req.body.name });
+  const token = jwt.sign(profile, process.env.JWT_SECRET);
+  res.send(200, token);
   next();
 };
 
