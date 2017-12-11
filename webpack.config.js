@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 
 module.exports = {
@@ -79,6 +80,12 @@ module.exports = {
       'process.env.NODE_ENV': '"production"'
     }),
     new ExtractTextPlugin("elm-dice.css"),
+    new CopyWebpackPlugin([
+      { from: 'html/manifest.json' },
+      { from: 'html/favicons' },
+      { from: 'html/favicon.ico' },
+      { from: 'html/elm-dice-serviceworker.js' },
+    ]),
   ].concat(process.env.NODE_ENV === 'production'
     ? new webpack.optimize.UglifyJsPlugin({
         compress: { warnings: false }

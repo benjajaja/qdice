@@ -94,3 +94,14 @@ app.ports.scrollChat.subscribe(function(id) {
 });
 
 global.edice = app;
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/elm-dice-serviceworker.js').then(function(reg) {
+      console.log('◕‿◕', reg);
+    }, function(err) {
+      console.log('ಠ_ಠ', err);
+    });
+  });
+}
+
