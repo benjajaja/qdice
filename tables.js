@@ -106,6 +106,8 @@ const join = (user, table) => {
 
   if (table.players.length === table.playerSlots) {
     startGame(table);
+  } else {
+    publishTableStatus(table);
   }
 };
 
