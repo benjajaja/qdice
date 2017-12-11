@@ -61,6 +61,9 @@ server.listen(process.env.PORT || 5001, function() {
 });
 
 
+setInterval(function tick() {
+  tables.tick();
+}, 500);
 
 
 const mqtt = require('mqtt');
