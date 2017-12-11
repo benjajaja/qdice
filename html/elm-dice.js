@@ -20,11 +20,6 @@ if (window.navigator.standalone === true) {
   viewportmeta.content = 'user-scalable=NO, width=device-width, initial-scale=1.0'
 }
 
-var fastclick = require('fastclick');
-document.addEventListener('DOMContentLoaded', function() {
-  require('fastclick').attach(document.body);
-}, false);
-
 var Elm = require('../src/App');
 
 var app = Elm.Edice.fullscreen();

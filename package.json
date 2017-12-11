@@ -4,7 +4,7 @@
   "description": "eDice - Elm dice game",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist/* ; webpack",
+    "build": "rm -rf dist/* ; webpack --progress -p",
     "watch": "webpack --watch",
     "start": "webpack-dev-server",
     "heroku-postbuild": "yarn build"
@@ -29,7 +29,6 @@
     "elm-css-webpack-loader": "2.0.1",
     "elm-webpack-loader": "3.0.6",
     "extract-text-webpack-plugin": "^3.0.2",
-    "fastclick": "^1.0.6",
     "file-loader": "0.9.0",
     "materialize-css": "0.97.7",
     "mqtt": "^2.1.3",
