@@ -149,7 +149,7 @@ addSelectedLand model =
                     List.filter (\l -> not <| containsAny l.cells selectedCells) lands
 
                 newLand =
-                    Land.Land selectedCells Land.Editor "🍋" False
+                    Land.Land selectedCells Land.Editor "🍋" False 0
             in
                 updateMap
                     { model | selectedLands = [] }

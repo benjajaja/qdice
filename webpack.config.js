@@ -84,6 +84,7 @@ module.exports = {
       { from: 'html/manifest.json' },
       { from: 'html/favicons', to: 'favicons'},
       { from: 'html/favicon.ico' },
+      { from: 'html/die.svg' },
       { from: 'html/elm-dice-serviceworker.js' },
       { from: 'html/cache-polyfill.js' },
     ]),

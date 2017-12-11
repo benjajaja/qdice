@@ -1,6 +1,6 @@
 module Game.Types exposing (..)
 
-import Board exposing (Msg)
+import Board exposing (Msg, LandUpdate)
 import Land exposing (Color)
 import Tables exposing (Table)
 
@@ -15,6 +15,7 @@ type PlayerAction
     = Enter
     | Join
     | Leave
+    | SitOut
 
 
 type alias Model =
@@ -22,7 +23,10 @@ type alias Model =
     , board : Board.Model
     , players : List Player
     , status : GameStatus
-    , playerCount : Int
+    , playerSlots : Int
+    , turnDuration : Int
+    , turnIndex : Int
+    , turnStarted : Int
     , chatInput : String
     , chatBoxId : String
     }
@@ -32,6 +36,7 @@ type alias Player =
     { id : PlayerId
     , name : PlayerName
     , color : Color
+    , picture : String
     }
 
 
@@ -45,4 +50,9 @@ type alias PlayerName =
 
 type alias TableStatus =
     { players : List Player
+    , playerSlots : Int
+    , status : GameStatus
+    , turnIndex : Int
+    , turnStarted : Int
+    , lands : List LandUpdate
     }

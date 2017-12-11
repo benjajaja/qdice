@@ -98,12 +98,10 @@ landElement layout land =
         , onMouseOver (HoverLand land)
         , onMouseOut (UnHoverLand land)
         ]
-        ((polygon
-            (polygonAttrs layout land)
-            []
-         )
-            :: (landText layout land)
-        )
+        [ polygon (polygonAttrs layout land) []
+        , landText layout land
+        , landDies layout land
+        ]
 
 
 polygonAttrs : Land.Layout -> Land.Land -> List (Svg.Attribute Msg)
@@ -132,7 +130,34 @@ pointToString ( x, y ) =
     (x |> toString) ++ "," ++ (y |> toString)
 
 
-landText : Land.Layout -> Land.Land -> List (Svg Msg)
+landDies : Land.Layout -> Land.Land -> Svg Msg
+landDies layout land =
+    let
+        ( cx, cy ) =
+            landCenter layout land.cells
+    in
+        g [] <|
+            List.map
+                (\i ->
+                    Svg.image
+                        [ x <| toString <| cx - 1.5
+                        , y <| toString <| cy - 1.5 - (toFloat i * 1.8)
+                        , textAnchor "middle"
+                        , alignmentBaseline "central"
+                        , class "edBoard--dies"
+                        , xlinkHref "die.svg"
+                        , height "3"
+                        , width "3"
+                        ]
+                        []
+                )
+            <|
+                List.range
+                    0
+                    (land.points - 1)
+
+
+landText : Land.Layout -> Land.Land -> Svg Msg
 landText layout land =
     landCenter layout land.cells
         |> (\c ->
@@ -140,33 +165,15 @@ landText layout land =
                     ( cx, cy ) =
                         c
                 in
-                    [ Svg.text_
+                    Svg.text_
                         [ x <| toString cx
                         , y <| toString cy
                         , textAnchor "middle"
                         , alignmentBaseline "central"
+                        , class "edBoard--emoji"
                         ]
                         [ Html.text land.emoji ]
-                    ]
            )
-
-
-
---List.map
---(\c ->
---let
---( cx, cy ) =
---cellCenter layout c
---in
---Svg.text_
---[ x <| toString cx
---, y <| toString cy
---, textAnchor "middle"
---, alignmentBaseline "central"
---]
---[ Html.text land.emoji ]
---)
---land.cells
 
 
 landColor : Land -> String

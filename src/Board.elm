@@ -14,6 +14,10 @@ type alias Model =
     Board.Types.Model
 
 
+type alias LandUpdate =
+    Board.Types.LandUpdate
+
+
 init =
     Board.State.init
 

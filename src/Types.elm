@@ -2,6 +2,7 @@ module Types exposing (..)
 
 import Navigation exposing (Location)
 import Http
+import Time
 import Material
 import OAuth
 import Game.Types
@@ -16,6 +17,7 @@ import Tables exposing (Table(..))
 type Msg
     = NavigateTo Route
     | OnLocationChange Location
+    | Tick Time.Time
     | Mdl (Material.Msg Msg)
     | DrawerNavigateTo Route
     | EditorMsg Editor.Types.Msg
@@ -71,6 +73,7 @@ type alias Model =
     , backend : Backend.Types.Model
     , user : User
     , tableList : List Table
+    , time : Time.Time
     }
 
 

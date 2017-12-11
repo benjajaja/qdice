@@ -7,6 +7,7 @@ import Routing exposing (parseLocation, navigateTo)
 import Html
 import Html.Lazy
 import Html.Attributes
+import Time
 import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
@@ -68,6 +69,7 @@ init location =
                 backend
                 Types.Anonymous
                 tableList
+                0
 
         cmds =
             Cmd.batch <|
@@ -294,18 +296,24 @@ update msg model =
             model ! []
 
         TableMsg table msg ->
-            case msg of
-                Backend.Types.Join user ->
-                    Backend.updateChatLog model <| Backend.Types.LogJoin user
+            if table == model.game.table then
+                case msg of
+                    Backend.Types.Join user ->
+                        Backend.updateChatLog model <| Backend.Types.LogJoin user
 
-                Backend.Types.Leave user ->
-                    Backend.updateChatLog model <| Backend.Types.LogLeave user
+                    Backend.Types.Leave user ->
+                        Backend.updateChatLog model <| Backend.Types.LogLeave user
 
-                Backend.Types.Chat user text ->
-                    Backend.updateChatLog model <| Backend.Types.LogChat user text
+                    Backend.Types.Chat user text ->
+                        Backend.updateChatLog model <| Backend.Types.LogChat user text
 
-                Backend.Types.Update status ->
-                    Backend.updateTableStatus model status
+                    Backend.Types.Update status ->
+                        Backend.updateTableStatus model status
+            else
+                model ! []
+
+        Tick newTime ->
+            { model | time = newTime } ! []
 
 
 msgsToCmds : List Msg -> List (Cmd Msg)
@@ -432,6 +440,7 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
+        , Time.every (666) Tick
         ]
 
 

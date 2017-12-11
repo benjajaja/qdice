@@ -6,6 +6,7 @@ import Random
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
 import Hexagons.Layout as HL exposing (offsetToHex, orientationLayoutPointy, Layout)
 import Hex exposing (Point, borderLeftCorner, center, cellCubicCoords)
+import Helpers exposing (indexOf)
 
 
 type alias Cells =
@@ -16,11 +17,16 @@ type alias Point =
     Hex.Point
 
 
+type alias Emoji =
+    String
+
+
 type alias Land =
     { cells : Cells
     , color : Color
-    , emoji : String
+    , emoji : Emoji
     , selected : Bool
+    , points : Int
     }
 
 
@@ -108,7 +114,7 @@ cellCubicCoords hex =
 
 errorLand : Land
 errorLand =
-    Land [ offsetToHex ( 0, 0 ) ] Editor emptyEmoji False
+    Land [ offsetToHex ( 0, 0 ) ] Editor emptyEmoji False 0
 
 
 fullCellMap : Int -> Int -> Color -> Map
@@ -122,6 +128,7 @@ fullCellMap w h color =
                         , color = color
                         , emoji = emptyEmoji
                         , selected = False
+                        , points = 0
                         }
                     )
                     (List.range 1 w)
@@ -180,26 +187,6 @@ append map land =
     { map | lands = List.append [ land ] map.lands }
 
 
-{-| indexOf helper
--}
-indexOf : List a -> (a -> Bool) -> Int
-indexOf lst f =
-    let
-        helper : List a -> (a -> Bool) -> Int -> Int
-        helper lst f offset =
-            case lst of
-                [] ->
-                    -1
-
-                x :: xs ->
-                    if f x then
-                        offset
-                    else
-                        helper xs f (offset + 1)
-    in
-        helper lst f 0
-
-
 {-| return index of coord in map
 -}
 at : List Land -> ( Int, Int ) -> Int
@@ -229,10 +216,10 @@ concat map =
     in
         case hexes of
             [] ->
-                Land [] Neutral emptyEmoji False
+                Land [] Neutral emptyEmoji False 0
 
             _ ->
-                Land hexes Neutral emptyEmoji False
+                Land hexes Neutral emptyEmoji False 0
 
 
 {-| set one color to neutral
@@ -263,10 +250,10 @@ playerColor i =
             Red
 
         2 ->
-            Green
+            Blue
 
         3 ->
-            Blue
+            Green
 
         4 ->
             Yellow

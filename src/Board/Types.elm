@@ -12,3 +12,10 @@ type Msg
 type alias Model =
     { map : Map
     }
+
+
+type alias LandUpdate =
+    { emoji : Land.Emoji
+    , color : Land.Color
+    , points : Int
+    }

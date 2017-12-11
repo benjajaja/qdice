@@ -65,6 +65,14 @@ body.navigator-standalone textarea {
 .ed-board--svg g > text {
   pointer-events: none;
 }
+.edBoard--emoji {
+  opacity: 0.2;
+}
+.edBoard--dies {
+  pointer-events: none;
+  /*transform: translate(-0.25vw, -0.25vw);*/
+}
+
 
 .edGame { }
 .edGameHeader {
@@ -81,6 +89,55 @@ body.navigator-standalone textarea {
   height: 20px;
   line-height: 20px;
   margin: 4px 8px;
+}
+
+.edPlayerChips {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-bottom: 10px;
+}
+.edPlayerChip {
+  width: 100px;
+  /*height: 150px;*/
+  padding: 10px;
+}
+.edPlayerChip__progress {
+  height: 2px;
+  background-color: darkred;
+}
+.edPlayerChip__progress--0, 
+.edPlayerChip__progress--10, 
+.edPlayerChip__progress--20,
+.edPlayerChip__progress--30,
+.edPlayerChip__progress--40 {
+  background-color: red;
+}
+
+.edPlayerChip__picture {
+  width: 60px;
+  height: 60px;
+  border: none;
+  border-radius: 50%;
+  white-space: nowrap;
+  display: inline-block;
+  content: '';
+  vertical-align: middle;
+  overflow: hidden;
+  text-align: center;
+}
+.edPlayerChip__name {
+  border: 2px solid transparent;
+  border-left: none;
+  border-bottom: none;
+  border-right: none;
+  margin: 4px 0;
+}
+.edPlayerChip--Red .edPlayerChip__name {
+  border-color: #e91e63;
+}
+.edPlayerChip--Blue .edPlayerChip__name {
+  border-color: #03a9f4;
 }
 /*#edice-board {
   background: url(http://www2.luventicus.org/mapas/espanacomunidades.gif);

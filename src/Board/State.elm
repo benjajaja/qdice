@@ -1,4 +1,4 @@
-port module Board.State exposing (init, update)
+port module Board.State exposing (init, update, updateLands)
 
 import Board.Types exposing (..)
 import Land
@@ -34,3 +34,32 @@ update msg model =
 
         _ ->
             ( model, Cmd.none )
+
+
+updateLands : Model -> List LandUpdate -> Model
+updateLands model update =
+    let
+        map =
+            model.map
+
+        lands =
+            List.map (updateLand update) map.lands
+
+        map_ =
+            { map | lands = lands }
+    in
+        { model | map = map_ }
+
+
+updateLand : List LandUpdate -> Land.Land -> Land.Land
+updateLand updates land =
+    let
+        update =
+            List.filter (\l -> l.emoji == land.emoji) updates
+    in
+        case List.head update of
+            Just update ->
+                { land | color = update.color, points = update.points }
+
+            Nothing ->
+                land

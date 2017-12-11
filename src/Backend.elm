@@ -12,6 +12,7 @@ import Types exposing (Msg(..))
 import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (Player, PlayerAction(..))
 import Land exposing (Color(..))
+import Board.State
 
 
 connect : Cmd msg
@@ -119,11 +120,17 @@ updateTableStatus model status =
         game =
             model.game
 
-        game_ =
-            { game | players = status.players }
+        board_ =
+            Board.State.updateLands model.game.board status.lands
 
-        _ =
-            Debug.log "status" status
+        game_ =
+            { game
+                | players = status.players
+                , status = status.status
+                , turnIndex = status.turnIndex
+                , turnStarted = status.turnStarted
+                , board = board_
+            }
     in
         { model | game = game_ } ! []
 

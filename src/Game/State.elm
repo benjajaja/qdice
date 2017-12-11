@@ -35,7 +35,17 @@ init model table =
                     Nothing ->
                         []
     in
-        ( Game.Types.Model table board players Paused 2 "" ("chatbox-" ++ toString table)
+        ( { table = table
+          , board = board
+          , players = players
+          , status = Paused
+          , playerSlots = 2
+          , turnDuration = 10
+          , turnIndex = -1
+          , turnStarted = -1
+          , chatInput = ""
+          , chatBoxId = ("chatbox-" ++ toString table)
+          }
         , cmds
         )
 
