@@ -82,9 +82,10 @@ module.exports = {
     new ExtractTextPlugin("elm-dice.css"),
     new CopyWebpackPlugin([
       { from: 'html/manifest.json' },
-      { from: 'html/favicons' },
+      { from: 'html/favicons', to: 'favicons'},
       { from: 'html/favicon.ico' },
       { from: 'html/elm-dice-serviceworker.js' },
+      { from: 'html/cache-polyfill.js' },
     ]),
   ].concat(process.env.NODE_ENV === 'production'
     ? new webpack.optimize.UglifyJsPlugin({
