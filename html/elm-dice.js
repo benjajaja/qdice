@@ -22,7 +22,7 @@ if (window.navigator.standalone === true) {
 
 var fastclick = require('fastclick');
 document.addEventListener('DOMContentLoaded', function() {
-  FastClick.attach(document.body);
+  require('fastclick').attach(document.body);
 }, false);
 
 var Elm = require('../src/App');

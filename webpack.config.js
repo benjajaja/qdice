@@ -1,6 +1,8 @@
 var fs = require('fs');
+var path = require('path');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
+
 
 module.exports = {
   entry: [
@@ -12,56 +14,73 @@ module.exports = {
   })),
 
   output: {
-    path: './dist',
+    path: path.join(__dirname, './dist'),
     filename: 'elm-dice.js'
   },
 
   resolve: {
-    modulesDirectories: ['node_modules'],
-    extensions: ['', '.js', '.elm']
+    modules: [
+      'node_modules',
+      path.join(__dirname, "src"),
+    ],
+    extensions: ['.js', '.elm']
   },
 
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.(html|woff2|png|xml|ico|svg|json)$/,
         exclude: /node_modules/,
-        loader: 'file?context=html&name=[path][name].[ext]'
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              context: 'html',
+              name: '[path][name].[ext]',
+            },
+          },
+        ],
       },
       {
         test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
-        loader: 'elm-webpack'
+        use: [ 'elm-webpack-loader' ],
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract('css-loader?importLoaders=1&minimize!postcss-loader'
-        )
-      }
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            { loader: 'css-loader', options: { importLoaders: 1 } },
+            {
+              loader: 'postcss-loader',
+              options: {
+                ident: 'postcss',
+                plugins: function(loader) {
+                  return [
+                    require('autoprefixer')({ browsers: ['last 10 versions'] }),
+                    require('postcss-partial-import')({
+                      addDependencyTo: webpack,
+                      prefix: '',
+                      extension: '',
+                    }),
+                  ];
+                },
+              },
+            },
+          ],
+        }),
+      },
     ],
-
-    // noParse: /\.elm$/
   },
 
   plugins: [
-    new ExtractTextPlugin('elm-dice.css', { allowChunks: true }),
-    new webpack.ProvidePlugin({ FastClick : 'fastclick' }),
+    new ExtractTextPlugin("elm-dice.css"),
   ].concat(process.env.NODE_ENV === 'production'
     ? new webpack.optimize.UglifyJsPlugin({
         compress: { warnings: false }
       })
     : []),
-
-  postcss: function(webpack) {
-    return [
-      require('autoprefixer')({ browsers: ['last 10 versions'] }),
-      require('postcss-partial-import')({
-        addDependencyTo: webpack,
-        prefix: '',
-        extension: '',
-      }),
-    ];
-  },
 
   devServer: {
     host: '0.0.0.0',
@@ -70,6 +89,7 @@ module.exports = {
     stats: 'errors-only',
     contentBase: './html',
     historyApiFallback: true,
+    disableHostCheck: true,
   }
 };
 
