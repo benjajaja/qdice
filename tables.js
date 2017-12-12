@@ -45,7 +45,7 @@ const loadLands = table => {
     .map(emoji => ({
       emoji: emoji,
       color: -1,
-      points: Math.floor(Math.random() * 3 + 1),
+      points: Math.floor(Math.random() * (9 - 1)) + 1,
     }));
   table.lands = lands;
   return table;
