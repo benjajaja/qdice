@@ -7,7 +7,8 @@
     "build": "rm -rf dist/* ; webpack --progress -p",
     "watch": "webpack --watch",
     "start": "webpack-dev-server",
-    "heroku-postbuild": "yarn build"
+    "heroku-postbuild": "yarn build",
+    "test": "bundlesize"
   },
   "repository": {
     "type": "git",
@@ -22,8 +23,27 @@
   "license": "UNLICENSED",
   "private": true,
   "homepage": "https://bitbucket.org/gipsyking/edice#readme",
+  "bundlesize": [
+    {
+      "path": "./dist/elm-dice.js",
+      "maxSize": "100 kB"
+    },
+    {
+      "path": "./dist/*.worker.js",
+      "maxSize": "50 kB"
+    },
+    {
+      "path": "./dist/elm-dice-serviceworker.js",
+      "maxSize": "1 kB"
+    },
+    {
+      "path": "./dist/elm-dice.css",
+      "maxSize": "25 kB"
+    }
+  ],
   "dependencies": {
     "autoprefixer": "^6.5.3",
+    "bundlesize": "^0.15.3",
     "copy-webpack-plugin": "^4.2.3",
     "css-loader": "0.25.0",
     "elm": "^0.18.0",
