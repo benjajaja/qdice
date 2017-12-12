@@ -235,7 +235,7 @@ decodeMessage clientId ( stringTopic, message ) =
                 Just topic ->
                     case decodeTopicMessage topic message of
                         Ok msg ->
-                            Debug.log "message" <| msg
+                            msg
 
                         Err err ->
                             UnknownTopicMessage err stringTopic message

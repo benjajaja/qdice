@@ -132,29 +132,53 @@ pointToString ( x, y ) =
 
 landDies : Land.Layout -> Land.Land -> Svg Msg
 landDies layout land =
-    let
-        ( cx, cy ) =
-            landCenter layout land.cells
-    in
-        g [] <|
-            List.map
-                (\i ->
-                    Svg.image
-                        [ x <| toString <| cx - 1.5
-                        , y <| toString <| cy - 1.5 - (toFloat i * 1.8)
-                        , textAnchor "middle"
-                        , alignmentBaseline "central"
-                        , class "edBoard--dies"
-                        , xlinkHref "die.svg"
-                        , height "3"
-                        , width "3"
-                        ]
-                        []
+    g [ color <| landColor land ] <|
+        List.map
+            (landDie
+                (landCenter
+                    layout
+                    land.cells
                 )
-            <|
-                List.range
-                    0
-                    (land.points - 1)
+                land.points
+            )
+        <|
+            List.range
+                0
+                (land.points - 1)
+
+
+landDie : ( Float, Float ) -> Int -> Int -> Svg Msg
+landDie ( cx, cy ) points index =
+    let
+        xOffset =
+            if points > 4 then
+                if index >= 4 then
+                    1.0
+                else
+                    2.75
+            else
+                1.5
+
+        yOffset =
+            if index >= 4 then
+                1.15
+            else
+                1.5
+    in
+        --die
+        --(toString <| cx - xOffset)
+        --(toString <| cy - yOffset - (toFloat (index % 4) * 1.8))
+        Svg.image
+            [ x <| toString <| cx - xOffset
+            , y <| toString <| cy - yOffset - (toFloat (index % 4) * 1.8)
+            , textAnchor "middle"
+            , alignmentBaseline "central"
+            , class "edBoard--dies"
+            , xlinkHref "die.svg"
+            , height "3"
+            , width "3"
+            ]
+            []
 
 
 landText : Land.Layout -> Land.Land -> Svg Msg

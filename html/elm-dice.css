@@ -70,6 +70,7 @@ body.navigator-standalone textarea {
 }
 .edBoard--dies {
   pointer-events: none;
+  fill: currentColor;
   /*transform: translate(-0.25vw, -0.25vw);*/
 }
 
