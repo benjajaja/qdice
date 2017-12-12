@@ -322,6 +322,18 @@ update msg model =
 
                     Backend.Types.Update status ->
                         Game.State.updateTableStatus model status
+
+                    Backend.Types.Roll roll ->
+                        let
+                            ( firstModel, chatCmd ) =
+                                Backend.updateChatLog model <|
+                                    Backend.Types.LogRoll <|
+                                        Backend.toRollLog model roll
+
+                            ( secondModel, gameCmd ) =
+                                Game.State.showRoll firstModel roll
+                        in
+                            ( secondModel, Cmd.batch [ gameCmd, chatCmd ] )
             else
                 model ! []
 

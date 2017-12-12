@@ -45,6 +45,9 @@ chatBox model =
                         LogError error ->
                             div [ class "chatbox--line--error" ]
                                 [ Html.text <| error ]
+
+                        LogRoll roll ->
+                            rollLine roll
                 )
                 model.backend.chatLog
             )
@@ -100,3 +103,29 @@ toChatError table action err =
                 BadUrl error ->
                     "Missing URL: " ++ error
            )
+
+
+rollLine : Backend.Types.RollLog -> Html Types.Msg
+rollLine roll =
+    let
+        text =
+            [ Html.text <|
+                roll.attacker
+                    ++ (if roll.success then
+                            " won over "
+                        else
+                            " lost against "
+                       )
+                    ++ roll.defender
+                    ++ " "
+                    ++ (toString roll.attackRoll)
+                    ++ " to "
+                    ++ (toString roll.defendRoll)
+                    ++ " ("
+                    ++ (roll.attackDiesEmojis)
+                    ++ " -> "
+                    ++ (roll.defendDiesEmojis)
+                    ++ ")"
+            ]
+    in
+        div [ class "chatbox--line--roll" ] text

@@ -25,3 +25,8 @@ findIndex_ lst f offset =
 indexOf : a -> List a -> Int
 indexOf a =
     findIndex <| (==) a
+
+
+find : (a -> Bool) -> List a -> Maybe a
+find f lst =
+    List.filter f lst |> List.head

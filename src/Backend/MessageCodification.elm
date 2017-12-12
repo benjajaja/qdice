@@ -82,6 +82,14 @@ decodeTableMessage table message =
                         Err err ->
                             Err err
 
+                "roll" ->
+                    case decodeString (field "payload" rollDecoder) message of
+                        Ok roll ->
+                            Ok <| TableMsg table <| Roll roll
+
+                        Err err ->
+                            Err err
+
                 _ ->
                     Err <| "unknown type \"" ++ mtype ++ "\""
 
@@ -115,6 +123,11 @@ encodeTopicMessage msg =
                     Update status ->
                         object
                             [ ( "type", Enc.string "status" )
+                            ]
+
+                    Roll status ->
+                        object
+                            [ ( "type", Enc.string "roll" )
                             ]
             )
 

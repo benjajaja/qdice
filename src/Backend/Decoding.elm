@@ -79,3 +79,17 @@ gameStatusDecoder =
 accknowledgeDecoder : Decoder ()
 accknowledgeDecoder =
     succeed ()
+
+
+rollDecoder : Decoder Game.Types.Roll
+rollDecoder =
+    decode Game.Types.Roll
+        |> required "from" singleRollDecoder
+        |> required "to" singleRollDecoder
+
+
+singleRollDecoder : Decoder Game.Types.RollPart
+singleRollDecoder =
+    decode Game.Types.RollPart
+        |> required "emoji" string
+        |> required "roll" (list int)

@@ -58,3 +58,13 @@ type alias TableStatus =
     , turnStarted : Int
     , lands : List LandUpdate
     }
+
+
+type alias Roll =
+    { from : RollPart
+    , to : RollPart
+    }
+
+
+type alias RollPart =
+    { emoji : Land.Emoji, roll : List Int }

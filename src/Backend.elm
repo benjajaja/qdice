@@ -12,6 +12,7 @@ import Types exposing (Msg(..))
 import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (Player, PlayerAction(..))
 import Land exposing (Color(..))
+import Helpers exposing (find)
 
 
 connect : Cmd msg
@@ -345,6 +346,97 @@ actionToString action =
 
         _ ->
             toString action
+
+
+toRollLog : Types.Model -> Game.Types.Roll -> Backend.Types.RollLog
+toRollLog model roll =
+    let
+        lands =
+            model.game.board.map.lands
+
+        players =
+            model.game.players
+
+        attackerLand =
+            find (\l -> l.emoji == roll.from.emoji) lands
+
+        defenderLand =
+            find (\l -> l.emoji == roll.to.emoji) lands
+
+        neutralPlayer =
+            { id = ""
+            , name = "Neutral"
+            , picture = ""
+            , color = Land.Neutral
+            }
+
+        errorPlayer =
+            { id = ""
+            , name = "(⚠ unknown player)"
+            , picture = ""
+            , color = Land.Neutral
+            }
+
+        attacker =
+            case attackerLand of
+                Just land ->
+                    if land.color == Land.Neutral then
+                        Just neutralPlayer
+                    else
+                        find (\p -> p.color == land.color) players
+
+                Nothing ->
+                    Nothing
+
+        defender =
+            case defenderLand of
+                Just land ->
+                    if land.color == Land.Neutral then
+                        Just neutralPlayer
+                    else
+                        find (\p -> p.color == land.color) players
+
+                Nothing ->
+                    Nothing
+    in
+        { attacker = Maybe.withDefault errorPlayer attacker |> .name
+        , defender = Maybe.withDefault errorPlayer defender |> .name
+        , attackRoll = List.sum roll.from.roll
+        , attackDiesEmojis = toDiesEmojis roll.from.roll
+        , defendRoll = List.sum roll.to.roll
+        , defendDiesEmojis = toDiesEmojis roll.to.roll
+        , success = List.sum roll.from.roll > List.sum roll.to.roll
+        }
+
+
+toDiesEmojis : List Int -> String
+toDiesEmojis list =
+    List.foldl (++) "" <| List.map toDie list
+
+
+toDie : Int -> String
+toDie face =
+    case face of
+        1 ->
+            "⚀"
+
+        2 ->
+            "⚁"
+
+        3 ->
+            "⚂"
+
+        4 ->
+            "⚃"
+
+        5 ->
+            "⚄"
+
+        6 ->
+            "⚅"
+
+        _ ->
+            "🎲"
 
 
 port onToken : (String -> msg) -> Sub msg

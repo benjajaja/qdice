@@ -115,6 +115,21 @@ updateTableStatus model status =
         { model | game = game_ } ! []
 
 
+showRoll : Types.Model -> Roll -> ( Types.Model, Cmd Msg )
+showRoll model roll =
+    let
+        board_ =
+            Board.State.updateLands model.game.board [] <| Just Board.Types.Idle
+
+        game =
+            model.game
+
+        game_ =
+            { game | board = board_ }
+    in
+        ( { model | game = game_ }, Cmd.none )
+
+
 hasTurn : Maybe Player -> List Player -> Int -> Bool
 hasTurn player players turnIndex =
     case player of

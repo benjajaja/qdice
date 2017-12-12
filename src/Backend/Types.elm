@@ -19,6 +19,7 @@ type ChatLogEntry
     | LogLeave User
     | LogChat User String
     | LogError String
+    | LogRoll RollLog
 
 
 type alias ClientId =
@@ -59,7 +60,19 @@ type TableMessage
     | Chat User String
     | Leave User
     | Update Game.Types.TableStatus
+    | Roll Game.Types.Roll
 
 
 type alias User =
     String
+
+
+type alias RollLog =
+    { attacker : User
+    , defender : User
+    , attackRoll : Int
+    , attackDiesEmojis : String
+    , defendDiesEmojis : String
+    , defendRoll : Int
+    , success : Bool
+    }
