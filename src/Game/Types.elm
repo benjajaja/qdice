@@ -1,7 +1,7 @@
 module Game.Types exposing (..)
 
 import Board exposing (Msg, LandUpdate)
-import Land exposing (Color)
+import Land exposing (Color, Emoji)
 import Tables exposing (Table)
 
 
@@ -16,6 +16,7 @@ type PlayerAction
     | Join
     | Leave
     | SitOut
+    | Attack Emoji Emoji
 
 
 type alias Model =

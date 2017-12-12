@@ -149,11 +149,30 @@ gameCommand model table playerAction =
             , url =
                 (model.baseUrl
                     ++ "/tables/"
-                    ++ (msgToUrlPath table)
+                    ++ (toString table)
                     ++ "/"
-                    ++ (msgToUrlPath playerAction)
+                    ++ (actionToString playerAction)
                 )
             , body = Http.emptyBody
+            , expect = Http.expectStringResponse (\_ -> Ok ())
+            , timeout = Nothing
+            , withCredentials = False
+            }
+
+
+attack : Model -> Table -> Land.Emoji -> Land.Emoji -> Cmd Msg
+attack model table from to =
+    Http.send (GameCommandResponse table <| Attack from to) <|
+        Http.request
+            { method = "POST"
+            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
+            , url =
+                (model.baseUrl
+                    ++ "/tables/"
+                    ++ (toString table)
+                    ++ "/Attack"
+                )
+            , body = Http.jsonBody <| attackEncoder from to
             , expect = Http.expectStringResponse (\_ -> Ok ())
             , timeout = Nothing
             , withCredentials = False
@@ -318,9 +337,14 @@ subscribe topic =
     mqttSubscribe <| encodeTopic topic
 
 
-msgToUrlPath : a -> String
-msgToUrlPath =
-    toString
+actionToString : PlayerAction -> String
+actionToString action =
+    case action of
+        Attack a b ->
+            "Attack"
+
+        _ ->
+            toString action
 
 
 port onToken : (String -> msg) -> Sub msg

@@ -6,6 +6,7 @@ import Tables exposing (Table(..))
 import Json.Decode as Dec exposing (..)
 import Json.Encode as Enc exposing (..)
 import Backend.Decoding exposing (..)
+import Land exposing (Emoji)
 
 
 type alias ChatMessage =
@@ -148,3 +149,8 @@ encodeDirection direction =
 
         Broadcast ->
             "broadcast"
+
+
+attackEncoder : Emoji -> Emoji -> Enc.Value
+attackEncoder from to =
+    Enc.list [ Enc.string from, Enc.string to ]

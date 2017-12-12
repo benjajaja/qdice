@@ -140,7 +140,11 @@ clickLand model land =
                         ( Board.Types.From land, Cmd.none )
 
                     Board.Types.From from ->
-                        ( Board.Types.FromTo from land, Cmd.none )
+                        let
+                            gameCmd =
+                                Backend.attack model.backend model.game.table from.emoji land.emoji
+                        in
+                            ( Board.Types.FromTo from land, gameCmd )
 
                     Board.Types.FromTo from to ->
                         ( model.game.board.move, Cmd.none )
