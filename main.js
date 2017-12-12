@@ -60,7 +60,6 @@ server.listen(process.env.PORT || 5001, function() {
   console.log('%s listening at %s port %s', server.name, server.url);
 });
 
-
 setInterval(function tick() {
   tables.tick();
 }, 500);

@@ -23,6 +23,16 @@ const Table = name => ({
   lands: [],
 });
 
+const rand = (min, max) => Math.floor(Math.random() * (max + 1 - min)) + min;
+
+const diceRoll = (fromPoints, toPoints) => {
+  const fromRoll = R.range(0, fromPoints).map(_ => rand(1, 6));
+  const toRoll = R.range(0, toPoints).map(_ => rand(1, 6));
+  const success = R.sum(fromRoll) > R.sum(toRoll);
+  return [fromRoll, toRoll, success];
+};
+
+
 const loadLands = table => {
   const rawMap = fs.readFileSync('./maps/' + table.name + '.emoji')
     .toString().split('\n').filter(line => line !== '');
@@ -45,7 +55,7 @@ const loadLands = table => {
     .map(emoji => ({
       emoji: emoji,
       color: -1,
-      points: Math.floor(Math.random() * (9 - 1)) + 1,
+      points: rand(1, 8),
     }));
   table.lands = lands;
   return table;
@@ -62,11 +72,14 @@ const tables = keys.map(key =>loadLands(Table(key)));
 const tableTimeouts = keys.reduce((obj, key) => Object.assign(obj, { [key]: null }));
 
 const findTable = tables => name => tables.filter(table => table.name === name).pop();
+const findLand = lands => emoji => lands.filter(land => land.emoji === emoji).pop();
 
 module.exports.command = function(req, res, next) {
-  const table = findTable(tables)(req.params.tableName);
-  if (!table) throw new Error('table not found: ' + req.params.tableName);
-  const command = req.params.command;
+  const table = findTable(tables)(req.context.tableName);
+  if (!table) {
+		throw new Error('table not found: ' + req.context.tableName);
+	}
+  const command = req.context.command;
   switch (command) {
     case 'Enter':
       enter(req.user, table, req);
@@ -76,6 +89,9 @@ module.exports.command = function(req, res, next) {
       break;
     case 'Leave':
       leave(req.user, table, req);
+      break;
+    case 'Attack':
+      attack(req.user, table, req.body);
       break;
     default:
       throw new Error('Unknown command: ' + command);
@@ -122,6 +138,30 @@ const leave = (user, table) => {
   publishTableStatus(table);
 };
 
+const attack = (user, table, [emojiFrom, emojiTo]) => {
+  console.log('attack', emojiFrom, emojiTo);
+  const find = findLand(table.lands);
+  const fromLand = find(emojiFrom);
+  const toLand = find(emojiTo);
+  if (!fromLand || !toLand) {
+    throw new Error('land not found');
+  }
+
+  const [fromRoll, toRoll, isSuccess] = diceRoll(fromLand.points, toLand.points);
+  if (isSuccess) {
+    toLand.points = fromLand.points - 1;
+    toLand.color = fromLand.color;
+  }
+  fromLand.points = 1;
+
+  publishRoll(table, {
+    from: { emoji: emojiFrom, roll: fromRoll },
+    to: { emoji: emojiTo, roll: toRoll },
+  });
+
+  table.turnStarted = Math.floor(Date.now() / 1000);
+  publishTableStatus(table);
+};
 
 let client;
 module.exports.setMqtt = client_ => {
@@ -132,25 +172,38 @@ module.exports.setMqtt = client_ => {
     const table = findTable(tables)(tableName);
     if (!table) throw new Error('table not found: ' + tableName);
     const { type, payload } = JSON.parse(message);
-    //console.log('table message', tableName, channel);
     //publishTableStatus(table);
   });
   tables.forEach(publishTableStatus);
 };
 
 const publishTableStatus = table => {
-  //console.log('publish', table);
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'update',
       payload: table,
     }),
     undefined,
-    (err) => console.log(err, 'tables/' + table.name + '/clients',
-      JSON.stringify({
-      type: 'update',
-      payload: table,
-    }))
+    (err) => {
+			if (err) {
+				console.log(err, 'tables/' + table.name + '/clients update', table);
+			}
+		}
+  );
+};
+
+const publishRoll = (table, roll) => {
+  client.publish('tables/' + table.name + '/clients',
+    JSON.stringify({
+      type: 'roll',
+      payload: roll,
+    }),
+    undefined,
+    (err) => {
+			if (err) {
+				console.log(err, 'tables/' + table.name + '/clients roll', roll);
+			}
+		}
   );
 };
 
@@ -173,10 +226,10 @@ const startGame = table => {
     const land = startLands[index];
     land.color = player.color;
     land.points = 4;
-    console.log(player.name, land);
   });
   
   table = nextTurn(table);
+  publishTableStatus(table);
   return table;
 };
 
@@ -184,7 +237,6 @@ const nextTurn = table => {
   const nextIndex = (i => i + 1 < table.playerSlots ? i + 1 : 0)(table.turnIndex);
   table.turnIndex = nextIndex;
   table.turnStarted = Math.floor(Date.now() / 1000);
-  publishTableStatus(table);
   return table;
 };
 
@@ -192,8 +244,8 @@ module.exports.tick = () => {
   tables.filter(table => table.status === STATUS_PLAYING)
     .forEach(table => {
     if (table.turnStarted < Date.now() / 1000 - TURN_SECONDS) {
-      //console.log('tick turn', table.name);
       nextTurn(table);
+      publishTableStatus(table);
     }
   });
 };
