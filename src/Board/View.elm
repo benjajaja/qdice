@@ -20,9 +20,6 @@ view model =
     board 100
         model.map
         (case model.move of
-            Disabled ->
-                []
-
             Idle ->
                 []
 

@@ -5,6 +5,7 @@ import Game.Types exposing (..)
 import Types exposing (Model, Msg(..), User(Anonymous))
 import Board
 import Board.State
+import Board.Types
 import Maps exposing (load)
 import Land exposing (Color)
 import Tables exposing (Table(..))
@@ -86,16 +87,20 @@ updateTableStatus model status =
                 Types.Logged user ->
                     List.head <| List.filter (\p -> p.id == user.id) status.players
 
-        hasTurn =
-            case player of
-                Nothing ->
-                    False
+        hadTurn =
+            hasTurn player game.players game.turnIndex
 
-                Just player ->
-                    indexOf player status.players == status.turnIndex
+        hasLostTurn =
+            hadTurn == True && (hasTurn player status.players status.turnIndex) == False
+
+        move =
+            if hasLostTurn then
+                Just Board.Types.Idle
+            else
+                Nothing
 
         board_ =
-            Board.State.updateLands model.game.board status.lands hasTurn
+            Board.State.updateLands model.game.board status.lands move
 
         game_ =
             { game
@@ -108,6 +113,51 @@ updateTableStatus model status =
             }
     in
         { model | game = game_ } ! []
+
+
+hasTurn : Maybe Player -> List Player -> Int -> Bool
+hasTurn player players turnIndex =
+    case player of
+        Nothing ->
+            False
+
+        Just player ->
+            indexOf player players == turnIndex
+
+
+clickLand : Types.Model -> Land.Land -> ( Types.Model, Cmd Types.Msg )
+clickLand model land =
+    let
+        canMove =
+            hasTurn model.game.player model.game.players model.game.turnIndex
+
+        ( move, cmd ) =
+            if not canMove then
+                ( model.game.board.move, Cmd.none )
+            else
+                case model.game.board.move of
+                    Board.Types.Idle ->
+                        ( Board.Types.From land, Cmd.none )
+
+                    Board.Types.From from ->
+                        ( Board.Types.FromTo from land, Cmd.none )
+
+                    Board.Types.FromTo from to ->
+                        ( model.game.board.move, Cmd.none )
+
+        game =
+            model.game
+
+        board =
+            game.board
+
+        board_ =
+            { board | move = move }
+
+        game_ =
+            { game | board = board_ }
+    in
+        { model | game = game_ } ! [ cmd ]
 
 
 

@@ -17,8 +17,7 @@ type alias Model =
 
 
 type BoardMove
-    = Disabled
-    | Idle
+    = Idle
     | From Land
     | FromTo Land Land
 

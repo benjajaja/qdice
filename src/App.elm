@@ -228,12 +228,12 @@ update msg model =
                 model_ =
                     { model | game = game_ }
             in
-                --case boardMsg of
-                --Board.Types.ClickLand land ->
-                --Game.State.updateClickLand model_ land
-                --! [ Cmd.map BoardMsg newBoardMsg ]
-                --_ ->
-                model_ ! [ Cmd.map BoardMsg newBoardMsg ]
+                case boardMsg of
+                    Board.Types.ClickLand land ->
+                        Game.State.clickLand model_ land
+
+                    _ ->
+                        model_ ! [ Cmd.map BoardMsg newBoardMsg ]
 
         InputChat text ->
             let

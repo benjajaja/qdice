@@ -6,7 +6,7 @@ import Land
 
 init : Land.Map -> Model
 init map =
-    Model map Nothing Disabled
+    Model map Nothing Idle
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -27,11 +27,11 @@ update msg model =
                     model ! []
 
         ClickLand land ->
-            clickLand model land
+            model ! []
 
 
-updateLands : Model -> List LandUpdate -> Bool -> Model
-updateLands model update hasTurn =
+updateLands : Model -> List LandUpdate -> Maybe BoardMove -> Model
+updateLands model update move =
     let
         map =
             model.map
@@ -42,15 +42,15 @@ updateLands model update hasTurn =
         map_ =
             { map | lands = lands }
 
-        move =
-            if not hasTurn then
-                Disabled
-            else if model.move == Disabled then
-                Idle
-            else
-                model.move
+        move_ =
+            case move of
+                Just move ->
+                    move
+
+                Nothing ->
+                    model.move
     in
-        { model | map = map_, move = move }
+        { model | map = map_, move = move_ }
 
 
 updateLand : List LandUpdate -> Land.Land -> Land.Land
@@ -65,23 +65,3 @@ updateLand updates land =
 
             Nothing ->
                 land
-
-
-clickLand : Model -> Land.Land -> ( Model, Cmd Msg )
-clickLand model land =
-    case model.move of
-        Disabled ->
-            model ! []
-
-        Idle ->
-            { model | move = From land } ! []
-
-        From from ->
-            let
-                _ =
-                    Debug.log "FromTo" ( from, land )
-            in
-                { model | move = FromTo from land } ! []
-
-        FromTo from to ->
-            { model | move = Idle } ! []
