@@ -12,7 +12,6 @@ import Types exposing (Msg(..))
 import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (Player, PlayerAction(..))
 import Land exposing (Color(..))
-import Board.State
 
 
 connect : Cmd msg
@@ -112,27 +111,6 @@ addSubscribed model topic =
             topic :: backend.subscribed
     in
         { model | backend = { backend | subscribed = subscribed } }
-
-
-updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
-updateTableStatus model status =
-    let
-        game =
-            model.game
-
-        board_ =
-            Board.State.updateLands model.game.board status.lands
-
-        game_ =
-            { game
-                | players = status.players
-                , status = status.status
-                , turnIndex = status.turnIndex
-                , turnStarted = status.turnStarted
-                , board = board_
-            }
-    in
-        { model | game = game_ } ! []
 
 
 authenticate : Model -> String -> Cmd Msg

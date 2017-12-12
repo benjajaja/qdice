@@ -17,7 +17,22 @@ import Land exposing (Land, Map, Point, landPath, cellCenter, landCenter)
 
 view : Model -> Html.Html Msg
 view model =
-    board 100 model.map
+    board 100
+        model.map
+        (case model.move of
+            Disabled ->
+                []
+
+            Idle ->
+                []
+
+            From land ->
+                [ land ]
+
+            FromTo from to ->
+                [ from, to ]
+        )
+        model.hovered
 
 
 heightScale : Float
@@ -30,8 +45,8 @@ padding =
     0
 
 
-board : Int -> Land.Map -> Svg Msg
-board w map =
+board : Int -> Land.Map -> List Land -> Maybe Land -> Svg Msg
+board w map selected hovered =
     let
         cellWidth =
             (toFloat w - padding) / (((toFloat map.width) + 0.5))
@@ -50,27 +65,27 @@ board w map =
         layout =
             Land.Layout ( cellWidth / sqrt (3), cellWidth * heightScale / 2 ) padding
 
-        land =
-            Html.Lazy.lazy <| landElement layout
+        landF =
+            Html.Lazy.lazy <| landElement layout selected hovered
     in
         Html.div [ class "ed-board" ]
             [ Svg.svg
                 [ width "100%"
                 , height "100%"
-                  -- , Html.Attributes.style
-                  --     [ ( "padding", "2px" )
-                  --     , ( "box-sizing", "border-box" )
-                  --     ]
                 , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
                 , preserveAspectRatio "none"
                 , class "ed-board--svg"
                 ]
                 (List.concat
-                    [ List.map land map.lands
+                    [ List.map landF map.lands
                     , [ Svg.defs []
                             [ Svg.radialGradient [ id "editorGradient" ]
                                 [ Svg.stop [ offset "0.8", stopColor "gold" ] []
-                                , Svg.stop [ offset "0.9", stopColor (svgColor False Land.Neutral) ] []
+                                , Svg.stop [ offset "0.9", stopColor (svgColor False False Land.Neutral) ] []
+                                ]
+                            , Svg.radialGradient [ id "selectedGradient" ]
+                                [ Svg.stop [ offset "0.8", stopColor "gold" ] []
+                                , Svg.stop [ offset "0.9", stopColor ("rgba(0,0,0,0)") ] []
                                 ]
                             ]
                       , Svg.defs []
@@ -91,22 +106,34 @@ board w map =
             ]
 
 
-landElement : Land.Layout -> Land.Land -> Svg Msg
-landElement layout land =
-    g
-        [ onClick (ClickLand land)
-        , onMouseOver (HoverLand land)
-        , onMouseOut (UnHoverLand land)
-        ]
-        [ polygon (polygonAttrs layout land) []
-        , landText layout land
-        , landDies layout land
-        ]
+landElement : Land.Layout -> List Land.Land -> Maybe Land -> Land.Land -> Svg Msg
+landElement layout selected hovered land =
+    let
+        isSelected =
+            List.member land selected
+
+        isHovered =
+            case hovered of
+                Just l ->
+                    l == land
+
+                Nothing ->
+                    False
+    in
+        g
+            [ onClick (ClickLand land)
+            , onMouseOver (HoverLand land)
+            , onMouseOut (UnHoverLand land)
+            ]
+            [ polygon (polygonAttrs layout isSelected isHovered land) []
+            , landText layout land
+            , landDies layout land
+            ]
 
 
-polygonAttrs : Land.Layout -> Land.Land -> List (Svg.Attribute Msg)
-polygonAttrs layout land =
-    [ fill <| landColor land
+polygonAttrs : Land.Layout -> Bool -> Bool -> Land.Land -> List (Svg.Attribute Msg)
+polygonAttrs layout selected hovered land =
+    [ fill <| landColor selected hovered land
     , stroke "black"
     , strokeLinejoin "round"
     , strokeWidth (1 |> toString)
@@ -132,7 +159,7 @@ pointToString ( x, y ) =
 
 landDies : Land.Layout -> Land.Land -> Svg Msg
 landDies layout land =
-    g [ color <| landColor land ] <|
+    g [ color <| landColor False False land ] <|
         List.map
             (landDie
                 (landCenter
@@ -200,18 +227,19 @@ landText layout land =
            )
 
 
-landColor : Land -> String
-landColor land =
+landColor : Bool -> Bool -> Land -> String
+landColor selected hovered land =
     case land.color of
         Land.EditorSelected ->
             "url(#editorGradient)"
 
         _ ->
-            svgColor land.selected land.color
+            --"url(#selectedGradient) " ++
+            (svgColor selected hovered land.color)
 
 
-svgColor : Bool -> Land.Color -> String
-svgColor highlight color =
+svgColor : Bool -> Bool -> Land.Color -> String
+svgColor selected hovered color =
     (case color of
         Land.Neutral ->
             Color.rgb 240 240 240
@@ -243,10 +271,11 @@ svgColor highlight color =
         Land.EditorSelected ->
             Color.rgb 255 0 255
     )
-        |> Color.Manipulate.lighten
-            (if highlight then
-                0.5
-             else
-                0.0
-            )
+        |> (if selected then
+                Color.Manipulate.lighten 0.5
+            else if hovered then
+                Color.Manipulate.darken 0.1
+            else
+                identity
+           )
         |> Color.Convert.colorToCssRgb

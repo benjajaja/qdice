@@ -22,6 +22,7 @@ type alias Model =
     { table : Table
     , board : Board.Model
     , players : List Player
+    , player : Maybe Player
     , status : GameStatus
     , playerSlots : Int
     , turnDuration : Int

@@ -46,12 +46,14 @@ update msg model =
                                     land :: model.selectedLands
 
                                 map =
-                                    (Land.landColor model.board.map land Land.EditorSelected
-                                        |> Land.highlight False
-                                    )
-                                    <|
-                                        land
+                                    model.board.map
 
+                                -- TODO: highlight clicked?
+                                --(Land.landColor model.board.map land Land.EditorSelected
+                                --|> Land.highlight False
+                                --)
+                                --<|
+                                --land
                                 -- mobile does mousedown on click, but not mouseup; quick & dirty fix
                             in
                                 { model
@@ -149,7 +151,7 @@ addSelectedLand model =
                     List.filter (\l -> not <| containsAny l.cells selectedCells) lands
 
                 newLand =
-                    Land.Land selectedCells Land.Editor "🍋" False 0
+                    Land.Land selectedCells Land.Editor "🍋" 0
             in
                 updateMap
                     { model | selectedLands = [] }

@@ -6,7 +6,7 @@ import Random
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
 import Hexagons.Layout as HL exposing (offsetToHex, orientationLayoutPointy, Layout)
 import Hex exposing (Point, borderLeftCorner, center, cellCubicCoords)
-import Helpers exposing (indexOf)
+import Helpers exposing (findIndex)
 
 
 type alias Cells =
@@ -25,7 +25,6 @@ type alias Land =
     { cells : Cells
     , color : Color
     , emoji : Emoji
-    , selected : Bool
     , points : Int
     }
 
@@ -114,7 +113,7 @@ cellCubicCoords hex =
 
 errorLand : Land
 errorLand =
-    Land [ offsetToHex ( 0, 0 ) ] Editor emptyEmoji False 0
+    Land [ offsetToHex ( 0, 0 ) ] Editor emptyEmoji 0
 
 
 fullCellMap : Int -> Int -> Color -> Map
@@ -127,7 +126,6 @@ fullCellMap w h color =
                         { cells = [ offsetToHex ( c, r ) ]
                         , color = color
                         , emoji = emptyEmoji
-                        , selected = False
                         , points = 0
                         }
                     )
@@ -167,21 +165,6 @@ landColor map land color =
     }
 
 
-highlight : Bool -> Map -> Land -> Map
-highlight highlight map land =
-    { map
-        | lands =
-            List.map
-                (\l ->
-                    if l == land then
-                        { l | selected = highlight }
-                    else
-                        { l | selected = False }
-                )
-                map.lands
-    }
-
-
 append : Map -> Land -> Map
 append map land =
     { map | lands = List.append [ land ] map.lands }
@@ -200,7 +183,7 @@ at lands coord =
             any (\h -> h === hex) land.cells
 
         index =
-            indexOf lands (cb hex)
+            findIndex (cb hex) lands
     in
         index
 
@@ -216,10 +199,10 @@ concat map =
     in
         case hexes of
             [] ->
-                Land [] Neutral emptyEmoji False 0
+                Land [] Neutral emptyEmoji 0
 
             _ ->
-                Land hexes Neutral emptyEmoji False 0
+                Land hexes Neutral emptyEmoji 0
 
 
 {-| set one color to neutral

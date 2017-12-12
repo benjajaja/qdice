@@ -74,7 +74,7 @@ load table =
             List.map (List.filter (\t -> Tuple.second t /= Land.emptyEmoji && Tuple.second t /= "〿")) lines
                 |> foldLines
                 |> List.foldr dedupeEmojis []
-                |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji False 1)
+                |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)
 
         cmd =
             consoleDebug <|

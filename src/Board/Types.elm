@@ -11,7 +11,16 @@ type Msg
 
 type alias Model =
     { map : Map
+    , hovered : Maybe Land
+    , move : BoardMove
     }
+
+
+type BoardMove
+    = Disabled
+    | Idle
+    | From Land
+    | FromTo Land Land
 
 
 type alias LandUpdate =

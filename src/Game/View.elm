@@ -17,7 +17,6 @@ import Types exposing (Model, Msg(..))
 import Tables exposing (Table, tableList)
 import Board
 import Backend.Types exposing (ConnectionStatus(..))
-import Helpers exposing (indexOf)
 
 
 view : Model -> Html.Html Types.Msg
@@ -30,7 +29,6 @@ view model =
         Html.div [ class "edGame" ]
             [ header model
             , board
-              --|> Html.map Types.GameMsg
             , Html.div [ class "edPlayerChips" ] <| List.indexedMap (playerChip model) model.game.players
             , boardHistory model
             , footer model

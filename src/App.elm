@@ -18,6 +18,7 @@ import Game.State
 import Game.View
 import Game.Chat
 import Board
+import Board.Types
 import Static.View
 import Editor.Editor
 import MyProfile.MyProfile
@@ -218,13 +219,21 @@ update msg model =
                 game =
                     model.game
 
-                ( board, boardCmd ) =
+                ( board, newBoardMsg ) =
                     Board.update boardMsg model.game.board
 
                 game_ =
                     { game | board = board }
+
+                model_ =
+                    { model | game = game_ }
             in
-                { model | game = game_ } ! [ Cmd.map BoardMsg boardCmd ]
+                --case boardMsg of
+                --Board.Types.ClickLand land ->
+                --Game.State.updateClickLand model_ land
+                --! [ Cmd.map BoardMsg newBoardMsg ]
+                --_ ->
+                model_ ! [ Cmd.map BoardMsg newBoardMsg ]
 
         InputChat text ->
             let
@@ -308,7 +317,7 @@ update msg model =
                         Backend.updateChatLog model <| Backend.Types.LogChat user text
 
                     Backend.Types.Update status ->
-                        Backend.updateTableStatus model status
+                        Game.State.updateTableStatus model status
             else
                 model ! []
 

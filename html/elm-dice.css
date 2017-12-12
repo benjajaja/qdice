@@ -52,6 +52,7 @@ body.navigator-standalone textarea {
   background-color: #ffcccc;
   padding: 2em;
   font-weight: bold;
+  white-space: pre;
 }
 
 .ed-board--svg {

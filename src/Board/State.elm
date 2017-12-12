@@ -6,38 +6,32 @@ import Land
 
 init : Land.Map -> Model
 init map =
-    Model map
+    Model map Nothing Disabled
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         HoverLand land ->
-            let
-                map =
-                    Land.highlight True model.map land
-            in
-                if map /= model.map then
-                    ( { model | map = map }, Cmd.none )
-                else
-                    ( model, Cmd.none )
+            { model | hovered = Just land } ! []
 
         UnHoverLand land ->
-            let
-                map =
-                    (Land.highlight False model.map land)
-            in
-                if map /= model.map then
-                    ( Model map, Cmd.none )
-                else
-                    ( model, Cmd.none )
+            case model.hovered of
+                Just l ->
+                    if l == land then
+                        { model | hovered = Nothing } ! []
+                    else
+                        model ! []
 
-        _ ->
-            ( model, Cmd.none )
+                Nothing ->
+                    model ! []
+
+        ClickLand land ->
+            clickLand model land
 
 
-updateLands : Model -> List LandUpdate -> Model
-updateLands model update =
+updateLands : Model -> List LandUpdate -> Bool -> Model
+updateLands model update hasTurn =
     let
         map =
             model.map
@@ -47,8 +41,16 @@ updateLands model update =
 
         map_ =
             { map | lands = lands }
+
+        move =
+            if not hasTurn then
+                Disabled
+            else if model.move == Disabled then
+                Idle
+            else
+                model.move
     in
-        { model | map = map_ }
+        { model | map = map_, move = move }
 
 
 updateLand : List LandUpdate -> Land.Land -> Land.Land
@@ -63,3 +65,23 @@ updateLand updates land =
 
             Nothing ->
                 land
+
+
+clickLand : Model -> Land.Land -> ( Model, Cmd Msg )
+clickLand model land =
+    case model.move of
+        Disabled ->
+            model ! []
+
+        Idle ->
+            { model | move = From land } ! []
+
+        From from ->
+            let
+                _ =
+                    Debug.log "FromTo" ( from, land )
+            in
+                { model | move = FromTo from land } ! []
+
+        FromTo from to ->
+            { model | move = Idle } ! []
