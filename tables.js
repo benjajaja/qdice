@@ -1,7 +1,7 @@
 const fs = require('fs');
 const R = require('ramda');
 
-const keys = ['Melchor', 'Miño'];
+const keys = ['Melchor', 'Miño', 'Sabicas'];
 module.exports.keys = keys;
 
 const T_CLIENTS = 'clients';
