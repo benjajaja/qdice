@@ -123,8 +123,8 @@ landElement layout selected hovered land =
             , onMouseOut (UnHoverLand land)
             ]
             [ polygon (polygonAttrs layout isSelected isHovered land) []
-            , landText layout land
             , landDies layout land
+            , landText layout land
             ]
 
 
@@ -175,13 +175,10 @@ landDie : ( Float, Float ) -> Int -> Int -> Svg Msg
 landDie ( cx, cy ) points index =
     let
         xOffset =
-            if points > 4 then
-                if index >= 4 then
-                    1.0
-                else
-                    2.75
+            if index >= 4 then
+                1.0
             else
-                1.5
+                2.75
 
         yOffset =
             if index >= 4 then
@@ -213,14 +210,23 @@ landText layout land =
                     ( cx, cy ) =
                         c
                 in
-                    Svg.text_
-                        [ x <| toString cx
-                        , y <| toString cy
-                        , textAnchor "middle"
-                        , alignmentBaseline "central"
-                        , class "edBoard--emoji"
+                    g
+                        [ transform <|
+                            "translate("
+                                ++ (toString <| cx - 1.75)
+                                ++ ","
+                                ++ (toString <| cy + 0.5)
+                                ++ ")"
+                          --x <| toString cx
+                          --, y <| toString cy
                         ]
-                        [ Html.text land.emoji ]
+                        [ Svg.text_
+                            [ textAnchor "middle"
+                            , alignmentBaseline "central"
+                            , class "edBoard--emoji"
+                            ]
+                            [ Html.text land.emoji ]
+                        ]
            )
 
 

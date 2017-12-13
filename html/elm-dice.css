@@ -67,7 +67,8 @@ body.navigator-standalone textarea {
   pointer-events: none;
 }
 .edBoard--emoji {
-  opacity: 0.2;
+  font-size: 33%;
+  transform: skewY(15deg);
 }
 .edBoard--dies {
   pointer-events: none;
