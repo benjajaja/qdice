@@ -59,6 +59,16 @@ type Color
     | EditorSelected
 
 
+cellToKey : Hex -> String
+cellToKey cell =
+    case cell of
+        HH.IntCubeHex coords ->
+            toString coords
+
+        _ ->
+            toString cell
+
+
 emptyEmoji : String
 emptyEmoji =
     "\x3000"

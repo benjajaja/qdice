@@ -1,12 +1,13 @@
 port module Board.State exposing (init, update, updateLands)
 
 import Board.Types exposing (..)
+import Board.PathCache exposing (createPathCache)
 import Land
 
 
 init : Land.Map -> Model
 init map =
-    Model map Nothing Idle
+    Model map Nothing Idle <| createPathCache map
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

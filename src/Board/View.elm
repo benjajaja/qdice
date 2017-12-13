@@ -11,14 +11,15 @@ import Color.Manipulate exposing (..)
 import Html
 import Html.Attributes
 import Html.Lazy
-import Board.Types exposing (Msg, Model)
-import Land exposing (Land, Map, Point, landPath, cellCenter, landCenter)
+import Board.Types exposing (Msg, Model, PathCache)
+import Land exposing (Land, Map, Point, Layout, cellCenter, landCenter)
 
 
 view : Model -> Html.Html Msg
 view model =
-    board 100
+    board
         model.map
+        model.pathCache
         (case model.move of
             Idle ->
                 []
@@ -32,38 +33,14 @@ view model =
         model.hovered
 
 
-heightScale : Float
-heightScale =
-    0.5
-
-
-padding : Float
-padding =
-    0
-
-
-board : Int -> Land.Map -> List Land -> Maybe Land -> Svg Msg
-board w map selected hovered =
+board : Land.Map -> PathCache -> List Land -> Maybe Land -> Svg Msg
+board map pathCache selected hovered =
     let
-        cellWidth =
-            (toFloat w - padding) / (((toFloat map.width) + 0.5))
-
-        -- actual cell width
-        cellHeight =
-            cellWidth * heightScale
-
-        -- 0.75 + (cellWidth * 0.25) |> round |> toFloat
-        sWidth =
-            toString w
-
-        sHeight =
-            cellHeight * 0.75 * (toFloat map.height + 1 / 3) + padding |> toString
-
-        layout =
-            Land.Layout ( cellWidth / sqrt (3), cellWidth * heightScale / 2 ) padding
+        ( layout, sWidth, sHeight ) =
+            getLayout map
 
         landF =
-            Html.Lazy.lazy <| landElement layout selected hovered
+            Html.Lazy.lazy <| landElement layout pathCache selected hovered
     in
         Html.div [ class "ed-board" ]
             [ Svg.svg
@@ -103,8 +80,8 @@ board w map selected hovered =
             ]
 
 
-landElement : Land.Layout -> List Land.Land -> Maybe Land -> Land.Land -> Svg Msg
-landElement layout selected hovered land =
+landElement : Layout -> PathCache -> List Land.Land -> Maybe Land -> Land.Land -> Svg Msg
+landElement layout pathCache selected hovered land =
     let
         isSelected =
             List.member land selected
@@ -122,39 +99,24 @@ landElement layout selected hovered land =
             , onMouseOver (HoverLand land)
             , onMouseOut (UnHoverLand land)
             ]
-            [ polygon (polygonAttrs layout isSelected isHovered land) []
+            [ polygon (polygonAttrs layout pathCache isSelected isHovered land) []
             , landDies layout land
             , landText layout land
             ]
 
 
-polygonAttrs : Land.Layout -> Bool -> Bool -> Land.Land -> List (Svg.Attribute Msg)
-polygonAttrs layout selected hovered land =
+polygonAttrs : Layout -> PathCache -> Bool -> Bool -> Land.Land -> List (Svg.Attribute Msg)
+polygonAttrs layout pathCache selected hovered land =
     [ fill <| landColor selected hovered land
     , stroke "black"
     , strokeLinejoin "round"
     , strokeWidth (1 |> toString)
     , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
-    , landPath layout land.cells |> landPointsString |> points
+    , points <| pathCache layout land
     ]
 
 
-landPointsString : List Point -> String
-landPointsString path =
-    path |> List.foldl addPointToString ""
-
-
-addPointToString : Point -> String -> String
-addPointToString point path =
-    path ++ (pointToString point) ++ " "
-
-
-pointToString : Point -> String
-pointToString ( x, y ) =
-    (x |> toString) ++ "," ++ (y |> toString)
-
-
-landDies : Land.Layout -> Land.Land -> Svg Msg
+landDies : Layout -> Land.Land -> Svg Msg
 landDies layout land =
     g [ color <| landColor False False land ] <|
         List.map
@@ -202,7 +164,7 @@ landDie ( cx, cy ) points index =
             []
 
 
-landText : Land.Layout -> Land.Land -> Svg Msg
+landText : Layout -> Land.Land -> Svg Msg
 landText layout land =
     landCenter layout land.cells
         |> (\c ->
