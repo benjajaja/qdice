@@ -148,6 +148,21 @@ fullCellMap w h color =
         h
 
 
+isBordering : Land -> Land -> Bool
+isBordering a b =
+    List.any (isCellOnLandBorder b) a.cells
+
+
+isCellOnLandBorder : Land -> Hex -> Bool
+isCellOnLandBorder land hex =
+    List.any (areNeighbours hex) land.cells
+
+
+areNeighbours : Hex -> Hex -> Bool
+areNeighbours a b =
+    List.any ((flip (isBorderOnSide a)) b) allSides
+
+
 offsetToHex : ( Int, Int ) -> Hex
 offsetToHex ( col, row ) =
     let

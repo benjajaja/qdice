@@ -12,7 +12,7 @@ createPathCache map =
             getLayout map
 
         dict =
-            Debug.log "path cache created" <| addToDict Dict.empty layout map.lands
+            addToDict Dict.empty layout map.lands
     in
         (\layout ->
             \land ->

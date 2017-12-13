@@ -87,11 +87,16 @@ updateTableStatus model status =
                 Types.Logged user ->
                     List.head <| List.filter (\p -> p.id == user.id) status.players
 
-        hadTurn =
-            hasTurn player game.players game.turnIndex
-
         hasLostTurn =
-            hadTurn == True && (hasTurn player status.players status.turnIndex) == False
+            case player of
+                Nothing ->
+                    False
+
+                Just player ->
+                    hasTurn player game.players game.turnIndex
+                        == True
+                        && (hasTurn player status.players status.turnIndex)
+                        == False
 
         move =
             if hasLostTurn then
@@ -130,53 +135,63 @@ showRoll model roll =
         ( { model | game = game_ }, Cmd.none )
 
 
-hasTurn : Maybe Player -> List Player -> Int -> Bool
+hasTurn : Player -> List Player -> Int -> Bool
 hasTurn player players turnIndex =
-    case player of
-        Nothing ->
-            False
-
-        Just player ->
-            indexOf player players == turnIndex
+    indexOf player players == turnIndex
 
 
 clickLand : Types.Model -> Land.Land -> ( Types.Model, Cmd Types.Msg )
 clickLand model land =
-    let
-        canMove =
-            hasTurn model.game.player model.game.players model.game.turnIndex
+    case model.game.player of
+        Nothing ->
+            ( model, Cmd.none )
 
-        ( move, cmd ) =
-            if not canMove then
-                ( model.game.board.move, Cmd.none )
-            else
-                case model.game.board.move of
-                    Board.Types.Idle ->
-                        ( Board.Types.From land, Cmd.none )
+        Just player ->
+            let
+                canMove =
+                    hasTurn player model.game.players model.game.turnIndex
 
-                    Board.Types.From from ->
-                        let
-                            gameCmd =
-                                Backend.attack model.backend model.game.table from.emoji land.emoji
-                        in
-                            ( Board.Types.FromTo from land, gameCmd )
-
-                    Board.Types.FromTo from to ->
+                ( move, cmd ) =
+                    if not canMove then
                         ( model.game.board.move, Cmd.none )
+                    else
+                        case model.game.board.move of
+                            Board.Types.Idle ->
+                                if land.color == player.color then
+                                    ( Board.Types.From land, Cmd.none )
+                                else
+                                    ( Board.Types.Idle, Cmd.none )
 
-        game =
-            model.game
+                            Board.Types.From from ->
+                                if land == from then
+                                    ( Board.Types.Idle, Cmd.none )
+                                else if land.color == player.color then
+                                    ( model.game.board.move, Cmd.none )
+                                else if not <| Land.isBordering land from then
+                                    ( model.game.board.move, Cmd.none )
+                                else
+                                    let
+                                        gameCmd =
+                                            Backend.attack model.backend model.game.table from.emoji land.emoji
+                                    in
+                                        ( Board.Types.FromTo from land, gameCmd )
 
-        board =
-            game.board
+                            Board.Types.FromTo from to ->
+                                ( model.game.board.move, Cmd.none )
 
-        board_ =
-            { board | move = move }
+                game =
+                    model.game
 
-        game_ =
-            { game | board = board_ }
-    in
-        { model | game = game_ } ! [ cmd ]
+                board =
+                    game.board
+
+                board_ =
+                    { board | move = move }
+
+                game_ =
+                    { game | board = board_ }
+            in
+                { model | game = game_ } ! [ cmd ]
 
 
 
