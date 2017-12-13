@@ -4,6 +4,9 @@ port module Helpers exposing (..)
 port consoleDebug : String -> Cmd msg
 
 
+port playSound : String -> Cmd msg
+
+
 findIndex : (a -> Bool) -> List a -> Int
 findIndex f lst =
     findIndex_ lst f 0

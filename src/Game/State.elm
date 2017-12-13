@@ -11,7 +11,7 @@ import Land exposing (Color)
 import Tables exposing (Table(..))
 import Backend
 import Backend.Types exposing (Topic(..))
-import Helpers exposing (indexOf)
+import Helpers exposing (indexOf, playSound)
 
 
 init : Maybe Types.Model -> Table -> ( Game.Types.Model, List (Cmd Types.Msg) )
@@ -131,8 +131,14 @@ showRoll model roll =
 
         game_ =
             { game | board = board_ }
+
+        soundName =
+            if List.sum roll.from.roll > List.sum roll.to.roll then
+                "rollSuccess"
+            else
+                "rollDefeat"
     in
-        ( { model | game = game_ }, Cmd.none )
+        ( { model | game = game_ }, playSound soundName )
 
 
 hasTurn : Player -> List Player -> Int -> Bool
@@ -174,7 +180,7 @@ clickLand model land =
                                         gameCmd =
                                             Backend.attack model.backend model.game.table from.emoji land.emoji
                                     in
-                                        ( Board.Types.FromTo from land, gameCmd )
+                                        ( Board.Types.FromTo from land, Cmd.batch [ playSound "diceroll", gameCmd ] )
 
                             Board.Types.FromTo from to ->
                                 ( model.game.board.move, Cmd.none )
