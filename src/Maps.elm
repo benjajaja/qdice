@@ -5,6 +5,7 @@ import String
 import Land exposing (Cells)
 import Maps.Melchor
 import Maps.Miño
+import Maps.Sabicas
 import Regex
 import Helpers exposing (..)
 import Tables exposing (Table(..))
@@ -36,6 +37,9 @@ mapSourceString table =
 
         Miño ->
             Maps.Miño.map
+
+        Sabicas ->
+            Maps.Sabicas.map
 
 
 emojiRegex : Regex.Regex
@@ -204,7 +208,7 @@ symbolDict =
         , '🎩'
         , '👙'
         , '⚽'
-        , '⛄'
+        , '🏰'
         , '⭐'
         , '🌙'
         , '🌴'
@@ -232,7 +236,7 @@ symbolDict =
         , '🌎'
         , '🐊'
         , '✊'
-        , '⛔'
+        , '💃'
         , '🍌'
         ]
         |> Dict.fromList
