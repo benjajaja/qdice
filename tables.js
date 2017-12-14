@@ -154,31 +154,39 @@ const attack = (user, table, [emojiFrom, emojiTo]) => {
 
   table.turnStarted = Math.floor(Date.now() / 1000);
   setTimeout(() => {
-    const [fromRoll, toRoll, isSuccess] = diceRoll(fromLand.points, toLand.points);
-    if (isSuccess) {
-      const loser = R.find(R.propEq('color', toLand.color), table.players);
-      toLand.points = fromLand.points - 1;
-      toLand.color = fromLand.color;
-      if (R.filter(R.propEq('color', loser.color), table.lands).length === 0) {
-        table.players = table.players.filter(R.complement(R.equals(loser)));
-        console.log('player lost:', loser);
-        if (table.players.length === 1) {
-          table.players = [];
-          table.status = STATUS_FINISHED;
-          table.turnIndex = -1;
+    try {
+      const [fromRoll, toRoll, isSuccess] = diceRoll(fromLand.points, toLand.points);
+      console.log('rolled');
+      if (isSuccess) {
+        const loser = R.find(R.propEq('color', toLand.color), table.players);
+        toLand.points = fromLand.points - 1;
+        toLand.color = fromLand.color;
+        if (loser && R.filter(R.propEq('color', loser.color), table.lands).length === 0) {
+          table.players = table.players.filter(R.complement(R.equals(loser)));
+          console.log('player lost:', loser);
+          if (table.players.length === 1) {
+            table.players = [];
+            table.status = STATUS_FINISHED;
+            table.turnIndex = -1;
+          }
         }
       }
+      fromLand.points = 1;
+
+      console.log('publish roll and table');
+      publishRoll(table, {
+        from: { emoji: emojiFrom, roll: fromRoll },
+        to: { emoji: emojiTo, roll: toRoll },
+      });
+
+      table.turnStarted = Math.floor(Date.now() / 1000);
+      publishTableStatus(table);
+    } catch (e) {
+      console.error(e);
     }
-    fromLand.points = 1;
-
-    publishRoll(table, {
-      from: { emoji: emojiFrom, roll: fromRoll },
-      to: { emoji: emojiTo, roll: toRoll },
-    });
-
-    table.turnStarted = Math.floor(Date.now() / 1000);
-    publishTableStatus(table);
   }, 500);
+  console.log('rolling...');
+  publishTableStatus(table);
 };
 
 const endTurn = (user, table) => {
