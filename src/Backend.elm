@@ -87,6 +87,7 @@ updateSubscribed model topic =
                                 hasDuplexSubscribed
                                     [ Tables table ClientDirection
                                     , Tables table ServerDirection
+                                    , Tables table Broadcast
                                     ]
                                     subscribed
                                     topic

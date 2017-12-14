@@ -37,7 +37,6 @@ setTimeout(function() {
           }
           loader.bufferList[index] = buffer;
           if (++loader.loadCount == loader.urlList.length) {
-            console.log('loaded all buffers');
             loader.onload(loader.bufferList);
           }
         },
@@ -66,7 +65,6 @@ setTimeout(function() {
       return 'sounds/' + key + '.wav';
     }),
     function finishedLoading(bufferList) {
-      console.log(bufferList);
       keys.forEach(function(key, index) {
         sounds[key] = function() {
           const source = context.createBufferSource();
