@@ -56,10 +56,10 @@
     "muicss": "0.9.1",
     "postcss-loader": "^1.1.1",
     "postcss-partial-import": "^2.1.0",
+    "serviceworker-loader": "^0.1.0",
     "style-loader": "0.13.1",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.9.7",
-    "worker-loader": "^1.1.0",
-    "service-worker-loader": "^1.0.0"
+    "worker-loader": "^1.1.0"
   }
 }

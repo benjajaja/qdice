@@ -101,10 +101,10 @@ global.edice = app;
 
 function createWorkerProxy(cb) {
   if ('serviceWorker' in navigator) {
-    var registerServiceWorker = require('service-worker-loader?filename=[name].js!./elm-dice-serviceworker.js');
-    registerServiceWorker['default']({
+    var registerServiceWorker = require('serviceworker-loader!./elm-dice-serviceworker.js');
+    registerServiceWorker({
       scope: '/',
-    }).then(() => {
+    }).then(function() {
         console.log('◕‿◕');
         navigator.serviceWorker.ready.then(function() {
           cb({
@@ -116,7 +116,7 @@ function createWorkerProxy(cb) {
             },
           });
         });
-    }).catch((err) => {
+    }).catch(function(err) {
       console.log('ಠ_ಠ', err);
       var Worker = require('worker-loader!./elm-dice-webworker.js');
       var worker = new Worker();
@@ -127,19 +127,5 @@ function createWorkerProxy(cb) {
     var worker = new Worker();
     cb(worker);
   }
-
-  //if ('serviceWorker' in navigator) {
-    //navigator.serviceWorker.register('/elm-dice-serviceworker.js').then(function(reg) {
-      //cb(navigator.serviceWorker.controller);
-      //console.log('◕‿◕', reg);
-    //}, function(err) {
-      //console.log('ಠ_ಠ', err);
-    //});
-  //} else {
-    //var Worker = require('worker-loader!./elm-dice-webworker.js');
-    //var worker = new Worker();
-    //cb(worker);
-    //throw new Error('Could not register service worker - try another browser?');
-  //}
 }
 
