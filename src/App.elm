@@ -47,7 +47,7 @@ init location =
         table =
             Maybe.withDefault Melchor <| currentTable route
 
-        ( game, gameCmds ) =
+        ( game, gameCmd ) =
             Game.State.init Nothing table
 
         ( editor, editorCmd ) =
@@ -75,7 +75,7 @@ init location =
         cmds =
             Cmd.batch <|
                 List.concat
-                    [ gameCmds
+                    [ [ gameCmd ]
                     , [ hide "peekaboo"
                       , Cmd.map EditorMsg editorCmd
                       , backendCmd
@@ -194,25 +194,18 @@ update msg model =
                 newRoute =
                     parseLocation location
 
-                newModel =
+                model_ =
                     { model | route = newRoute }
             in
                 case newRoute of
                     GameRoute table ->
-                        let
-                            ( game, gameCmds ) =
-                                Game.State.init (Just newModel) table
-                        in
-                            { newModel | game = game } ! gameCmds
+                        Game.State.changeTable model_ table
 
                     _ ->
-                        newModel ! []
+                        model_ ! []
 
         Mdl msg ->
             Material.update Mdl msg model
-
-        ChangeTable table ->
-            (Game.State.setter model (\g -> { g | table = table })) ! []
 
         BoardMsg boardMsg ->
             let

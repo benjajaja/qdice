@@ -33,3 +33,12 @@ indexOf a =
 find : (a -> Bool) -> List a -> Maybe a
 find f lst =
     List.filter f lst |> List.head
+
+
+pipeUpdates : (a -> b -> ( a, Cmd c )) -> b -> ( a, Cmd c ) -> ( a, Cmd c )
+pipeUpdates updater arg ( model, cmd ) =
+    let
+        ( model_, cmd_ ) =
+            updater model arg
+    in
+        ( model_, Cmd.batch [ cmd, cmd_ ] )

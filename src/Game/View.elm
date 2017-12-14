@@ -266,12 +266,15 @@ statusMessage status =
                     "signal_wifi_off"
 
                 Connecting ->
-                    "wifi"
+                    "wifi_lock"
 
                 Reconnecting _ ->
+                    "wifi_lock"
+
+                SubscribingGeneral ->
                     "wifi"
 
-                Subscribing ->
+                SubscribingTable ->
                     "perm_scan_wifi"
 
                 Online ->

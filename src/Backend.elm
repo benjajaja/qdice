@@ -46,8 +46,11 @@ updateConnected model clientId =
     let
         backend =
             model.backend
+
+        _ =
+            Debug.log "connected" clientId
     in
-        setStatus Subscribing ({ model | backend = { backend | clientId = Just clientId } })
+        setStatus SubscribingGeneral ({ model | backend = { backend | clientId = Just clientId } })
             ! [ subscribe <| Client clientId
               , subscribe AllClients
               ]
@@ -64,34 +67,32 @@ updateSubscribed model topic =
                 model_ =
                     addSubscribed model topic
 
+                _ =
+                    Debug.log "updateSubscribed" (topic)
+
                 subscribed =
                     model_.backend.subscribed
-            in
-                if
+
+                hasSubscribedGeneral =
                     hasDuplexSubscribed
                         [ Client clientId
                         , AllClients
                         ]
                         subscribed
                         topic
-                then
-                    model_
-                        ! [ subscribe <| Tables model_.game.table ClientDirection
-                          , subscribe <| Tables model_.game.table ServerDirection
-                          , subscribe <| Tables model_.game.table Broadcast
-                          ]
+            in
+                if hasSubscribedGeneral then
+                    subscribeGameTable model_ model_.game.table
                 else
                     case topic of
                         Tables table direction ->
-                            if
-                                hasDuplexSubscribed
-                                    [ Tables table ClientDirection
-                                    , Tables table ServerDirection
-                                    , Tables table Broadcast
-                                    ]
-                                    subscribed
-                                    topic
-                            then
+                            if table /= model_.game.table then
+                                let
+                                    _ =
+                                        Debug.log "subscribed to another table"
+                                in
+                                    model_ ! []
+                            else if hasSubscribedTable subscribed table then
                                 setStatus Online model_
                                     ! [ publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
                                       , gameCommand model.backend model_.game.table Enter
@@ -101,6 +102,58 @@ updateSubscribed model topic =
 
                         _ ->
                             model_ ! []
+
+
+subscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
+subscribeGameTable model table =
+    let
+        subscribed =
+            model.backend.subscribed
+    in
+        if
+            not <|
+                hasSubscribedTable subscribed table
+        then
+            setStatus SubscribingTable model
+                ! [ subscribe <| Tables model.game.table ClientDirection
+                  , subscribe <| Tables model.game.table ServerDirection
+                  , subscribe <| Tables model.game.table Broadcast
+                  ]
+        else
+            let
+                _ =
+                    Debug.log "already subscribed" model.game.table
+            in
+                model ! []
+
+
+unsubscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
+unsubscribeGameTable model table =
+    let
+        _ =
+            Debug.log "unsubscribe" table
+
+        backend =
+            model.backend
+
+        subscribed =
+            List.filter
+                (\topic ->
+                    case topic of
+                        Tables t _ ->
+                            t /= table
+
+                        _ ->
+                            True
+                )
+                backend.subscribed
+    in
+        { model | backend = { backend | subscribed = subscribed } }
+            ! [ publish <| TableMsg table <| Backend.Types.Leave <| Types.getUsername model
+              , unsubscribe <| Tables table ClientDirection
+              , unsubscribe <| Tables table ServerDirection
+              , unsubscribe <| Tables table Broadcast
+              ]
 
 
 addSubscribed : Types.Model -> Topic -> Types.Model
@@ -323,6 +376,18 @@ hasDuplexSubscribed topics subscribed topic =
         && List.all (flip List.member <| subscribed) topics
 
 
+hasSubscribedTable : List Topic -> Table -> Bool
+hasSubscribedTable subscribed table =
+    List.all
+        (\direction ->
+            List.member (Tables table direction) subscribed
+        )
+        [ ClientDirection
+        , ServerDirection
+        , Broadcast
+        ]
+
+
 port mqttConnect : String -> Cmd msg
 
 
@@ -337,6 +402,11 @@ port mqttPublish : ( String, String ) -> Cmd msg
 subscribe : Topic -> Cmd msg
 subscribe topic =
     mqttSubscribe <| encodeTopic topic
+
+
+unsubscribe : Topic -> Cmd msg
+unsubscribe topic =
+    mqttUnsubscribe <| encodeTopic topic
 
 
 actionToString : PlayerAction -> String
@@ -444,6 +514,9 @@ port onToken : (String -> msg) -> Sub msg
 
 
 port mqttSubscribe : String -> Cmd msg
+
+
+port mqttUnsubscribe : String -> Cmd msg
 
 
 port mqttOnConnect : (String -> msg) -> Sub msg

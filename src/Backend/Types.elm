@@ -43,7 +43,8 @@ type ConnectionStatus
     = Offline
     | Connecting
     | Reconnecting Int
-    | Subscribing
+    | SubscribingGeneral
+    | SubscribingTable
     | Online
 
 

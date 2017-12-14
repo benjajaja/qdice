@@ -75,10 +75,13 @@ app.ports.mqttConnect.subscribe(function() {
   });
   app.ports.mqttSubscribe.subscribe(function(args) {
     worker.postMessage({type: 'subscribe', payload: args});
-  })
+  });
+  app.ports.mqttUnsubscribe.subscribe(function(args) {
+    worker.postMessage({type: 'unsubscribe', payload: args});
+  });
   app.ports.mqttPublish.subscribe(function(args) {
     worker.postMessage({type: 'publish', payload: args});
-  })
+  });
 });
 
 app.ports.scrollChat.subscribe(function(id) {

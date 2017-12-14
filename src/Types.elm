@@ -30,7 +30,6 @@ type Msg
     | GetProfile (Result Http.Error LoggedUser)
     | Logout
       -- game
-    | ChangeTable Table
     | BoardMsg Board.Msg
     | InputChat String
     | SendChat String

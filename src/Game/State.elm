@@ -11,10 +11,10 @@ import Land exposing (Color)
 import Tables exposing (Table(..))
 import Backend
 import Backend.Types exposing (Topic(..))
-import Helpers exposing (indexOf, playSound)
+import Helpers exposing (indexOf, playSound, pipeUpdates)
 
 
-init : Maybe Types.Model -> Table -> ( Game.Types.Model, List (Cmd Types.Msg) )
+init : Maybe Types.Model -> Table -> ( Game.Types.Model, Cmd Types.Msg )
 init model table =
     let
         ( map, mapCmd ) =
@@ -31,8 +31,8 @@ init model table =
                 :: case model of
                     Just model ->
                         [ Backend.gameCommand model.backend table Enter
-                        , Backend.publish <| TableMsg model.game.table <| Backend.Types.Leave <| Types.getUsername model
-                        , Backend.publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model
+                          --, Backend.publish <| TableMsg model.game.table <| Backend.Types.Leave <| Types.getUsername model
+                          --, Backend.publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model
                         ]
 
                     Nothing ->
@@ -51,27 +51,30 @@ init model table =
           , chatInput = ""
           , chatBoxId = ("chatbox-" ++ toString table)
           }
-        , cmds
+        , Cmd.batch cmds
         )
 
 
-setter : Types.Model -> (Game.Types.Model -> Game.Types.Model) -> Types.Model
-setter model setter =
-    { model | game = (setter model.game) }
+changeTable : Types.Model -> Table -> ( Types.Model, Cmd Types.Msg )
+changeTable model table =
+    let
+        previousTable =
+            model.game.table
+
+        ( game, cmd ) =
+            init (Just model) table
+
+        model_ =
+            { model | game = game }
+    in
+        ( model_, cmd )
+            |> pipeUpdates Backend.unsubscribeGameTable previousTable
+            |> pipeUpdates Backend.subscribeGameTable table
 
 
 updateCommandResponse : Table -> PlayerAction -> Types.Model -> ( Types.Model, Cmd Msg )
 updateCommandResponse table action model =
     model ! []
-
-
-setTable : Game.Types.Model -> Table -> Game.Types.Model
-setTable model table =
-    let
-        board =
-            Board.init <| Tuple.first <| Maps.load table
-    in
-        { model | table = table, board = board }
 
 
 updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
