@@ -42,13 +42,13 @@ board map pathCache selected hovered =
         landF =
             Html.Lazy.lazy <| landElement layout pathCache selected hovered
     in
-        Html.div [ class "ed-board" ]
+        Html.div [ class "edBoard" ]
             [ Svg.svg
                 [ width "100%"
                 , height "100%"
                 , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
                 , preserveAspectRatio "none"
-                , class "ed-board--svg"
+                , class "edBoard--svg"
                 ]
                 (List.concat
                     [ List.map landF map.lands

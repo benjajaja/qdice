@@ -46,6 +46,7 @@ init model table =
           , playerSlots = 2
           , turnDuration = 10
           , turnIndex = -1
+          , hasTurn = False
           , turnStarted = -1
           , chatInput = ""
           , chatBoxId = ("chatbox-" ++ toString table)
@@ -87,16 +88,24 @@ updateTableStatus model status =
                 Types.Logged user ->
                     List.head <| List.filter (\p -> p.id == user.id) status.players
 
+        hasTurn =
+            case player of
+                Nothing ->
+                    False
+
+                Just player ->
+                    indexOf player status.players == status.turnIndex
+
         hasLostTurn =
             case player of
                 Nothing ->
                     False
 
                 Just player ->
-                    hasTurn player game.players game.turnIndex
-                        == True
-                        && (hasTurn player status.players status.turnIndex)
+                    hasTurn
                         == False
+                        && indexOf player game.players
+                        == game.turnIndex
 
         move =
             if hasLostTurn then
@@ -113,6 +122,7 @@ updateTableStatus model status =
                 , player = player
                 , status = status.status
                 , turnIndex = status.turnIndex
+                , hasTurn = hasTurn
                 , turnStarted = status.turnStarted
                 , board = board_
             }
@@ -141,11 +151,6 @@ showRoll model roll =
         ( { model | game = game_ }, playSound soundName )
 
 
-hasTurn : Player -> List Player -> Int -> Bool
-hasTurn player players turnIndex =
-    indexOf player players == turnIndex
-
-
 clickLand : Types.Model -> Land.Land -> ( Types.Model, Cmd Types.Msg )
 clickLand model land =
     case model.game.player of
@@ -154,11 +159,8 @@ clickLand model land =
 
         Just player ->
             let
-                canMove =
-                    hasTurn player model.game.players model.game.turnIndex
-
                 ( move, cmd ) =
-                    if not canMove then
+                    if not model.game.hasTurn then
                         ( model.game.board.move, Cmd.none )
                     else
                         case model.game.board.move of

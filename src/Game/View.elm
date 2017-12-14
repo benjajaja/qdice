@@ -38,39 +38,47 @@ view model =
 header : Model -> Html.Html Types.Msg
 header model =
     Html.div [ class "edGameHeader" ]
-        [ Html.span [ class "edGameHeader__chip" ]
-            [ Html.text "Table "
-            , Html.span [ class "edGameHeader__chip--strong" ]
-                [ Html.text <| toString model.game.table
+        [ seatButton model
+        , Html.div [ class "edGameHeader__tableStatus" ]
+            [ Html.span [ class "edGameHeader__chip" ]
+                [ Html.text "Table "
+                , Html.span [ class "edGameHeader__chip--strong" ]
+                    [ Html.text <| toString model.game.table
+                    ]
+                ]
+            , Html.span [ class "edGameHeader__chip" ]
+                [ Html.text ", "
+                , Html.span [ class "edGameHeader__chip--strong" ]
+                    [ Html.text <| toString model.game.playerSlots
+                    ]
+                , Html.text " player game is "
+                , Html.span [ class "edGameHeader__chip--strong" ]
+                    [ Html.text <| toString model.game.status
+                    ]
                 ]
             ]
-        , Html.span [ class "edGameHeader__chip" ]
-            [ Html.text ", "
-            , Html.span [ class "edGameHeader__chip--strong" ]
-                [ Html.text <| toString model.game.playerSlots
-                ]
-            , Html.text " player game is "
-            , Html.span [ class "edGameHeader__chip--strong" ]
-                [ Html.text <| toString model.game.status
-                ]
+        , Html.div [ class "edGameHeader__buttons" ]
+            [ endTurnButton model
             ]
-        , case model.backend.status of
-            Online ->
-                case model.user of
-                    Types.Anonymous ->
-                        Html.text ""
-
-                    Types.Logged user ->
-                        seatButton model
-
-            _ ->
-                Html.text ""
         ]
 
 
 seatButton : Model -> Html.Html Types.Msg
 seatButton model =
     let
+        canPlay =
+            case model.backend.status of
+                Online ->
+                    case model.user of
+                        Types.Anonymous ->
+                            False
+
+                        Types.Logged user ->
+                            True
+
+                _ ->
+                    False
+
         ( label, action ) =
             (if isPlayerInGame model then
                 (if model.game.status == Game.Types.Playing then
@@ -91,8 +99,24 @@ seatButton model =
             , Button.ripple
             , Options.cs "edGameHeader__button"
             , Options.onClick <| GameCmd action
+            , Options.disabled <| not canPlay
             ]
             [ Html.text label ]
+
+
+endTurnButton : Model -> Html.Html Types.Msg
+endTurnButton model =
+    Button.render
+        Types.Mdl
+        [ 1 ]
+        model.mdl
+        [ Button.colored
+        , Button.ripple
+        , Options.cs "edGameHeader__button"
+        , Options.onClick <| GameCmd EndTurn
+        , Options.disabled <| not model.game.hasTurn
+        ]
+        [ Html.text "End turn" ]
 
 
 playerChip : Model -> Int -> Game.Types.Player -> Html.Html Types.Msg

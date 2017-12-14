@@ -55,15 +55,18 @@ body.navigator-standalone textarea {
   white-space: pre;
 }
 
-.ed-board--svg {
+.edBoard {
+  margin-top: 10px;
+}
+.edBoard--svg {
   font-size: 33%;
   overflow: visible;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
-.ed-board--svg g {
+.edBoard--svg g {
   cursor: pointer;
 }
-.ed-board--svg g > text {
+.edBoard--svg g > text {
   pointer-events: none;
 }
 .edBoard--emoji {
@@ -80,8 +83,14 @@ body.navigator-standalone textarea {
 .edGame { }
 .edGameHeader {
   display: flex;
-  padding-left: 4px;
+  justify-content: space-between;
+  align-items: baseline;
 }
+.edGameHeader__tableStatus {
+}
+.edGameHeader__buttons {
+}
+
 .edGameHeader__chip {
   padding-top: 4px;
 }

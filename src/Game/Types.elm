@@ -17,6 +17,7 @@ type PlayerAction
     | Leave
     | SitOut
     | Attack Emoji Emoji
+    | EndTurn
 
 
 type alias Model =
@@ -28,6 +29,7 @@ type alias Model =
     , playerSlots : Int
     , turnDuration : Int
     , turnIndex : Int
+    , hasTurn : Bool
     , turnStarted : Int
     , chatInput : String
     , chatBoxId : String
