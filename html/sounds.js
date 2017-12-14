@@ -9,7 +9,7 @@ const keys = [
 ];
 
 const sounds = {};
-setTimeout(() => {
+setTimeout(function() {
   function BufferLoader(context, urlList, callback) {
     this.context = context;
     this.urlList = urlList;
