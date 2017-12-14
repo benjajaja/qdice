@@ -1,5 +1,7 @@
 console.log("SW startup");
 
+require('./elm-dice-webworker');
+
 self.addEventListener('install', function(event) {
   console.log("SW installed");
   event.waitUntil(caches.open('edice').then(function(cache) {
@@ -15,14 +17,16 @@ self.addEventListener('install', function(event) {
   }));
 });
 
-self.addEventListener('fetch', function(event) {
-  console.log('service worker fetch', event.request.url);
-  event.respondWith(
-    caches.match(event.request).then(function(response) {
-      return response || fetch(event.request);
-    })
-  );
-});
+//self.addEventListener('fetch', function(event) {
+  //event.respondWith(
+    //caches.match(event.request).then(function(response) {
+      //if (response) {
+        //console.log('service worker cache', event.request.url);
+      //}
+      //return response || fetch(event.request);
+    //})
+  //);
+//});
 
 self.addEventListener('activate', function(event) {
   console.log("SW activated");

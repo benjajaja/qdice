@@ -10,9 +10,8 @@ module.exports = {
     './html/elm-dice.js',
     './html/index.html',
     './html/elm-dice.css',
-  ].concat(fs.readdirSync('./html/favicons').map(function(file) {
-    return './html/favicons/' + file.toString();
-  })),
+    //'./html/elm-dice-serviceworker.js',
+  ],
 
   output: {
     path: path.join(__dirname, './dist'),

@@ -33,15 +33,15 @@ self.addEventListener('message', function(event){
 
       var connectionAttempts = 0;
 
-      self.postMessage({ type: 'mqttOnConnect', payload: ''});
+      postMessage({ type: 'mqttOnConnect', payload: ''});
 
       client.on('connect', function (connack) {
-        self.postMessage({ type: 'mqttOnConnected', payload: clientId});
+        postMessage({ type: 'mqttOnConnected', payload: clientId});
         connectionAttempts = 0;
       });
 
       client.on('message', function (topic, message) {
-        self.postMessage({ type: 'mqttOnMessage', payload: [topic, message.toString()]});
+        postMessage({ type: 'mqttOnMessage', payload: [topic, message.toString()]});
       });
 
       client.on('error', function (error) {
@@ -50,7 +50,7 @@ self.addEventListener('message', function(event){
 
       client.on('reconnect', function () {
         connectionAttempts = connectionAttempts + 1;
-        self.postMessage({ type: 'mqttOnReconnect', payload: connectionAttempts});
+        postMessage({ type: 'mqttOnReconnect', payload: connectionAttempts});
       });
 
        client.on('close', function (event) {
@@ -58,19 +58,19 @@ self.addEventListener('message', function(event){
        });
 
       client.on('offline', function () {
-        self.postMessage({ type: 'mqttOnOffline', payload: connectionAttempts.toString()});
+        postMessage({ type: 'mqttOnOffline', payload: connectionAttempts.toString()});
       });
       break;
     case 'subscribe':
       client.subscribe(action.payload, function(err, granted) {
         if (err) throw err;
-        self.postMessage({ type: 'mqttOnSubscribed', payload: granted.shift().topic});
+        postMessage({ type: 'mqttOnSubscribed', payload: granted.shift().topic});
       });
       break;
     case 'unsubscribe':
       client.unsubscribe(action.payload, function(err, granted) {
         if (err) throw err;
-        //self.postMessage({ type: 'mqttOnSubscribed', payload: granted.shift().topic});
+        //postMessage({ type: 'mqttOnSubscribed', payload: granted.shift().topic});
       });
       break;
     case 'publish':
@@ -78,3 +78,16 @@ self.addEventListener('message', function(event){
       break;
   }
 });  
+
+var postMessage = function(message) {
+  if (self.clients) {
+    self.clients.matchAll().then(function(clients) {
+      clients.forEach(function(client) {
+        client.postMessage(message);
+      });
+    });
+  } else {
+    self.postMessage(message);
+  }
+};
+
