@@ -107,14 +107,21 @@ function createWorkerProxy(cb) {
     }).then(function() {
         console.log('◕‿◕');
         navigator.serviceWorker.ready.then(function() {
-          cb({
-            postMessage: function(message) {
-              navigator.serviceWorker.controller.postMessage(message);
-            },
-            addEventListener: function(_, listener) {
-              navigator.serviceWorker.onmessage = listener;
-            },
-          });
+          if (navigator.serviceWorker.controller) {
+            cb({
+              postMessage: function(message) {
+                navigator.serviceWorker.controller.postMessage(message);
+              },
+              addEventListener: function(_, listener) {
+                navigator.serviceWorker.onmessage = listener;
+              },
+            });
+          } else {
+            console.log('service worker controller is null');
+            var Worker = require('worker-loader!./elm-dice-webworker.js');
+            var worker = new Worker();
+            cb(worker);
+          }
         });
     }).catch(function(err) {
       console.log('ಠ_ಠ', err);
