@@ -55,7 +55,7 @@ const loadLands = table => {
     .map(emoji => ({
       emoji: emoji,
       color: -1,
-      points: rand(1, 8),
+      points: rand(1, 5),
     }));
   table.lands = lands;
   return table;
@@ -92,6 +92,9 @@ module.exports.command = function(req, res, next) {
       break;
     case 'Attack':
       attack(req.user, table, req.body);
+      break;
+    case 'EndTurn':
+      endTurn(req.user, table, req);
       break;
     default:
       throw new Error('Unknown command: ' + command);
@@ -139,7 +142,9 @@ const leave = (user, table) => {
 };
 
 const attack = (user, table, [emojiFrom, emojiTo]) => {
-  console.log('attack', emojiFrom, emojiTo);
+  if (table.status !== STATUS_PLAYING) {
+    throw new Error('game not running');
+  }
   const find = findLand(table.lands);
   const fromLand = find(emojiFrom);
   const toLand = find(emojiTo);
@@ -147,21 +152,52 @@ const attack = (user, table, [emojiFrom, emojiTo]) => {
     throw new Error('land not found');
   }
 
-  const [fromRoll, toRoll, isSuccess] = diceRoll(fromLand.points, toLand.points);
-  if (isSuccess) {
-    toLand.points = fromLand.points - 1;
-    toLand.color = fromLand.color;
-  }
-  fromLand.points = 1;
-
-  publishRoll(table, {
-    from: { emoji: emojiFrom, roll: fromRoll },
-    to: { emoji: emojiTo, roll: toRoll },
-  });
-
   table.turnStarted = Math.floor(Date.now() / 1000);
+  setTimeout(() => {
+    const [fromRoll, toRoll, isSuccess] = diceRoll(fromLand.points, toLand.points);
+    if (isSuccess) {
+      const loser = R.find(R.propEq('color', toLand.color), table.players);
+      toLand.points = fromLand.points - 1;
+      toLand.color = fromLand.color;
+      if (R.filter(R.propEq('color', loser.color), table.lands).length === 0) {
+        table.players = table.players.filter(R.complement(R.equals(loser)));
+        console.log('player lost:', loser);
+        if (table.players.length === 1) {
+          table.players = [];
+          table.status = STATUS_FINISHED;
+          table.turnIndex = -1;
+        }
+      }
+    }
+    fromLand.points = 1;
+
+    publishRoll(table, {
+      from: { emoji: emojiFrom, roll: fromRoll },
+      to: { emoji: emojiTo, roll: toRoll },
+    });
+
+    table.turnStarted = Math.floor(Date.now() / 1000);
+    publishTableStatus(table);
+  }, 500);
+};
+
+const endTurn = (user, table) => {
+  if (table.status !== STATUS_PLAYING) {
+    throw new Error('game not running');
+  }
+  const existing = table.players.filter(p => p.id === user.id).pop();
+  if (!existing) {
+    throw new Error('not playing');
+  }
+
+  if (table.players.indexOf(existing) !== table.turnIndex) {
+    throw new Error('not your turn');
+  }
+
+  nextTurn(table);
   publishTableStatus(table);
 };
+
 
 let client;
 module.exports.setMqtt = client_ => {
@@ -212,6 +248,10 @@ const startGame = table => {
   table.players = table.players
     .map((player, index) => Object.assign({}, player, { color: index + 1 }));
 
+  table.lands = table.lands.map(land => Object.assign({}, land, {
+    points: rand(1, 5),
+    color: -1,
+  }));
   const startLands = (() => {
     function shuffle(a) {
       for (let i = a.length - 1; i > 0; i--) {
@@ -234,6 +274,22 @@ const startGame = table => {
 };
 
 const nextTurn = table => {
+  if (table.turnIndex !== -1) {
+    const currentTurnPlayer = table.players[table.turnIndex];
+    const playerLands = table.lands.filter(land => land.color === currentTurnPlayer.color);
+    const newDies = playerLands.length; // TODO: find only connected
+
+    R.range(0, newDies).forEach(i => {
+      const targets = playerLands.filter(land => land.points < 8);
+      if (targets.length === 0) {
+        // TODO: reserve dies
+      } else {
+        const target = targets[rand(0, targets.length - 1)];
+        target.points += 1;
+      }
+    });
+  }
+
   const nextIndex = (i => i + 1 < table.playerSlots ? i + 1 : 0)(table.turnIndex);
   table.turnIndex = nextIndex;
   table.turnStarted = Math.floor(Date.now() / 1000);
