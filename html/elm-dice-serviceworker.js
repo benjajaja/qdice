@@ -4,17 +4,18 @@ require('./elm-dice-webworker');
 
 self.addEventListener('install', function(event) {
   console.log("SW installed");
-  event.waitUntil(caches.open('edice').then(function(cache) {
-    return cache.addAll([
-      '/',
-      '/index.html',
-      '/index.html?homescreen=1',
-      '/?homescreen=1',
-      '/elm-dice.css',
-      '/elm-dice.js',
-      '/cache-polyfill.js',
-    ]);
-  }));
+  event.waitUntil(self.skipWaiting()); // Activate worker immediately
+  //event.waitUntil(caches.open('edice').then(function(cache) {
+    //return cache.addAll([
+      //'/',
+      //'/index.html',
+      //'/index.html?homescreen=1',
+      //'/?homescreen=1',
+      //'/elm-dice.css',
+      //'/elm-dice.js',
+      //'/cache-polyfill.js',
+    //]);
+  //}));
 });
 
 //self.addEventListener('fetch', function(event) {
@@ -30,6 +31,7 @@ self.addEventListener('install', function(event) {
 
 self.addEventListener('activate', function(event) {
   console.log("SW activated");
+  event.waitUntil(self.clients.claim()); // Become available to all pages
 });
 
 importScripts('/cache-polyfill.js');
