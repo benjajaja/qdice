@@ -96,6 +96,16 @@ updateTableStatus model status =
                 Just player ->
                     indexOf player status.players == status.turnIndex
 
+        hasGainedTurn =
+            case player of
+                Nothing ->
+                    False
+
+                Just player ->
+                    hasTurn
+                        && indexOf player game.players
+                        /= game.turnIndex
+
         hasLostTurn =
             case player of
                 Nothing ->
@@ -116,6 +126,12 @@ updateTableStatus model status =
         board_ =
             Board.State.updateLands model.game.board status.lands move
 
+        hasStarted =
+            game.status /= Playing && status.status == Playing
+
+        hasFinished =
+            game.status == Playing && status.status == Finished
+
         game_ =
             { game
                 | players = status.players
@@ -127,7 +143,23 @@ updateTableStatus model status =
                 , board = board_
             }
     in
-        { model | game = game_ } ! []
+        { model | game = game_ }
+            ! [ (if hasStarted then
+                    Helpers.playSound "start"
+                 else
+                    Cmd.none
+                )
+              , (if hasFinished then
+                    Helpers.playSound "finish"
+                 else
+                    Cmd.none
+                )
+              , (if hasGainedTurn then
+                    Helpers.playSound "turn"
+                 else
+                    Cmd.none
+                )
+              ]
 
 
 showRoll : Types.Model -> Roll -> ( Types.Model, Cmd Msg )
