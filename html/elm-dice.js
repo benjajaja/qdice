@@ -66,21 +66,22 @@ app.ports.playSound.subscribe(require('./sounds'));
 
 
 app.ports.mqttConnect.subscribe(function() {
-  createWorkerProxy(function(worker) {
-    worker.postMessage({type: 'connect', url: location.href});
-    worker.addEventListener('message', function(event) {
-      var action = event.data;
-      app.ports[action.type].send(action.payload);
-    });
-    app.ports.mqttSubscribe.subscribe(function(args) {
-      worker.postMessage({type: 'subscribe', payload: args});
-    });
-    app.ports.mqttUnsubscribe.subscribe(function(args) {
-      worker.postMessage({type: 'unsubscribe', payload: args});
-    });
-    app.ports.mqttPublish.subscribe(function(args) {
-      worker.postMessage({type: 'publish', payload: args});
-    });
+  var Worker = require('worker-loader!./elm-dice-webworker.js');
+  var worker = new Worker();
+
+  worker.postMessage({type: 'connect', url: location.href});
+  worker.addEventListener('message', function(event) {
+    var action = event.data;
+    app.ports[action.type].send(action.payload);
+  });
+  app.ports.mqttSubscribe.subscribe(function(args) {
+    worker.postMessage({type: 'subscribe', payload: args});
+  });
+  app.ports.mqttUnsubscribe.subscribe(function(args) {
+    worker.postMessage({type: 'unsubscribe', payload: args});
+  });
+  app.ports.mqttPublish.subscribe(function(args) {
+    worker.postMessage({type: 'publish', payload: args});
   });
 });
 
@@ -99,40 +100,30 @@ app.ports.scrollChat.subscribe(function(id) {
 
 global.edice = app;
 
-function createWorkerProxy(cb) {
-  if ('serviceWorker' in navigator) {
-    var registerServiceWorker = require('serviceworker-loader!./elm-dice-serviceworker.js');
-    registerServiceWorker({
-      scope: '/',
-    }).then(function() {
-        console.log('◕‿◕');
-        navigator.serviceWorker.ready.then(function() {
-          if (navigator.serviceWorker.controller) {
-            cb({
-              postMessage: function(message) {
-                navigator.serviceWorker.controller.postMessage(message);
-              },
-              addEventListener: function(_, listener) {
-                navigator.serviceWorker.onmessage = listener;
-              },
-            });
-          } else {
-            console.log('service worker controller is null');
-            var Worker = require('worker-loader!./elm-dice-webworker.js');
-            var worker = new Worker();
-            cb(worker);
-          }
-        });
-    }).catch(function(err) {
-      console.log('ಠ_ಠ', err);
-      var Worker = require('worker-loader!./elm-dice-webworker.js');
-      var worker = new Worker();
-      cb(worker);
-    });
-  } else {
-    var Worker = require('worker-loader!./elm-dice-webworker.js');
-    var worker = new Worker();
-    cb(worker);
-  }
-}
+//function createServiceWorker(cb) {
+  //if ('serviceWorker' in navigator) {
+    //var registerServiceWorker = require('serviceworker-loader!./elm-dice-serviceworker.js');
+    //registerServiceWorker({
+      //scope: '/',
+    //}).then(function() {
+        //console.log('◕‿◕');
+        //navigator.serviceWorker.ready.then(function() {
+          //if (navigator.serviceWorker.controller) {
+            //cb({
+              //postMessage: function(message) {
+                //navigator.serviceWorker.controller.postMessage(message);
+              //},
+              //addEventListener: function(_, listener) {
+                //navigator.serviceWorker.onmessage = listener;
+              //},
+            //});
+          //} else {
+            //console.log('service worker controller is null');
+          //}
+        //});
+    //}).catch(function(err) {
+      //console.log('ಠ_ಠ', err);
+    //});
+  //}
+//}
 

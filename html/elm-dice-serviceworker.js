@@ -1,6 +1,6 @@
 console.log("SW startup");
 
-require('./elm-dice-webworker');
+//require('./elm-dice-webworker');
 
 self.addEventListener('install', function(event) {
   console.log("SW installed");
