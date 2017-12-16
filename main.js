@@ -83,9 +83,9 @@ setInterval(function tick() {
 
 const mqtt = require('mqtt');
 console.log('connecting to mqtt...');
-var client = mqtt.connect(process.env.CLOUDMQTT_URL, {
-  username: 'web',
-  password: 'web',
+var client = mqtt.connect(process.env.MQTT_URL, {
+  username: process.env.MQTT_USERNAME,
+  password: process.env.MQTT_PASSWORD,
 });
 tables.setMqtt(client);
  
