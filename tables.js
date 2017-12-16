@@ -17,7 +17,6 @@ const TURN_SECONDS = 10;
 const Table = name => ({
   name,
   players: [],
-  spectators: [],
   playerSlots: 2,
   status: STATUS_PAUSED,
   turnIndex: -1,
@@ -36,11 +35,11 @@ const Player = user => ({
   name: user.name,
   picture: user.picture || '',
   color: -1,
+  reserveDice: 0,
   derived: {
     connectedLands: 0,
     totalLands: 0,
     currentDice: 0,
-    reserveDice: 0,
   },
 });
   
@@ -79,13 +78,7 @@ module.exports.command = function(req, res, next) {
 
 const enter = (user, table, res, next) => {
   const player = Player(user);
-  const existing = table.spectators.filter(p => p.id === player.id).pop();
-  if (existing) {
-    table.spectators[table.spectators.indexOf(existing)] =
-      Object.assign({}, existing, player);
-  } else {
-    table.spectators.push(player);
-  }
+  // TODO: publish only to client
   publishTableStatus(table);
   res.send(204);
   next();
@@ -209,7 +202,7 @@ const publishTableStatus = table => {
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'update',
-      payload: table,
+      payload: serializeTable(table),
     }),
     undefined,
     (err) => {
@@ -218,6 +211,24 @@ const publishTableStatus = table => {
 			}
 		}
   );
+};
+
+const serializeTable = table => {
+  const derived = computePlayerDerived(table);
+  return Object.assign({}, table, {
+    players: table.players.map(player => Object.assign({}, player, { derived: derived(player) })),
+    lands: table.lands.map(R.pick(['emoji', 'color', 'points'])),
+  });
+};
+
+const computePlayerDerived = table => player => {
+  const lands = table.lands.filter(R.propEq('color', player.color));
+  const connectedLands = maps.countConnectedLands(table.lands)(player.color);
+  return {
+    connectedLands,
+    totalLands: lands.length,
+    currentDice: R.sum(lands.map(R.prop('points'))),
+  };
 };
 
 const publishRoll = (table, roll) => {
@@ -269,7 +280,7 @@ const nextTurn = table => {
   if (table.turnIndex !== -1) {
     const currentTurnPlayer = table.players[table.turnIndex];
     const playerLands = table.lands.filter(land => land.color === currentTurnPlayer.color);
-    const newDies = playerLands.length; // TODO: find only connected
+    const newDies = maps.countConnectedLands(table.lands)(currentTurnPlayer.color);
 
     R.range(0, newDies).forEach(i => {
       const targets = playerLands.filter(land => land.points < 8);
