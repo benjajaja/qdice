@@ -1,5 +1,7 @@
-const fs = require('fs');
 const R = require('ramda');
+
+const maps = require('./maps');
+const { rand, diceRoll } = require('./rand');
 
 const keys = ['Melchor', 'Miño', 'Sabicas'];
 module.exports.keys = keys;
@@ -23,49 +25,23 @@ const Table = name => ({
   lands: [],
 });
 
-const rand = (min, max) => Math.floor(Math.random() * (max + 1 - min)) + min;
-
-const diceRoll = (fromPoints, toPoints) => {
-  const fromRoll = R.range(0, fromPoints).map(_ => rand(1, 6));
-  const toRoll = R.range(0, toPoints).map(_ => rand(1, 6));
-  const success = R.sum(fromRoll) > R.sum(toRoll);
-  return [fromRoll, toRoll, success];
-};
-
 
 const loadLands = table => {
-  const rawMap = fs.readFileSync('./maps/' + table.name + '.emoji')
-    .toString().split('\n').filter(line => line !== '');
-  const regex = new RegExp('〿|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]', 'gi');
-
-  const rows = rawMap.map(line => {
-    const results = [];
-    let result;
-    let index = 0;
-    while (result = regex.exec(line)){
-      results.push([index, result[0]]);
-      index++;
-    }
-    return results;
-  });
-  //const maxWidth = rows.map(row => row.length).reduce((max, width) => Math.max(max, width));
-  const lands = R.uniq(rows.map(row => row.map(cell => cell[1])).reduce(R.concat, []))
-    .filter(R.complement(R.equals('〿')))
-    .filter(R.complement(R.equals('\u3000')))
-    .map(emoji => ({
-      emoji: emoji,
-      color: -1,
-      points: rand(1, 5),
-    }));
-  table.lands = lands;
+  table.lands = maps.loadMap(table.name);
   return table;
 };
 
 const Player = user => ({
   id: user.id,
   name: user.name,
-  picture: user.picture,
+  picture: user.picture || '',
   color: -1,
+  derived: {
+    connectedLands: 0,
+    totalLands: 0,
+    currentDice: 0,
+    reserveDice: 0,
+  },
 });
   
 const tables = keys.map(key =>loadLands(Table(key)));
@@ -77,33 +53,31 @@ const findLand = lands => emoji => lands.filter(land => land.emoji === emoji).po
 module.exports.command = function(req, res, next) {
   const table = findTable(tables)(req.context.tableName);
   if (!table) {
-		throw new Error('table not found: ' + req.context.tableName);
+		return next(new Error('table not found: ' + req.context.tableName));
 	}
   const command = req.context.command;
   switch (command) {
     case 'Enter':
-      enter(req.user, table, req);
+      enter(req.user, table, res, next);
       break;
     case 'Join':
-      join(req.user, table, req);
+      join(req.user, table, res, next);
       break;
     case 'Leave':
-      leave(req.user, table, req);
+      leave(req.user, table, res, next);
       break;
     case 'Attack':
-      attack(req.user, table, req.body);
+      attack(req.user, table, req.body, res, next);
       break;
     case 'EndTurn':
-      endTurn(req.user, table, req);
+      endTurn(req.user, table, res, next);
       break;
     default:
-      throw new Error('Unknown command: ' + command);
+      return next(new Error('Unknown command: ' + command));
   }
-  res.send(204);
-  next();
 };
 
-const enter = (user, table) => {
+const enter = (user, table, res, next) => {
   const player = Player(user);
   const existing = table.spectators.filter(p => p.id === player.id).pop();
   if (existing) {
@@ -113,12 +87,14 @@ const enter = (user, table) => {
     table.spectators.push(player);
   }
   publishTableStatus(table);
+  res.send(204);
+  next();
 };
 
-const join = (user, table) => {
+const join = (user, table, res, next) => {
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
-    throw new Error('already joined');
+    return next(new Error('already joined'));
   } else {
     table.players.push(Player(user));
   }
@@ -128,28 +104,32 @@ const join = (user, table) => {
   } else {
     publishTableStatus(table);
   }
+  res.send(204);
+  next();
 };
 
 
-const leave = (user, table) => {
+const leave = (user, table, res, next) => {
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
-    throw new Error('not joined');
+    return next(new Error('not joined'));
   } else {
     table.players = table.players.filter(p => p !== existing);
   }
   publishTableStatus(table);
+  res.send(204);
+  next();
 };
 
-const attack = (user, table, [emojiFrom, emojiTo]) => {
+const attack = (user, table, [emojiFrom, emojiTo], res, next) => {
   if (table.status !== STATUS_PLAYING) {
-    throw new Error('game not running');
+    return next(new Error('game not running'));
   }
   const find = findLand(table.lands);
   const fromLand = find(emojiFrom);
   const toLand = find(emojiTo);
   if (!fromLand || !toLand) {
-    throw new Error('land not found');
+    return next(new Error('land not found'));
   }
 
   table.turnStarted = Math.floor(Date.now() / 1000);
@@ -187,23 +167,27 @@ const attack = (user, table, [emojiFrom, emojiTo]) => {
   }, 500);
   console.log('rolling...');
   publishTableStatus(table);
+  res.send(204);
+  next();
 };
 
-const endTurn = (user, table) => {
+const endTurn = (user, table, res, next) => {
   if (table.status !== STATUS_PLAYING) {
-    throw new Error('game not running');
+    return next(new Error('game not running'));
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
-    throw new Error('not playing');
+    return next(new Error('not playing'));
   }
 
   if (table.players.indexOf(existing) !== table.turnIndex) {
-    throw new Error('not your turn');
+    return next(new Error('not your turn'));
   }
 
   nextTurn(table);
   publishTableStatus(table);
+  res.send(204);
+  next();
 };
 
 

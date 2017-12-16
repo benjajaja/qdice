@@ -6,19 +6,31 @@ if (process.env.NODE_ENV !== 'production') {
 
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
-const jwt = require('restify-jwt');
+const jwt = require('restify-jwt-community');
 
 
-var server = restify.createServer();
+const server = restify.createServer({
+  formatters: {
+    //'application/json': (request, response, body) => {
+      //if (body instanceof Error) {
+        //console.error('oh boy it pooped again', body);
+        //return JSON.stringify({
+          //error: '💣 Error: ' + body.message
+        //});
+      //}
+      //return JSON.stringify(body);
+    //},
+  },
+});
 server.pre(restify.pre.userAgentConnection());
-server.use(restify.acceptParser(server.acceptable));
-server.use(restify.authorizationParser());
-server.use(restify.dateParser());
-server.use(restify.queryParser());
-server.use(restify.jsonp());
-server.use(restify.gzipResponse());
-server.use(restify.bodyParser());
-server.use(restify.throttle({
+server.use(restify.plugins.acceptParser(server.acceptable));
+server.use(restify.plugins.authorizationParser());
+server.use(restify.plugins.dateParser());
+server.use(restify.plugins.queryParser());
+server.use(restify.plugins.jsonp());
+server.use(restify.plugins.gzipResponse());
+server.use(restify.plugins.bodyParser());
+server.use(restify.plugins.throttle({
   burst: 100,
   rate: 50,
   ip: true,
@@ -29,7 +41,7 @@ server.use(restify.throttle({
     }
   }
 }));
-server.use(restify.conditionalRequest());
+server.use(restify.plugins.conditionalRequest());
 const cors = corsMiddleware({
   preflightMaxAge: 5, //Optional
   origins: ['http:localhost:5000', 'http://lvh.me:5000', 'http://elm-dice.herokuapp.com', 'https://elm-dice.herokuapp.com'],
@@ -48,6 +60,10 @@ server.use(jwt({
     return null;
   },
 }).unless({path: ['/login']}));
+server.on('restifyError', function(req, res, err, callback) {
+  console.error(err);
+  return callback();
+});
 
 server.post('/login', require('./user').login);
 server.get('/me', require('./user').me);
@@ -66,10 +82,12 @@ setInterval(function tick() {
 
 
 const mqtt = require('mqtt');
-var client = mqtt.connect('tcp://m21.cloudmqtt.com:11201', {
+console.log('connecting to mqtt...');
+var client = mqtt.connect(process.env.CLOUDMQTT_URL, {
   username: 'web',
   password: 'web',
-})
+});
+tables.setMqtt(client);
  
 client.on('connect', function () {
   console.log('mqtt connected');
@@ -83,7 +101,6 @@ client.on('connect', function () {
       client.publish('presence', 'Hello mqtt', undefined, (err) => console.log(err, 'published presence'));
     });
 
-  tables.setMqtt(client);
 });
 
 client.on('message', function (topic, message) {

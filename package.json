@@ -5,17 +5,22 @@
   "main": "main.js",
   "author": "Benjamin Große",
   "scripts": {
-    "start": "node main.js"
+    "start": "node main.js",
+    "test": "mocha"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
+    "honeycomb-grid": "^0.6.1",
     "jsonwebtoken": "^8.1.0",
     "mqtt": "^2.9.1",
     "ramda": "^0.25.0",
     "redis": "^2.8.0",
     "request": "^2.83.0",
-    "restify": "4",
+    "restify": "^6.3.4",
     "restify-cors-middleware": "^1.0.1",
-    "restify-jwt": "^0.4.0"
+    "restify-jwt-community": "^1.0.0"
+  },
+  "devDependencies": {
+    "mocha": "^4.0.1"
   }
 }
