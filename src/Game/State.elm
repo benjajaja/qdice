@@ -52,6 +52,14 @@ init model table =
           , chatInput = ""
           , chatBoxId = ("chatbox-" ++ toString table)
           }
+            |> (\m ->
+                    case model of
+                        Just model ->
+                            updateGameInfo m model.tableList
+
+                        Nothing ->
+                            m
+               )
         , Cmd.batch cmds
         )
 
@@ -172,6 +180,22 @@ updateTableStatus model status =
                     Cmd.none
                 )
               ]
+
+
+updateGameInfo : Game.Types.Model -> List Types.TableInfo -> Game.Types.Model
+updateGameInfo model tableList =
+    let
+        currentTableInfo =
+            tableList
+                |> List.filter (\t -> t.table == model.table)
+                |> List.head
+    in
+        case currentTableInfo of
+            Just tableInfo ->
+                { model | playerSlots = tableInfo.playerSlots }
+
+            Nothing ->
+                model
 
 
 showRoll : Types.Model -> Roll -> ( Types.Model, Cmd Msg )
