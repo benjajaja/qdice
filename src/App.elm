@@ -23,9 +23,11 @@ import Static.View
 import Editor.Editor
 import MyProfile.MyProfile
 import Backend
+import Backend.HttpCommands exposing (gameCommand, authenticate, loadMe, loadGlobalSettings)
 import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionStatus(..))
 import Tables exposing (Table(..), tableList)
 import MyOauth
+import Snackbar
 
 
 main : Program Never Model Msg
@@ -60,17 +62,18 @@ init location =
             MyOauth.init location
 
         model =
-            Model
-                route
-                Material.model
-                oauth
-                game
-                editor
-                { name = Nothing }
-                backend
-                Types.Anonymous
-                tableList
-                0
+            { route = route
+            , mdl = Material.model
+            , oauth = oauth
+            , game = game
+            , editor = editor
+            , myProfile = { name = Nothing }
+            , backend = backend
+            , user = Types.Anonymous
+            , tableList = tableList
+            , time = 0
+            , snackbar = Snackbar.init
+            }
 
         cmds =
             Cmd.batch <|
@@ -81,6 +84,7 @@ init location =
                       , backendCmd
                       ]
                     , oauthCmds
+                    , [ loadGlobalSettings backend ]
                     ]
     in
         ( model, cmds )
@@ -111,6 +115,21 @@ update msg model =
         MyProfileMsg msg ->
             MyProfile.MyProfile.update model msg
 
+        GetGlobalSettings res ->
+            case res of
+                Err err ->
+                    let
+                        ( snackbar_, cmd ) =
+                            Snackbar.toast model.snackbar <| "Error : " ++ (toString err)
+
+                        _ =
+                            Debug.log "toast!" ( snackbar_, cmd )
+                    in
+                        { model | snackbar = snackbar_ } ! [ Cmd.map Snackbar cmd ]
+
+                Ok ok ->
+                    Debug.crash "settings not implemented"
+
         GetToken res ->
             case res of
                 Err err ->
@@ -133,7 +152,7 @@ update msg model =
                     in
                         { model | backend = backend_ }
                             ! [ auth [ token ]
-                              , Backend.loadMe backend_
+                              , loadMe backend_
                               ]
 
         GetProfile res ->
@@ -167,10 +186,10 @@ update msg model =
                     { backend | jwt = token }
             in
                 { model | backend = backend_ }
-                    ! [ Backend.loadMe backend_ ]
+                    ! [ loadMe backend_ ]
 
         Authenticate code ->
-            model ! [ Backend.authenticate model.backend code ]
+            model ! [ authenticate model.backend code ]
 
         Logout ->
             let
@@ -206,6 +225,13 @@ update msg model =
 
         Mdl msg ->
             Material.update Mdl msg model
+
+        Snackbar snackbarMsg ->
+            let
+                ( snackbar_, cmd ) =
+                    Snackbar.update snackbarMsg model.snackbar
+            in
+                { model | snackbar = snackbar_ } ! [ Cmd.map Snackbar cmd ]
 
         BoardMsg boardMsg ->
             let
@@ -265,7 +291,7 @@ update msg model =
                 { model | game = game_ } ! []
 
         GameCmd playerAction ->
-            model ! [ Backend.gameCommand model.backend model.game.table playerAction ]
+            model ! [ gameCommand model.backend model.game.table playerAction ]
 
         GameCommandResponse table action (Ok response) ->
             Game.State.updateCommandResponse table action model
@@ -366,7 +392,10 @@ view model =
         { header = (lazyList header) model
         , drawer = (lazyList drawer) model
         , tabs = ( [], [] )
-        , main = [ Html.div [ Html.Attributes.class "Main" ] [ mainView model ] ]
+        , main =
+            [ Html.div [ Html.Attributes.class "Main" ] [ mainView model ]
+            , Snackbar.view model.snackbar |> Html.map Snackbar
+            ]
         }
 
 

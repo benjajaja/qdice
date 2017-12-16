@@ -4,6 +4,7 @@ import Navigation exposing (Location)
 import Http
 import Time
 import Material
+import Snackbar
 import OAuth
 import Game.Types
 import Game.Types exposing (TableStatus, PlayerAction)
@@ -20,10 +21,12 @@ type Msg
     | Tick Time.Time
     | Mdl (Material.Msg Msg)
     | DrawerNavigateTo Route
+    | Snackbar Snackbar.Msg
     | EditorMsg Editor.Types.Msg
     | MyProfileMsg MyProfile.Types.Msg
       -- oauth
     | Nop
+    | GetGlobalSettings (Result Http.Error ())
     | Authorize
     | Authenticate String
     | GetToken (Result Http.Error String)
@@ -73,6 +76,7 @@ type alias Model =
     , user : User
     , tableList : List Table
     , time : Time.Time
+    , snackbar : Snackbar.Model
     }
 
 

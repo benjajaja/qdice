@@ -103,3 +103,8 @@ singleRollDecoder =
     decode Game.Types.RollPart
         |> required "emoji" string
         |> required "roll" (list int)
+
+
+globalSettingsDecoder : Decoder ()
+globalSettingsDecoder =
+    succeed ()

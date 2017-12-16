@@ -30,10 +30,6 @@ decodeTopicMessage topic message =
         Tables table direction ->
             decodeTableMessage table message
 
-        -- Just <| TableMsg table <| Join "somebody"
-        Presence ->
-            Err "not impl"
-
 
 decodeTableMessage : Table -> String -> Result String Msg
 decodeTableMessage table message =
@@ -143,9 +139,6 @@ encodeTopic topic =
 
         Client id ->
             "clients/" ++ id
-
-        Presence ->
-            "presence"
 
         Tables table direction ->
             "tables/" ++ (toString table) ++ "/" ++ (encodeDirection direction)

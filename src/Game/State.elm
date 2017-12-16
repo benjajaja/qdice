@@ -11,6 +11,7 @@ import Land exposing (Color)
 import Tables exposing (Table(..))
 import Backend
 import Backend.Types exposing (Topic(..))
+import Backend.HttpCommands exposing (gameCommand, attack)
 import Helpers exposing (indexOf, playSound, pipeUpdates)
 
 
@@ -30,7 +31,7 @@ init model table =
             mapCmd
                 :: case model of
                     Just model ->
-                        [ Backend.gameCommand model.backend table Enter
+                        [ gameCommand model.backend table Enter
                           --, Backend.publish <| TableMsg model.game.table <| Backend.Types.Leave <| Types.getUsername model
                           --, Backend.publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model
                         ]
@@ -43,7 +44,7 @@ init model table =
           , players = players
           , player = Nothing
           , status = Paused
-          , playerSlots = 2
+          , playerSlots = 0
           , turnDuration = 10
           , turnIndex = -1
           , hasTurn = False
@@ -215,7 +216,7 @@ clickLand model land =
                                 else
                                     let
                                         gameCmd =
-                                            Backend.attack model.backend model.game.table from.emoji land.emoji
+                                            attack model.backend model.game.table from.emoji land.emoji
                                     in
                                         ( Board.Types.FromTo from land, Cmd.batch [ playSound "diceroll", gameCmd ] )
 

@@ -1,13 +1,13 @@
 port module Backend exposing (..)
 
 import String
-import Http
 import Navigation exposing (Location)
 import Json.Decode exposing (list, string)
 import Backend.Types exposing (..)
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
+import Backend.HttpCommands exposing (..)
 import Types exposing (Msg(..))
 import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (Player, PlayerAction(..))
@@ -53,6 +53,7 @@ updateConnected model clientId =
         setStatus SubscribingGeneral ({ model | backend = { backend | clientId = Just clientId } })
             ! [ subscribe <| Client clientId
               , subscribe AllClients
+                --, Debug.log "presence" <| publish <| ClientMsg <| Presence clientId
               ]
 
 
@@ -166,72 +167,6 @@ addSubscribed model topic =
             topic :: backend.subscribed
     in
         { model | backend = { backend | subscribed = subscribed } }
-
-
-authenticate : Model -> String -> Cmd Msg
-authenticate model code =
-    let
-        request =
-            Http.post (model.baseUrl ++ "/login")
-                (code |> Http.stringBody "text/plain")
-            <|
-                tokenDecoder
-    in
-        Http.send (GetToken) request
-
-
-loadMe : Model -> Cmd Msg
-loadMe model =
-    Http.send GetProfile <|
-        Http.request
-            { method = "GET"
-            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
-            , url = (model.baseUrl ++ "/me")
-            , body = Http.emptyBody
-            , expect =
-                Http.expectJson <| profileDecoder
-            , timeout = Nothing
-            , withCredentials = False
-            }
-
-
-gameCommand : Model -> Table -> PlayerAction -> Cmd Msg
-gameCommand model table playerAction =
-    Http.send (GameCommandResponse table playerAction) <|
-        Http.request
-            { method = "POST"
-            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
-            , url =
-                (model.baseUrl
-                    ++ "/tables/"
-                    ++ (toString table)
-                    ++ "/"
-                    ++ (actionToString playerAction)
-                )
-            , body = Http.emptyBody
-            , expect = Http.expectStringResponse (\_ -> Ok ())
-            , timeout = Nothing
-            , withCredentials = False
-            }
-
-
-attack : Model -> Table -> Land.Emoji -> Land.Emoji -> Cmd Msg
-attack model table from to =
-    Http.send (GameCommandResponse table <| Attack from to) <|
-        Http.request
-            { method = "POST"
-            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
-            , url =
-                (model.baseUrl
-                    ++ "/tables/"
-                    ++ (toString table)
-                    ++ "/Attack"
-                )
-            , body = Http.jsonBody <| attackEncoder from to
-            , expect = Http.expectStringResponse (\_ -> Ok ())
-            , timeout = Nothing
-            , withCredentials = False
-            }
 
 
 updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
@@ -407,16 +342,6 @@ subscribe topic =
 unsubscribe : Topic -> Cmd msg
 unsubscribe topic =
     mqttUnsubscribe <| encodeTopic topic
-
-
-actionToString : PlayerAction -> String
-actionToString action =
-    case action of
-        Attack a b ->
-            "Attack"
-
-        _ ->
-            toString action
 
 
 toRollLog : Types.Model -> Game.Types.Roll -> Backend.Types.RollLog

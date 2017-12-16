@@ -29,7 +29,6 @@ type alias ClientId =
 type Topic
     = Client ClientId
     | AllClients
-    | Presence
     | Tables Table TopicDirection
 
 
