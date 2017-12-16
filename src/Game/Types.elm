@@ -41,6 +41,15 @@ type alias Player =
     , name : PlayerName
     , color : Color
     , picture : String
+    , gameStats : PlayerGameStats
+    , reserveDice : Int
+    }
+
+
+type alias PlayerGameStats =
+    { totalLands : Int
+    , connectedLands : Int
+    , currentDice : Int
     }
 
 

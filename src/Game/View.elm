@@ -140,6 +140,12 @@ playerChip model index player =
         , Html.div []
             [ playerChipProgress model index
             ]
+        , Html.div [ class "edPlayerChip__gameStats" ]
+            [ Html.span [ class "edPlayerChip__gameStats__item" ]
+                [ Html.text <| "⬢ " ++ toString player.gameStats.totalLands ]
+            , Html.span [ class "edPlayerChip__gameStats__item" ]
+                [ Html.text <| "⚂ " ++ toString player.gameStats.currentDice ]
+            ]
         ]
 
 

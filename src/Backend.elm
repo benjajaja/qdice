@@ -434,11 +434,18 @@ toRollLog model roll =
         defenderLand =
             find (\l -> l.emoji == roll.to.emoji) lands
 
+        neutralPlayer : Game.Types.Player
         neutralPlayer =
             { id = ""
             , name = "Neutral"
             , picture = ""
             , color = Land.Neutral
+            , gameStats =
+                { totalLands = 0
+                , connectedLands = 0
+                , currentDice = 0
+                }
+            , reserveDice = 0
             }
 
         errorPlayer =
@@ -446,6 +453,12 @@ toRollLog model roll =
             , name = "(⚠ unknown player)"
             , picture = ""
             , color = Land.Neutral
+            , gameStats =
+                { totalLands = 0
+                , connectedLands = 0
+                , currentDice = 0
+                }
+            , reserveDice = 0
             }
 
         attacker =

@@ -145,6 +145,10 @@ body.navigator-standalone textarea {
   border-right: none;
   margin: 4px 0;
 }
+.edPlayerChip__gameStats {
+  display: flex;
+  justify-content: space-evenly;
+}
 .edPlayerChip--Red .edPlayerChip__name {
   border-color: #e91e63;
 }

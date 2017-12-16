@@ -2,7 +2,7 @@ module Backend.Decoding exposing (..)
 
 import Types exposing (LoggedUser)
 import Tables exposing (Table(..))
-import Game.Types exposing (TableStatus, Player)
+import Game.Types exposing (TableStatus, Player, PlayerGameStats)
 import Board.Types
 import Land exposing (Color, playerColor)
 import Json.Decode exposing (int, string, float, list, Decoder, map, succeed)
@@ -41,6 +41,16 @@ playersDecoder =
         |> required "name" string
         |> required "color" colorDecoder
         |> required "picture" string
+        |> required "derived" playerGameStatsDecoder
+        |> required "reserveDice" int
+
+
+playerGameStatsDecoder : Decoder PlayerGameStats
+playerGameStatsDecoder =
+    decode PlayerGameStats
+        |> required "totalLands" int
+        |> required "connectedLands" int
+        |> required "currentDice" int
 
 
 landsUpdateDecoder : Decoder Board.Types.LandUpdate
