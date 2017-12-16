@@ -72,6 +72,8 @@ server.post('/profile', require('./user').profile);
 const tables = require('./tables');
 server.post('/tables/:tableName/:command', tables.command);
 
+server.get('/global', require('./global')(tables.getTables));
+
 server.listen(process.env.PORT || 5001, function() {
   console.log('%s listening at %s port %s', server.name, server.url);
 });

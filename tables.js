@@ -22,6 +22,7 @@ const Table = name => ({
   turnIndex: -1,
   turnStarted: 0,
   lands: [],
+  stackSize: 8,
 });
 
 
@@ -50,6 +51,9 @@ const tableTimeouts = keys.reduce((obj, key) => Object.assign(obj, { [key]: null
 const findTable = tables => name => tables.filter(table => table.name === name).pop();
 const findLand = lands => emoji => lands.filter(land => land.emoji === emoji).pop();
 
+module.exports.getTables = function() {
+  return tables;
+};
 
 module.exports.command = function(req, res, next) {
   const table = findTable(tables)(req.context.tableName);
@@ -219,7 +223,7 @@ const publishTableStatus = table => {
   );
 };
 
-const serializeTable = table => {
+const serializeTable = module.exports.serializeTable = table => {
   const derived = computePlayerDerived(table);
   return Object.assign({}, table, {
     players: table.players.map(player => Object.assign({}, player, { derived: derived(player) })),
