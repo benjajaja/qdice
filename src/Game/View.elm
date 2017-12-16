@@ -51,7 +51,7 @@ header model =
                 , Html.span [ class "edGameHeader__chip--strong" ]
                     [ Html.text <|
                         (if model.game.playerSlots == 0 then
-                            "?"
+                            "∅"
                          else
                             toString model.game.playerSlots
                         )

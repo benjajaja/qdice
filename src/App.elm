@@ -126,10 +126,27 @@ update msg model =
 
                 Ok ( settings, tables ) ->
                     let
+                        currentTableInfo =
+                            tables
+                                |> List.filter (\t -> t.table == model.game.table)
+                                |> List.head
+                                |> Debug.log "crrnt"
+
+                        game =
+                            model.game
+
+                        game_ =
+                            case currentTableInfo of
+                                Just tableInfo ->
+                                    { game | playerSlots = tableInfo.playerSlots }
+
+                                Nothing ->
+                                    game
+
                         _ =
                             Debug.log "ok" ( settings, tables )
                     in
-                        { model | tableList = tables } ! []
+                        { model | tableList = tables, game = game_ } ! []
 
         --toast model <| "Ok: " ++ (toString ok)
         GetToken res ->
