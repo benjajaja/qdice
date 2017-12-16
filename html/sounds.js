@@ -1,4 +1,4 @@
-const keys = [
+var keys = [
   'kick',
   'start',
   'finish',
@@ -8,7 +8,7 @@ const keys = [
   'rollDefeat',
 ];
 
-const sounds = {};
+var sounds = {};
 setTimeout(function() {
   function BufferLoader(context, urlList, callback) {
     this.context = context;
@@ -58,8 +58,8 @@ setTimeout(function() {
     this.loadBuffer(this.urlList[i], i);
   }
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
-  const context = new AudioContext();
-  const bufferLoader = new BufferLoader(
+  var context = new AudioContext();
+  var bufferLoader = new BufferLoader(
     context,
     keys.map(function(key) {
       return 'sounds/' + key + '.wav';
@@ -67,7 +67,7 @@ setTimeout(function() {
     function finishedLoading(bufferList) {
       keys.forEach(function(key, index) {
         sounds[key] = function() {
-          const source = context.createBufferSource();
+          var source = context.createBufferSource();
           source.buffer = bufferList[index];
           source.connect(context.destination);
           source.start(0);
