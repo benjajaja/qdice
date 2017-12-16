@@ -44,10 +44,12 @@ const Player = user => ({
 });
   
 const tables = keys.map(key =>loadLands(Table(key)));
+tables[2].playerSlots = 3;
 const tableTimeouts = keys.reduce((obj, key) => Object.assign(obj, { [key]: null }));
 
 const findTable = tables => name => tables.filter(table => table.name === name).pop();
 const findLand = lands => emoji => lands.filter(land => land.emoji === emoji).pop();
+
 
 module.exports.command = function(req, res, next) {
   const table = findTable(tables)(req.context.tableName);
@@ -85,6 +87,10 @@ const enter = (user, table, res, next) => {
 };
 
 const join = (user, table, res, next) => {
+  if (table.status === STATUS_PLAYING) {
+    res.send(406);
+    return next();
+  }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
     return next(new Error('already joined'));
