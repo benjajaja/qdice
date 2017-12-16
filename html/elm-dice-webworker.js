@@ -1,13 +1,26 @@
 console.log('elm-dice-webworker reporting in');
 var mqtt = require('mqtt');
 
-var mqttConfig = {
-  protocol: 'wss',
-  hostname: 'm21.cloudmqtt.com',
-  port: 31201,
-  path: 'mqtt',
-  username: 'web',
-  password: 'web',
+function getMqttConfig() {
+  if (self.location.hostname.indexOf('herokuapp.com') === -1) {
+    return {
+      protocol: 'ws',
+      hostname: 'localhost',
+      port: 8083,
+      path: 'mqtt',
+      username: 'client',
+      password: 'client',
+    };
+  } else {
+    return {
+      protocol: 'wss',
+      hostname: 'm21.cloudmqtt.com',
+      port: 31201,
+      path: 'mqtt',
+      username: 'web',
+      password: 'web',
+    };
+  }
 }
 
 var client;
@@ -15,6 +28,7 @@ self.addEventListener('message', function(event){
   var action = event.data;
   switch (action.type) {
     case 'connect':
+      var mqttConfig = getMqttConfig();
       var url = [ mqttConfig.protocol, 
         '://', 
         mqttConfig.hostname,
