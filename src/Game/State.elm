@@ -182,7 +182,7 @@ updateTableStatus model status =
               ]
 
 
-updateGameInfo : Game.Types.Model -> List Types.TableInfo -> Game.Types.Model
+updateGameInfo : Game.Types.Model -> List Game.Types.TableInfo -> Game.Types.Model
 updateGameInfo model tableList =
     let
         currentTableInfo =

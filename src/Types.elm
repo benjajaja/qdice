@@ -6,8 +6,7 @@ import Time
 import Material
 import Snackbar.Types
 import OAuth
-import Game.Types
-import Game.Types exposing (TableStatus, PlayerAction, GameStatus)
+import Game.Types exposing (TableStatus, PlayerAction, GameStatus, TableInfo)
 import Editor.Types
 import MyProfile.Types
 import Backend.Types
@@ -121,13 +120,3 @@ type alias Username =
 
 type alias GlobalSettings =
     {}
-
-
-type alias TableInfo =
-    { table : Table
-    , playerSlots : Int
-    , playerCount : Int
-    , status : GameStatus
-    , landCount : Int
-    , stackSize : Int
-    }

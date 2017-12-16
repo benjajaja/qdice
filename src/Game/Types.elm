@@ -79,3 +79,13 @@ type alias Roll =
 
 type alias RollPart =
     { emoji : Land.Emoji, roll : List Int }
+
+
+type alias TableInfo =
+    { table : Table
+    , playerSlots : Int
+    , playerCount : Int
+    , status : GameStatus
+    , landCount : Int
+    , stackSize : Int
+    }

@@ -20,12 +20,22 @@ decodeTopicMessage topic message =
             Err "not implemented"
 
         AllClients ->
-            case message of
-                "present" ->
-                    Ok <| AllClientsMsg PresentYourself
+            case decodeString (field "type" Dec.string) message of
+                Err err ->
+                    Err err
 
-                _ ->
-                    Err "not impl"
+                Ok mtype ->
+                    case mtype of
+                        "tables" ->
+                            case decodeString (field "payload" <| Dec.list tableInfoDecoder) message of
+                                Ok tables ->
+                                    Ok <| AllClientsMsg <| TablesInfo tables
+
+                                Err err ->
+                                    Err err
+
+                        _ ->
+                            Err <| "unknown type \"" ++ mtype ++ "\""
 
         Tables table direction ->
             decodeTableMessage table message

@@ -329,7 +329,16 @@ update msg model =
             model ! []
 
         AllClientsMsg msg ->
-            model ! []
+            case msg of
+                Backend.Types.TablesInfo tables ->
+                    let
+                        game =
+                            model.game
+
+                        game_ =
+                            Game.State.updateGameInfo model.game tables
+                    in
+                        { model | tableList = tables, game = game_ } ! []
 
         TableMsg table msg ->
             if table == model.game.table then

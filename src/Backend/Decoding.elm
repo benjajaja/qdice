@@ -105,7 +105,7 @@ singleRollDecoder =
         |> required "roll" (list int)
 
 
-globalDecoder : Decoder ( Types.GlobalSettings, List Types.TableInfo )
+globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo )
 globalDecoder =
     Json.Decode.map2 (,) (field "settings" globalSettingsDecoder) (field "tables" (list tableInfoDecoder))
 
@@ -130,9 +130,9 @@ tableTagDecoder =
         string |> Json.Decode.andThen convert
 
 
-tableInfoDecoder : Decoder Types.TableInfo
+tableInfoDecoder : Decoder Game.Types.TableInfo
 tableInfoDecoder =
-    decode Types.TableInfo
+    decode Game.Types.TableInfo
         |> required "name" tableTagDecoder
         |> required "playerSlots" int
         |> required "playerCount" int

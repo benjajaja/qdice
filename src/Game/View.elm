@@ -1,6 +1,6 @@
 module Game.View exposing (view)
 
-import Game.Types exposing (PlayerAction(..))
+import Game.Types exposing (PlayerAction(..), TableInfo)
 import Game.Chat
 import Html
 import Html.Attributes exposing (class, style)
@@ -248,7 +248,7 @@ listOfTables model =
     ]
 
 
-goToTableButton : Model -> Types.TableInfo -> Int -> Html.Html Types.Msg
+goToTableButton : Model -> TableInfo -> Int -> Html.Html Types.Msg
 goToTableButton model table i =
     Button.render Types.Mdl
         [ i ]

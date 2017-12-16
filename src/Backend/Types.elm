@@ -52,7 +52,7 @@ type ClientMessage
 
 
 type AllClientsMessage
-    = PresentYourself
+    = TablesInfo (List Game.Types.TableInfo)
 
 
 type TableMessage
