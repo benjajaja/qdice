@@ -1,10 +1,27 @@
-module Snackbar exposing (Model, Msg, init, update, toast, view)
+module Snackbar exposing (toast, init, update, view)
 
 import Html exposing (..)
+import Time exposing (Time, millisecond)
 import Material
 import Material.Helpers exposing (map1st, map2nd, delay, pure, cssTransitionStep)
 import Material.Snackbar as Snackbar
-import Time exposing (Time, millisecond)
+import Snackbar.Types exposing (Model, Msg(..), Square, Square_(..))
+import Types
+
+
+toast : Types.Model -> String -> ( Types.Model, Cmd Types.Msg )
+toast model message =
+    let
+        snackbarModel =
+            model.snackbar
+
+        ( snackbar_, effect ) =
+            Snackbar.add (Snackbar.toast 0 message) snackbarModel.snackbar
+                |> map2nd (Cmd.map Snackbar)
+    in
+        ( { model | snackbar = { snackbarModel | snackbar = snackbar_ } }
+        , Cmd.map Types.Snackbar effect
+        )
 
 
 init : Model
@@ -14,50 +31,6 @@ init =
     , snackbar = Snackbar.model
     , mdl = Material.model
     }
-
-
-type alias Model =
-    { count : Int
-    , squares : List Square
-    , snackbar : Snackbar.Model Int
-    , mdl : Material.Model
-    }
-
-
-type Msg
-    = AddSnackbar
-    | AddToast
-    | Appear Int
-    | Grown Int
-    | Gone Int
-    | Snackbar (Snackbar.Msg Int)
-    | Mdl (Material.Msg Msg)
-
-
-type Square_
-    = Appearing
-    | Growing
-    | Waiting
-    | Active
-    | Idle
-    | Disappearing
-
-
-type alias Square =
-    ( Int, Square_ )
-
-
-toast : Model -> String -> ( Model, Cmd Msg )
-toast model message =
-    let
-        ( snackbar_, effect ) =
-            Snackbar.add (Snackbar.toast 0 message) model.snackbar
-                |> map2nd (Cmd.map Snackbar)
-
-        model_ =
-            { model | snackbar = snackbar_ }
-    in
-        model_ ! [ effect ]
 
 
 view : Model -> Html Msg

@@ -27,7 +27,7 @@ import Backend.HttpCommands exposing (gameCommand, authenticate, loadMe, loadGlo
 import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionStatus(..))
 import Tables exposing (Table(..), tableList)
 import MyOauth
-import Snackbar
+import Snackbar exposing (toast)
 
 
 main : Program Never Model Msg
@@ -118,17 +118,10 @@ update msg model =
         GetGlobalSettings res ->
             case res of
                 Err err ->
-                    let
-                        ( snackbar_, cmd ) =
-                            Snackbar.toast model.snackbar <| "Error : " ++ (toString err)
-
-                        _ =
-                            Debug.log "toast!" ( snackbar_, cmd )
-                    in
-                        { model | snackbar = snackbar_ } ! [ Cmd.map Snackbar cmd ]
+                    toast model <| "Error: " ++ (toString err)
 
                 Ok ok ->
-                    Debug.crash "settings not implemented"
+                    toast model <| "Ok: " ++ (toString ok)
 
         GetToken res ->
             case res of

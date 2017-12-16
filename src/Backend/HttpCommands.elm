@@ -14,9 +14,7 @@ import Backend.MessageCodification exposing (..)
 loadGlobalSettings : Model -> Cmd Msg
 loadGlobalSettings model =
     Http.send (GetGlobalSettings) <|
-        Http.post (model.baseUrl ++ "/global")
-            Http.emptyBody
-        <|
+        Http.get (model.baseUrl ++ "/global") <|
             globalSettingsDecoder
 
 

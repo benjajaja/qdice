@@ -4,7 +4,7 @@ import Navigation exposing (Location)
 import Http
 import Time
 import Material
-import Snackbar
+import Snackbar.Types
 import OAuth
 import Game.Types
 import Game.Types exposing (TableStatus, PlayerAction)
@@ -21,7 +21,7 @@ type Msg
     | Tick Time.Time
     | Mdl (Material.Msg Msg)
     | DrawerNavigateTo Route
-    | Snackbar Snackbar.Msg
+    | Snackbar Snackbar.Types.Msg
     | EditorMsg Editor.Types.Msg
     | MyProfileMsg MyProfile.Types.Msg
       -- oauth
@@ -76,7 +76,7 @@ type alias Model =
     , user : User
     , tableList : List Table
     , time : Time.Time
-    , snackbar : Snackbar.Model
+    , snackbar : Snackbar.Types.Model
     }
 
 
