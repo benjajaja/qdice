@@ -1,11 +1,11 @@
 module Backend.Decoding exposing (..)
 
 import Types exposing (LoggedUser)
-import Tables exposing (Table(..))
+import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (TableStatus, Player, PlayerGameStats)
 import Board.Types
 import Land exposing (Color, playerColor)
-import Json.Decode exposing (int, string, float, list, Decoder, map, succeed)
+import Json.Decode exposing (int, string, float, list, Decoder, map, succeed, field)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
@@ -105,6 +105,37 @@ singleRollDecoder =
         |> required "roll" (list int)
 
 
-globalSettingsDecoder : Decoder ()
+globalDecoder : Decoder ( Types.GlobalSettings, List Types.TableInfo )
+globalDecoder =
+    Json.Decode.map2 (,) (field "settings" globalSettingsDecoder) (field "tables" (list tableInfoDecoder))
+
+
+globalSettingsDecoder : Decoder Types.GlobalSettings
 globalSettingsDecoder =
-    succeed ()
+    decode Types.GlobalSettings
+
+
+tableTagDecoder : Decoder Table
+tableTagDecoder =
+    let
+        convert : String -> Decoder Table
+        convert string =
+            case decodeTable string of
+                Just table ->
+                    Json.Decode.succeed table
+
+                Nothing ->
+                    Json.Decode.fail <| "cannot decode table name: " ++ string
+    in
+        string |> Json.Decode.andThen convert
+
+
+tableInfoDecoder : Decoder Types.TableInfo
+tableInfoDecoder =
+    decode Types.TableInfo
+        |> required "name" tableTagDecoder
+        |> required "playerSlots" int
+        |> required "playerCount" int
+        |> required "status" gameStatusDecoder
+        |> required "landCount" int
+        |> required "stackSize" int

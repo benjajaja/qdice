@@ -15,7 +15,7 @@ loadGlobalSettings : Model -> Cmd Msg
 loadGlobalSettings model =
     Http.send (GetGlobalSettings) <|
         Http.get (model.baseUrl ++ "/global") <|
-            globalSettingsDecoder
+            globalDecoder
 
 
 authenticate : Model -> String -> Cmd Msg

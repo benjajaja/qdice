@@ -70,7 +70,7 @@ init location =
             , myProfile = { name = Nothing }
             , backend = backend
             , user = Types.Anonymous
-            , tableList = tableList
+            , tableList = []
             , time = 0
             , snackbar = Snackbar.init
             }
@@ -118,11 +118,20 @@ update msg model =
         GetGlobalSettings res ->
             case res of
                 Err err ->
-                    toast model <| "Error: " ++ (toString err)
+                    let
+                        _ =
+                            Debug.log "gloal settings error" err
+                    in
+                        toast model <| "Could not load global configuration!"
 
-                Ok ok ->
-                    toast model <| "Ok: " ++ (toString ok)
+                Ok ( settings, tables ) ->
+                    let
+                        _ =
+                            Debug.log "ok" ( settings, tables )
+                    in
+                        { model | tableList = tables } ! []
 
+        --toast model <| "Ok: " ++ (toString ok)
         GetToken res ->
             case res of
                 Err err ->

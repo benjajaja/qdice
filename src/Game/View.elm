@@ -221,12 +221,12 @@ footer model =
     Footer.mini []
         { left =
             Footer.left [] (statusMessage model.backend.status)
-        , right = Footer.right [] (listOfTables model tableList)
+        , right = Footer.right [] <| listOfTables model
         }
 
 
-listOfTables : Model -> List Table -> List (Footer.Content Types.Msg)
-listOfTables model tables =
+listOfTables : Model -> List (Footer.Content Types.Msg)
+listOfTables model =
     [ Footer.html <|
         Lists.ul [] <|
             List.indexedMap
@@ -234,23 +234,27 @@ listOfTables model tables =
                     \table ->
                         Lists.li [ Lists.withSubtitle ]
                             [ Lists.content []
-                                [ Html.text <| toString table
-                                , Lists.subtitle [] [ Html.text "0 playing" ]
+                                [ Html.text <| toString table.table
+                                , Lists.subtitle []
+                                    [ Html.text <|
+                                        (toString table.playerCount)
+                                            ++ " playing"
+                                    ]
                                 ]
                             , goToTableButton model table i
                             ]
                 )
-                tables
+                model.tableList
     ]
 
 
-goToTableButton : Model -> Table -> Int -> Html.Html Types.Msg
+goToTableButton : Model -> Types.TableInfo -> Int -> Html.Html Types.Msg
 goToTableButton model table i =
     Button.render Types.Mdl
         [ i ]
         model.mdl
         [ Button.icon
-        , Options.onClick (Types.NavigateTo <| Types.GameRoute table)
+        , Options.onClick (Types.NavigateTo <| Types.GameRoute table.table)
         ]
         [ Icon.i "chevron_right" ]
 

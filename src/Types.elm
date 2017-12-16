@@ -7,7 +7,7 @@ import Material
 import Snackbar.Types
 import OAuth
 import Game.Types
-import Game.Types exposing (TableStatus, PlayerAction)
+import Game.Types exposing (TableStatus, PlayerAction, GameStatus)
 import Editor.Types
 import MyProfile.Types
 import Backend.Types
@@ -26,7 +26,7 @@ type Msg
     | MyProfileMsg MyProfile.Types.Msg
       -- oauth
     | Nop
-    | GetGlobalSettings (Result Http.Error ())
+    | GetGlobalSettings (Result Http.Error ( GlobalSettings, List TableInfo ))
     | Authorize
     | Authenticate String
     | GetToken (Result Http.Error String)
@@ -74,7 +74,7 @@ type alias Model =
     , myProfile : MyProfile.Types.Model
     , backend : Backend.Types.Model
     , user : User
-    , tableList : List Table
+    , tableList : List TableInfo
     , time : Time.Time
     , snackbar : Snackbar.Types.Model
     }
@@ -117,3 +117,17 @@ type alias UserId =
 
 type alias Username =
     String
+
+
+type alias GlobalSettings =
+    {}
+
+
+type alias TableInfo =
+    { table : Table
+    , playerSlots : Int
+    , playerCount : Int
+    , status : GameStatus
+    , landCount : Int
+    , stackSize : Int
+    }
