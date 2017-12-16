@@ -159,7 +159,15 @@ updateTableStatus model status =
                     Cmd.none
                 )
               , (if hasGainedTurn then
-                    Helpers.playSound "turn"
+                    Cmd.batch
+                        [ Helpers.playSound "turn"
+                        , Helpers.setFavicon "alert"
+                        ]
+                 else
+                    Cmd.none
+                )
+              , (if hasLostTurn then
+                    Helpers.setFavicon ""
                  else
                     Cmd.none
                 )

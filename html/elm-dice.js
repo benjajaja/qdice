@@ -63,6 +63,7 @@ app.ports.consoleDebug.subscribe(function(string) {
 });
 
 app.ports.playSound.subscribe(require('./sounds'));
+app.ports.setFavicon.subscribe(require('./favicon'));
 
 
 app.ports.mqttConnect.subscribe(function() {
@@ -97,6 +98,7 @@ app.ports.scrollChat.subscribe(function(id) {
     }, 100);
   }
 });
+
 
 global.edice = app;
 

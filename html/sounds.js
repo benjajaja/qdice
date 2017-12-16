@@ -70,7 +70,6 @@ setTimeout(function() {
           const source = context.createBufferSource();
           source.buffer = bufferList[index];
           source.connect(context.destination);
-          console.log('play buffer', key);
           source.start(0);
         };
       });

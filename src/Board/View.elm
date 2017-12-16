@@ -113,6 +113,7 @@ polygonAttrs layout pathCache selected hovered land =
     , strokeWidth (1 |> toString)
     , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
     , points <| pathCache layout land
+    , class "edLand"
     ]
 
 

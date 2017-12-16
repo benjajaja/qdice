@@ -4,14 +4,6 @@
 
 
 .Main {
-  /*background:
-    radial-gradient(circle farthest-side at 0% 50%,#fff 23.5%,rgba(240,166,17,0) 0)21px 30px,
-    radial-gradient(circle farthest-side at 0% 50%,#fafafa 24%,rgba(240,166,17,0) 0)19px 30px,
-    linear-gradient(#fff 14%,rgba(240,166,17,0) 0, rgba(240,166,17,0) 85%,#fff 0)0 0,
-    linear-gradient(150deg,#fff 24%,#fafafa 0,#fafafa 26%,rgba(240,166,17,0) 0,rgba(240,166,17,0) 74%,#fafafa 0,#fafafa 76%,#fff 0)0 0,
-    linear-gradient(30deg,#fff 24%,#fafafa 0,#fafafa 26%,rgba(240,166,17,0) 0,rgba(240,166,17,0) 74%,#fafafa 0,#fafafa 76%,#fff 0)0 0,
-    linear-gradient(90deg,#fafafa 2%,#fff 0,#fff 98%,#fafafa 0%)0 0 #fff;
-    background-size:40px 60px;*/
 }
 @keyframes scroll { 100% { background-position: 100% 100%; } }
 .Main {
@@ -77,6 +69,9 @@ body.navigator-standalone textarea {
   pointer-events: none;
   fill: currentColor;
   /*transform: translate(-0.25vw, -0.25vw);*/
+}
+.edLand {
+  stroke: #888;
 }
 
 
