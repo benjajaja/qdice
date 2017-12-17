@@ -61,6 +61,7 @@ type TableMessage
     | Leave User
     | Update Game.Types.TableStatus
     | Roll Game.Types.Roll
+    | Move Game.Types.Move
 
 
 type alias User =

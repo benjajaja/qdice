@@ -89,3 +89,9 @@ type alias TableInfo =
     , landCount : Int
     , stackSize : Int
     }
+
+
+type alias Move =
+    { from : Emoji
+    , to : Emoji
+    }

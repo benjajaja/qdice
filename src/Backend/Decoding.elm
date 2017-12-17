@@ -105,6 +105,13 @@ singleRollDecoder =
         |> required "roll" (list int)
 
 
+moveDecoder : Decoder Game.Types.Move
+moveDecoder =
+    decode Game.Types.Move
+        |> required "from" string
+        |> required "to" string
+
+
 globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo )
 globalDecoder =
     Json.Decode.map2 (,) (field "settings" globalSettingsDecoder) (field "tables" (list tableInfoDecoder))

@@ -12,7 +12,7 @@ import Tables exposing (Table(..))
 import Backend
 import Backend.Types exposing (Topic(..))
 import Backend.HttpCommands exposing (gameCommand, attack)
-import Helpers exposing (indexOf, playSound, pipeUpdates)
+import Helpers exposing (indexOf, playSound, pipeUpdates, find)
 
 
 init : Maybe Types.Model -> Table -> ( Game.Types.Model, Cmd Types.Msg )
@@ -279,7 +279,77 @@ clickLand model land =
                 { model | game = game_ } ! [ cmd ]
 
 
+updateTable model table msg =
+    if table == model.game.table then
+        case msg of
+            Backend.Types.Join user ->
+                Backend.updateChatLog model <| Backend.Types.LogJoin user
 
---updateClickLand : Types.Model -> Land.Land -> Types.Model
---updateClickLand model land =
---model
+            Backend.Types.Leave user ->
+                Backend.updateChatLog model <| Backend.Types.LogLeave user
+
+            Backend.Types.Chat user text ->
+                Backend.updateChatLog model <| Backend.Types.LogChat user text
+
+            Backend.Types.Update status ->
+                updateTableStatus model status
+
+            Backend.Types.Roll roll ->
+                let
+                    ( firstModel, chatCmd ) =
+                        Backend.updateChatLog model <|
+                            Backend.Types.LogRoll <|
+                                Backend.toRollLog model roll
+
+                    ( secondModel, gameCmd ) =
+                        showRoll firstModel roll
+                in
+                    ( secondModel, Cmd.batch [ gameCmd, chatCmd ] )
+
+            Backend.Types.Move move ->
+                let
+                    game =
+                        model.game
+
+                    board =
+                        game.board
+
+                    findLand =
+                        (\emoji -> find (.emoji >> (==) emoji))
+
+                    fromLand =
+                        findLand move.from board.map.lands
+
+                    toLand =
+                        findLand move.to board.map.lands
+
+                    newMove =
+                        case fromLand of
+                            Nothing ->
+                                Nothing
+
+                            Just fromLand ->
+                                case toLand of
+                                    Nothing ->
+                                        Nothing
+
+                                    Just toLand ->
+                                        Just <| Board.Types.FromTo fromLand toLand
+                in
+                    case newMove of
+                        Nothing ->
+                            ( model, Cmd.none )
+
+                        Just move ->
+                            { model
+                                | game =
+                                    { game
+                                        | board =
+                                            { board
+                                                | move = move
+                                            }
+                                    }
+                            }
+                                ! []
+    else
+        model ! []

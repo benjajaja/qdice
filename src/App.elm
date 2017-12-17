@@ -341,33 +341,7 @@ update msg model =
                         { model | tableList = tables, game = game_ } ! []
 
         TableMsg table msg ->
-            if table == model.game.table then
-                case msg of
-                    Backend.Types.Join user ->
-                        Backend.updateChatLog model <| Backend.Types.LogJoin user
-
-                    Backend.Types.Leave user ->
-                        Backend.updateChatLog model <| Backend.Types.LogLeave user
-
-                    Backend.Types.Chat user text ->
-                        Backend.updateChatLog model <| Backend.Types.LogChat user text
-
-                    Backend.Types.Update status ->
-                        Game.State.updateTableStatus model status
-
-                    Backend.Types.Roll roll ->
-                        let
-                            ( firstModel, chatCmd ) =
-                                Backend.updateChatLog model <|
-                                    Backend.Types.LogRoll <|
-                                        Backend.toRollLog model roll
-
-                            ( secondModel, gameCmd ) =
-                                Game.State.showRoll firstModel roll
-                        in
-                            ( secondModel, Cmd.batch [ gameCmd, chatCmd ] )
-            else
-                model ! []
+            Game.State.updateTable model table msg
 
         Tick newTime ->
             { model | time = newTime } ! []
