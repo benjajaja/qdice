@@ -73,6 +73,8 @@ listOfTables model =
                             , Lists.subtitle [ Options.cs "edGameList__item__subtitle" ]
                                 [ Html.text <|
                                     (toString table.playerCount)
+                                        ++ " / "
+                                        ++ (toString table.playerSlots)
                                         ++ " playing"
                                 ]
                             ]
