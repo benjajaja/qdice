@@ -62,7 +62,7 @@ setTimeout(function() {
   var bufferLoader = new BufferLoader(
     context,
     keys.map(function(key) {
-      return 'sounds/' + key + '.wav';
+      return 'sounds/' + key + '.ogg';
     }),
     function finishedLoading(bufferList) {
       keys.forEach(function(key, index) {
