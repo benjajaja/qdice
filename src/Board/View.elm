@@ -2,12 +2,10 @@ module Board.View exposing (view)
 
 import String
 import Board.Types exposing (..)
+import Board.Colors
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (..)
-import Color exposing (..)
-import Color.Convert exposing (..)
-import Color.Manipulate exposing (..)
 import Html
 import Html.Attributes
 import Html.Lazy
@@ -55,7 +53,7 @@ board map pathCache selected hovered =
                     , [ Svg.defs []
                             [ Svg.radialGradient [ id "editorGradient" ]
                                 [ Svg.stop [ offset "0.8", stopColor "gold" ] []
-                                , Svg.stop [ offset "0.9", stopColor (svgColor False False Land.Neutral) ] []
+                                , Svg.stop [ offset "0.9", stopColor (landColor False False Land.Neutral) ] []
                                 ]
                             , Svg.radialGradient [ id "selectedGradient" ]
                                 [ Svg.stop [ offset "0.8", stopColor "gold" ] []
@@ -107,7 +105,7 @@ landElement layout pathCache selected hovered land =
 
 polygonAttrs : Layout -> PathCache -> Bool -> Bool -> Land.Land -> List (Svg.Attribute Msg)
 polygonAttrs layout pathCache selected hovered land =
-    [ fill <| landColor selected hovered land
+    [ fill <| landColor selected hovered land.color
     , stroke "black"
     , strokeLinejoin "round"
     , strokeWidth (1 |> toString)
@@ -119,7 +117,7 @@ polygonAttrs layout pathCache selected hovered land =
 
 landDies : Layout -> Land.Land -> Svg Msg
 landDies layout land =
-    g [ color <| landColor False False land ] <|
+    g [ color <| landColor False False land.color ] <|
         List.map
             (landDie
                 (landCenter
@@ -193,55 +191,22 @@ landText layout land =
            )
 
 
-landColor : Bool -> Bool -> Land -> String
-landColor selected hovered land =
-    case land.color of
+landColor : Bool -> Bool -> Land.Color -> String
+landColor selected hovered color =
+    case color of
         Land.EditorSelected ->
             "url(#editorGradient)"
 
         _ ->
-            --"url(#selectedGradient) " ++
-            (svgColor selected hovered land.color)
-
-
-svgColor : Bool -> Bool -> Land.Color -> String
-svgColor selected hovered color =
-    (case color of
-        Land.Neutral ->
-            Color.rgb 240 240 240
-
-        Land.Black ->
-            Color.rgb 52 52 52
-
-        Land.Red ->
-            Color.rgb 196 2 51
-
-        Land.Green ->
-            Color.rgb 0 159 107
-
-        Land.Blue ->
-            Color.rgb 0 135 189
-
-        Land.Yellow ->
-            Color.rgb 255 211 0
-
-        Land.Magenta ->
-            Color.rgb 187 86 149
-
-        Land.Cyan ->
-            Color.rgb 103 189 170
-
-        Land.Editor ->
-            Color.rgb 255 128 0
-
-        Land.EditorSelected ->
-            Color.rgb 255 0 255
-    )
-        |> (if selected then
-                Color.Manipulate.lighten 0.5
-            else if hovered then
-                Color.Manipulate.darken 0.1
-            else
-                identity
-           )
-        |> Color.Convert.colorToCssRgb
+            Board.Colors.base color
+                |> (if selected then
+                        Board.Colors.highlight
+                    else
+                        identity
+                   )
+                |> (if hovered then
+                        Board.Colors.hover
+                    else
+                        identity
+                   )
+                |> Board.Colors.cssRgb
