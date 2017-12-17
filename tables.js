@@ -3,7 +3,7 @@ const R = require('ramda');
 const maps = require('./maps');
 const { rand, diceRoll } = require('./rand');
 
-const keys = ['Melchor', 'Miño', 'Sabicas', 'Avocado'];
+const keys = ['Melchor', 'Miño', 'Avocado', 'Sabicas' ];
 module.exports.keys = keys;
 
 const T_CLIENTS = 'clients';
@@ -47,6 +47,7 @@ const Player = user => ({
 console.log('loading tables and calculating adjacency matrices...');
 const tables = keys.map(key =>loadLands(Table(key)));
 tables[2].playerSlots = 3;
+tables[3].playerSlots = 5;
 
 const findTable = tables => name => tables.filter(table => table.name === name).pop();
 const findLand = lands => emoji => lands.filter(land => land.emoji === emoji).pop();
