@@ -27,7 +27,9 @@ const Table = name => ({
 
 
 const loadLands = table => {
+  console.time(`table ${table.name} loaded`);
   const [ lands, adjacency ] = maps.loadMap(table.name);
+  console.timeEnd(`table ${table.name} loaded`);
   return Object.assign({}, table, { lands, adjacency });
 };
 
@@ -179,7 +181,10 @@ const attack = (user, table, [emojiFrom, emojiTo], res, next) => {
     }
   }, 500);
   console.log('rolling...');
-  publishTableStatus(table);
+  publishMove(table, {
+    from: emojiFrom,
+    to: emojiTo,
+  });
   res.send(204);
   next();
 };
@@ -231,6 +236,22 @@ const publishTableStatus = table => {
 		}
   );
 };
+
+const publishMove = (table, move) => {
+  client.publish('tables/' + table.name + '/clients',
+    JSON.stringify({
+      type: 'move',
+      payload: move
+    }),
+    undefined,
+    (err) => {
+			if (err) {
+				console.log(err, 'tables/' + table.name + '/clients move', table);
+			}
+		}
+  );
+};
+
 
 const serializeTable = module.exports.serializeTable = table => {
   const derived = computePlayerDerived(table);
