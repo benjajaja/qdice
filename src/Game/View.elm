@@ -150,7 +150,16 @@ playerChip model index player =
             [ Html.span [ class "edPlayerChip__gameStats__item" ]
                 [ Html.text <| "⬢ " ++ toString player.gameStats.totalLands ]
             , Html.span [ class "edPlayerChip__gameStats__item" ]
-                [ Html.text <| "⚂ " ++ toString player.gameStats.currentDice ]
+                [ Html.text <|
+                    ("⚂ "
+                        ++ toString player.gameStats.currentDice
+                        ++ (if player.reserveDice > 0 then
+                                " + " ++ toString player.reserveDice
+                            else
+                                ""
+                           )
+                    )
+                ]
             ]
         ]
 

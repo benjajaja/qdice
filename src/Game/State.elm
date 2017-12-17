@@ -157,12 +157,21 @@ updateTableStatus model status =
     in
         { model | game = game_ }
             ! [ (if hasStarted then
-                    Helpers.playSound "start"
+                    Cmd.batch <|
+                        Helpers.playSound "start"
+                            :: (if hasTurn then
+                                    [ Helpers.setFavicon "alert" ]
+                                else
+                                    []
+                               )
                  else
                     Cmd.none
                 )
               , (if hasFinished then
-                    Helpers.playSound "finish"
+                    Cmd.batch
+                        [ Helpers.playSound "finish"
+                        , Helpers.setFavicon ""
+                        ]
                  else
                     Cmd.none
                 )
