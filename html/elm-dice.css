@@ -105,9 +105,12 @@ body.navigator-standalone textarea {
   margin-bottom: 10px;
 }
 .edPlayerChip {
-  width: 100px;
-  /*height: 150px;*/
+  width: 70px;
   padding: 10px;
+  margin-left: 4px;
+}
+.edPlayerChip:first-child {
+  margin-left: 0;
 }
 .edPlayerChip__progress {
   height: 2px;
@@ -122,6 +125,14 @@ body.navigator-standalone textarea {
 }
 
 .edPlayerChip__picture {
+  width: 70px;
+  height: 70px;
+  position: relative;
+}
+.edPlayerChip__picture__image {
+  position: absolute;
+  top: 5px;
+  left: 5px;
   width: 60px;
   height: 60px;
   border: none;
@@ -134,7 +145,7 @@ body.navigator-standalone textarea {
   text-align: center;
 }
 .edPlayerChip__name {
-  border: 2px solid transparent;
+  border: 6px solid transparent;
   border-left: none;
   border-bottom: none;
   border-right: none;
@@ -143,15 +154,52 @@ body.navigator-standalone textarea {
 .edPlayerChip__gameStats {
   display: flex;
   justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+.edPlayerChip_clock {
+  fill: #2196f3;
+}
+.edPlayerChip_clock--100 {
+  fill: #bf360c;
+}
+.edPlayerChip_clock--95 {
+  fill: #d84315;
+}
+.edPlayerChip_clock--90 {
+  fill: #e64a19;
+}
+.edPlayerChip_clock--85 {
+  fill: #ff5722;
+}
+.edPlayerChip_clock--80 {
+  fill: #ef6c00;
+}
+.edPlayerChip_clock--75 {
+  fill: #f57c00;
+}
+.edPlayerChip_clock--70 {
+  fill: #fb8c00;
+}
+.edPlayerChip_clock--65 {
+  fill: #ffab00;
+}
+.edPlayerChip_clock--60 {
+  fill: #ffab00;
+}
+.edPlayerChip_clock--55 {
+  fill: #ffab00;
+}
+.edPlayerChip_clock--50 {
+  fill: #ffab00;
 }
 .edPlayerChip--Red .edPlayerChip__name {
-  border-color: rgb(196 2 51);
+  border-color: rgb(196, 2, 51);
 }
 .edPlayerChip--Blue .edPlayerChip__name {
-  border-color: rgb(0 159 107);
+  border-color: rgb(0, 135, 189);
 }
 .edPlayerChip--Green .edPlayerChip__name {
-  border-color: rgb(0 135 189);
+  border-color: rgb(0, 159, 107);
 }
 
 .edGameList {

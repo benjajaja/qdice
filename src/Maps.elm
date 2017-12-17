@@ -6,6 +6,7 @@ import Land exposing (Cells)
 import Maps.Melchor
 import Maps.Miño
 import Maps.Sabicas
+import Maps.Avocado
 import Regex
 import Helpers exposing (..)
 import Tables exposing (Table(..))
@@ -40,6 +41,9 @@ mapSourceString table =
 
         Sabicas ->
             Maps.Sabicas.map
+
+        Avocado ->
+            Maps.Avocado.map
 
 
 emojiRegex : Regex.Regex

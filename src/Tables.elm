@@ -5,11 +5,12 @@ type Table
     = Melchor
     | Miño
     | Sabicas
+    | Avocado
 
 
 tableList : List Table
 tableList =
-    [ Melchor, Miño, Sabicas ]
+    [ Melchor, Miño, Sabicas, Avocado ]
 
 
 decodeTable : String -> Maybe Table
@@ -23,6 +24,9 @@ decodeTable name =
 
         "Sabicas" ->
             Just Sabicas
+
+        "Avocado" ->
+            Just Avocado
 
         _ ->
             Debug.log ("unknown table: " ++ name) Nothing

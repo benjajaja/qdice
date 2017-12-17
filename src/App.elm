@@ -501,7 +501,7 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
-        , Time.every (666) Tick
+        , Time.every (25) Tick
         ]
 
 
