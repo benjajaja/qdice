@@ -3,7 +3,6 @@ port module Backend exposing (..)
 import String
 import Navigation exposing (Location)
 import Json.Decode exposing (list, string)
-import Dom.Scroll exposing (..)
 import Task
 import Backend.Types exposing (..)
 import Backend.Decoding exposing (..)
@@ -12,7 +11,7 @@ import Backend.MessageCodification exposing (..)
 import Backend.HttpCommands exposing (..)
 import Types exposing (Msg(..))
 import Tables exposing (Table(..), decodeTable)
-import Game.Types exposing (Player, PlayerAction(..))
+import Game.Types exposing (Player, PlayerAction(..), RollLog)
 import Land exposing (Color(..))
 import Helpers exposing (find)
 
@@ -37,7 +36,6 @@ init location table =
       , clientId = Nothing
       , subscribed = []
       , status = Offline
-      , chatLog = []
       }
     , connect
     )
@@ -169,23 +167,6 @@ addSubscribed model topic =
             topic :: backend.subscribed
     in
         { model | backend = { backend | subscribed = subscribed } }
-
-
-updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
-updateChatLog model entry =
-    let
-        backend =
-            model.backend
-
-        chatLog =
-            List.append model.backend.chatLog [ entry ]
-
-        updated =
-            { backend | chatLog = chatLog }
-    in
-        { model | backend = updated }
-            ! [ Task.attempt (always Types.Nop) <| Dom.Scroll.toBottom model.game.chatBoxId
-              ]
 
 
 subscriptions : Types.Model -> Sub Types.Msg
@@ -348,7 +329,7 @@ unsubscribe topic =
     mqttUnsubscribe <| encodeTopic topic
 
 
-toRollLog : Types.Model -> Game.Types.Roll -> Backend.Types.RollLog
+toRollLog : Types.Model -> Game.Types.Roll -> RollLog
 toRollLog model roll =
     let
         lands =

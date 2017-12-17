@@ -1,6 +1,7 @@
 module Game.State exposing (..)
 
 import Task
+import Dom.Scroll exposing (..)
 import Game.Types exposing (..)
 import Types exposing (Model, Msg(..), User(Anonymous))
 import Board
@@ -39,6 +40,8 @@ init model table =
           , turnStarted = -1
           , chatInput = ""
           , chatBoxId = ("chatbox-" ++ toString table)
+          , chatLog = []
+          , gameLog = []
           }
             |> (\m ->
                     case model of
@@ -271,13 +274,13 @@ updateTable model table msg =
     if table == model.game.table then
         case msg of
             Backend.Types.Join user ->
-                Backend.updateChatLog model <| Backend.Types.LogJoin user
+                updateChatLog model <| LogJoin user
 
             Backend.Types.Leave user ->
-                Backend.updateChatLog model <| Backend.Types.LogLeave user
+                updateChatLog model <| LogLeave user
 
             Backend.Types.Chat user text ->
-                Backend.updateChatLog model <| Backend.Types.LogChat user text
+                updateChatLog model <| LogChat user text
 
             Backend.Types.Update status ->
                 updateTableStatus model status
@@ -285,8 +288,8 @@ updateTable model table msg =
             Backend.Types.Roll roll ->
                 let
                     ( firstModel, chatCmd ) =
-                        Backend.updateChatLog model <|
-                            Backend.Types.LogRoll <|
+                        updateChatLog model <|
+                            Game.Types.LogRoll <|
                                 Backend.toRollLog model roll
 
                     ( secondModel, gameCmd ) =
@@ -341,3 +344,31 @@ updateTable model table msg =
                                 ! []
     else
         model ! []
+
+
+updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
+updateChatLog model entry =
+    let
+        game =
+            model.game
+
+        addToChatLog =
+            { model | game = { game | chatLog = List.append game.chatLog [ entry ] } }
+
+        addToGameLog =
+            { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }
+    in
+        ( case entry of
+            LogJoin _ ->
+                addToChatLog
+
+            LogLeave _ ->
+                addToChatLog
+
+            LogChat _ _ ->
+                addToChatLog
+
+            _ ->
+                addToGameLog
+        , Task.attempt (always Types.Nop) <| Dom.Scroll.toBottom model.game.chatBoxId
+        )

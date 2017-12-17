@@ -10,16 +10,7 @@ type alias Model =
     , clientId : Maybe ClientId
     , subscribed : List Topic
     , status : ConnectionStatus
-    , chatLog : List ChatLogEntry
     }
-
-
-type ChatLogEntry
-    = LogJoin User
-    | LogLeave User
-    | LogChat User String
-    | LogError String
-    | LogRoll RollLog
 
 
 type alias ClientId =
@@ -55,6 +46,10 @@ type AllClientsMessage
     = TablesInfo (List Game.Types.TableInfo)
 
 
+type alias User =
+    String
+
+
 type TableMessage
     = Join User
     | Chat User String
@@ -62,18 +57,3 @@ type TableMessage
     | Update Game.Types.TableStatus
     | Roll Game.Types.Roll
     | Move Game.Types.Move
-
-
-type alias User =
-    String
-
-
-type alias RollLog =
-    { attacker : User
-    , defender : User
-    , attackRoll : Int
-    , attackDiesEmojis : String
-    , defendDiesEmojis : String
-    , defendRoll : Int
-    , success : Bool
-    }

@@ -33,6 +33,8 @@ type alias Model =
     , turnStarted : Int
     , chatInput : String
     , chatBoxId : String
+    , chatLog : List ChatLogEntry
+    , gameLog : List ChatLogEntry
     }
 
 
@@ -94,4 +96,27 @@ type alias TableInfo =
 type alias Move =
     { from : Emoji
     , to : Emoji
+    }
+
+
+type alias User =
+    String
+
+
+type ChatLogEntry
+    = LogJoin User
+    | LogLeave User
+    | LogChat User String
+    | LogError String
+    | LogRoll RollLog
+
+
+type alias RollLog =
+    { attacker : User
+    , defender : User
+    , attackRoll : Int
+    , attackDiesEmojis : String
+    , defendDiesEmojis : String
+    , defendRoll : Int
+    , success : Bool
     }

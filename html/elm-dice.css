@@ -196,9 +196,14 @@ body.navigator-standalone textarea {
   margin-left: 16px;
 }
 
+.chatboxContainer {
+  display: flex;
+  justify-content: space-between;
+}
 .chatbox {
   height: 20vw;
   display: flex;
+  width: 48%;
 }
 .chatbox--log {
   background-color: white;

@@ -1,28 +1,25 @@
 module Game.Chat exposing (..)
 
-import Types exposing (Model, Msg(..))
-import Backend.Types exposing (ChatLogEntry(..))
+import Types exposing (Msg(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http exposing (Error(..))
+import Material
 import Material.Card as Card
 import Material.Options as Options exposing (cs, css, id)
 import Material.Textfield as Textfield
 import Material.Elevation
 import Material.Icon as Icon
 import Material.Button as Button
-import Game.Types exposing (PlayerAction(..))
+import Game.Types exposing (PlayerAction(..), ChatLogEntry(..), RollLog, Model)
 import Tables exposing (Table)
 
 
-chatBox : Model -> Html Types.Msg
-chatBox model =
-    Card.view
-        [ cs "chatbox"
-        , Material.Elevation.e2
-        ]
-        [ Card.media [ cs "chatbox--log", Options.id model.game.chatBoxId ]
+chatBox : Bool -> String -> Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
+chatBox hasInput inputValue mdl lines id =
+    Card.view [ cs "chatbox", Material.Elevation.e2 ] <|
+        Card.media [ cs "chatbox--log", Options.id id ]
             (List.map
                 (\c ->
                     case c of
@@ -49,35 +46,39 @@ chatBox model =
                         LogRoll roll ->
                             rollLine roll
                 )
-                model.backend.chatLog
+                lines
             )
-        , Card.actions [ cs "chatbox--actions" ]
-            [ Html.form [ onSubmit (SendChat "hi"), class "chatbox--actions-form" ]
-                [ input model
-                , Button.render
-                    Types.Mdl
-                    [ 0 ]
-                    model.mdl
-                    [ Button.primary
-                    , Button.colored
-                    , Button.ripple
-                    , Button.type_ "submit"
-                    , cs "chatbox--actions-button"
+            :: (if hasInput then
+                    [ Card.actions [ cs "chatbox--actions" ]
+                        [ Html.form [ onSubmit (SendChat "hi"), class "chatbox--actions-form" ]
+                            [ input mdl inputValue
+                            , Button.render
+                                Types.Mdl
+                                [ 0 ]
+                                mdl
+                                [ Button.primary
+                                , Button.colored
+                                , Button.ripple
+                                , Button.type_ "submit"
+                                , cs "chatbox--actions-button"
+                                ]
+                                [ Icon.i "keyboard_return" ]
+                            ]
+                        ]
                     ]
-                    [ Icon.i "keyboard_return" ]
-                ]
-            ]
-        ]
+                else
+                    []
+               )
 
 
-input : Model -> Html Types.Msg
-input model =
+input : Material.Model -> String -> Html Types.Msg
+input mdl value =
     Textfield.render
         Types.Mdl
         [ 0 ]
-        model.mdl
+        mdl
         [ Options.onInput InputChat
-        , Textfield.value model.game.chatInput
+        , Textfield.value value
         , cs "chatbox--actions-input"
         ]
         []
@@ -105,7 +106,7 @@ toChatError table action err =
            )
 
 
-rollLine : Backend.Types.RollLog -> Html Types.Msg
+rollLine : RollLog -> Html Types.Msg
 rollLine roll =
     let
         text =

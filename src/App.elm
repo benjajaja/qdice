@@ -301,7 +301,7 @@ update msg model =
             Game.State.updateCommandResponse table action model
 
         GameCommandResponse table action (Err err) ->
-            Backend.updateChatLog model <| Backend.Types.LogError <| Game.Chat.toChatError table action err
+            Game.State.updateChatLog model <| Game.Types.LogError <| Game.Chat.toChatError table action err
 
         UnknownTopicMessage error topic message ->
             let
