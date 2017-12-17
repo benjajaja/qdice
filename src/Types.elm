@@ -53,6 +53,7 @@ type Msg
 
 type StaticPage
     = Help
+    | About
 
 
 type Route

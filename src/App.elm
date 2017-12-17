@@ -454,8 +454,9 @@ drawer model =
                     [ Html.text label ]
             )
             [ ( "Play", GameRoute Melchor )
-            , ( "Help", StaticPageRoute Help )
             , ( "My profile", MyProfileRoute )
+            , ( "Help", StaticPageRoute Help )
+            , ( "About", StaticPageRoute About )
             , ( "Editor (experimental)", EditorRoute )
             ]
         )
@@ -469,7 +470,7 @@ mainView model =
             Game.View.view model
 
         StaticPageRoute page ->
-            Static.View.view model
+            Static.View.view model page
 
         EditorRoute ->
             Editor.Editor.view model

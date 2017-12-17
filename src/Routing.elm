@@ -26,6 +26,9 @@ staticPageMatcher =
                 "help" ->
                     Ok Help
 
+                "about" ->
+                    Ok About
+
                 _ ->
                     Err segment
 
@@ -68,6 +71,9 @@ navigateTo route =
                 case page of
                     Help ->
                         "#static/help"
+
+                    About ->
+                        "#static/about"
 
             EditorRoute ->
                 "#editor"
