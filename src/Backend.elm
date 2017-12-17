@@ -3,6 +3,8 @@ port module Backend exposing (..)
 import String
 import Navigation exposing (Location)
 import Json.Decode exposing (list, string)
+import Dom.Scroll exposing (..)
+import Task
 import Backend.Types exposing (..)
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -181,7 +183,9 @@ updateChatLog model entry =
         updated =
             { backend | chatLog = chatLog }
     in
-        { model | backend = updated } ! [ scrollChat model.game.chatBoxId ]
+        { model | backend = updated }
+            ! [ Task.attempt (always Types.Nop) <| Dom.Scroll.toBottom model.game.chatBoxId
+              ]
 
 
 subscriptions : Types.Model -> Sub Types.Msg
@@ -473,6 +477,3 @@ port mqttOnSubscribed : (String -> msg) -> Sub msg
 
 
 port mqttOnMessage : (( String, String ) -> msg) -> Sub msg
-
-
-port scrollChat : String -> Cmd msg

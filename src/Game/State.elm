@@ -26,18 +26,6 @@ init model table =
 
         players =
             []
-
-        cmds =
-            mapCmd
-                :: case model of
-                    Just model ->
-                        [ gameCommand model.backend table Enter
-                          --, Backend.publish <| TableMsg model.game.table <| Backend.Types.Leave <| Types.getUsername model
-                          --, Backend.publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model
-                        ]
-
-                    Nothing ->
-                        []
     in
         ( { table = table
           , board = board
@@ -60,7 +48,7 @@ init model table =
                         Nothing ->
                             m
                )
-        , Cmd.batch cmds
+        , mapCmd
         )
 
 

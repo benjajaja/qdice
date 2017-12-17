@@ -86,19 +86,6 @@ app.ports.mqttConnect.subscribe(function() {
   });
 });
 
-app.ports.scrollChat.subscribe(function(id) {
-  var element = document.getElementById(id);
-  if (!element) return console.error('cannot scroll #' + id);
-  var height = element.clientHeight;
-  var scroll = element.scrollTop;
-  var innerHeight = element.scrollHeight;
-  if (innerHeight - scroll === height) {
-    setTimeout(function() {
-      element.scrollTop = innerHeight;
-    }, 100);
-  }
-});
-
 
 global.edice = app;
 
