@@ -346,7 +346,7 @@ const nextTurn = table => {
     });
   }
 
-  const nextIndex = (i => i + 1 < table.playerSlots ? i + 1 : 0)(table.turnIndex);
+  const nextIndex = (i => i + 1 < table.players.length ? i + 1 : 0)(table.turnIndex);
   table.turnIndex = nextIndex;
   table.turnStarted = Math.floor(Date.now() / 1000);
   return table;
