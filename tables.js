@@ -3,7 +3,7 @@ const R = require('ramda');
 const maps = require('./maps');
 const { rand, diceRoll } = require('./rand');
 
-const keys = ['Melchor', 'Miño', 'Sabicas'];
+const keys = ['Melchor', 'Miño', 'Sabicas', 'Avocado'];
 module.exports.keys = keys;
 
 const T_CLIENTS = 'clients';
@@ -334,7 +334,7 @@ let globalTablesUpdate = null;
 module.exports.tick = () => {
   tables.filter(table => table.status === STATUS_PLAYING)
     .forEach(table => {
-    if (table.turnStarted < Date.now() / 1000 - TURN_SECONDS) {
+    if (table.turnStarted < Date.now() / 1000 - (TURN_SECONDS + 1)) {
       nextTurn(table);
       publishTableStatus(table);
     }
