@@ -109,6 +109,7 @@ const join = (user, table, res, next) => {
     table.players.push(Player(user));
   }
 
+  table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1}));
   if (table.players.length === table.playerSlots) {
     startGame(table);
   } else {
@@ -120,12 +121,17 @@ const join = (user, table, res, next) => {
 
 
 const leave = (user, table, res, next) => {
+  if (table.status === STATUS_PLAYING) {
+    res.send(406);
+    return next();
+  }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
     return next(new Error('not joined'));
   } else {
     table.players = table.players.filter(p => p !== existing);
   }
+  table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1 }));
   publishTableStatus(table);
   res.send(204);
   next();
@@ -292,8 +298,6 @@ const publishRoll = (table, roll) => {
 
 const startGame = table => {
   table.status = STATUS_PLAYING;
-  table.players = table.players
-    .map((player, index) => Object.assign({}, player, { color: index + 1 }));
 
   table.lands = table.lands.map(land => Object.assign({}, land, {
     points: ((r) => {
