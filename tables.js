@@ -296,12 +296,15 @@ const nextTurn = table => {
   if (table.turnIndex !== -1) {
     const currentTurnPlayer = table.players[table.turnIndex];
     const playerLands = table.lands.filter(land => land.color === currentTurnPlayer.color);
-    const newDies = maps.countConnectedLands(table.lands)(currentTurnPlayer.color);
+    const newDies =
+      maps.countConnectedLands(table.lands)(currentTurnPlayer.color)
+      + currentTurnPlayer.reserveDice;
+    currentTurnPlayer.reserveDice = 0;
 
     R.range(0, newDies).forEach(i => {
       const targets = playerLands.filter(land => land.points < 8);
       if (targets.length === 0) {
-        // TODO: reserve dies
+        currentTurnPlayer.reserveDice += 1;
       } else {
         const target = targets[rand(0, targets.length - 1)];
         target.points += 1;
