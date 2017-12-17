@@ -27,8 +27,8 @@ const Table = name => ({
 
 
 const loadLands = table => {
-  table.lands = maps.loadMap(table.name);
-  return table;
+  const [ lands, adjacency ] = maps.loadMap(table.name);
+  return Object.assign({}, table, { lands, adjacency });
 };
 
 const Player = user => ({
@@ -44,12 +44,16 @@ const Player = user => ({
   },
 });
   
+console.log('loading tables and calculating adjacency matrices...');
 const tables = keys.map(key =>loadLands(Table(key)));
 tables[2].playerSlots = 3;
-const tableTimeouts = keys.reduce((obj, key) => Object.assign(obj, { [key]: null }));
 
 const findTable = tables => name => tables.filter(table => table.name === name).pop();
 const findLand = lands => emoji => lands.filter(land => land.emoji === emoji).pop();
+const hasTurn = table => playerLike =>
+  table.players.indexOf(
+    table.players.filter(p => p.id === playerLike.id).pop()
+  ) === table.turnIndex;
 
 module.exports.getTables = function() {
   return tables;
@@ -128,6 +132,9 @@ const attack = (user, table, [emojiFrom, emojiTo], res, next) => {
   if (table.status !== STATUS_PLAYING) {
     return next(new Error('game not running'));
   }
+  if (!hasTurn(table)(user)) {
+    return next(new Error('out of turn'));
+  }
   const find = findLand(table.lands);
   const fromLand = find(emojiFrom);
   const toLand = find(emojiTo);
@@ -145,6 +152,7 @@ const attack = (user, table, [emojiFrom, emojiTo], res, next) => {
         toLand.points = fromLand.points - 1;
         toLand.color = fromLand.color;
         if (loser && R.filter(R.propEq('color', loser.color), table.lands).length === 0) {
+          const turnPlayer = table.players[table.turnIndex];
           table.players = table.players.filter(R.complement(R.equals(loser)));
           console.log('player lost:', loser);
           if (table.players.length === 1) {
@@ -152,6 +160,7 @@ const attack = (user, table, [emojiFrom, emojiTo], res, next) => {
             table.status = STATUS_FINISHED;
             table.turnIndex = -1;
           }
+          table.turnIndex = table.players.indexOf(turnPlayer);
         }
       }
       fromLand.points = 1;
@@ -178,13 +187,12 @@ const endTurn = (user, table, res, next) => {
   if (table.status !== STATUS_PLAYING) {
     return next(new Error('game not running'));
   }
+  if (!hasTurn(table)(user)) {
+    return next(new Error('out of turn'));
+  }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
     return next(new Error('not playing'));
-  }
-
-  if (table.players.indexOf(existing) !== table.turnIndex) {
-    return next(new Error('not your turn'));
   }
 
   nextTurn(table);
@@ -225,15 +233,19 @@ const publishTableStatus = table => {
 
 const serializeTable = module.exports.serializeTable = table => {
   const derived = computePlayerDerived(table);
-  return Object.assign({}, table, {
-    players: table.players.map(player => Object.assign({}, player, { derived: derived(player) })),
-    lands: table.lands.map(R.pick(['emoji', 'color', 'points'])),
+  const players = table.players.map(player => Object.assign({}, player, { derived: derived(player) }));
+  const lands = table.lands.map(({ emoji, color, points }) => ({ emoji, color, points, }));
+
+  const result = Object.assign({}, table, {
+    players,
+    lands
   });
+  return result;
 };
 
 const computePlayerDerived = table => player => {
   const lands = table.lands.filter(R.propEq('color', player.color));
-  const connectedLands = maps.countConnectedLands(table.lands)(player.color);
+  const connectedLands = maps.countConnectedLands(table)(player.color);
   return {
     connectedLands,
     totalLands: lands.length,
@@ -297,7 +309,7 @@ const nextTurn = table => {
     const currentTurnPlayer = table.players[table.turnIndex];
     const playerLands = table.lands.filter(land => land.color === currentTurnPlayer.color);
     const newDies =
-      maps.countConnectedLands(table.lands)(currentTurnPlayer.color)
+      maps.countConnectedLands(table)(currentTurnPlayer.color)
       + currentTurnPlayer.reserveDice;
     currentTurnPlayer.reserveDice = 0;
 

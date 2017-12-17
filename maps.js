@@ -33,7 +33,7 @@ module.exports.loadMap = tableName => {
       points: rand(1, 5),
     }));
 
-  return lands.map(land => {
+  const fullLands = lands.map(land => {
     const cells = rows.reduce((cells, row, y) => {
       return row.reduce((rowCells, char, x) => {
         if (char !== land.emoji) {
@@ -48,11 +48,25 @@ module.exports.loadMap = tableName => {
     }, []);
     return Object.assign(land, { cells });
   });
+  return [ fullLands, createAdjacencyMatrix(fullLands) ];
 };
 
+const createAdjacencyMatrix = lands => {
+  return {
+    matrix: lands.map(land => {
+      return lands.map(other => isBorder(lands, land.emoji, other.emoji))
+    }),
+    indexes: lands.reduce((indexes, land, index) => {
+      return Object.assign({}, indexes, { [land.emoji]: index });
+    }, {}),
+  };
+};
 const findLand = lands => emoji => R.find(R.propEq('emoji', emoji))(lands);
 
 const isBorder = module.exports.isBorder = R.curry((lands, fromEmoji, toEmoji) => {
+  if (fromEmoji === toEmoji) {
+    return false;
+  }
   const find = findLand(lands);
   const from = find(fromEmoji);
   const to = find(toEmoji);
@@ -63,9 +77,14 @@ const isBorder = module.exports.isBorder = R.curry((lands, fromEmoji, toEmoji) =
   }));
 });
 
-module.exports.landMasses = lands => color => {
-  const colorLands = lands.filter(R.propEq('color', color));
-  const isBorder_ = isBorder(colorLands);
+module.exports.landMasses = table => color => {
+  const colorLands = table.lands.filter(R.propEq('color', color));
+
+  //const isBorder_ = isBorder(colorLands);
+  const { indexes, matrix } = table.adjacency;
+  const isBorder_ = (from, to) => {
+    return matrix[indexes[from]][indexes[to]];
+  };
   const landMasses = colorLands.reduce((masses, land) => {
     const bordering = masses.filter(mass =>
       mass.some(existing =>
@@ -87,8 +106,8 @@ module.exports.landMasses = lands => color => {
   return R.map(R.map(R.prop('emoji')))(landMasses);
 };
 
-module.exports.countConnectedLands = lands => color => {
-  const landMasses = module.exports.landMasses(lands)(color);
+module.exports.countConnectedLands = table => color => {
+  const landMasses = module.exports.landMasses(table)(color);
   const counts = landMasses.map(R.prop('length'));
   return R.reduce(R.max, 0, counts);
 };
