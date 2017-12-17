@@ -150,13 +150,29 @@ body.navigator-standalone textarea {
 .edPlayerChip--Blue .edPlayerChip__name {
   border-color: #03a9f4;
 }
-/*#edice-board {
-  background: url(http://www2.luventicus.org/mapas/espanacomunidades.gif);
-  background-size: 50% 50%;
+
+.edGameList {
+  background-color: transparent;
 }
-#edice-board > svg {
-  opacity: 0.75;
-}*/
+
+.edGameList__item {
+  color: #ccc;
+}
+
+.edGameList__item__subtitle, .mdl-list__item--two-line .mdl-list__item-primary-content .mdl-list__item-sub-title.edGameList__item__subtitle {
+  color: #aaa;
+}
+
+.edGameStatus {
+  display: flex;
+  align-items: center;
+}
+.edGameStatus > div {
+  padding-left: 10px;
+}
+.edGameStatus > div:first-child {
+  padding-left: 0;
+}
 
 .header .header--profile-link {
   height: 100%;

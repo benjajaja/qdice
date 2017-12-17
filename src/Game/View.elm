@@ -2,6 +2,7 @@ module Game.View exposing (view)
 
 import Game.Types exposing (PlayerAction(..), TableInfo)
 import Game.Chat
+import Game.Footer exposing (footer)
 import Html
 import Html.Attributes exposing (class, style)
 import Time exposing (inMilliseconds)
@@ -198,106 +199,10 @@ turnProgress model =
                     / turnTime
 
 
-
---Chip.span [ Options.cs ("edPlayerChip edPlayerChip--" ++ (toString player.color)) ]
---[ Chip.contact Html.img
---[ Options.css "background-image" ("url(" ++ player.picture ++ ")")
---, Options.css "background-size" "cover"
---]
---[]
---, Chip.content []
---[ Html.text <| player.name ]
---]
-
-
 boardHistory : Model -> Html.Html Types.Msg
 boardHistory model =
     Html.div []
         [ Game.Chat.chatBox model ]
-
-
-footer : Model -> Html.Html Types.Msg
-footer model =
-    Footer.mini []
-        { left =
-            Footer.left [] (statusMessage model.backend.status)
-        , right = Footer.right [] <| listOfTables model
-        }
-
-
-listOfTables : Model -> List (Footer.Content Types.Msg)
-listOfTables model =
-    [ Footer.html <|
-        Lists.ul [] <|
-            List.indexedMap
-                (\i ->
-                    \table ->
-                        Lists.li [ Lists.withSubtitle ]
-                            [ Lists.content []
-                                [ Html.text <| toString table.table
-                                , Lists.subtitle []
-                                    [ Html.text <|
-                                        (toString table.playerCount)
-                                            ++ " playing"
-                                    ]
-                                ]
-                            , goToTableButton model table i
-                            ]
-                )
-                model.tableList
-    ]
-
-
-goToTableButton : Model -> TableInfo -> Int -> Html.Html Types.Msg
-goToTableButton model table i =
-    Button.render Types.Mdl
-        [ i ]
-        model.mdl
-        [ Button.icon
-        , Options.onClick (Types.NavigateTo <| Types.GameRoute table.table)
-        ]
-        [ Icon.i "chevron_right" ]
-
-
-statusMessage : ConnectionStatus -> List (Footer.Content Types.Msg)
-statusMessage status =
-    let
-        message =
-            case status of
-                Reconnecting attempts ->
-                    case attempts of
-                        1 ->
-                            "Reconnecting..."
-
-                        count ->
-                            "Reconnecting... (" ++ (toString attempts) ++ " retries)"
-
-                _ ->
-                    toString status
-
-        icon =
-            case status of
-                Offline ->
-                    "signal_wifi_off"
-
-                Connecting ->
-                    "wifi_lock"
-
-                Reconnecting _ ->
-                    "wifi_lock"
-
-                SubscribingGeneral ->
-                    "wifi"
-
-                SubscribingTable ->
-                    "perm_scan_wifi"
-
-                Online ->
-                    "network_wifi"
-    in
-        [ Footer.html <| Icon.i icon
-          --, Footer.html <| Html.text message
-        ]
 
 
 isPlayerInGame : Model -> Bool
