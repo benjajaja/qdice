@@ -10,7 +10,6 @@ module.exports = {
     './html/elm-dice.js',
     './html/index.html',
     './html/elm-dice.css',
-    //'./html/elm-dice-serviceworker.js',
   ],
 
   output: {
@@ -48,9 +47,10 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
+        //use: ExtractTextPlugin.extract({
+          //fallback: 'style-loader',
           use: [
+            'style-loader',
             { loader: 'css-loader', options: { importLoaders: 1 } },
             {
               loader: 'postcss-loader',
@@ -69,7 +69,7 @@ module.exports = {
               },
             },
           ],
-        }),
+        //}),
       },
     ],
   },
@@ -78,7 +78,7 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"'
     }),
-    new ExtractTextPlugin("elm-dice.css"),
+    //new ExtractTextPlugin("elm-dice.css"),
     new CopyWebpackPlugin([
       { from: 'html/manifest.json' },
       { from: 'html/favicons', to: 'favicons'},
