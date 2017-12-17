@@ -101,7 +101,7 @@ body.navigator-standalone textarea {
 .edPlayerChips {
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
+  justify-content: center;
   margin-bottom: 10px;
 }
 .edPlayerChip {
@@ -145,10 +145,13 @@ body.navigator-standalone textarea {
   justify-content: space-evenly;
 }
 .edPlayerChip--Red .edPlayerChip__name {
-  border-color: #e91e63;
+  border-color: rgb(196 2 51);
 }
 .edPlayerChip--Blue .edPlayerChip__name {
-  border-color: #03a9f4;
+  border-color: rgb(0 159 107);
+}
+.edPlayerChip--Green .edPlayerChip__name {
+  border-color: rgb(0 135 189);
 }
 
 .edGameList {
