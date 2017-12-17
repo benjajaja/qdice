@@ -233,7 +233,7 @@ clickLand model land =
                     else
                         case model.game.board.move of
                             Board.Types.Idle ->
-                                if land.color == player.color then
+                                if land.points > 1 && land.color == player.color then
                                     ( Board.Types.From land, Cmd.none )
                                 else
                                     ( Board.Types.Idle, Cmd.none )
@@ -241,8 +241,8 @@ clickLand model land =
                             Board.Types.From from ->
                                 if land == from then
                                     ( Board.Types.Idle, Cmd.none )
-                                else if land.color == player.color then
-                                    ( model.game.board.move, Cmd.none )
+                                else if land.points > 1 && land.color == player.color then
+                                    ( Board.Types.From land, Cmd.none )
                                 else if not <| Land.isBordering land from then
                                     ( model.game.board.move, Cmd.none )
                                 else
