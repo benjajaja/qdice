@@ -22,7 +22,7 @@ const Table = name => ({
   turnIndex: -1,
   turnStarted: 0,
   lands: [],
-  stackSize: 8,
+  stackSize: 4,
 });
 
 
@@ -262,7 +262,13 @@ const startGame = table => {
     .map((player, index) => Object.assign({}, player, { color: index + 1 }));
 
   table.lands = table.lands.map(land => Object.assign({}, land, {
-    points: rand(1, 5),
+    points: ((r) => {
+      if (r > 0.98)
+        return Math.min(8, table.stackSize + 1);
+      else if (r > 0.90)
+        return table.stackSize;
+      return rand(1, table.stackSize - 1);
+    })(Math.random()),
     color: -1,
   }));
   const startLands = (() => {
@@ -309,6 +315,7 @@ const nextTurn = table => {
   return table;
 };
 
+let globalTablesUpdate = null;
 module.exports.tick = () => {
   tables.filter(table => table.status === STATUS_PLAYING)
     .forEach(table => {
@@ -317,5 +324,22 @@ module.exports.tick = () => {
       publishTableStatus(table);
     }
   });
+
+  const newUpdate = require('./global').getTablesStatus(tables);
+  if (!R.equals(newUpdate)(globalTablesUpdate)) {
+    globalTablesUpdate = newUpdate;
+    client.publish('clients',
+      JSON.stringify({
+        type: 'tables',
+        payload: globalTablesUpdate,
+      }),
+      undefined,
+      (err) => {
+        if (err) {
+          console.log(err, 'clients tables');
+        }
+      }
+    );
+  }
 };
 
