@@ -6,7 +6,8 @@
   "author": "Benjamin Große",
   "scripts": {
     "start": "node main.js",
-    "test": "mocha"
+    "test": "mocha",
+    "deploy": "rsync -az --force --delete --progress --iconv=utf-8-mac,utf-8 --exclude-from=rsync_exclude.txt -e \"ssh -p22\" ./ gipsy@quedice.host:/home/gipsy/nodice"
   },
   "dependencies": {
     "bluebird": "^3.5.1",

@@ -1,0 +1,8 @@
+rsync_exclude.txt
+.git
+.gitignore
+node_modules
+.env
+Procfile
+yarn-error.log
+
