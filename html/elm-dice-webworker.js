@@ -2,7 +2,7 @@ console.log('elm-dice-webworker reporting in');
 var mqtt = require('mqtt');
 
 function getMqttConfig() {
-  if (self.location.hostname.indexOf('herokuapp.com') === -1) {
+  if (self.location.hostname === 'localhost' || self.location.hostname === 'lvh.me') {
     return {
       protocol: 'ws',
       hostname: 'localhost',
@@ -14,8 +14,8 @@ function getMqttConfig() {
   } else {
     return {
       protocol: 'wss',
-      hostname: 'm21.cloudmqtt.com',
-      port: 31201,
+      hostname: 'mqtt.quedice.host',
+      port: 8084,
       path: 'mqtt',
       username: 'web',
       password: 'web',
