@@ -8,7 +8,8 @@
     "watch": "webpack --watch",
     "start": "webpack-dev-server",
     "heroku-postbuild": "yarn build",
-    "test": "bundlesize"
+    "test": "bundlesize",
+    "deploy": "rsync -az --force --delete --progress --exclude-from=rsync_exclude.txt -e \"ssh -p22\" ./dist/ gipsy@quedice.host:/var/www/quedice.host/"
   },
   "repository": {
     "type": "git",

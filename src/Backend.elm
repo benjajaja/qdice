@@ -23,10 +23,10 @@ connect =
 
 baseUrl : Location -> String
 baseUrl location =
-    if String.endsWith "herokuapp.com" location.hostname then
+    if "localhost" == location.hostname || "lvh.me" == location.hostname then
         "https://elm-dice-server.herokuapp.com"
     else
-        location.protocol ++ "//" ++ location.hostname ++ ":5001"
+        location.protocol ++ "//api.quedice.host"
 
 
 init : Location -> Table -> ( Model, Cmd Msg )
