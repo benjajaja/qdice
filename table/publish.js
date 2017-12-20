@@ -12,8 +12,10 @@ module.exports.setMqtt = client_ => {
   client = client_;
 };
 
-module.exports.tableStatus = table => {
-  client.publish('tables/' + table.name + '/clients',
+module.exports.tableStatus = (table, clientId) => {
+  client.publish(clientId
+    ? `clients/${clientId}`
+    : `tables/${table.name}/clients`,
     JSON.stringify({
       type: 'update',
       payload: serializeTable(table),

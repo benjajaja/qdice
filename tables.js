@@ -70,7 +70,7 @@ module.exports.command = function(req, res, next) {
   const command = req.context.command;
   switch (command) {
     case 'Enter':
-      enter(req.user, table, res, next);
+      enter(req.user, table, req.body, res, next);
       break;
     case 'Join':
       join(req.user, table, res, next);
@@ -92,10 +92,9 @@ module.exports.command = function(req, res, next) {
 const enterCounter = probe.counter({
   name : 'Table enter',
 });
-const enter = (user, table, res, next) => {
+const enter = (user, table, clientId, res, next) => {
   const player = Player(user);
-  // TODO: publish only to client
-  publish.tableStatus(table);
+  publish.tableStatus(table, clientId);
   enterCounter.inc();
   res.send(204);
   next();
