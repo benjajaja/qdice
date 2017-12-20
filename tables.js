@@ -1,4 +1,14 @@
 const R = require('ramda');
+const probe = require('pmx').probe();
+
+const publishTableMeter = probe.meter({
+  name: 'Table mqtt updates',
+  samples: 1,
+  timeFrame: 60,
+});
+const updateCounter = probe.counter({
+  name : 'Global mqtt updates'
+});
 
 const maps = require('./maps');
 const { rand, diceRoll } = require('./rand');
@@ -241,6 +251,7 @@ const publishTableStatus = table => {
 			}
 		}
   );
+  publishTableMeter.mark();
 };
 
 const publishMove = (table, move) => {
@@ -381,6 +392,11 @@ module.exports.tick = () => {
         }
       }
     );
+    probe.metric({
+      name: 'Players',
+      value: R.always(R.sum(R.map(R.prop('playerCount'))(newUpdate))),
+    });
+    updateCounter.inc();
   }
 };
 
