@@ -9,19 +9,7 @@ const corsMiddleware = require('restify-cors-middleware');
 const jwt = require('restify-jwt-community');
 
 
-const server = restify.createServer({
-  formatters: {
-    //'application/json': (request, response, body) => {
-      //if (body instanceof Error) {
-        //console.error('oh boy it pooped again', body);
-        //return JSON.stringify({
-          //error: '💣 Error: ' + body.message
-        //});
-      //}
-      //return JSON.stringify(body);
-    //},
-  },
-});
+const server = restify.createServer();
 server.pre(restify.pre.userAgentConnection());
 server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.authorizationParser());
@@ -60,9 +48,19 @@ server.use(jwt({
     return null;
   },
 }).unless({path: ['/login']}));
-server.on('restifyError', function(req, res, err, callback) {
-  console.error(err);
-  return callback();
+//server.use((error, req, res, next) => {
+  //if (error) {
+    //console.error(error);
+  //}
+  //next(error);
+//});
+//server.on('restifyError', function(req, res, err, callback) {
+  //console.error(err);
+  //return callback();
+//});
+server.on('uncaughtException', function (req, res, err, cb) {
+    console.log(err);
+    return cb();
 });
 
 server.post('/login', require('./user').login);
@@ -93,23 +91,6 @@ tables.setMqtt(client);
  
 client.on('connect', function () {
   console.log('mqtt connected');
-
-  client.subscribe(
-    tables.keys.map(table => 'tables/' + table + '/server')
-      .concat(tables.keys.map(table => 'tables/' + table + '/broadcast'))
-      .concat(['presence']),
-    (err, granted) => {
-      console.log(err, granted)
-      client.publish('presence', 'Hello mqtt', undefined, (err) => console.log(err, 'published presence'));
-    });
-
-});
-
-client.on('message', function (topic, message) {
-  // message is Buffer 
-  //console.log('============== MESSAGE =============');
-  //console.log(topic, message.toString())
-  // client.end()
 });
 
 client.on('error', err => console.error(err));
