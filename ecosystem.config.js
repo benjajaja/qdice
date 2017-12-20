@@ -16,7 +16,7 @@ module.exports = {
         GOOGLE_OAUTH_SECRET: 'e8Nkmj9X05_hSrrREcRuDCFj',
         PORT: 5001,
         JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
-        MQTT_URL: 'mqtt://localhost:1188',
+        MQTT_URL: 'mqtt://localhost:11883',
       }
     },
 

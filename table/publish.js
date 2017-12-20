@@ -10,17 +10,6 @@ const publishTableMeter = probe.meter({
 let client;
 module.exports.setMqtt = client_ => {
   client = client_;
-  client.on('connect', function () {
-    //client.on('message', (topic, message) => {
-      //if (topic.indexOf('tables/') !== 0) return;
-      //const [ _, tableName, channel ] = topic.split('/');
-      //const table = findTable(tables)(tableName);
-      //if (!table) throw new Error('table not found: ' + tableName);
-      //const { type, payload } = JSON.parse(message);
-      //publishTableStatus(table);
-    //});
-    //tables.forEach(publishTableStatus);
-  });
 };
 
 module.exports.tableStatus = table => {

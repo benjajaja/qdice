@@ -48,16 +48,6 @@ server.use(jwt({
     return null;
   },
 }).unless({path: ['/login']}));
-//server.use((error, req, res, next) => {
-  //if (error) {
-    //console.error(error);
-  //}
-  //next(error);
-//});
-//server.on('restifyError', function(req, res, err, callback) {
-  //console.error(err);
-  //return callback();
-//});
 server.on('uncaughtException', function (req, res, err, cb) {
     console.log(err);
     return cb();
@@ -82,7 +72,7 @@ setInterval(function tick() {
 
 
 const mqtt = require('mqtt');
-console.log('connecting to mqtt...');
+console.log('connecting to mqtt: ' + process.env.MQTT_URL);
 var client = mqtt.connect(process.env.MQTT_URL, {
   username: process.env.MQTT_USERNAME,
   password: process.env.MQTT_PASSWORD,

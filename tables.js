@@ -89,15 +89,20 @@ module.exports.command = function(req, res, next) {
   }
 };
 
+const enterCounter = probe.counter({
+  name : 'Table enter',
+});
 const enter = (user, table, res, next) => {
   const player = Player(user);
   // TODO: publish only to client
   publish.tableStatus(table);
+  enterCounter.inc();
   res.send(204);
   next();
 };
 
 const join = (user, table, res, next) => {
+  console.log('join', user.name);
   if (table.status === STATUS_PLAYING) {
     res.send(406);
     return next();
