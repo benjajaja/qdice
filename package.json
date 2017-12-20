@@ -9,6 +9,16 @@
     "test": "mocha",
     "deploy": "./scripts/deploy.sh"
   },
+  "deploy": {
+    "production": {
+      "user": "gipsy",
+      "host": ["quedice.host"],
+      "ref": "origin/master",
+      "repo": "git@bitbucket.org:easy-rider/nodice-server.git",
+      "path": "/home/gipsy/nodice",
+      "post-deploy": "yarn"
+    }
+  },
   "dependencies": {
     "bluebird": "^3.5.1",
     "honeycomb-grid": "^0.6.1",
