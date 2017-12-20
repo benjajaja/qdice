@@ -4,21 +4,6 @@ const jwt = require('jsonwebtoken');
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 if (!GOOGLE_OAUTH_SECRET) throw new Error('GOOGLE_OAUTH_SECRET env var not found');
 
-const redis = (() => {
-  if (process.env.REDISTOGO_URL) {
-    var rtg   = require("url").parse(process.env.REDISTOGO_URL);
-    var redis = require('bluebird').promisifyAll(require("redis"));
-
-    const client = redis.createClient(rtg.port, rtg.hostname);
-
-    client.auth(rtg.auth.split(":")[1]);
-    return client;
-  } else {
-    var redis = require('bluebird').promisifyAll(require("redis"));
-    return redis.createClient();
-  }
-})();
-
 exports.login = function(req, res, next) {
   request({
     url: 'https://www.googleapis.com/oauth2/v4/token',
