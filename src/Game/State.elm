@@ -77,6 +77,16 @@ updateCommandResponse table action model =
     model ! []
 
 
+findUserPlayer : Types.User -> List Player -> Maybe Player
+findUserPlayer user players =
+    case user of
+        Types.Anonymous ->
+            Nothing
+
+        Types.Logged user ->
+            List.head <| List.filter (\p -> p.id == user.id) players
+
+
 updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
 updateTableStatus model status =
     let
@@ -84,12 +94,14 @@ updateTableStatus model status =
             model.game
 
         player =
-            case model.user of
-                Types.Anonymous ->
-                    Nothing
+            findUserPlayer model.user status.players
 
-                Types.Logged user ->
-                    List.head <| List.filter (\p -> p.id == user.id) status.players
+        hasChangedTurn : Maybe Player
+        hasChangedTurn =
+            if game.turnIndex /= status.turnIndex then
+                List.drop status.turnIndex status.players |> List.head
+            else
+                Nothing
 
         hasTurn =
             case player of
@@ -159,8 +171,19 @@ updateTableStatus model status =
                 , turnStarted = status.turnStarted
                 , board = board_
             }
+
+        ( model_, turnChangeCmd ) =
+            { model | game = game_ }
+                |> (\m ->
+                        case hasChangedTurn of
+                            Just player ->
+                                updateChatLog m <| LogTurn player.name player.color
+
+                            Nothing ->
+                                ( m, Cmd.none )
+                   )
     in
-        { model | game = game_ }
+        model_
             ! [ (if hasStarted then
                     Cmd.batch <|
                         Helpers.playSound "start"
@@ -193,6 +216,7 @@ updateTableStatus model status =
                  else
                     Cmd.none
                 )
+              , turnChangeCmd
               ]
 
 
@@ -284,6 +308,7 @@ clickLand model land =
                 { model | game = game_ } ! [ cmd ]
 
 
+updateTable : Types.Model -> Table -> Backend.Types.TableMessage -> ( Types.Model, Cmd Types.Msg )
 updateTable model table msg =
     if table == model.game.table then
         case msg of

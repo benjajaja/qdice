@@ -102,6 +102,7 @@ body.navigator-standalone textarea {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  height: 200px;
   margin-bottom: 10px;
 }
 .edPlayerChip {
@@ -196,14 +197,42 @@ body.navigator-standalone textarea {
   margin-left: 16px;
 }
 
+.edGame__meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.gamelogContainer {
+  position: relative;
+  pointer-events: none;
+}
+.gamelog {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+}
+.chatbox--line--turn, .chatbox--line--roll {
+  animation: fadeOut 20s linear 1;
+  animation-fill-mode: forwards;
+  /*border-top: 1px dashed #ccc;*/
+}
+@keyframes fadeOut {
+  80% { opacity: 1; }
+  90% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
 .chatboxContainer {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 10px;
 }
 .chatbox {
-  height: 20vw;
+  height: 200px;
   display: flex;
-  width: 48%;
 }
 .chatbox--log {
   background-color: white;
@@ -239,4 +268,6 @@ body.navigator-standalone textarea {
 .chatbox--line--error {
   color: #a00;
 }
-
+.chatbox__tag__player {
+  text-shadow: #fff 0 0 4px;
+}

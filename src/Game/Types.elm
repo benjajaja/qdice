@@ -110,6 +110,7 @@ type ChatLogEntry
     | LogChat User String
     | LogError String
     | LogRoll RollLog
+    | LogTurn User Color
 
 
 type alias RollLog =

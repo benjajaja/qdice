@@ -29,8 +29,11 @@ view model =
         Html.div [ class "edGame" ]
             [ header model
             , board
-            , Html.div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view model) model.game.players
-            , boardHistory model
+            , gameLogOverlay model
+            , Html.div [ class "edGame__meta" ]
+                [ Html.div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view model) model.game.players
+                , boardHistory model
+                ]
             , footer model
             ]
 
@@ -134,13 +137,21 @@ endTurnButton model =
         [ Html.text "End turn" ]
 
 
+gameLogOverlay : Model -> Html.Html Types.Msg
+gameLogOverlay model =
+    Game.Chat.gameBox model.mdl model.game.gameLog <|
+        "gameLog-"
+            ++ (toString model.game.table)
+
+
 boardHistory : Model -> Html.Html Types.Msg
 boardHistory model =
     Html.div [ class "chatboxContainer" ]
-        [ Game.Chat.chatBox False "" model.mdl model.game.gameLog <|
-            "gameLog-"
-                ++ (toString model.game.table)
-        , (if not model.isTelegram then
+        [ --Game.Chat.chatBox False "" model.mdl model.game.gameLog <|
+          --"gameLog-"
+          --++ (toString model.game.table)
+          --,
+          (if not model.isTelegram then
             Game.Chat.chatBox True model.game.chatInput model.mdl model.game.chatLog <|
                 "chatLog-"
                     ++ (toString model.game.table)

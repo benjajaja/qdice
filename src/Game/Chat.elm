@@ -14,6 +14,8 @@ import Material.Icon as Icon
 import Material.Button as Button
 import Game.Types exposing (PlayerAction(..), ChatLogEntry(..), RollLog, Model)
 import Tables exposing (Table)
+import Land exposing (Color)
+import Board.Colors exposing (baseCssRgb)
 
 
 chatBox : Bool -> String -> Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
@@ -26,7 +28,7 @@ chatBox hasInput inputValue mdl lines id =
                         LogChat user message ->
                             div [ class "chatbox--line--chat" ]
                                 [ Html.span []
-                                    [ Html.text <| user ++ ":" ]
+                                    [ Html.text <| user ++ ": " ]
                                 , Html.span []
                                     [ Html.text message ]
                                 ]
@@ -39,12 +41,8 @@ chatBox hasInput inputValue mdl lines id =
                             div [ class "chatbox--line--leave" ]
                                 [ Html.text <| user ++ " left" ]
 
-                        LogError error ->
-                            div [ class "chatbox--line--error" ]
-                                [ Html.text <| error ]
-
-                        LogRoll roll ->
-                            rollLine roll
+                        _ ->
+                            Html.text "^M"
                 )
                 lines
             )
@@ -104,6 +102,49 @@ toChatError table action err =
                 BadUrl error ->
                     "Missing URL: " ++ error
            )
+
+
+gameBox : Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
+gameBox mdl lines id =
+    Html.div [ class "gamelogContainer" ]
+        [ Html.div [ class "gamelog", Html.Attributes.id id ] <|
+            (List.map
+                (\c ->
+                    case c of
+                        LogChat user message ->
+                            Html.text "\x00"
+
+                        LogJoin user ->
+                            Html.text "\x01"
+
+                        LogLeave user ->
+                            Html.text "\x02"
+
+                        LogError error ->
+                            div [ class "chatbox--line--error" ]
+                                [ Html.text <| error ]
+
+                        LogRoll roll ->
+                            rollLine roll
+
+                        LogTurn user color ->
+                            div [ class "chatbox--line--turn" ]
+                                [ playerTag user color
+                                , Html.text "'s turn"
+                                ]
+                )
+                lines
+            )
+        ]
+
+
+playerTag : Game.Types.User -> Color -> Html Types.Msg
+playerTag name color =
+    Html.span
+        [ class <| "chatbox__tag__player chatbox__tag__player--" ++ (toString color)
+        , style [ ( "color", baseCssRgb color ) ]
+        ]
+        [ Html.text <| name ]
 
 
 rollLine : RollLog -> Html Types.Msg

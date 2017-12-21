@@ -46,14 +46,10 @@ type AllClientsMessage
     = TablesInfo (List Game.Types.TableInfo)
 
 
-type alias User =
-    String
-
-
 type TableMessage
-    = Join User
-    | Chat User String
-    | Leave User
+    = Join Game.Types.User
+    | Chat Game.Types.User String
+    | Leave Game.Types.User
     | Update Game.Types.TableStatus
     | Roll Game.Types.Roll
     | Move Game.Types.Move
