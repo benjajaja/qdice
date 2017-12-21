@@ -9,6 +9,7 @@ const {
 } = require('../constants');
 const nextTurn = require('./turn');
 const publish = require('./publish');
+const startGame = require('./start');
 
 let globalTablesUpdate = null;
 
@@ -22,6 +23,16 @@ module.exports = tables => {
     .forEach(table => {
     if (table.turnStarted < Date.now() / 1000 - (TURN_SECONDS + 1)) {
       nextTurn(table);
+      publish.tableStatus(table);
+    }
+  });
+
+  tables.filter(table => table.status !== STATUS_PLAYING)
+    .forEach(table => {
+    if (table.players.length >= 2
+        && table.gameStart !== 0
+        && table.gameStart + 1 < Date.now() / 1000) {
+      startGame(table);
       publish.tableStatus(table);
     }
   });

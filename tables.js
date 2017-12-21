@@ -5,6 +5,7 @@ const maps = require('./maps');
 const { rand, diceRoll } = require('./rand');
 const publish = require('./table/publish');
 const nextTurn = require('./table/turn');
+const startGame = require('./table/start');
 const {
   STATUS_PAUSED,
   STATUS_PLAYING,
@@ -12,7 +13,7 @@ const {
 } = require('./constants');
 
 
-const keys = ['Melchor', 'Miño', 'Avocado', ]; //'Sabicas' ];
+const keys = ['Melchor', 'Miño', 'Avocado', 'Sabicas' ];
 
 
 const Table = name => ({
@@ -20,6 +21,7 @@ const Table = name => ({
   players: [],
   playerSlots: 2,
   status: STATUS_PAUSED,
+  gameStart: 0,
   turnIndex: -1,
   turnStarted: 0,
   lands: [],
@@ -49,11 +51,14 @@ const Player = user => ({
   
 console.log('loading tables and calculating adjacency matrices...');
 const tables = keys.map(key =>loadLands(Table(key)));
-tables[2].playerSlots = 3;
+tables[0].playerSlots = 4;
+tables[2].playerSlots = 5;
+tables[3].playerSlots = 7;
 
 module.exports.getTables = function() {
   return tables;
 };
+
 
 const findTable = tables => name => tables.filter(table => table.name === name).pop();
 const findLand = lands => emoji => lands.filter(land => land.emoji === emoji).pop();
@@ -117,6 +122,10 @@ const join = (user, table, res, next) => {
   if (table.players.length === table.playerSlots) {
     startGame(table);
   } else {
+    if (table.players.length >= 2 &&
+      Math.ceil(table.playerSlots / 2) <= table.players.length) {
+      table.gameStart = Math.floor(Date.now() / 1000) + 30;
+    }
     publish.tableStatus(table);
   }
   res.send(204);
@@ -134,6 +143,12 @@ const leave = (user, table, res, next) => {
     return next(new Error('not joined'));
   } else {
     table.players = table.players.filter(p => p !== existing);
+  }
+  if (table.players.length >= 2 &&
+    Math.ceil(table.playerSlots / 2) <= table.players.length) {
+    table.gameStart = Math.floor(Date.now() / 1000) + 30;
+  } else {
+    table.gameStart = 0;
   }
   table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1 }));
   publish.tableStatus(table);
@@ -169,9 +184,7 @@ const attack = (user, table, [emojiFrom, emojiTo], res, next) => {
           table.players = table.players.filter(R.complement(R.equals(loser)));
           console.log('player lost:', loser);
           if (table.players.length === 1) {
-            table.players = [];
-            table.status = STATUS_FINISHED;
-            table.turnIndex = -1;
+            endGame(table);
           }
           table.turnIndex = table.players.indexOf(turnPlayer);
         }
@@ -218,42 +231,19 @@ const endTurn = (user, table, res, next) => {
 
 
 
-const startGame = table => {
-  table.status = STATUS_PLAYING;
-
-  table.lands = table.lands.map(land => Object.assign({}, land, {
-    points: ((r) => {
-      if (r > 0.98)
-        return Math.min(8, table.stackSize + 1);
-      else if (r > 0.90)
-        return table.stackSize;
-      return rand(1, table.stackSize - 1);
-    })(Math.random()),
-    color: -1,
-  }));
-  const startLands = (() => {
-    function shuffle(a) {
-      for (let i = a.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    }
-    return shuffle(table.lands.slice()).slice(0, table.players.length);
-  })();
-  table.players.forEach((player, index) => {
-    const land = startLands[index];
-    land.color = player.color;
-    land.points = 4;
-  });
-  
-  table = nextTurn(table);
-  publish.tableStatus(table);
-  return table;
+const endGame = table => {
+  table.players = [];
+  table.status = STATUS_FINISHED;
+  table.turnIndex = -1;
+  table.gameStart = 0;
 };
 
 const tick = require('./table/tick');
 module.exports.tick = () => tick(module.exports.getTables());
 
-module.exports.setMqtt = (...args) => publish.setMqtt(...args);
+module.exports.setMqtt = (...args) => {
+  publish.setMqtt(...args);
+  // crash recovery
+  tables.forEach(table => publish.tableStatus(table));
+};
 

@@ -8,7 +8,7 @@ module.exports.serializeTable = table => {
   const lands = table.lands.map(({ emoji, color, points }) => ({ emoji, color, points, }));
 
   const result = Object.assign({}, R.pick([
-    'name', 'playerSlots', 'status', 'turnIndex', 'turnStarted'
+    'name', 'playerSlots', 'status', 'turnIndex', 'turnStarted', 'gameStart',
   ])(table), {
     players,
     lands
