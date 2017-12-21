@@ -1,3 +1,4 @@
+const probe = require('pmx').probe();
 const nextTurn = require('./turn');
 const publish = require('./publish');
 const { rand } = require('../rand');
@@ -5,6 +6,9 @@ const {
   STATUS_PLAYING,
 } = require('../constants');
 
+const startCounter = probe.counter({
+  name : 'Games started',
+});
 module.exports = table => {
   table.status = STATUS_PLAYING;
   table.gameStart = Date.now();
@@ -37,7 +41,7 @@ module.exports = table => {
   
   table = nextTurn(table);
   publish.tableStatus(table);
-  console.log('game started', table.name);
+  startCounter.inc();
   return table;
 };
 
