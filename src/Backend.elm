@@ -108,24 +108,17 @@ updateSubscribed model topic =
 subscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
 subscribeGameTable model table =
     let
-        subscribed =
-            model.backend.subscribed
+        _ =
+            if hasSubscribedTable model.backend.subscribed table then
+                Debug.log "already subscribed, subscribing again" model.game.table
+            else
+                table
     in
-        if
-            not <|
-                hasSubscribedTable subscribed table
-        then
-            setStatus SubscribingTable model
-                ! [ subscribe <| Tables model.game.table ClientDirection
-                  , subscribe <| Tables model.game.table ServerDirection
-                  , subscribe <| Tables model.game.table Broadcast
-                  ]
-        else
-            let
-                _ =
-                    Debug.log "already subscribed" model.game.table
-            in
-                model ! []
+        setStatus SubscribingTable model
+            ! [ subscribe <| Tables model.game.table ClientDirection
+              , subscribe <| Tables model.game.table ServerDirection
+              , subscribe <| Tables model.game.table Broadcast
+              ]
 
 
 unsubscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
