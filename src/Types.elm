@@ -62,6 +62,7 @@ type Route
     | StaticPageRoute StaticPage
     | NotFoundRoute
     | MyProfileRoute
+    | TokenRoute String
 
 
 type alias Model =
@@ -77,6 +78,7 @@ type alias Model =
     , tableList : List TableInfo
     , time : Time.Time
     , snackbar : Snackbar.Types.Model
+    , isTelegram : Bool
     }
 
 

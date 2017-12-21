@@ -33,7 +33,6 @@ type alias Model =
     , hasTurn : Bool
     , turnStarted : Int
     , chatInput : String
-    , chatBoxId : String
     , chatLog : List ChatLogEntry
     , gameLog : List ChatLogEntry
     }

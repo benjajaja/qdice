@@ -15,6 +15,7 @@ matchers =
         , map StaticPageRoute (s "static" </> staticPageMatcher)
         , map EditorRoute (s "editor")
         , map MyProfileRoute (s "me")
+        , map TokenRoute (s "token" </> string)
         ]
 
 
@@ -83,3 +84,6 @@ navigateTo route =
 
             MyProfileRoute ->
                 "#me"
+
+            TokenRoute token ->
+                "#token/" ++ token

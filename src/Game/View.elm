@@ -137,8 +137,16 @@ endTurnButton model =
 boardHistory : Model -> Html.Html Types.Msg
 boardHistory model =
     Html.div [ class "chatboxContainer" ]
-        [ Game.Chat.chatBox False "" model.mdl model.game.gameLog "gameLog"
-        , Game.Chat.chatBox True model.game.chatInput model.mdl model.game.chatLog "chatLog"
+        [ Game.Chat.chatBox False "" model.mdl model.game.gameLog <|
+            "gameLog-"
+                ++ (toString model.game.table)
+        , (if not model.isTelegram then
+            Game.Chat.chatBox True model.game.chatInput model.mdl model.game.chatLog <|
+                "chatLog-"
+                    ++ (toString model.game.table)
+           else
+            Html.text ""
+          )
         ]
 
 

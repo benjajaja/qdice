@@ -30,9 +30,14 @@ import MyOauth
 import Snackbar exposing (toast)
 
 
-main : Program Never Model Msg
+type alias Flags =
+    { isTelegram : Bool
+    }
+
+
+main : Program Flags Model Msg
 main =
-    Navigation.program OnLocationChange
+    Navigation.programWithFlags OnLocationChange
         { init = init
         , view = view
         , update = updateWrapper
@@ -40,8 +45,8 @@ main =
         }
 
 
-init : Location -> ( Model, Cmd Msg )
-init location =
+init : Flags -> Location -> ( Model, Cmd Msg )
+init flags location =
     let
         route =
             Routing.parseLocation location
@@ -61,6 +66,23 @@ init location =
         ( oauth, oauthCmds ) =
             MyOauth.init location
 
+        ( backend_, routeCmds ) =
+            case route of
+                TokenRoute token ->
+                    let
+                        backend_ =
+                            { backend | jwt = token }
+                    in
+                        ( backend_
+                        , [ auth [ token ]
+                          , loadMe backend_
+                          , navigateTo <| GameRoute Melchor
+                          ]
+                        )
+
+                _ ->
+                    ( backend, [ Cmd.none ] )
+
         model =
             { route = route
             , mdl = Material.model
@@ -68,17 +90,19 @@ init location =
             , game = game
             , editor = editor
             , myProfile = { name = Nothing }
-            , backend = backend
+            , backend = backend_
             , user = Types.Anonymous
             , tableList = []
             , time = 0
             , snackbar = Snackbar.init
+            , isTelegram = flags.isTelegram
             }
 
         cmds =
             Cmd.batch <|
                 List.concat
-                    [ [ gameCmd ]
+                    [ routeCmds
+                    , [ gameCmd ]
                     , [ hide "peekaboo"
                       , Cmd.map EditorMsg editorCmd
                       , backendCmd
@@ -144,7 +168,7 @@ update msg model =
                         oauth_ =
                             { oauth | error = Just "unable to fetch user profile ¯\\_(ツ)_/¯" }
                     in
-                        { model | oauth = oauth_ } ! []
+                        toast { model | oauth = oauth_ } <| "Could not load profile"
 
                 Ok token ->
                     let
@@ -376,8 +400,18 @@ view model =
     Layout.render Mdl
         model.mdl
         [ Layout.fixedHeader, Layout.scrolling ]
-        { header = (lazyList header) model
-        , drawer = (lazyList drawer) model
+        { header =
+            (if not model.isTelegram then
+                (lazyList header) model
+             else
+                []
+            )
+        , drawer =
+            (if not model.isTelegram then
+                (lazyList drawer) model
+             else
+                []
+            )
         , tabs = ( [], [] )
         , main =
             [ Html.div [ Html.Attributes.class "Main" ] [ mainView model ]
@@ -459,6 +493,9 @@ mainView model =
 
                 Logged user ->
                     MyProfile.MyProfile.view model user
+
+        TokenRoute token ->
+            Html.text "Getting user ready..."
 
 
 mainViewSubscriptions : Model -> Sub Msg

@@ -1,4 +1,4 @@
-module Game.State exposing (..)
+port module Game.State exposing (..)
 
 import Task
 import Dom.Scroll exposing (..)
@@ -40,7 +40,6 @@ init model table =
           , hasTurn = False
           , turnStarted = -1
           , chatInput = ""
-          , chatBoxId = ("chatbox-" ++ toString table)
           , chatLog = []
           , gameLog = []
           }
@@ -373,17 +372,18 @@ updateChatLog model entry =
         addToGameLog =
             { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }
     in
-        ( case entry of
+        case entry of
             LogJoin _ ->
-                addToChatLog
+                ( addToChatLog, scrollElement <| "chatLog-" ++ (toString model.game.table) )
 
             LogLeave _ ->
-                addToChatLog
+                ( addToChatLog, scrollElement <| "chatLog-" ++ (toString model.game.table) )
 
             LogChat _ _ ->
-                addToChatLog
+                ( addToChatLog, scrollElement <| "chatLog-" ++ (toString model.game.table) )
 
             _ ->
-                addToGameLog
-        , Task.attempt (always Types.Nop) <| Dom.Scroll.toBottom model.game.chatBoxId
-        )
+                ( addToGameLog, scrollElement <| "gameLog-" ++ (toString model.game.table) )
+
+
+port scrollElement : String -> Cmd msg
