@@ -65,6 +65,25 @@ gameCommand model table playerAction =
             }
 
 
+enter : Model -> Table -> String -> Cmd Msg
+enter model table clientId =
+    Http.send (GameCommandResponse table <| Enter) <|
+        Http.request
+            { method = "POST"
+            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
+            , url =
+                (model.baseUrl
+                    ++ "/tables/"
+                    ++ (toString table)
+                    ++ "/Enter"
+                )
+            , body = Http.stringBody "text/plain" clientId
+            , expect = Http.expectStringResponse (\_ -> Ok ())
+            , timeout = Nothing
+            , withCredentials = False
+            }
+
+
 attack : Model -> Table -> Land.Emoji -> Land.Emoji -> Cmd Msg
 attack model table from to =
     Http.send (GameCommandResponse table <| Attack from to) <|

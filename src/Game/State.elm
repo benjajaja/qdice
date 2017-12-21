@@ -33,6 +33,7 @@ init model table =
           , players = players
           , player = Nothing
           , status = Paused
+          , gameStart = Nothing
           , playerSlots = 0
           , turnDuration = 10
           , turnIndex = -1
@@ -135,11 +136,25 @@ updateTableStatus model status =
         hasFinished =
             game.status == Playing && status.status == Finished
 
+        gameStart =
+            case status.status of
+                Playing ->
+                    Nothing
+
+                _ ->
+                    case status.gameStart of
+                        0 ->
+                            Nothing
+
+                        timestamp ->
+                            Just timestamp
+
         game_ =
             { game
                 | players = status.players
                 , player = player
                 , status = status.status
+                , gameStart = gameStart
                 , turnIndex = status.turnIndex
                 , hasTurn = hasTurn
                 , turnStarted = status.turnStarted

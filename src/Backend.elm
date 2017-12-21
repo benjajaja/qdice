@@ -24,7 +24,7 @@ connect =
 baseUrl : Location -> String
 baseUrl location =
     if "localhost" == location.hostname || "lvh.me" == location.hostname then
-        "https://elm-dice-server.herokuapp.com"
+        "http://localhost:5001"
     else
         location.protocol ++ "//api.quedice.host"
 
@@ -96,7 +96,7 @@ updateSubscribed model topic =
                             else if hasSubscribedTable subscribed table then
                                 setStatus Online model_
                                     ! [ publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
-                                      , gameCommand model.backend model_.game.table Enter
+                                      , enter model.backend model_.game.table clientId
                                       ]
                             else
                                 model_ ! []
@@ -176,7 +176,7 @@ subscriptions model =
         , mqttOnReconnect StatusReconnect
         , mqttOnConnected Connected
         , mqttOnSubscribed <| decodeSubscribed model.backend.clientId
-        , mqttOnMessage <| decodeMessage model.backend.clientId
+        , mqttOnMessage <| decodeMessage model.backend.clientId <| Just model.game.table
         , onToken LoadToken
         ]
 
@@ -196,24 +196,28 @@ decodeSubscribed clientId stringTopic =
                     UnknownTopicMessage "unknown topic" stringTopic "*subscribed"
 
 
-decodeMessage : Maybe ClientId -> ( String, String ) -> Msg
-decodeMessage clientId ( stringTopic, message ) =
+decodeMessage : Maybe ClientId -> Maybe Table -> ( String, String ) -> Msg
+decodeMessage clientId table ( stringTopic, message ) =
     case clientId of
         Nothing ->
             UnknownTopicMessage "no client id yet" stringTopic "-"
 
         Just clientId ->
-            case decodeTopic clientId stringTopic of
-                Just topic ->
-                    case decodeTopicMessage topic message of
-                        Ok msg ->
-                            msg
+            let
+                _ =
+                    Debug.log "mqtt message" stringTopic
+            in
+                case decodeTopic clientId stringTopic of
+                    Just topic ->
+                        case decodeTopicMessage table topic message of
+                            Ok msg ->
+                                msg
 
-                        Err err ->
-                            UnknownTopicMessage err stringTopic message
+                            Err err ->
+                                UnknownTopicMessage err stringTopic message
 
-                Nothing ->
-                    UnknownTopicMessage "unrecognized topic" stringTopic message
+                    Nothing ->
+                        UnknownTopicMessage "unrecognized topic" stringTopic message
 
 
 decodeTopic : ClientId -> String -> Maybe Topic

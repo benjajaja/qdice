@@ -16,6 +16,7 @@ import Types exposing (Model, Msg(..))
 import Tables exposing (Table, tableList)
 import Board
 import Backend.Types exposing (ConnectionStatus(..))
+import Time exposing (inMilliseconds)
 
 
 view : Model -> Html.Html Types.Msg
@@ -45,21 +46,31 @@ header model =
                     [ Html.text <| toString model.game.table
                     ]
                 ]
-            , Html.span [ class "edGameHeader__chip" ]
-                [ Html.text ", "
-                , Html.span [ class "edGameHeader__chip--strong" ]
-                    [ Html.text <|
-                        (if model.game.playerSlots == 0 then
-                            "∅"
-                         else
-                            toString model.game.playerSlots
-                        )
+            , Html.span [ class "edGameHeader__chip" ] <|
+                List.append
+                    [ Html.text ", "
+                    , Html.span [ class "edGameHeader__chip--strong" ]
+                        [ Html.text <|
+                            (if model.game.playerSlots == 0 then
+                                "∅"
+                             else
+                                toString model.game.playerSlots
+                            )
+                        ]
+                    , Html.text " player game is "
+                    , Html.span [ class "edGameHeader__chip--strong" ]
+                        [ Html.text <| toString model.game.status ]
                     ]
-                , Html.text " player game is "
-                , Html.span [ class "edGameHeader__chip--strong" ]
-                    [ Html.text <| toString model.game.status
-                    ]
-                ]
+                    (case model.game.gameStart of
+                        Nothing ->
+                            []
+
+                        Just timestamp ->
+                            [ Html.text " starting in "
+                            , Html.span [ class "edGameHeader__chip--strong" ]
+                                [ Html.text <| (toString (round <| (toFloat timestamp) - (inMilliseconds model.time / 1000))) ++ "s" ]
+                            ]
+                    )
             ]
         , Html.div [ class "edGameHeader__buttons" ]
             [ endTurnButton model

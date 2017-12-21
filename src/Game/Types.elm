@@ -26,6 +26,7 @@ type alias Model =
     , players : List Player
     , player : Maybe Player
     , status : GameStatus
+    , gameStart : Maybe Int
     , playerSlots : Int
     , turnDuration : Int
     , turnIndex : Int
@@ -67,6 +68,7 @@ type alias TableStatus =
     { players : List Player
     , playerSlots : Int
     , status : GameStatus
+    , gameStart : Int
     , turnIndex : Int
     , turnStarted : Int
     , lands : List LandUpdate

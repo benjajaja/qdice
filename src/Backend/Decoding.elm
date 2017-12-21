@@ -29,6 +29,7 @@ tableDecoder =
         |> required "players" (list playersDecoder)
         |> required "playerSlots" int
         |> required "status" gameStatusDecoder
+        |> required "gameStart" int
         |> required "turnIndex" int
         |> required "turnStarted" int
         |> required "lands" (list landsUpdateDecoder)

@@ -17,8 +17,6 @@ function getMqttConfig() {
       hostname: 'mqtt.quedice.host',
       port: 8084,
       path: 'mqtt',
-      username: 'web',
-      password: 'web',
     };
   }
 }

@@ -13,11 +13,20 @@ type alias ChatMessage =
     { username : String, message : String }
 
 
-decodeTopicMessage : Topic -> String -> Result String Msg
-decodeTopicMessage topic message =
+
+-- Maybe Table because it might be a table message for this client only
+
+
+decodeTopicMessage : Maybe Table -> Topic -> String -> Result String Msg
+decodeTopicMessage table topic message =
     case topic of
         Client id ->
-            Err "not implemented"
+            case table of
+                Just table ->
+                    decodeTableMessage table message
+
+                Nothing ->
+                    Err "not implemented"
 
         AllClients ->
             case decodeString (field "type" Dec.string) message of
