@@ -53,7 +53,7 @@ console.log('loading tables and calculating adjacency matrices...');
 const tables = keys.map(key =>loadLands(Table(key)));
 tables[0].playerSlots = 4;
 tables[2].playerSlots = 5;
-tables[3].playerSlots = 7;
+if (tables[3]) tables[3].playerSlots = 7;
 
 module.exports.getTables = function() {
   return tables;
@@ -98,7 +98,6 @@ const enterCounter = probe.counter({
   name : 'Table enter',
 });
 const enter = (user, table, clientId, res, next) => {
-  const player = Player(user);
   publish.tableStatus(table, clientId);
   enterCounter.inc();
   res.send(204);
@@ -130,6 +129,7 @@ const join = (user, table, res, next) => {
   }
   res.send(204);
   next();
+  require('./telegram').notify(`${user.name} joined https://quedice.host/#${table.name}`);
 };
 
 

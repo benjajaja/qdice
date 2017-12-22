@@ -12,7 +12,9 @@
   "deploy": {
     "production": {
       "user": "gipsy",
-      "host": ["quedice.host"],
+      "host": [
+        "quedice.host"
+      ],
       "ref": "origin/master",
       "repo": "git@bitbucket.org:easy-rider/nodice-server.git",
       "path": "/home/gipsy/nodice",
@@ -30,7 +32,8 @@
     "request": "^2.83.0",
     "restify": "^6.3.4",
     "restify-cors-middleware": "^1.0.1",
-    "restify-jwt-community": "^1.0.0"
+    "restify-jwt-community": "^1.0.0",
+    "telegraf": "^3.17.2"
   },
   "devDependencies": {
     "mocha": "^4.0.1"
