@@ -10,6 +10,7 @@ const {
   STATUS_PLAYING,
   STATUS_FINISHED,
   COLOR_NEUTRAL,
+  GAME_START_COUNTDOWN,
 } = require('./constants');
 const { findTable, hasTurn } = require('./helpers');
 
@@ -122,7 +123,7 @@ const join = (user, table, res, next) => {
   } else {
     if (table.players.length >= 2 &&
       Math.ceil(table.playerSlots / 2) <= table.players.length) {
-      table.gameStart = Math.floor(Date.now() / 1000) + 10;
+      table.gameStart = Math.floor(Date.now() / 1000) + GAME_START_COUNTDOWN;
     }
     publish.tableStatus(table);
   }
