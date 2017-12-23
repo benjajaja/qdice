@@ -2,6 +2,9 @@ const fs = require('fs');
 const R = require('ramda');
 const { Grid, HEX_ORIENTATIONS } = require('honeycomb-grid');
 const { rand } = require('./rand');
+const {
+  COLOR_NEUTRAL,
+} = require('./constants');
 
 const grid = Grid({
   size: 100,
@@ -29,7 +32,7 @@ module.exports.loadMap = tableName => {
     .filter(R.complement(R.equals('\u3000')))
     .map(emoji => ({
       emoji: emoji,
-      color: -1,
+      color: COLOR_NEUTRAL,
       points: rand(1, 5),
     }));
 

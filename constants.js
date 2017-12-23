@@ -3,3 +3,4 @@ exports.STATUS_PLAYING = 'PLAYING';
 exports.STATUS_FINISHED = 'FINISHED';
 exports.TURN_SECONDS = 10;
 
+exports.COLOR_NEUTRAL = -1;

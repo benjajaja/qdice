@@ -31,7 +31,7 @@ module.exports = tables => {
     .forEach(table => {
     if (table.players.length >= 2
         && table.gameStart !== 0
-        && table.gameStart + 1 < Date.now() / 1000) {
+        && table.gameStart < Date.now() / 1000) {
       startGame(table);
       publish.tableStatus(table);
     }
