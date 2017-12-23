@@ -271,3 +271,27 @@ body.navigator-standalone textarea {
 .chatbox__tag__player {
   text-shadow: #fff 0 0 4px;
 }
+
+.footer--profile-link {
+  height: 50px;
+  padding-right: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+  color: #9e9e9e;
+}
+.footer--profile-link img {
+  flex: 0 0 auto;
+  display: block;
+  max-height: 80%;
+  border-radius: 50%;
+  margin-left: 16px;
+}
+
+
+@media screen and (min-width: 1024px) {
+  .footer--profile-link {
+    display: none;
+  }
+}

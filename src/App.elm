@@ -12,6 +12,7 @@ import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
+import Material.Footer as Footer
 import Types exposing (..)
 import Game.Types exposing (PlayerAction(..))
 import Game.State
@@ -28,6 +29,7 @@ import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionS
 import Tables exposing (Table(..), tableList)
 import MyOauth
 import Snackbar exposing (toast)
+import Footer exposing (footer)
 
 
 type alias Flags =
@@ -85,7 +87,7 @@ init flags location =
 
         model =
             { route = route
-            , mdl = Material.model
+            , mdl = Debug.log "mdl" Material.model
             , oauth = oauth
             , game = game
             , editor = editor
@@ -399,7 +401,9 @@ view : Model -> Html.Html Msg
 view model =
     Layout.render Mdl
         model.mdl
-        [ Layout.fixedHeader, Layout.scrolling ]
+        [ Layout.scrolling
+          --, Layout.fixedHeader
+        ]
         { header =
             (if not model.isTelegram then
                 (lazyList header) model
@@ -407,14 +411,18 @@ view model =
                 []
             )
         , drawer =
-            (if not model.isTelegram then
-                (lazyList drawer) model
-             else
-                []
-            )
+            []
+            --(if not model.isTelegram then
+            --(lazyList drawer) model
+            --else
+            --[]
+            --)
         , tabs = ( [], [] )
         , main =
-            [ Html.div [ Html.Attributes.class "Main" ] [ mainView model ]
+            [ Html.div [ Html.Attributes.class "Main" ]
+                [ mainView model
+                , footer model
+                ]
             , Snackbar.view model.snackbar |> Html.map Snackbar
             ]
         }

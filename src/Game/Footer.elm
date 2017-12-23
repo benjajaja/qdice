@@ -12,15 +12,19 @@ import Material.List as Lists
 import Material.Table as Table
 import Types exposing (Model, Msg(..))
 import Tables exposing (Table, tableList)
-import Backend.Types exposing (ConnectionStatus(..))
 
 
 footer : Model -> Html.Html Types.Msg
 footer model =
-    Footer.mini []
-        { left =
-            Footer.left [] (statusMessage model.backend.status)
-        , right = Footer.right [] [ Footer.html <| listOfTables model ]
+    Footer.mega []
+        { top =
+            Footer.top []
+                { left = Footer.left [] []
+                , right = Footer.right [] []
+                }
+        , middle =
+            Footer.middle [] [ Footer.html <| listOfTables model ]
+        , bottom = Footer.bottom [] []
         }
 
 
@@ -93,47 +97,3 @@ goToTableButton model table i =
         , Options.onClick (Types.NavigateTo <| Types.GameRoute table.table)
         ]
         [ Icon.i "chevron_right" ]
-
-
-statusMessage : ConnectionStatus -> List (Footer.Content Types.Msg)
-statusMessage status =
-    let
-        message =
-            case status of
-                Reconnecting attempts ->
-                    case attempts of
-                        1 ->
-                            "Reconnecting..."
-
-                        count ->
-                            "Reconnecting... (" ++ (toString attempts) ++ " retries)"
-
-                _ ->
-                    toString status
-
-        icon =
-            case status of
-                Offline ->
-                    "signal_wifi_off"
-
-                Connecting ->
-                    "wifi_lock"
-
-                Reconnecting _ ->
-                    "wifi_lock"
-
-                SubscribingGeneral ->
-                    "wifi"
-
-                SubscribingTable ->
-                    "perm_scan_wifi"
-
-                Online ->
-                    "network_wifi"
-    in
-        [ Footer.html <|
-            Html.div [ class "edGameStatus" ]
-                [ Html.div [] [ Icon.i icon ]
-                , Html.div [] [ Html.text message ]
-                ]
-        ]
