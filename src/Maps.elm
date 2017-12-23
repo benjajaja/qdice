@@ -3,10 +3,7 @@ module Maps exposing (load, toCharList, consoleLogMap)
 import Dict
 import String
 import Land exposing (Cells)
-import Maps.Melchor
-import Maps.Miño
-import Maps.Sabicas
-import Maps.Avocado
+import Maps.Sources exposing (mapSourceString)
 import Regex
 import Helpers exposing (..)
 import Tables exposing (Table(..))
@@ -28,22 +25,6 @@ type alias LineColRow =
 
 type alias Line =
     List ( LineColRow, String )
-
-
-mapSourceString : Table -> MapSource
-mapSourceString table =
-    case table of
-        Melchor ->
-            Maps.Melchor.map
-
-        Miño ->
-            Maps.Miño.map
-
-        Sabicas ->
-            Maps.Sabicas.map
-
-        Avocado ->
-            Maps.Avocado.map
 
 
 emojiRegex : Regex.Regex

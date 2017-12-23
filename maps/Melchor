@@ -1,8 +1,4 @@
-module Maps.Melchor exposing(..)
-
-map : String
-map =
-  """
+Melchor
 〿　　🔥　🔥　　　　　😺😺
 🍋🍋🍋🔥🔥🔥　　　　😺😺😺
 〿🍋🍋🍋🔥🔥　　　　　😺😺🐵
@@ -19,6 +15,3 @@ map =
 　　　　　　　　　🍺🍺　🌵🌵🌵🌙🌙🌙🌙🌙
 〿　　　　　　　　　　　　　　　🌙🌙🌙🌙🌙
 　　　　　　　　　　　　　　　　🌙🌙🌙
-"""
-
-

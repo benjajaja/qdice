@@ -1,8 +1,4 @@
-module Maps.Sabicas exposing(..)
-
-map : String
-map =
-  """
+Sabicas
 〿　　🐙🐙
 　🐙🐙🐙🐙🐸🐸🐸🐸🐸🐸🐸🍷🍷🍷
 〿　🐙🐙🐙🐸🐸🐸🐸🐸🐸🍷🍷🍷🍷💰
@@ -41,6 +37,3 @@ map =
 　　　　　　💃💃💃💃💃💃💃💃💃
 〿　　　　　　💃💃💃
 　　　　　　　💃
-〿　　　　　　　　　　　　　　　
-　　　　　　　　　　　　　　　　
-"""
