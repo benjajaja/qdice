@@ -278,12 +278,21 @@ clickLand model land =
 
                             Board.Types.From from ->
                                 if land == from then
+                                    -- same land: deselect
                                     ( Board.Types.Idle, Cmd.none )
-                                else if land.points > 1 && land.color == player.color then
-                                    ( Board.Types.From land, Cmd.none )
+                                else if land.color == player.color then
+                                    -- same color and...
+                                    if land.points > 1 then
+                                        -- could move: select
+                                        ( Board.Types.From land, Cmd.none )
+                                    else
+                                        -- could not move: do nothing
+                                        ( model.game.board.move, Cmd.none )
                                 else if not <| Land.isBordering land from then
+                                    -- not bordering: do nothing
                                     ( model.game.board.move, Cmd.none )
                                 else
+                                    -- is bordering, different land and color: attack
                                     let
                                         gameCmd =
                                             attack model.backend model.game.table from.emoji land.emoji
