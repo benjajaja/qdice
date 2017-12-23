@@ -16,10 +16,10 @@ module.exports = table => {
   table.lands = table.lands.map(land => Object.assign({}, land, {
     points: ((r) => {
       if (r > 0.98)
-        return Math.min(8, table.stackSize + 1);
+        return Math.min(8, Math.floor(table.stackSize / 2 + 1));
       else if (r > 0.90)
-        return table.stackSize;
-      return rand(1, table.stackSize - 1);
+        return Math.floor(table.stackSize / 2);
+      return rand(1, Math.floor(table.stackSize / 4));
     })(Math.random()),
     color: -1,
   }));
@@ -36,7 +36,7 @@ module.exports = table => {
   table.players.forEach((player, index) => {
     const land = startLands[index];
     land.color = player.color;
-    land.points = 4;
+    land.points = Math.floor(table.stackSize / 2);
   });
   
   table = nextTurn(table);

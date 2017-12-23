@@ -27,7 +27,7 @@ const Table = name => ({
   turnIndex: -1,
   turnStarted: 0,
   lands: [],
-  stackSize: 4,
+  stackSize: 8,
 });
 
 
