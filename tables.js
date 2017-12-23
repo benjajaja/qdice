@@ -31,10 +31,14 @@ const Table = name => ({
 
 
 const loadLands = table => {
-  console.time(`table ${table.name} loaded`);
   const [ lands, adjacency ] = maps.loadMap(table.name);
-  console.timeEnd(`table ${table.name} loaded`);
-  return Object.assign({}, table, { lands, adjacency });
+  return Object.assign({}, table, {
+    lands: lands.map(land => Object.assign({}, land, {
+      color: COLOR_NEUTRAL,
+      points: 1,
+    })),
+    adjacency
+  });
 };
 
 const Player = user => ({

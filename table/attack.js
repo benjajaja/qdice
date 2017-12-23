@@ -30,7 +30,7 @@ module.exports = (user, table, [emojiFrom, emojiTo], res, next) => {
   if (fromLand.color === toLand.color) {
     return next(new Error('illegal move (same color)'));
   }
-  if (!isBorder(table.lands, emojiFrom, emojiTo)) {
+  if (!isBorder(table.adjacency, emojiFrom, emojiTo)) {
     return next(new Error('illegal move (not adjacent)'));
   }
 
