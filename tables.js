@@ -60,7 +60,17 @@ const tables = keys.map(key =>loadLands(Table(key)));
 tables[0].playerSlots = 4;
 tables[2].playerSlots = 5;
 if (tables[3]) tables[3].playerSlots = 7;
-
+//tables.forEach(table =>
+  //table.players = R.range(0,7).map(i =>
+    //Object.assign(Player({
+      //id: `fake_${i}`,
+      //name: `Pikachu${i} Random name`,
+      //picture: 'http://i.imgur.com/WgP9bNm.jpg',
+    //}), {
+      //color: i + 1
+    //})
+  //)
+//);
 module.exports.getTables = function() {
   return tables;
 };
