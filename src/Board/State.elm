@@ -88,7 +88,7 @@ updateLand layout updates land =
                     | color = update.color
                     , points = update.points
                   }
-                , if update.color == land.color && update.points == land.points then
+                , if update.color == land.color && update.points > land.points then
                     let
                         ( cx, cy ) =
                             (Land.landCenter
@@ -112,7 +112,7 @@ updateLand layout updates land =
                                             [ Animation.y <| cy - yOffset - (toFloat (index % 4) * 1.8) ]
                                         ]
                                       <|
-                                        Animation.style [ Animation.y -100 ]
+                                        Animation.style [ Animation.y -10 ]
                                     )
                             )
                         <|

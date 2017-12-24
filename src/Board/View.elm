@@ -154,9 +154,6 @@ landDie getAnimation ( cx, cy ) points index =
         animation =
             getAnimation index
     in
-        --die
-        --(toString <| cx - xOffset)
-        --(toString <| cy - yOffset - (toFloat (index % 4) * 1.8))
         Svg.image
             (List.concat
                 [ case animation of
