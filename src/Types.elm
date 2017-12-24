@@ -6,6 +6,7 @@ import Time
 import Material
 import Snackbar.Types
 import OAuth
+import Animation
 import Game.Types exposing (TableStatus, PlayerAction, GameStatus, TableInfo)
 import Editor.Types
 import MyProfile.Types
@@ -21,6 +22,7 @@ type Msg
     | Mdl (Material.Msg Msg)
     | DrawerNavigateTo Route
     | Snackbar Snackbar.Types.Msg
+    | Animate Animation.Msg
     | EditorMsg Editor.Types.Msg
     | MyProfileMsg MyProfile.Types.Msg
       -- oauth

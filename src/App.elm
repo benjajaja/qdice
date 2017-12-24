@@ -13,6 +13,7 @@ import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
 import Material.Footer as Footer
+import Animation
 import Types exposing (..)
 import Game.Types exposing (PlayerAction(..))
 import Game.State
@@ -263,6 +264,23 @@ update msg model =
             in
                 { model | snackbar = snackbar_ } ! [ Cmd.map Snackbar cmd ]
 
+        Animate msg ->
+            let
+                game =
+                    model.game
+
+                board =
+                    game.board
+            in
+                ( { model
+                    | game =
+                        { game
+                            | board = Board.updateAnimations board (Animation.update msg)
+                        }
+                  }
+                , Cmd.none
+                )
+
         BoardMsg boardMsg ->
             let
                 game =
@@ -509,6 +527,9 @@ mainView model =
 mainViewSubscriptions : Model -> Sub Msg
 mainViewSubscriptions model =
     case model.route of
+        GameRoute _ ->
+            Animation.subscription Animate <| Board.animations model.game.board
+
         -- EditorRoute ->
         --     Editor.Editor.subscriptions model.editor |> Sub.map EditorMsg
         _ ->
@@ -520,7 +541,7 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
-        , Time.every (25) Tick
+        , Time.every (250) Tick
         ]
 
 

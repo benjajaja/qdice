@@ -1,6 +1,7 @@
 module Board.View exposing (view)
 
 import String
+import Dict
 import Board.Types exposing (..)
 import Board.Colors
 import Svg exposing (..)
@@ -9,6 +10,7 @@ import Svg.Events exposing (..)
 import Html
 import Html.Attributes
 import Html.Lazy
+import Animation
 import Board.Types exposing (Msg, Model, PathCache)
 import Land exposing (Land, Map, Point, Layout, cellCenter, landCenter)
 
@@ -18,6 +20,7 @@ view model =
     board
         model.map
         model.pathCache
+        model.animations
         (case model.move of
             Idle ->
                 []
@@ -31,14 +34,14 @@ view model =
         model.hovered
 
 
-board : Land.Map -> PathCache -> List Land -> Maybe Land -> Svg Msg
-board map pathCache selected hovered =
+board : Land.Map -> PathCache -> Animations -> List Land -> Maybe Land -> Svg Msg
+board map pathCache animations selected hovered =
     let
         ( layout, sWidth, sHeight ) =
             getLayout map
 
         landF =
-            Html.Lazy.lazy <| landElement layout pathCache selected hovered
+            Html.Lazy.lazy <| landElement layout pathCache animations selected hovered
     in
         Html.div [ class "edBoard" ]
             [ Svg.svg
@@ -78,8 +81,8 @@ board map pathCache selected hovered =
             ]
 
 
-landElement : Layout -> PathCache -> List Land.Land -> Maybe Land -> Land.Land -> Svg Msg
-landElement layout pathCache selected hovered land =
+landElement : Layout -> PathCache -> Animations -> List Land.Land -> Maybe Land -> Land.Land -> Svg Msg
+landElement layout pathCache animations selected hovered land =
     let
         isSelected =
             List.member land selected
@@ -98,7 +101,7 @@ landElement layout pathCache selected hovered land =
             , onMouseOut (UnHoverLand land)
             ]
             [ polygon (polygonAttrs layout pathCache isSelected isHovered land) []
-            , landDies layout land
+            , landDies layout animations land
             , landText layout land
             ]
 
@@ -115,11 +118,12 @@ polygonAttrs layout pathCache selected hovered land =
     ]
 
 
-landDies : Layout -> Land.Land -> Svg Msg
-landDies layout land =
+landDies : Layout -> Animations -> Land.Land -> Svg Msg
+landDies layout animations land =
     g [ color <| landColor False False land.color ] <|
         List.map
             (landDie
+                (\i -> Dict.get (getLandDieKey land i) animations)
                 (landCenter
                     layout
                     land.cells
@@ -132,8 +136,8 @@ landDies layout land =
                 (land.points - 1)
 
 
-landDie : ( Float, Float ) -> Int -> Int -> Svg Msg
-landDie ( cx, cy ) points index =
+landDie : (Int -> Maybe Animation.State) -> ( Float, Float ) -> Int -> Int -> Svg Msg
+landDie getAnimation ( cx, cy ) points index =
     let
         xOffset =
             if index >= 4 then
@@ -146,20 +150,37 @@ landDie ( cx, cy ) points index =
                 1.15
             else
                 1.5
+
+        animation =
+            getAnimation index
     in
         --die
         --(toString <| cx - xOffset)
         --(toString <| cy - yOffset - (toFloat (index % 4) * 1.8))
         Svg.image
-            [ x <| toString <| cx - xOffset
-            , y <| toString <| cy - yOffset - (toFloat (index % 4) * 1.8)
-            , textAnchor "middle"
-            , alignmentBaseline "central"
-            , class "edBoard--dies"
-            , xlinkHref "die.svg"
-            , height "3"
-            , width "3"
-            ]
+            (List.concat
+                [ case animation of
+                    Just a ->
+                        Animation.render a
+
+                    Nothing ->
+                        []
+                , case animation of
+                    Just _ ->
+                        []
+
+                    Nothing ->
+                        [ y <| toString <| cy - yOffset - (toFloat (index % 4) * 1.8) ]
+                , [ x <| toString <| cx - xOffset
+                  , textAnchor "middle"
+                  , alignmentBaseline "central"
+                  , class "edBoard--dies"
+                  , xlinkHref "die.svg"
+                  , height "3"
+                  , width "3"
+                  ]
+                ]
+            )
             []
 
 

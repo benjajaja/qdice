@@ -1,6 +1,8 @@
 module Board.Types exposing (..)
 
+import Dict
 import Land exposing (Map, Land, Layout)
+import Animation exposing (px)
 
 
 type Msg
@@ -14,11 +16,21 @@ type alias Model =
     , hovered : Maybe Land
     , move : BoardMove
     , pathCache : PathCache
+    , animations : Animations
     }
 
 
 type alias PathCache =
     Layout -> Land -> String
+
+
+type alias Animations =
+    Dict.Dict String Animation.State
+
+
+getLandDieKey : Land -> Int -> String
+getLandDieKey land die =
+    land.emoji ++ "_" ++ (toString die)
 
 
 type BoardMove

@@ -3,6 +3,7 @@ module Land exposing (..)
 import Maybe exposing (..)
 import List exposing (..)
 import Random
+import Animation
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
 import Hexagons.Layout as HL exposing (offsetToHex, orientationLayoutPointy, Layout)
 import Hex exposing (Point, borderLeftCorner, center, cellCubicCoords)
@@ -119,11 +120,6 @@ cellCenter layout hex =
 cellCubicCoords : Hex -> ( Int, Int, Int )
 cellCubicCoords hex =
     Hex.cellCubicCoords hex
-
-
-errorLand : Land
-errorLand =
-    Land [ offsetToHex ( 0, 0 ) ] Editor emptyEmoji 0
 
 
 fullCellMap : Int -> Int -> Color -> Map

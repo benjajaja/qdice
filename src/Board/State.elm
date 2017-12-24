@@ -1,5 +1,7 @@
 port module Board.State exposing (init, update, updateLands)
 
+import Dict
+import Animation exposing (px)
 import Board.Types exposing (..)
 import Board.PathCache exposing (createPathCache)
 import Land
@@ -7,7 +9,7 @@ import Land
 
 init : Land.Map -> Model
 init map =
-    Model map Nothing Idle <| createPathCache map
+    Model map Nothing Idle (createPathCache map) <| Dict.empty
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -37,11 +39,16 @@ updateLands model update move =
         map =
             model.map
 
-        lands =
-            List.map (updateLand update) map.lands
+        ( layout, _, _ ) =
+            getLayout map
+
+        landUpdates =
+            List.map (updateLand layout update) map.lands
 
         map_ =
-            { map | lands = lands }
+            { map
+                | lands = List.map Tuple.first landUpdates
+            }
 
         move_ =
             case move of
@@ -50,19 +57,71 @@ updateLands model update move =
 
                 Nothing ->
                     model.move
+
+        animations =
+            List.foldl
+                (\( land, diceAnimations ) ->
+                    \dict ->
+                        List.foldl
+                            (\( index, animation ) ->
+                                \dict ->
+                                    Dict.insert (getLandDieKey land index) animation dict
+                            )
+                            dict
+                            diceAnimations
+                )
+                model.animations
+                landUpdates
     in
-        { model | map = map_, move = move_ }
+        { model | map = map_, move = move_, animations = animations }
 
 
-updateLand : List LandUpdate -> Land.Land -> Land.Land
-updateLand updates land =
+updateLand : Land.Layout -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, Animation.State ) )
+updateLand layout updates land =
     let
         update =
             List.filter (\l -> l.emoji == land.emoji) updates
     in
         case List.head update of
             Just update ->
-                { land | color = update.color, points = update.points }
+                ( { land
+                    | color = update.color
+                    , points = update.points
+                  }
+                , if update.color == land.color && update.points == land.points then
+                    let
+                        ( cx, cy ) =
+                            (Land.landCenter
+                                layout
+                                land.cells
+                            )
+                    in
+                        List.map
+                            (\index ->
+                                let
+                                    yOffset =
+                                        if index >= 4 then
+                                            1.15
+                                        else
+                                            1.5
+                                in
+                                    ( index
+                                    , Animation.interrupt
+                                        [ Animation.wait (100 * index)
+                                        , Animation.to
+                                            [ Animation.y <| cy - yOffset - (toFloat (index % 4) * 1.8) ]
+                                        ]
+                                      <|
+                                        Animation.style [ Animation.y -100 ]
+                                    )
+                            )
+                        <|
+                            List.range
+                                land.points
+                                update.points
+                  else
+                    []
+                )
 
             Nothing ->
-                land
+                ( land, [] )

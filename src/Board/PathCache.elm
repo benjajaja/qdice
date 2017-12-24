@@ -11,6 +11,7 @@ createPathCache map =
         ( layout, _, _ ) =
             getLayout map
 
+        dict : Dict.Dict String String
         dict =
             addToDict Dict.empty layout map.lands
     in
