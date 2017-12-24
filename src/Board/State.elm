@@ -112,7 +112,13 @@ updateLand layout updates land =
                                             [ Animation.y <| cy - yOffset - (toFloat (index % 4) * 1.8) ]
                                         ]
                                       <|
-                                        Animation.style [ Animation.y -10 ]
+                                        Animation.styleWith
+                                            (Animation.spring
+                                                { stiffness = 210
+                                                , damping = 20
+                                                }
+                                            )
+                                            [ Animation.y -10 ]
                                     )
                             )
                         <|
