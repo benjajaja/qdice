@@ -84,6 +84,7 @@ module.exports = {
       { from: 'html/favicons', to: 'favicons'},
       { from: 'html/favicon.ico' },
       { from: 'html/die.svg' },
+      { from: 'html/board_header.svg' },
       { from: 'html/elm-dice-serviceworker.js' },
       { from: 'html/cache-polyfill.js' },
       { from: 'html/sounds', to: 'sounds'},

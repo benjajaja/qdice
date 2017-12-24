@@ -11,6 +11,7 @@ import Material.Icon as Icon
 import Material.Footer as Footer
 import Material.List as Lists
 import Material.Table as Table
+import Material.Elevation as Elevation
 import Types exposing (Model, Msg(..))
 
 
@@ -40,39 +41,41 @@ footer model =
 
 tableOfTables : Model -> Html.Html Types.Msg
 tableOfTables model =
-    table [ class "edGameTable" ]
-        [ thead []
-            [ tr []
-                [ th [] [ text "Table" ]
-                , th [] [ text "Players" ]
-                , th [] [ text "Status" ]
-                , th [] [ text "Size" ]
-                , th [] [ text "Stacks" ]
-                , th [] []
+    Options.div [ Elevation.e2 ]
+        [ table [ class "edGameTable" ]
+            [ thead []
+                [ tr []
+                    [ th [] [ text "Table" ]
+                    , th [] [ text "Players" ]
+                    , th [] [ text "Status" ]
+                    , th [] [ text "Size" ]
+                    , th [] [ text "Stacks" ]
+                    , th [] []
+                    ]
                 ]
-            ]
-        , tbody [] <|
-            List.indexedMap
-                (\i ->
-                    \table ->
-                        tr
-                            [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
-                            ]
-                            [ td [] [ text <| toString table.table ]
-                            , td []
-                                [ text <|
-                                    (toString table.playerCount)
-                                        ++ " / "
-                                        ++ (toString table.playerSlots)
-                                        ++ " playing"
+            , tbody [] <|
+                List.indexedMap
+                    (\i ->
+                        \table ->
+                            tr
+                                [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                                 ]
-                            , td [] [ text <| toString table.status ]
-                            , td [] [ text <| toString table.landCount ]
-                            , td [] [ text <| toString table.stackSize ]
-                            , td [] [ Icon.i "chevron_right" ]
-                            ]
-                )
-                model.tableList
+                                [ td [] [ text <| toString table.table ]
+                                , td []
+                                    [ text <|
+                                        (toString table.playerCount)
+                                            ++ " / "
+                                            ++ (toString table.playerSlots)
+                                            ++ " playing"
+                                    ]
+                                , td [] [ text <| toString table.status ]
+                                , td [] [ text <| toString table.landCount ]
+                                , td [] [ text <| toString table.stackSize ]
+                                , td [] [ Icon.i "chevron_right" ]
+                                ]
+                    )
+                    model.tableList
+            ]
         ]
 
 

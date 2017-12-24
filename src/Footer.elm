@@ -26,7 +26,7 @@ footer model =
                         , ( "My profile", MyProfileRoute )
                         , ( "Help", StaticPageRoute Help )
                         , ( "About", StaticPageRoute About )
-                        , ( "Editor", EditorRoute )
+                          --, ( "Editor", EditorRoute )
                         ]
                     )
                 ]

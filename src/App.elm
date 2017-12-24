@@ -421,8 +421,8 @@ view model =
         , main =
             [ Html.div [ Html.Attributes.class "Main" ]
                 [ mainView model
-                , footer model
                 ]
+            , footer model
             , Snackbar.view model.snackbar |> Html.map Snackbar
             ]
         }

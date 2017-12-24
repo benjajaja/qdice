@@ -2,17 +2,23 @@
 @import "https://fonts.googleapis.com/icon?family=Material+Icons";
 @import "./css/material.min.css";
 
-
+.mdl-layout__content {
+  display: flex;
+  flex-direction: column;
+}
+.mdl-mini-footer {
+  flex: 0 0 auto;
+}
 .Main {
+  flex: 1 0 auto;
 }
 @keyframes scroll { 100% { background-position: 100% 100%; } }
 .Main {
   max-width: 1000px;
-  margin: 0 auto;
   padding: 0 0;
 }
 
-body {
+.mdl-layout__content {
   background-color: #e3f2fd;
 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hexagons' fill='%23ffffff' fill-opacity='0.28' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
@@ -53,7 +59,6 @@ body.navigator-standalone textarea {
 }
 
 .edBoard {
-  margin-top: 10px;
 }
 .edBoard--svg {
   font-size: 33%;
@@ -85,6 +90,11 @@ body.navigator-standalone textarea {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  background: url('board_header.svg');
+  background-repeat: repeat-x;
+  background-position: bottom;
+  box-shadow: 0 -10px 10px black;
+  padding-bottom: 10px;
 }
 .edGameHeader__tableStatus {
 }
@@ -108,7 +118,6 @@ body.navigator-standalone textarea {
   flex-direction: row;
   justify-content: flex-start;
   flex-wrap: wrap;
-  margin-bottom: 5px;
 }
 .edPlayerChip {
   width: 70px;
@@ -232,13 +241,14 @@ body.navigator-standalone textarea {
 .chatboxContainer {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
-  flex: 2 1 auto;
+  flex: 1 1 auto;
+  min-width: 300px;
+  max-width: 420px;
+  margin-bottom: 5px;
 }
 .chatbox {
   height: 200px;
   width: 100%;
-  min-width: 300px;
   display: flex;
 }
 .chatbox--log {
@@ -295,7 +305,8 @@ body.navigator-standalone textarea {
 
 .edGameTable {
   width: 100%;
-  background: #ddd;
+  background: #fff;
+  margin-bottom: 5px;
 }
 .edGameTable th {
   text-align: left;
