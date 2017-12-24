@@ -1,11 +1,12 @@
 module Footer exposing (footer)
 
-import Html
+import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Material.Footer as Footer
 import Material.Icon as Icon
 import Material.Options
-import Types exposing (Model, Msg(..), User(..))
+import Types exposing (Model, Msg(..), User(..), Route(..), StaticPage(..))
+import Tables exposing (Table(..))
 import Backend.Types exposing (ConnectionStatus(..))
 
 
@@ -13,10 +14,26 @@ footer : Model -> Html.Html Msg
 footer model =
     Footer.mini []
         { left =
-            Footer.left [] (statusMessage model.backend.status)
+            Footer.left []
+                [ Footer.links [] <|
+                    (List.map
+                        (\( label, path ) ->
+                            Footer.linkItem
+                                [ Material.Options.onClick <| DrawerNavigateTo path ]
+                                [ Footer.html <| text label ]
+                        )
+                        [ ( "Play", GameRoute Melchor )
+                        , ( "My profile", MyProfileRoute )
+                        , ( "Help", StaticPageRoute Help )
+                        , ( "About", StaticPageRoute About )
+                        , ( "Editor", EditorRoute )
+                        ]
+                    )
+                ]
         , right =
             Footer.right []
-                [ Footer.link
+                [ statusMessage model.backend.status
+                , Footer.link
                     [ Material.Options.cs "footer--profile-link"
                     , Material.Options.onClick <|
                         case model.user of
@@ -39,7 +56,7 @@ footer model =
         }
 
 
-statusMessage : ConnectionStatus -> List (Footer.Content Types.Msg)
+statusMessage : ConnectionStatus -> Footer.Content Types.Msg
 statusMessage status =
     let
         message =
@@ -51,6 +68,15 @@ statusMessage status =
 
                         count ->
                             "Reconnecting... (" ++ (toString attempts) ++ " retries)"
+
+                Connecting ->
+                    "Connecting..."
+
+                SubscribingGeneral ->
+                    "Network..."
+
+                SubscribingTable ->
+                    "Table..."
 
                 _ ->
                     toString status
@@ -75,9 +101,8 @@ statusMessage status =
                 Online ->
                     "network_wifi"
     in
-        [ Footer.html <|
+        Footer.html <|
             Html.div [ Html.Attributes.class "edGameStatus" ]
                 [ Html.div [] [ Icon.i icon ]
                 , Html.div [] [ Html.text message ]
                 ]
-        ]
