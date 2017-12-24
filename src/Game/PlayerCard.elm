@@ -13,6 +13,7 @@ import Color
 import Color.Convert
 import Color.Manipulate
 import Color.Interpolate
+import Color.Accessibility
 import Game.Types exposing (Player)
 import Types exposing (Model, Msg(..))
 import Board.Colors
@@ -28,11 +29,19 @@ view model index player =
             Elevation.e2
         ]
         [ playerImageProgress model index player
-        , Html.div [ class "edPlayerChip__name" ] [ Html.text player.name ]
-        , Html.div [ class "edPlayerChip__colorTag", style <| [ ( "background-color", Board.Colors.baseCssRgb player.color ) ] ] []
-          --, Html.div []
-          --[ playerChipProgress model index
-          --]
+        , Html.div
+            [ class "edPlayerChip__name"
+            , style <|
+                [ ( "background-color", Board.Colors.baseCssRgb player.color )
+                , ( "color"
+                  , Color.Accessibility.maximumContrast (Board.Colors.base player.color)
+                        [ Color.rgb 0 0 0, Color.rgb 30 30 30, Color.rgb 255 255 255 ]
+                        |> Maybe.withDefault (Color.rgb 0 0 0)
+                        |> Color.Convert.colorToCssRgb
+                  )
+                ]
+            ]
+            [ Html.text player.name ]
         , Html.div [ class "edPlayerChip__gameStats" ]
             [ Html.span [ class "edPlayerChip__gameStats__item" ]
                 [ Html.text <| "⬢ " ++ toString player.gameStats.totalLands ]
