@@ -334,6 +334,26 @@ body.navigator-standalone textarea {
   background: #eee;
 }
 
+.edLoginDialog {
+}
+.edLoginDialog__social {
+  padding-bottom: 20px;
+  border-bottom: 1px dotted #888;
+}
+.edLoginDialog__register {
+  padding-top: 10px;
+  padding-bottom: 0;
+}
+.edLoginSocial {
+  padding-left: 0;
+  width: 100%;
+}
+.edLoginSocial > img {
+  height: 100%;
+  float: left;
+  margin-right: 5px;
+}
+
 @media screen and (min-width: 1024px) {
   .footer--profile-link {
     display: none;

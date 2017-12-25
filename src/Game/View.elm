@@ -120,7 +120,7 @@ seatButton model =
     in
         Button.render
             Types.Mdl
-            [ 0 ]
+            [ 1 ]
             model.mdl
             (onClick
                 :: [ Button.raised

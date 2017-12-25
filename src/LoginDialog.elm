@@ -15,37 +15,43 @@ import Backend.Encoding exposing (profileEncoder)
 loginDialog : Model -> Html Msg
 loginDialog model =
     Dialog.view
-        []
+        [ Options.cs "edLoginDialog" ]
         --[ Dialog.title [] [ text "Start playing!" ]
-        [ Dialog.content []
-            [ Button.render Mdl
-                [ 1 ]
+        [ Dialog.content [ Options.cs "edLoginDialog__social" ]
+            [ div []
+                [ text "One-click sign-in:" ]
+            , Button.render Mdl
+                [ 12 ]
                 model.mdl
                 [ Dialog.closeOn "click"
                 , Options.onClick Authorize
                 , Button.raised
                 , Button.colored
                 , Button.ripple
+                , Options.cs "edLoginSocial edLoginSocial--google"
                 ]
                 [ img [ src "assets/social_icons/google.svg" ] []
                 , text "Sign in with Google"
                 ]
-            , p []
+            ]
+        , Dialog.content [ Options.cs "edLoginDialog__register" ]
+            [ div []
                 [ text "... or just play with keeping points:" ]
             , Textfield.render Mdl
-                [ 3 ]
+                [ 13 ]
                 model.mdl
                 [ Textfield.label "Name"
                 , Textfield.floatingLabel
                 , Textfield.text_
                 , Textfield.value model.loginName
                 , Options.onInput SetLoginName
+                , Options.cs "edLoginDialog__name"
                 ]
                 []
             ]
         , Dialog.actions []
             [ Button.render Mdl
-                [ 0 ]
+                [ 10 ]
                 model.mdl
                 (List.append
                     (if model.loginName == "" then
@@ -57,7 +63,7 @@ loginDialog model =
                 )
                 [ text "Play" ]
             , Button.render Mdl
-                [ 1 ]
+                [ 11 ]
                 model.mdl
                 [ Dialog.closeOn "click" ]
                 [ text "Close" ]
