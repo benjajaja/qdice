@@ -2,6 +2,14 @@ const R = require('ramda');
 const maps = require('../maps');
 const { rand } = require('../rand');
 
+const {
+  STATUS_PAUSED,
+  STATUS_PLAYING,
+  STATUS_FINISHED,
+  TURN_SECONDS,
+  COLOR_NEUTRAL,
+} = require('../constants');
+
 module.exports = table => {
   if (table.turnIndex !== -1) {
     giveDice(table)(table.players[table.turnIndex]);
@@ -13,8 +21,9 @@ module.exports = table => {
   if (!table.players.every(R.prop('out'))) {
     const newPlayer = table.players[table.turnIndex];
     if (newPlayer.out) {
+      newPlayer.outTurns += 1;
       if (newPlayer.outTurns > 5) {
-        table.players = table.players.filter(R.complement(R.equals(newPlayer)));
+        table = removePlayer(table)(newPlayer);
         if (table.players.length === 1) {
           endGame(table);
         }
@@ -42,3 +51,17 @@ const giveDice = table => player => {
     }
   });
 };
+
+const removePlayer = table => player => {
+  table.players = table.players.filter(R.complement(R.equals(player)));
+  table.lands = table.lands.map(R.when(R.propEq('color', player.color), land => Object.assign(land, { color: COLOR_NEUTRAL })));
+  return table;
+};
+
+const endGame = table => {
+  table.players = [];
+  table.status = STATUS_FINISHED;
+  table.turnIndex = -1;
+  table.gameStart = 0;
+};
+
