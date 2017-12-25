@@ -8,6 +8,7 @@ import Html
 import Html.Lazy
 import Html.Attributes
 import Time
+import Http
 import Material
 import Material.Layout as Layout
 import Material.Icon as Icon
@@ -31,6 +32,7 @@ import Tables exposing (Table(..), tableList)
 import MyOauth
 import Snackbar exposing (toast)
 import Footer exposing (footer)
+import LoginDialog exposing (loginDialog, login)
 
 
 type alias Flags =
@@ -99,6 +101,7 @@ init flags location =
             , time = 0
             , snackbar = Snackbar.init
             , isTelegram = flags.isTelegram
+            , loginName = ""
             }
 
         cmds =
@@ -233,8 +236,11 @@ update msg model =
                 { model | user = Anonymous, backend = backend_ }
                     ! [ auth [] ]
 
-        Login ->
-            model ! []
+        SetLoginName text ->
+            { model | loginName = text } ! []
+
+        Login name ->
+            login model name
 
         NavigateTo route ->
             model ! [ navigateTo route ]
@@ -443,7 +449,8 @@ view model =
             --)
         , tabs = ( [], [] )
         , main =
-            [ Html.div [ Html.Attributes.class "Main" ]
+            [ loginDialog model
+            , Html.div [ Html.Attributes.class "Main" ]
                 [ mainView model
                 ]
             , footer model

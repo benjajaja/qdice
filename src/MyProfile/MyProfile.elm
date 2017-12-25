@@ -67,7 +67,7 @@ update model msg =
 
                                 request =
                                     Http.request
-                                        { method = "POST"
+                                        { method = "PUT"
                                         , headers = [ Http.header "authorization" ("Bearer " ++ jwt) ]
                                         , url = (model.backend.baseUrl ++ "/profile")
                                         , body =
