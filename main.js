@@ -52,11 +52,11 @@ server.use(jwt({
   custom: req => {
     const ok = R.anyPass([
       req => req.path() === '/login',
+      req => req.path() === '/register',
       req => req.path() === '/global',
       req => req.route.path === '/tables/:tableName/:command'
         && req.context.command === 'Enter',
     ])(req);
-    console.log('ok?', ok, req.path());
     return ok;
   }
 }));
@@ -68,7 +68,8 @@ server.on('uncaughtException', function (req, res, err, cb) {
 
 server.post('/login', require('./user').login);
 server.get('/me', require('./user').me);
-server.post('/profile', require('./user').profile);
+server.put('/profile', require('./user').profile);
+server.post('/register', require('./user').register);
 
 const tables = require('./tables');
 server.post('/tables/:tableName/:command', tables.command);

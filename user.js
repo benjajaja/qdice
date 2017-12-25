@@ -1,5 +1,6 @@
 const request = require('request');
 const jwt = require('jsonwebtoken');
+const ShortUniqueId = require('short-unique-id');
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 if (!GOOGLE_OAUTH_SECRET) throw new Error('GOOGLE_OAUTH_SECRET env var not found');
@@ -49,6 +50,19 @@ exports.me = function(req, res, next) {
 
 exports.profile = function(req, res, next) {
   const profile = Object.assign({}, req.user, { name: req.body.name });
+  const token = jwt.sign(profile, process.env.JWT_SECRET);
+  res.send(200, token);
+  next();
+};
+
+const uid = new ShortUniqueId();
+exports.register = function(req, res, next) {
+  const profile = {
+    name: req.body.name,
+    id: `quedice_${uid.randomUUID(16)}`,
+    email: '',
+    picture: 'assets/empty_profile_picture.svg',
+  };
   const token = jwt.sign(profile, process.env.JWT_SECRET);
   res.send(200, token);
   next();

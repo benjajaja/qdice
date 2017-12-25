@@ -33,6 +33,7 @@
     "restify": "^6.3.4",
     "restify-cors-middleware": "^1.0.1",
     "restify-jwt-community": "^1.0.0",
+    "short-unique-id": "^1.1.0",
     "telegraf": "^3.17.2"
   },
   "devDependencies": {
