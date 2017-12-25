@@ -49,6 +49,7 @@
     "bundlesize": "^0.15.3",
     "copy-webpack-plugin": "^4.2.3",
     "css-loader": "0.25.0",
+    "dialog-polyfill": "^0.4.9",
     "elm": "^0.18.0",
     "elm-css-webpack-loader": "2.0.1",
     "elm-webpack-loader": "3.0.6",

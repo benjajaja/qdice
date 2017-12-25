@@ -109,7 +109,7 @@ init flags location =
                 List.concat
                     [ routeCmds
                     , [ gameCmd ]
-                    , [ hide "peekaboo"
+                    , [ started "peekaboo"
                       , Cmd.map EditorMsg editorCmd
                       , backendCmd
                       ]
@@ -577,7 +577,7 @@ subscriptions model =
         ]
 
 
-port hide : String -> Cmd msg
+port started : String -> Cmd msg
 
 
 port auth : List String -> Cmd msg

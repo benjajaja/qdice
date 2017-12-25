@@ -28,12 +28,13 @@ setTimeout(function() {
     isTelegram: isTelegram,
   });
 
-  app.ports.hide.subscribe(function(msg) {
+  app.ports.started.subscribe(function(msg) {
     document.getElementById('loading-indicator').remove();
     window.onerror = function(messageOrEvent, source, lineno, colno, error) {
       window.alert(messageOrEvent.toString());
       return false; // let built in handler log it too
     };
+    window.dialogPolyfill = require('dialog-polyfill');
   });
 
 
