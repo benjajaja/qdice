@@ -390,6 +390,14 @@ updateTable model table msg =
                                     }
                             }
                                 ! []
+
+            Backend.Types.Elimination elimination ->
+                let
+                    _ =
+                        Debug.log "kill" elimination
+                in
+                    updateChatLog model <|
+                        Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.reason
     else
         model ! []
 

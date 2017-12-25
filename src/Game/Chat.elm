@@ -12,6 +12,7 @@ import Material.Textfield as Textfield
 import Material.Elevation
 import Material.Icon as Icon
 import Material.Button as Button
+import Ordinal exposing (ordinal)
 import Game.Types exposing (PlayerAction(..), ChatLogEntry(..), RollLog, Model)
 import Tables exposing (Table)
 import Land exposing (Color)
@@ -132,6 +133,19 @@ gameBox mdl lines id =
                                 [ playerTag user color
                                 , Html.text "'s turn"
                                 ]
+
+                        LogElimination user color position reason ->
+                            div [ class "chatbox--line--elimination" ]
+                                [ eliminationEmoji reason.eliminationType
+                                , Html.text " "
+                                , playerTag user color
+                                , Html.text <|
+                                    (if position == 1 then
+                                        " won the game!"
+                                     else
+                                        " finished " ++ (ordinal position)
+                                    )
+                                ]
                 )
                 lines
             )
@@ -171,3 +185,16 @@ rollLine roll =
             ]
     in
         div [ class "chatbox--line--roll" ] text
+
+
+eliminationEmoji type_ =
+    Html.text <|
+        case type_ of
+            Game.Types.Death ->
+                "☠"
+
+            Game.Types.Out ->
+                "💤"
+
+            Game.Types.Win ->
+                "🏆"

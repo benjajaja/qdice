@@ -13,10 +13,8 @@ type alias ChatMessage =
     { username : String, message : String }
 
 
-
--- Maybe Table because it might be a table message for this client only
-
-
+{-| Maybe Table because it might be a table message for this client only
+-}
 decodeTopicMessage : Maybe Table -> Topic -> String -> Result String Msg
 decodeTopicMessage table topic message =
     case topic of
@@ -113,6 +111,14 @@ decodeTableMessage table message =
                         Err err ->
                             Err err
 
+                "elimination" ->
+                    case decodeString (field "payload" eliminationDecoder) message of
+                        Ok elimination ->
+                            Ok <| TableMsg table <| Elimination elimination
+
+                        Err err ->
+                            Err err
+
                 _ ->
                     Err <| "unknown type \"" ++ mtype ++ "\""
 
@@ -156,6 +162,11 @@ encodeTopicMessage msg =
                     Move status ->
                         object
                             [ ( "type", Enc.string "move" )
+                            ]
+
+                    Elimination e ->
+                        object
+                            [ ( "type", Enc.string "elimination" )
                             ]
             )
 

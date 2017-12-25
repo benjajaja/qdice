@@ -113,6 +113,7 @@ type ChatLogEntry
     | LogError String
     | LogRoll RollLog
     | LogTurn User Color
+    | LogElimination User Color Int EliminationReason
 
 
 type alias RollLog =
@@ -124,3 +125,23 @@ type alias RollLog =
     , defendRoll : Int
     , success : Bool
     }
+
+
+type alias Elimination =
+    { player : Player
+    , position : Int
+    , reason : EliminationReason
+    }
+
+
+type alias EliminationReason =
+    { eliminationType :
+        EliminationType
+        --, source : String
+    }
+
+
+type EliminationType
+    = Death
+    | Out
+    | Win

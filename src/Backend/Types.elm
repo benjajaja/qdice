@@ -53,3 +53,4 @@ type TableMessage
     | Update Game.Types.TableStatus
     | Roll Game.Types.Roll
     | Move Game.Types.Move
+    | Elimination Game.Types.Elimination

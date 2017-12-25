@@ -114,6 +114,40 @@ moveDecoder =
         |> required "to" string
 
 
+eliminationDecoder : Decoder Game.Types.Elimination
+eliminationDecoder =
+    decode Game.Types.Elimination
+        |> required "player" playersDecoder
+        |> required "position" int
+        |> required "reason" eliminationReasonDecoder
+
+
+eliminationReasonDecoder : Decoder Game.Types.EliminationReason
+eliminationReasonDecoder =
+    decode Game.Types.EliminationReason
+        |> required "type" eliminationTypeTagDecoder
+
+
+eliminationTypeTagDecoder : Decoder Game.Types.EliminationType
+eliminationTypeTagDecoder =
+    map
+        (\s ->
+            case s of
+                "☠" ->
+                    Game.Types.Death
+
+                "💤" ->
+                    Game.Types.Out
+
+                "🏆" ->
+                    Game.Types.Win
+
+                _ ->
+                    Game.Types.Death
+        )
+        string
+
+
 globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo )
 globalDecoder =
     Json.Decode.map2 (,) (field "settings" globalSettingsDecoder) (field "tables" (list tableInfoDecoder))

@@ -21,6 +21,7 @@
         "eskimoblood/elm-color-extra": "5.0.0 <= v < 6.0.0",
         "evancz/elm-markdown": "3.0.2 <= v < 4.0.0",
         "evancz/url-parser": "2.0.1 <= v < 3.0.0",
+        "lynn/elm-ordinal": "1.0.3 <= v < 2.0.0",
         "mdgriffith/elm-style-animation": "3.5.5 <= v < 4.0.0",
         "truqu/elm-oauth2": "2.0.3 <= v < 3.0.0"
     },

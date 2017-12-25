@@ -196,21 +196,17 @@ decodeMessage clientId table ( stringTopic, message ) =
             UnknownTopicMessage "no client id yet" stringTopic "-"
 
         Just clientId ->
-            let
-                _ =
-                    Debug.log "mqtt message" stringTopic
-            in
-                case decodeTopic clientId stringTopic of
-                    Just topic ->
-                        case decodeTopicMessage table topic message of
-                            Ok msg ->
-                                msg
+            case decodeTopic clientId stringTopic of
+                Just topic ->
+                    case decodeTopicMessage table topic message of
+                        Ok msg ->
+                            msg
 
-                            Err err ->
-                                UnknownTopicMessage err stringTopic message
+                        Err err ->
+                            Debug.log "unknown message" <| UnknownTopicMessage err stringTopic message
 
-                    Nothing ->
-                        UnknownTopicMessage "unrecognized topic" stringTopic message
+                Nothing ->
+                    UnknownTopicMessage "unrecognized topic" stringTopic message
 
 
 decodeTopic : ClientId -> String -> Maybe Topic
