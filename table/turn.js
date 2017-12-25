@@ -13,6 +13,12 @@ module.exports = table => {
   if (!table.players.every(R.prop('out'))) {
     const newPlayer = table.players[table.turnIndex];
     if (newPlayer.out) {
+      if (newPlayer.outTurns > 5) {
+        table.players = table.players.filter(R.complement(R.equals(newPlayer)));
+        if (table.players.length === 1) {
+          endGame(table);
+        }
+      }
       return module.exports(table);
     }
   }

@@ -46,7 +46,6 @@ module.exports = (user, table, [emojiFrom, emojiTo], res, next) => {
         if (loser && R.filter(R.propEq('color', loser.color), table.lands).length === 0) {
           const turnPlayer = table.players[table.turnIndex];
           table.players = table.players.filter(R.complement(R.equals(loser)));
-          console.log('player lost:', loser);
           if (table.players.length === 1) {
             endGame(table);
           }

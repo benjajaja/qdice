@@ -43,6 +43,7 @@ const Player = user => ({
   color: COLOR_NEUTRAL,
   reserveDice: 0,
   out: false,
+  outTurns: 0,
   derived: {
     connectedLands: 0,
     totalLands: 0,

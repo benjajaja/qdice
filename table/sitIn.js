@@ -22,6 +22,7 @@ module.exports = (user, table, res, next) => {
   } else {
     const allOut = table.players.every(R.prop('out'));
     player.out = false;
+    player.outTurns = 0;
     if (allOut) {
       nextTurn(table);
     }
