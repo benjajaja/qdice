@@ -25,6 +25,7 @@ type Msg
     | Animate Animation.Msg
     | EditorMsg Editor.Types.Msg
     | MyProfileMsg MyProfile.Types.Msg
+    | ErrorToast String
       -- oauth
     | Nop
     | GetGlobalSettings (Result Http.Error ( GlobalSettings, List TableInfo ))
@@ -33,6 +34,7 @@ type Msg
     | GetToken (Result Http.Error String)
     | GetProfile (Result Http.Error LoggedUser)
     | Logout
+    | Login
       -- game
     | BoardMsg Board.Msg
     | InputChat String

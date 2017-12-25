@@ -32,7 +32,7 @@ baseUrl location =
 init : Location -> Table -> ( Model, Cmd Msg )
 init location table =
     ( { baseUrl = baseUrl location
-      , jwt = ""
+      , jwt = Nothing
       , clientId = Nothing
       , subscribed = []
       , status = Offline

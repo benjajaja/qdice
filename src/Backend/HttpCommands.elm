@@ -9,6 +9,7 @@ import Types exposing (Msg(..))
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
+import Snackbar exposing (toastCmd)
 
 
 loadGlobalSettings : Model -> Cmd Msg
@@ -35,7 +36,13 @@ loadMe model =
     Http.send GetProfile <|
         Http.request
             { method = "GET"
-            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
+            , headers =
+                case model.jwt of
+                    Just jwt ->
+                        [ Http.header "authorization" ("Bearer " ++ jwt) ]
+
+                    Nothing ->
+                        []
             , url = (model.baseUrl ++ "/me")
             , body = Http.emptyBody
             , expect =
@@ -47,22 +54,28 @@ loadMe model =
 
 gameCommand : Model -> Table -> PlayerAction -> Cmd Msg
 gameCommand model table playerAction =
-    Http.send (GameCommandResponse table playerAction) <|
-        Http.request
-            { method = "POST"
-            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
-            , url =
-                (model.baseUrl
-                    ++ "/tables/"
-                    ++ (toString table)
-                    ++ "/"
-                    ++ (actionToString playerAction)
-                )
-            , body = Http.emptyBody
-            , expect = Http.expectStringResponse (\_ -> Ok ())
-            , timeout = Nothing
-            , withCredentials = False
-            }
+    case model.jwt of
+        Nothing ->
+            toastCmd "Missing JWT"
+
+        Just jwt ->
+            Http.send (GameCommandResponse table playerAction) <|
+                Http.request
+                    { method = "POST"
+                    , headers =
+                        [ Http.header "authorization" ("Bearer " ++ jwt) ]
+                    , url =
+                        (model.baseUrl
+                            ++ "/tables/"
+                            ++ (toString table)
+                            ++ "/"
+                            ++ (actionToString playerAction)
+                        )
+                    , body = Http.emptyBody
+                    , expect = Http.expectStringResponse (\_ -> Ok ())
+                    , timeout = Nothing
+                    , withCredentials = False
+                    }
 
 
 enter : Model -> Table -> String -> Cmd Msg
@@ -70,7 +83,13 @@ enter model table clientId =
     Http.send (GameCommandResponse table <| Enter) <|
         Http.request
             { method = "POST"
-            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
+            , headers =
+                case model.jwt of
+                    Just jwt ->
+                        [ Http.header "authorization" ("Bearer " ++ jwt) ]
+
+                    Nothing ->
+                        []
             , url =
                 (model.baseUrl
                     ++ "/tables/"
@@ -86,21 +105,26 @@ enter model table clientId =
 
 attack : Model -> Table -> Land.Emoji -> Land.Emoji -> Cmd Msg
 attack model table from to =
-    Http.send (GameCommandResponse table <| Attack from to) <|
-        Http.request
-            { method = "POST"
-            , headers = [ Http.header "authorization" ("Bearer " ++ model.jwt) ]
-            , url =
-                (model.baseUrl
-                    ++ "/tables/"
-                    ++ (toString table)
-                    ++ "/Attack"
-                )
-            , body = Http.jsonBody <| attackEncoder from to
-            , expect = Http.expectStringResponse (\_ -> Ok ())
-            , timeout = Nothing
-            , withCredentials = False
-            }
+    case model.jwt of
+        Nothing ->
+            toastCmd "Missing JWT"
+
+        Just jwt ->
+            Http.send (GameCommandResponse table <| Attack from to) <|
+                Http.request
+                    { method = "POST"
+                    , headers = [ Http.header "authorization" ("Bearer " ++ jwt) ]
+                    , url =
+                        (model.baseUrl
+                            ++ "/tables/"
+                            ++ (toString table)
+                            ++ "/Attack"
+                        )
+                    , body = Http.jsonBody <| attackEncoder from to
+                    , expect = Http.expectStringResponse (\_ -> Ok ())
+                    , timeout = Nothing
+                    , withCredentials = False
+                    }
 
 
 actionToString : PlayerAction -> String

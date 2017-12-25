@@ -6,7 +6,7 @@ import Game.Types
 
 type alias Model =
     { baseUrl : String
-    , jwt : String
+    , jwt : Maybe String
     , clientId : Maybe ClientId
     , subscribed : List Topic
     , status : ConnectionStatus

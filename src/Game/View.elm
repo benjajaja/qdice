@@ -13,6 +13,7 @@ import Material.Button as Button
 import Material.Icon as Icon
 import Material.Footer as Footer
 import Material.List as Lists
+import Material.Dialog as Dialog
 import Types exposing (Model, Msg(..))
 import Tables exposing (Table, tableList)
 import Board
@@ -88,12 +89,7 @@ seatButton model =
         canPlay =
             case model.backend.status of
                 Online ->
-                    case model.user of
-                        Types.Anonymous ->
-                            False
-
-                        Types.Logged user ->
-                            True
+                    True
 
                 _ ->
                     False
@@ -101,33 +97,39 @@ seatButton model =
         player =
             findUserPlayer model.user model.game.players
 
-        ( label, action ) =
+        ( label, onClick ) =
             case player of
                 Just player ->
                     (if model.game.status == Game.Types.Playing then
                         (if player.out then
-                            ( "Sit in", SitIn )
+                            ( "Sit in", Options.onClick <| GameCmd SitIn )
                          else
-                            ( "Sit out", SitOut )
+                            ( "Sit out", Options.onClick <| GameCmd SitOut )
                         )
                      else
-                        ( "Leave game", Leave )
+                        ( "Leave game", Options.onClick <| GameCmd Leave )
                     )
 
                 Nothing ->
-                    ( "Join game", Join )
+                    case model.user of
+                        Types.Anonymous ->
+                            ( "Join game", Dialog.openOn "click" )
+
+                        Types.Logged user ->
+                            ( "Join game", Options.onClick <| GameCmd Join )
     in
         Button.render
             Types.Mdl
             [ 0 ]
             model.mdl
-            [ Button.raised
-            , Button.colored
-            , Button.ripple
-            , Options.cs "edGameHeader__button"
-            , Options.onClick <| GameCmd action
-            , Options.disabled <| not canPlay
-            ]
+            (onClick
+                :: [ Button.raised
+                   , Button.colored
+                   , Button.ripple
+                   , Options.cs "edGameHeader__button"
+                   , Options.disabled <| not canPlay
+                   ]
+            )
             [ Html.text label ]
 
 

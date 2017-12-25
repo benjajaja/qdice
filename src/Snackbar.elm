@@ -1,7 +1,8 @@
-module Snackbar exposing (toast, init, update, view)
+module Snackbar exposing (toast, toastCmd, init, update, view)
 
 import Html exposing (..)
 import Time exposing (Time, millisecond)
+import Task
 import Material
 import Material.Helpers exposing (map1st, map2nd, delay, pure, cssTransitionStep)
 import Material.Snackbar as Snackbar
@@ -22,6 +23,13 @@ toast model message =
         ( { model | snackbar = { snackbarModel | snackbar = snackbar_ } }
         , Cmd.map Types.Snackbar effect
         )
+
+
+toastCmd : String -> Cmd Types.Msg
+toastCmd message =
+    Types.ErrorToast message
+        |> Task.succeed
+        |> Task.perform identity
 
 
 init : Model

@@ -11,6 +11,7 @@ import Types
 import MyProfile.Types exposing (..)
 import Backend.Decoding exposing (tokenDecoder)
 import Backend.Encoding exposing (profileEncoder)
+import Snackbar exposing (toastCmd)
 
 
 view : Types.Model -> Types.LoggedUser -> Html.Html Types.Msg
@@ -53,29 +54,34 @@ update model msg =
                 { model | myProfile = p_ } ! []
 
         Save ->
-            case model.user of
-                Types.Logged user ->
-                    let
-                        profile =
-                            { user | name = Maybe.withDefault user.name model.myProfile.name }
+            case model.backend.jwt of
+                Nothing ->
+                    model ! [ toastCmd "Missing JWT" ]
 
-                        request =
-                            Http.request
-                                { method = "POST"
-                                , headers = [ Http.header "authorization" ("Bearer " ++ model.backend.jwt) ]
-                                , url = (model.backend.baseUrl ++ "/profile")
-                                , body =
-                                    (Http.jsonBody <| profileEncoder profile)
-                                , expect =
-                                    Http.expectJson <| tokenDecoder
-                                , timeout = Nothing
-                                , withCredentials = False
-                                }
-                    in
-                        model ! [ Http.send (Types.GetToken) request ]
+                Just jwt ->
+                    case model.user of
+                        Types.Logged user ->
+                            let
+                                profile =
+                                    { user | name = Maybe.withDefault user.name model.myProfile.name }
 
-                Types.Anonymous ->
-                    Debug.crash "cannot modify anonymous user"
+                                request =
+                                    Http.request
+                                        { method = "POST"
+                                        , headers = [ Http.header "authorization" ("Bearer " ++ jwt) ]
+                                        , url = (model.backend.baseUrl ++ "/profile")
+                                        , body =
+                                            (Http.jsonBody <| profileEncoder profile)
+                                        , expect =
+                                            Http.expectJson <| tokenDecoder
+                                        , timeout = Nothing
+                                        , withCredentials = False
+                                        }
+                            in
+                                model ! [ Http.send (Types.GetToken) request ]
+
+                        Types.Anonymous ->
+                            Debug.crash "cannot modify anonymous user"
 
         Mdl msg ->
             let

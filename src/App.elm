@@ -74,7 +74,7 @@ init flags location =
                 TokenRoute token ->
                     let
                         backend_ =
-                            { backend | jwt = token }
+                            { backend | jwt = Just token }
                     in
                         ( backend_
                         , [ auth [ token ]
@@ -179,7 +179,7 @@ update msg model =
                             model.backend
 
                         backend_ =
-                            { backend | jwt = token }
+                            { backend | jwt = Just token }
                     in
                         { model | backend = backend_ }
                             ! [ auth [ token ]
@@ -214,7 +214,7 @@ update msg model =
                     model.backend
 
                 backend_ =
-                    { backend | jwt = token }
+                    { backend | jwt = Just token }
             in
                 { model | backend = backend_ }
                     ! [ loadMe backend_ ]
@@ -228,10 +228,13 @@ update msg model =
                     model.backend
 
                 backend_ =
-                    { backend | jwt = "" }
+                    { backend | jwt = Nothing }
             in
                 { model | user = Anonymous, backend = backend_ }
                     ! [ auth [] ]
+
+        Login ->
+            model ! []
 
         NavigateTo route ->
             model ! [ navigateTo route ]
@@ -263,6 +266,9 @@ update msg model =
                     Snackbar.update snackbarMsg model.snackbar
             in
                 { model | snackbar = snackbar_ } ! [ Cmd.map Snackbar cmd ]
+
+        ErrorToast message ->
+            toast model <| Debug.log "error" message
 
         Animate msg ->
             let
