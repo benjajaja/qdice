@@ -85,6 +85,12 @@ module.exports.command = function(req, res, next) {
     case 'EndTurn':
       require('./table/endTurn')(req.user, table, res, next);
       break;
+    case 'SitOut':
+      require('./table/sitOut')(req.user, table, res, next);
+      break;
+    case 'SitIn':
+      require('./table/sitIn')(req.user, table, res, next);
+      break;
     default:
       return next(new Error('Unknown command: ' + command));
   }

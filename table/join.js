@@ -42,6 +42,7 @@ const Player = user => ({
   picture: user.picture || '',
   color: COLOR_NEUTRAL,
   reserveDice: 0,
+  out: false,
   derived: {
     connectedLands: 0,
     totalLands: 0,
