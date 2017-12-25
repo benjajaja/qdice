@@ -3,7 +3,7 @@ if (process.env.NODE_ENV !== 'production') {
   require('./envs');
 }
 
-
+const R = require('ramda');
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
 const jwt = require('restify-jwt-community');
@@ -40,14 +40,27 @@ server.pre(cors.preflight);
 server.use(cors.actual);
 server.use(jwt({
   secret: process.env.JWT_SECRET,
-  credentialsRequired: false,
+  credentialsRequired: true,
   getToken: function fromHeaderOrQuerystring (req) {
     if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-        return req.headers.authorization.split(' ')[1];
+        return req.headers.authorization.split(' ')[1] || null;
     }
     return null;
   },
-}).unless({path: ['/login']}));
+})
+.unless({
+  custom: req => {
+    const ok = R.anyPass([
+      req => req.path() === '/login',
+      req => req.path() === '/global',
+      req => req.route.path === '/tables/:tableName/:command'
+        && req.context.command === 'Enter',
+    ])(req);
+    console.log('ok?', ok, req.path());
+    return ok;
+  }
+}));
+
 server.on('uncaughtException', function (req, res, err, cb) {
     console.log(err);
     return cb();
