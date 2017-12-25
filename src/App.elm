@@ -164,7 +164,7 @@ update msg model =
                     in
                         { model | tableList = tables, game = game_ } ! []
 
-        GetToken res ->
+        GetToken doJoin res ->
             case res of
                 Err err ->
                     let
@@ -183,10 +183,18 @@ update msg model =
 
                         backend_ =
                             { backend | jwt = Just token }
+
+                        model_ =
+                            { model | backend = backend_ }
                     in
-                        { model | backend = backend_ }
+                        model_
                             ! [ auth [ token ]
                               , loadMe backend_
+                              , (if doJoin then
+                                    gameCommand model_.backend model_.game.table Game.Types.Join
+                                 else
+                                    Cmd.none
+                                )
                               ]
 
         GetProfile res ->
@@ -208,8 +216,8 @@ update msg model =
                     Ok profile ->
                         { model | user = Logged profile } ! []
 
-        Authorize ->
-            MyOauth.authorize model
+        Authorize doJoin ->
+            MyOauth.authorize model doJoin
 
         LoadToken token ->
             let
@@ -222,8 +230,8 @@ update msg model =
                 { model | backend = backend_ }
                     ! [ loadMe backend_ ]
 
-        Authenticate code ->
-            model ! [ authenticate model.backend code ]
+        Authenticate code doJoin ->
+            model ! [ authenticate model.backend code doJoin ]
 
         Logout ->
             let
@@ -232,9 +240,20 @@ update msg model =
 
                 backend_ =
                     { backend | jwt = Nothing }
+
+                player =
+                    Game.State.findUserPlayer model.user model.game.players
             in
                 { model | user = Anonymous, backend = backend_ }
-                    ! [ auth [] ]
+                    ! [ auth []
+                      , (case player of
+                            Just _ ->
+                                gameCommand model.backend model.game.table Game.Types.Leave
+
+                            Nothing ->
+                                Cmd.none
+                        )
+                      ]
 
         SetLoginName text ->
             { model | loginName = text } ! []
@@ -471,7 +490,7 @@ header model =
                 , Material.Options.onClick <|
                     case model.user of
                         Anonymous ->
-                            Authorize
+                            Authorize False
 
                         Logged _ ->
                             Logout

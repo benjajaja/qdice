@@ -38,7 +38,7 @@ footer model =
                     , Material.Options.onClick <|
                         case model.user of
                             Anonymous ->
-                                Authorize
+                                Authorize False
 
                             Logged _ ->
                                 Logout

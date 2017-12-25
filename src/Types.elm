@@ -29,9 +29,9 @@ type Msg
       -- oauth
     | Nop
     | GetGlobalSettings (Result Http.Error ( GlobalSettings, List TableInfo ))
-    | Authorize
-    | Authenticate String
-    | GetToken (Result Http.Error String)
+    | Authorize Bool
+    | Authenticate String Bool
+    | GetToken Bool (Result Http.Error String)
     | GetProfile (Result Http.Error LoggedUser)
     | Logout
     | Login String

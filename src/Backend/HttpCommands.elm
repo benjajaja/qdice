@@ -19,8 +19,8 @@ loadGlobalSettings model =
             globalDecoder
 
 
-authenticate : Model -> String -> Cmd Msg
-authenticate model code =
+authenticate : Model -> String -> Bool -> Cmd Msg
+authenticate model code doJoin =
     let
         request =
             Http.post (model.baseUrl ++ "/login")
@@ -28,7 +28,7 @@ authenticate model code =
             <|
                 tokenDecoder
     in
-        Http.send (GetToken) request
+        Http.send (GetToken doJoin) request
 
 
 loadMe : Model -> Cmd Msg

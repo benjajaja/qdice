@@ -7,6 +7,7 @@ import Json.Decode as Json
 import OAuth
 import OAuth.AuthorizationCode
 import Types exposing (MyOAuthModel, Msg(..), LoggedUser)
+import Game.Types
 
 
 profileEndpoint : String
@@ -33,12 +34,22 @@ init location =
             Err (OAuth.Empty) ->
                 ( oauth, [] )
 
-            Ok { code } ->
-                ( oauth
-                , [ Navigation.modifyUrl oauth.redirectUri
-                  , Task.perform (always <| Authenticate code) (Task.succeed ())
-                  ]
-                )
+            Ok { code, state } ->
+                let
+                    doJoin =
+                        case Maybe.withDefault "" state of
+                            "join" ->
+                                True
+
+                            _ ->
+                                False
+                in
+                    ( oauth
+                    , [ Navigation.modifyUrl oauth.redirectUri
+                      , Task.perform (always <| Authenticate code doJoin) (Task.succeed ())
+                        --Task.perform (always <| Types.GameCmd Game.Types.Join) (Task.succeed ())
+                      ]
+                    )
 
             Err (OAuth.OAuthErr err) ->
                 ( { oauth | error = Just <| OAuth.showErrCode err.error }
@@ -49,14 +60,20 @@ init location =
                 ( { oauth | error = Just "parsing error" }, [] )
 
 
-authorize model =
+authorize model doJoin =
     model
         ! [ OAuth.AuthorizationCode.authorize
                 { clientId = model.oauth.clientId
                 , redirectUri = model.oauth.redirectUri
                 , responseType = OAuth.Code
                 , scope = [ "email", "profile" ]
-                , state = Nothing
+                , state =
+                    case doJoin of
+                        True ->
+                            Just "join"
+
+                        False ->
+                            Nothing
                 , url = authorizationEndpoint
                 }
           ]

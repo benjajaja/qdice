@@ -78,7 +78,7 @@ update model msg =
                                         , withCredentials = False
                                         }
                             in
-                                model ! [ Http.send (Types.GetToken) request ]
+                                model ! [ Http.send (Types.GetToken False) request ]
 
                         Types.Anonymous ->
                             Debug.crash "cannot modify anonymous user"

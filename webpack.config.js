@@ -88,6 +88,7 @@ module.exports = {
       { from: 'html/elm-dice-serviceworker.js' },
       { from: 'html/cache-polyfill.js' },
       { from: 'html/sounds', to: 'sounds'},
+      { from: 'html/assets', to: 'assets'},
     ]),
   ].concat(process.env.NODE_ENV === 'production'
     ? new webpack.optimize.UglifyJsPlugin({

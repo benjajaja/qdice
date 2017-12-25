@@ -24,7 +24,7 @@ loginDialog model =
                 [ 12 ]
                 model.mdl
                 [ Dialog.closeOn "click"
-                , Options.onClick Authorize
+                , Options.onClick <| Authorize True
                 , Button.raised
                 , Button.colored
                 , Button.ripple
@@ -36,7 +36,7 @@ loginDialog model =
             ]
         , Dialog.content [ Options.cs "edLoginDialog__register" ]
             [ div []
-                [ text "... or just play with keeping points:" ]
+                [ text "... or just play for now:" ]
             , Textfield.render Mdl
                 [ 13 ]
                 model.mdl
@@ -94,4 +94,4 @@ login model name =
                 , withCredentials = False
                 }
     in
-        model ! [ Http.send (Types.GetToken) request ]
+        model ! [ Http.send (Types.GetToken True) request ]
