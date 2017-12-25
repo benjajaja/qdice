@@ -148,6 +148,9 @@ body.navigator-standalone textarea {
   vertical-align: middle;
   overflow: hidden;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .edPlayerChip__name {
   width: 100%;
@@ -171,6 +174,19 @@ body.navigator-standalone textarea {
 }
 .edPlayerChip_clock {
 }
+
+.edPlayerChip--out .edPlayerChip__picture__image {
+  filter: grayscale(100%);
+}
+.edPlayerChip--out .edPlayerChip__picture__image:after {
+  display: block;
+  color: white;
+  background: black;
+  content: 'OUT';
+}
+
+
+
 .edGameList {
   background-color: transparent;
 }

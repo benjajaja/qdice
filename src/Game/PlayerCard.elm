@@ -22,7 +22,12 @@ import Board.Colors
 view : Model -> Int -> Player -> Html.Html Types.Msg
 view model index player =
     Options.div
-        [ Options.cs "edPlayerChip"
+        [ Options.cs <| String.join " " <| "edPlayerChip"
+            :: (if player.out then
+                    [ "edPlayerChip--out" ]
+                else
+                    []
+               )
         , if index == model.game.turnIndex then
             Elevation.e6
           else

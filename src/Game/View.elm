@@ -1,6 +1,7 @@
 module Game.View exposing (view)
 
 import Game.Types exposing (PlayerAction(..), TableInfo)
+import Game.State exposing (findUserPlayer)
 import Game.Chat
 import Game.Footer exposing (footer)
 import Game.PlayerCard as PlayerCard
@@ -97,16 +98,24 @@ seatButton model =
                 _ ->
                     False
 
+        player =
+            findUserPlayer model.user model.game.players
+
         ( label, action ) =
-            (if isPlayerInGame model then
-                (if model.game.status == Game.Types.Playing then
-                    ( "Sit out", SitOut )
-                 else
-                    ( "Leave game", Leave )
-                )
-             else
-                ( "Join game", Join )
-            )
+            case player of
+                Just player ->
+                    (if model.game.status == Game.Types.Playing then
+                        (if player.out then
+                            ( "Sit in", SitIn )
+                         else
+                            ( "Sit out", SitOut )
+                        )
+                     else
+                        ( "Leave game", Leave )
+                    )
+
+                Nothing ->
+                    ( "Join game", Join )
     in
         Button.render
             Types.Mdl

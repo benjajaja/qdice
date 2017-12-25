@@ -5,7 +5,7 @@ import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (TableStatus, Player, PlayerGameStats)
 import Board.Types
 import Land exposing (Color, playerColor)
-import Json.Decode exposing (int, string, float, list, Decoder, map, succeed, field)
+import Json.Decode exposing (int, string, float, bool, list, Decoder, map, succeed, field)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
@@ -42,6 +42,7 @@ playersDecoder =
         |> required "name" string
         |> required "color" colorDecoder
         |> required "picture" string
+        |> required "out" bool
         |> required "derived" playerGameStatsDecoder
         |> required "reserveDice" int
 

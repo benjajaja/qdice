@@ -16,6 +16,7 @@ type PlayerAction
     | Join
     | Leave
     | SitOut
+    | SitIn
     | Attack Emoji Emoji
     | EndTurn
 
@@ -43,6 +44,7 @@ type alias Player =
     , name : PlayerName
     , color : Color
     , picture : String
+    , out : Bool
     , gameStats : PlayerGameStats
     , reserveDice : Int
     }
