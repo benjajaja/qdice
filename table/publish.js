@@ -60,6 +60,25 @@ module.exports.move = (table, move) => {
   );
 };
 
+module.exports.elimination = (table, player, position, reason) => {
+  client.publish('tables/' + table.name + '/clients',
+    JSON.stringify({
+      type: 'elimination',
+      payload: {
+        player,
+        position,
+        reason,
+      },
+    }),
+    undefined,
+    (err) => {
+			if (err) {
+				console.log(err, 'tables/' + table.name + '/clients elimination', table);
+			}
+		}
+  );
+};
+
 module.exports.tables = globalTablesUpdate => {
   client.publish('clients',
     JSON.stringify({

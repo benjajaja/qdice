@@ -44,7 +44,6 @@ module.exports = tables => {
   if (!R.equals(newUpdate)(globalTablesUpdate)) {
     globalTablesUpdate = newUpdate;
     publish.tables(globalTablesUpdate);
-    console.log('global table list update push');
     probe.metric({
       name: 'Players',
       value: R.always(R.sum(R.map(R.prop('playerCount'))(newUpdate))),

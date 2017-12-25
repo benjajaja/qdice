@@ -42,7 +42,6 @@ const loadLands = table => {
   });
 };
 
-console.log('loading tables and calculating adjacency matrices...');
 const tables = keys.map(key =>loadLands(Table(key)));
 tables[0].playerSlots = 4;
 tables[2].playerSlots = 5;

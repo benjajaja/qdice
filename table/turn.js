@@ -1,5 +1,6 @@
 const R = require('ramda');
 const maps = require('../maps');
+const publish = require('./publish');
 const { rand } = require('../rand');
 
 const {
@@ -8,11 +9,12 @@ const {
   STATUS_FINISHED,
   TURN_SECONDS,
   COLOR_NEUTRAL,
+  ELIMINATION_REASON_OUT,
+  ELIMINATION_REASON_WIN,
 } = require('../constants');
 
 module.exports = table => {
   const currentPlayer = table.players[table.turnIndex];
-  console.log('out?', table.turnActivity, currentPlayer.out);
   if (!table.turnActivity && !currentPlayer.out) {
     currentPlayer.out = true;
   }
@@ -27,7 +29,14 @@ module.exports = table => {
   if (newPlayer.out) {
     newPlayer.outTurns += 1;
     if (newPlayer.outTurns > 5) {
+      publish.elimination(table, newPlayer, table.players.length, {
+        type: ELIMINATION_REASON_OUT,
+        source: newPlayer.outTurns,
+      });
+
       table = removePlayer(table)(newPlayer);
+
+
       if (table.players.length === 1) {
         endGame(table);
       }
@@ -64,6 +73,9 @@ const removePlayer = table => player => {
 };
 
 const endGame = table => {
+  publish.elimination(table, table.players.shift(), 1, {
+    type: ELIMINATION_REASON_WIN,
+  });
   table.players = [];
   table.status = STATUS_FINISHED;
   table.turnIndex = -1;

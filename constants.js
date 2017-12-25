@@ -7,3 +7,7 @@ exports.GAME_START_COUNTDOWN = 30;
 
 exports.COLOR_NEUTRAL = -1;
 
+exports.ELIMINATION_REASON_DIE = '☠';
+exports.ELIMINATION_REASON_OUT = '💤';
+exports.ELIMINATION_REASON_WIN = '🏆';
+
