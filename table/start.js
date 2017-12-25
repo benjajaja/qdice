@@ -1,5 +1,4 @@
 const probe = require('pmx').probe();
-const nextTurn = require('./turn');
 const publish = require('./publish');
 const { rand } = require('../rand');
 const {
@@ -39,7 +38,9 @@ module.exports = table => {
     land.points = Math.floor(table.stackSize / 2);
   });
   
-  table = nextTurn(table);
+  table.turnIndex = 0;
+  table.turnStarted = Math.floor(Date.now() / 1000);
+  table.turnActivity = false;
   publish.tableStatus(table);
   startCounter.inc();
   return table;

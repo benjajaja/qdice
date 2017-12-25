@@ -11,23 +11,28 @@ const {
 } = require('../constants');
 
 module.exports = table => {
-  if (table.turnIndex !== -1) {
-    giveDice(table)(table.players[table.turnIndex]);
+  const currentPlayer = table.players[table.turnIndex];
+  console.log('out?', table.turnActivity, currentPlayer.out);
+  if (!table.turnActivity && !currentPlayer.out) {
+    currentPlayer.out = true;
   }
+  giveDice(table)(currentPlayer);
 
   const nextIndex = (i => i + 1 < table.players.length ? i + 1 : 0)(table.turnIndex);
   table.turnIndex = nextIndex;
   table.turnStarted = Math.floor(Date.now() / 1000);
-  if (!table.players.every(R.prop('out'))) {
-    const newPlayer = table.players[table.turnIndex];
-    if (newPlayer.out) {
-      newPlayer.outTurns += 1;
-      if (newPlayer.outTurns > 5) {
-        table = removePlayer(table)(newPlayer);
-        if (table.players.length === 1) {
-          endGame(table);
-        }
+  table.turnActivity = false;
+
+  const newPlayer = table.players[table.turnIndex];
+  if (newPlayer.out) {
+    newPlayer.outTurns += 1;
+    if (newPlayer.outTurns > 5) {
+      table = removePlayer(table)(newPlayer);
+      if (table.players.length === 1) {
+        endGame(table);
       }
+    }
+    if (!table.players.every(R.prop('out'))) {
       return module.exports(table);
     }
   }

@@ -21,8 +21,10 @@ const updateCounter = probe.counter({
 module.exports = tables => {
   tables.filter(table => table.status === STATUS_PLAYING)
     .forEach(table => {
-    if ((table.turnStarted < Date.now() / 1000 - (TURN_SECONDS + 1))
-      || (table.players.every(R.prop('out')))) {
+    if (table.turnStarted < Date.now() / 1000 - (TURN_SECONDS + 1)) {
+      nextTurn(table);
+      publish.tableStatus(table);
+    } else if (table.players.every(R.prop('out'))) {
       nextTurn(table);
       publish.tableStatus(table);
     }

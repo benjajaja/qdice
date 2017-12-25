@@ -35,6 +35,7 @@ module.exports = (user, table, [emojiFrom, emojiTo], res, next) => {
   }
 
   table.turnStarted = Math.floor(Date.now() / 1000);
+  table.turnActivity = true;
   setTimeout(() => {
     try {
       const [fromRoll, toRoll, isSuccess] = diceRoll(fromLand.points, toLand.points);

@@ -22,6 +22,7 @@ module.exports = (user, table, res, next) => {
     return next(new Error('not playing'));
   }
 
+  table.turnActivity = true;
   nextTurn(table);
   publish.tableStatus(table);
   res.send(204);
