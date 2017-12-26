@@ -36,14 +36,6 @@ setTimeout(function() {
     };
     window.dialogPolyfill = require('dialog-polyfill');
   });
-  app.ports.closeDialog.subscribe(function(id) {
-    try {
-      document.getElementById(id).setAttribute('open', 'open');
-      document.getElementById(id).close();
-    } catch (e) {
-      window.alert('Error while closing a dialog: ' + e);
-    }
-  });
 
 
   if (window.location.hash.indexOf('#access_token=') !== 0) {

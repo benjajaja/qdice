@@ -102,6 +102,7 @@ init flags location =
             , snackbar = Snackbar.init
             , isTelegram = flags.isTelegram
             , loginName = ""
+            , showLoginDialog = False
             , settings =
                 { gameCountdownSeconds = 30
                 , maxNameLength = 20
@@ -262,6 +263,9 @@ update msg model =
 
         SetLoginName text ->
             { model | loginName = text } ! []
+
+        ShowLogin show ->
+            { model | showLoginDialog = show } ! []
 
         Login name ->
             login model name

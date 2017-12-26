@@ -322,7 +322,27 @@ body.navigator-standalone textarea {
   background: #eee;
 }
 
+.edLoginBackdrop {
+  background: rgba(0, 0, 0, 0.25);
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 998;
+}
 .edLoginDialog {
+  position: fixed;
+  top: 64px;
+  right: 0;
+  left: 0;
+  z-index: 999;
+  background: white;
+  width: 250px;
+  height: auto;
+  margin: 0 auto;
+  padding: 20px;
+  box-shadow: 0 0 50px #000;
 }
 .edLoginDialog__social {
   padding-bottom: 40px;
@@ -340,6 +360,11 @@ body.navigator-standalone textarea {
   height: 100%;
   float: left;
   margin-right: 5px;
+}
+.edLoginDialog__buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 
 .edEditor textarea {

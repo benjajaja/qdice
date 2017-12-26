@@ -13,7 +13,6 @@ import Material.Button as Button
 import Material.Icon as Icon
 import Material.Footer as Footer
 import Material.List as Lists
-import Material.Dialog as Dialog
 import Types exposing (Model, Msg(..))
 import Tables exposing (Table, tableList, encodeTable)
 import Board
@@ -113,7 +112,7 @@ seatButton model =
                 Nothing ->
                     case model.user of
                         Types.Anonymous ->
-                            ( "Join game", Dialog.openOn "click" )
+                            ( "Join game", Options.onClick <| ShowLogin True )
 
                         Types.Logged user ->
                             ( "Join game", Options.onClick <| GameCmd Join )

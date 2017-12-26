@@ -34,6 +34,7 @@ type Msg
     | GetToken Bool (Result Http.Error String)
     | GetProfile (Result Http.Error LoggedUser)
     | Logout
+    | ShowLogin Bool
     | Login String
     | SetLoginName String
       -- game
@@ -85,6 +86,7 @@ type alias Model =
     , snackbar : Snackbar.Types.Model
     , isTelegram : Bool
     , loginName : String
+    , showLoginDialog : Bool
     , settings : GlobalSettings
     }
 
