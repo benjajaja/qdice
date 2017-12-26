@@ -107,8 +107,8 @@ toChatError table action err =
 
 gameBox : Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
 gameBox mdl lines id =
-    Html.div [ class "gamelogContainer" ]
-        [ Html.div [ class "gamelog", Html.Attributes.id id ] <|
+    Card.view [ cs "gamelogContainer", Material.Elevation.e2 ]
+        [ Card.media [ cs "gamelog", Options.id id ] <|
             (List.map
                 (\c ->
                     case c of
@@ -147,8 +147,10 @@ gameBox mdl lines id =
                                     )
                                 ]
                 )
-                lines
             )
+            <|
+                List.reverse <|
+                    lines
         ]
 
 

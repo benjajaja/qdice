@@ -20,7 +20,7 @@ import Types exposing (Model, Msg(..))
 
 footer : Model -> Html.Html Types.Msg
 footer model =
-    div [] [ tableOfTables model ]
+    div [ class "edTables" ] [ tableOfTables model ]
 
 
 

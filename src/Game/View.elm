@@ -31,11 +31,11 @@ view model =
         Html.div [ class "edGame" ]
             [ header model
             , board
-            , gameLogOverlay model
             , Html.div [ class "edGame__meta" ]
                 [ Html.div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view model) model.game.players
-                , boardHistory model
+                , gameChat model
                 ]
+            , gameLogOverlay model
             , footer model
             ]
 
@@ -150,13 +150,16 @@ endTurnButton model =
 
 gameLogOverlay : Model -> Html.Html Types.Msg
 gameLogOverlay model =
-    Game.Chat.gameBox model.mdl model.game.gameLog <|
+    Game.Chat.gameBox
+        model.mdl
+        model.game.gameLog
+    <|
         "gameLog-"
             ++ (toString model.game.table)
 
 
-boardHistory : Model -> Html.Html Types.Msg
-boardHistory model =
+gameChat : Model -> Html.Html Types.Msg
+gameChat model =
     Html.div [ class "chatboxContainer" ]
         [ --Game.Chat.chatBox False "" model.mdl model.game.gameLog <|
           --"gameLog-"
