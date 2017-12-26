@@ -37,7 +37,12 @@ setTimeout(function() {
     window.dialogPolyfill = require('dialog-polyfill');
   });
   app.ports.closeDialog.subscribe(function(id) {
-    document.getElementById(id).close();
+    try {
+      document.getElementById(id).setAttribute('open', 'open');
+      document.getElementById(id).close();
+    } catch (e) {
+      window.alert('Error while closing a dialog: ' + e);
+    }
   });
 
 
