@@ -24,6 +24,7 @@ const getTablesStatus = module.exports.getTablesStatus = tables =>
   tables.map(table =>
     Object.assign(R.pick([
       'name',
+      'tag',
       'stackSize',
       'status',
       'playerSlots',

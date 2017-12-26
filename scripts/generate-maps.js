@@ -88,11 +88,13 @@ write.write(JSON.stringify({
     const buffer = fs.readFileSync(`${srcDir}/${file}`);
     const lines = buffer.toString().split('\n');
     const name = lines.shift();
+    //const tag = lines.shift();
     console.log(name);
     const [ lands, adjacency ] = loadMap(lines);
     console.log(`${lands.length} lands`);
     return {
       name,
+      tag: name,
       lands,
       adjacency,
     };

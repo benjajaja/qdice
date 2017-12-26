@@ -13,9 +13,9 @@ const grid = Grid({
 });
 
 
-module.exports.loadMap = name => {
-  const { lands, adjacency } = mapJson.maps.filter(R.propEq('name', name)).pop();
-  return [ lands, adjacency ];
+module.exports.loadMap = tag => {
+  const { lands, adjacency, name } = mapJson.maps.filter(R.propEq('tag', tag)).pop();
+  return [ lands, adjacency, name ];
 };
 
 const isBorder = module.exports.isBorder = ({ indexes, matrix }, from, to) => {

@@ -14,11 +14,12 @@ const {
 const { findTable, hasTurn } = require('./helpers');
 
 
-const keys = ['Melchor', 'Miño', 'Avocado', 'Sabicas' ];
+const keys = ['Melchor', 'Miño', 'DeLucía', 'Serrano' ];
 
 
 const Table = name => ({
   name,
+  tag: name,
   players: [],
   playerSlots: 2,
   status: STATUS_PAUSED,
@@ -32,8 +33,9 @@ const Table = name => ({
 
 
 const loadLands = table => {
-  const [ lands, adjacency ] = maps.loadMap(table.name);
+  const [ lands, adjacency, name ] = maps.loadMap(table.tag);
   return Object.assign({}, table, {
+    name,
     lands: lands.map(land => Object.assign({}, land, {
       color: COLOR_NEUTRAL,
       points: 1,
