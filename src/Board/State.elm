@@ -104,21 +104,24 @@ updateLand layout updates land =
                                             1.15
                                         else
                                             1.5
+
+                                    y =
+                                        cy - yOffset - (toFloat (index % 4) * 1.8)
                                 in
                                     ( index
                                     , Animation.interrupt
                                         [ Animation.wait (100 * index)
                                         , Animation.to
-                                            [ Animation.y <| cy - yOffset - (toFloat (index % 4) * 1.8) ]
+                                            [ Animation.y <| y ]
                                         ]
                                       <|
                                         Animation.styleWith
                                             (Animation.spring
                                                 { stiffness = 210
-                                                , damping = 20
+                                                , damping = 30
                                                 }
                                             )
-                                            [ Animation.y -10 ]
+                                            [ Animation.y (y - 50) ]
                                     )
                             )
                         <|
