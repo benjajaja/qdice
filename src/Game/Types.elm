@@ -113,6 +113,7 @@ type ChatLogEntry
     | LogRoll RollLog
     | LogTurn User Color
     | LogElimination User Color Int EliminationReason
+    | LogBegin Table
 
 
 type alias RollLog =

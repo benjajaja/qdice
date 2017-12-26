@@ -146,6 +146,10 @@ gameBox mdl lines id =
                                         " finished " ++ (ordinal position)
                                     )
                                 ]
+
+                        LogBegin table ->
+                            div [ class "chatbox" ]
+                                [ Html.text <| "Table " ++ toString table ]
                 )
             )
             <|

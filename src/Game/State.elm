@@ -40,7 +40,7 @@ init model table =
           , turnStarted = -1
           , chatInput = ""
           , chatLog = []
-          , gameLog = []
+          , gameLog = [ LogBegin table ]
           }
             |> (\m ->
                     case model of
