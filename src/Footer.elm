@@ -31,28 +31,32 @@ footer model =
                     )
                 ]
         , right =
-            Footer.right []
-                [ statusMessage model.backend.status
-                , Footer.link
-                    [ Material.Options.cs "footer--profile-link"
-                    , Material.Options.onClick <|
-                        case model.user of
-                            Anonymous ->
-                                Authorize False
+            Footer.right [] <|
+                statusMessage model.backend.status
+                    :: (if not model.isTelegram then
+                            [ Footer.link
+                                [ Material.Options.cs "footer--profile-link"
+                                , Material.Options.onClick <|
+                                    case model.user of
+                                        Anonymous ->
+                                            Authorize False
 
-                            Logged _ ->
-                                Logout
-                    ]
-                    (case model.user of
-                        Logged user ->
-                            [ Html.div [] [ Html.text <| user.name ]
-                            , Html.img [ Html.Attributes.src user.picture ] []
+                                        Logged _ ->
+                                            Logout
+                                ]
+                                (case model.user of
+                                    Logged user ->
+                                        [ Html.div [] [ Html.text <| user.name ]
+                                        , Html.img [ Html.Attributes.src user.picture ] []
+                                        ]
+
+                                    Anonymous ->
+                                        [ Icon.i "account_circle" ]
+                                )
                             ]
-
-                        Anonymous ->
-                            [ Icon.i "account_circle" ]
-                    )
-                ]
+                        else
+                            []
+                       )
         }
 
 
