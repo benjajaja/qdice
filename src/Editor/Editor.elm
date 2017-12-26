@@ -10,6 +10,7 @@ import Board.Types exposing (Msg(..))
 import Land
 import Maps
 import Tables
+import Markdown
 
 
 port selectAll : String -> Cmd msg
@@ -68,7 +69,7 @@ update msg model =
                     model.board
 
                 map =
-                    Maps.emojisToMap string
+                    Maps.emojisToMap <| "\n" ++ string
             in
                 ( { model
                     | board = { board | map = map }
@@ -80,7 +81,8 @@ update msg model =
 view : Types.Model -> Html.Html Types.Msg
 view model =
     Html.div [ class "edEditor" ]
-        [ div [] [ h1 [] [ Html.text "Editor" ] ]
+        [ div [] [ h2 [] [ Html.text "Editor" ] ]
+        , div [] [ h4 [] [ Html.text "experimental feature 💥" ] ]
         , div []
             [ Board.view model.editor.board
                 |> Html.map BoardMsg
@@ -92,6 +94,13 @@ view model =
             , onInput EmojiInput
             ]
             []
+        , Maps.symbols
+            |> List.map text
+            |> (::) (text "Land symbols: ")
+            |> div []
+        , div [] [ text "Space symbol: \"\x3000\"" ]
+        , div [] [ text "Odd-line-start symbol: \"〿\"" ]
+        , helpText
         ]
         |> Html.map Types.EditorMsg
 
@@ -142,3 +151,23 @@ updateMap model cmd map =
 containsAny : List a -> List a -> Bool
 containsAny a b =
     List.any (\a -> List.member a b) a
+
+
+helpText : Html Editor.Types.Msg
+helpText =
+    Markdown.toHtml [] """
+## How to use
+
+Edit the text field above to create a map. Watch the live preview above to ensure that the result is as expected.
+
+## Map format rules
+
+1. Odd lines must start with the 〿 character. This way, even and odd lines match up as text.
+2. Spaces horizontally before and between lands must be set with the unicode space \\u3000 (copy this inside the quotes: "\x3000"). That space is as wide as most emojis. This way, lands match up as text.
+3. Land "cells" or "hexagons" must be represented with an emoji from the list shown above.
+4. Any other character is not valid and will break a map.
+
+## How is this useful? How can I play my map?
+
+You cannot yet play your own creations. It is mostly intended for development.
+"""

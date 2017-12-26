@@ -1,4 +1,4 @@
-module Maps exposing (load, toCharList, consoleLogMap, emojisToMap)
+module Maps exposing (load, toCharList, consoleLogMap, emojisToMap, symbols)
 
 import Dict
 import String
@@ -228,6 +228,12 @@ symbolDict =
         , '🍌'
         ]
         |> Dict.fromList
+
+
+symbols : List String
+symbols =
+    Dict.values symbolDict
+        |> List.map String.fromChar
 
 
 indexSymbol : Int -> String
