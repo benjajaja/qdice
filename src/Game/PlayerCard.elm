@@ -22,12 +22,14 @@ import Board.Colors
 view : Model -> Int -> Player -> Html.Html Types.Msg
 view model index player =
     Options.div
-        [ Options.cs <| String.join " " <| "edPlayerChip"
-            :: (if player.out then
-                    [ "edPlayerChip--out" ]
-                else
-                    []
-               )
+        [ Options.cs <|
+            String.join " " <|
+                "edPlayerChip"
+                    :: (if player.out then
+                            [ "edPlayerChip--out" ]
+                        else
+                            []
+                       )
         , if index == model.game.turnIndex then
             Elevation.e6
           else
@@ -161,7 +163,7 @@ turnProgress : Model -> Float
 turnProgress model =
     let
         turnTime =
-            toFloat model.game.turnDuration
+            toFloat model.settings.turnSeconds
 
         timestamp =
             inMilliseconds model.time / 1000

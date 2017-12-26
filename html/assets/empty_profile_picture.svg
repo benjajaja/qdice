@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
+   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -28,15 +29,24 @@
      inkscape:window-height="679"
      id="namedview21"
      showgrid="false"
-     inkscape:zoom="4.72"
-     inkscape:cx="39.013737"
-     inkscape:cy="50.42679"
-     inkscape:window-x="86"
-     inkscape:window-y="130"
+     inkscape:zoom="3.415"
+     inkscape:cx="65.383441"
+     inkscape:cy="31.476448"
+     inkscape:window-x="71"
+     inkscape:window-y="17"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg2" />
   <defs
-     id="defs206" />
+     id="defs206">
+    <linearGradient
+       id="linearGradient6334"
+       osb:paint="solid">
+      <stop
+         style="stop-color:#3d51bf;stop-opacity:1;"
+         offset="0"
+         id="stop6336" />
+    </linearGradient>
+  </defs>
   <metadata
      id="metadata4">
 Created by potrace 1.11, written by Peter Selinger 2001-2013
@@ -50,6 +60,12 @@ Created by potrace 1.11, written by Peter Selinger 2001-2013
   </cc:Work>
 </rdf:RDF>
 </metadata>
+  <circle
+     style="opacity:0.5;fill:#0087bd;fill-opacity:1;stroke:none;stroke-width:5.48793983;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="path4886"
+     cx="40.175694"
+     cy="39.824303"
+     r="40.134506" />
   <path
      id="path4465"
      d="M 49.587157,30.661147 69.345629,16.101115 30.411033,8.5915151 10.370728,24.151361 Z"

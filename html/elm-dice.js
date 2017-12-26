@@ -36,6 +36,9 @@ setTimeout(function() {
     };
     window.dialogPolyfill = require('dialog-polyfill');
   });
+  app.ports.closeDialog.subscribe(function(id) {
+    document.getElementById(id).close();
+  });
 
 
   if (window.location.hash.indexOf('#access_token=') !== 0) {

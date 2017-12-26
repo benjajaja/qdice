@@ -85,6 +85,7 @@ type alias Model =
     , snackbar : Snackbar.Types.Model
     , isTelegram : Bool
     , loginName : String
+    , settings : GlobalSettings
     }
 
 
@@ -128,4 +129,7 @@ type alias Username =
 
 
 type alias GlobalSettings =
-    {}
+    { gameCountdownSeconds : Int
+    , maxNameLength : Int
+    , turnSeconds : Int
+    }

@@ -1,8 +1,9 @@
-module LoginDialog exposing (loginDialog, login)
+port module LoginDialog exposing (loginDialog, login)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Keyed
+import Html.Events exposing (onSubmit)
 import Http
 import Material.Dialog as Dialog
 import Material.Textfield as Textfield
@@ -42,17 +43,20 @@ loginDialog model =
                 , Dialog.content [ Options.cs "edLoginDialog__register" ]
                     [ div []
                         [ text "... or just play for now:" ]
-                    , Textfield.render Mdl
-                        [ 13 ]
-                        model.mdl
-                        [ Textfield.label "Name"
-                        , Textfield.floatingLabel
-                        , Textfield.text_
-                        , Textfield.value model.loginName
-                        , Options.onInput SetLoginName
-                        , Options.cs "edLoginDialog__name"
+                    , Html.form [ onSubmit <| Login model.loginName ]
+                        [ Textfield.render Mdl
+                            [ 13 ]
+                            model.mdl
+                            [ Textfield.label "Name"
+                            , Textfield.floatingLabel
+                            , Textfield.text_
+                            , Textfield.value model.loginName
+                            , Options.onInput SetLoginName
+                            , Options.cs "edLoginDialog__name"
+                            , Textfield.maxlength model.settings.maxNameLength
+                            ]
+                            []
                         ]
-                        []
                     ]
                 , Dialog.actions []
                     [ Button.render Mdl
@@ -101,4 +105,10 @@ login model name =
                 , withCredentials = False
                 }
     in
-        model ! [ Http.send (Types.GetToken True) request ]
+        model
+            ! [ Http.send (Types.GetToken True) request
+              , closeDialog "elm-mdl-singleton-dialog"
+              ]
+
+
+port closeDialog : String -> Cmd msg

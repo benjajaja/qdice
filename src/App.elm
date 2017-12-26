@@ -102,6 +102,11 @@ init flags location =
             , snackbar = Snackbar.init
             , isTelegram = flags.isTelegram
             , loginName = ""
+            , settings =
+                { gameCountdownSeconds = 30
+                , maxNameLength = 20
+                , turnSeconds = 10
+                }
             }
 
         cmds =
@@ -162,7 +167,7 @@ update msg model =
                         game_ =
                             Game.State.updateGameInfo model.game tables
                     in
-                        { model | tableList = tables, game = game_ } ! []
+                        { model | settings = settings, tableList = tables, game = game_ } ! []
 
         GetToken doJoin res ->
             case res of

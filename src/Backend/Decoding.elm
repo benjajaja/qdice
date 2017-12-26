@@ -156,6 +156,9 @@ globalDecoder =
 globalSettingsDecoder : Decoder Types.GlobalSettings
 globalSettingsDecoder =
     decode Types.GlobalSettings
+        |> required "gameCountdownSeconds" int
+        |> required "maxNameLength" int
+        |> required "turnSeconds" int
 
 
 tableTagDecoder : Decoder Table

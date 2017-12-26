@@ -35,7 +35,6 @@ init model table =
           , status = Paused
           , gameStart = Nothing
           , playerSlots = 0
-          , turnDuration = 10
           , turnIndex = -1
           , hasTurn = False
           , turnStarted = -1

@@ -29,7 +29,6 @@ type alias Model =
     , status : GameStatus
     , gameStart : Maybe Int
     , playerSlots : Int
-    , turnDuration : Int
     , turnIndex : Int
     , hasTurn : Bool
     , turnStarted : Int
