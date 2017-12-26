@@ -87,6 +87,8 @@ view model =
             [ Board.view model.editor.board
                 |> Html.map BoardMsg
             ]
+        , div []
+            [ text <| (++) "Lands: " <| toString <| List.length model.editor.board.map.lands ]
         , textarea
             [ cols 30
             , rows 30
@@ -166,6 +168,7 @@ Edit the text field above to create a map. Watch the live preview above to ensur
 2. Spaces horizontally before and between lands must be set with the unicode space \\u3000 (copy this inside the quotes: "\x3000"). That space is as wide as most emojis. This way, lands match up as text.
 3. Land "cells" or "hexagons" must be represented with an emoji from the list shown above.
 4. Any other character is not valid and will break a map.
+5. Lands may not have holes in them.
 
 ## How is this useful? How can I play my map?
 

@@ -73,7 +73,6 @@ emojisToMap raw =
 
         lands =
             List.map (List.filter (\t -> Tuple.second t /= Land.emptyEmoji && Tuple.second t /= "〿")) lines
-                |> Debug.log "filter"
                 |> foldLines
                 |> List.foldr dedupeEmojis []
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)

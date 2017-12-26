@@ -13,6 +13,7 @@ import Material.List as Lists
 import Material.Table as Table
 import Material.Elevation as Elevation
 import Types exposing (Model, Msg(..))
+import Tables exposing (encodeTable)
 
 
 --import Tables exposing (Table, tableList)
@@ -60,7 +61,7 @@ tableOfTables model =
                             tr
                                 [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                                 ]
-                                [ td [] [ text <| toString table.table ]
+                                [ td [] [ text <| encodeTable table.table ]
                                 , td []
                                     [ text <|
                                         (toString table.playerCount)

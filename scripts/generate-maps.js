@@ -12,6 +12,7 @@ fs.readdirSync('./maps').forEach(file => {
   const buffer = fs.readFileSync(`./maps/${file}`);
   const lines = buffer.toString().split('\n');
   const name = lines.shift();
+  //const tag = lines.shift();
   write.write('        ' + name + ' ->\n');
   write.write('            """\n');
   write.write(lines.join('\n'));

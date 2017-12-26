@@ -15,7 +15,7 @@ import Material.Footer as Footer
 import Material.List as Lists
 import Material.Dialog as Dialog
 import Types exposing (Model, Msg(..))
-import Tables exposing (Table, tableList)
+import Tables exposing (Table, tableList, encodeTable)
 import Board
 import Backend.Types exposing (ConnectionStatus(..))
 import Time exposing (inMilliseconds)
@@ -48,7 +48,7 @@ header model =
             [ Html.span [ class "edGameHeader__chip" ]
                 [ Html.text "Table "
                 , Html.span [ class "edGameHeader__chip--strong" ]
-                    [ Html.text <| toString model.game.table
+                    [ Html.text <| encodeTable model.game.table
                     ]
                 ]
             , Html.span [ class "edGameHeader__chip" ] <|

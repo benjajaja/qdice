@@ -1,16 +1,17 @@
-module Tables exposing (Table(..), decodeTable, tableList)
+module Tables exposing (Table(..), decodeTable, encodeTable, tableList)
 
 
 type Table
     = Melchor
     | Miño
-    | Sabicas
+    | Serrano
     | Avocado
+    | DeLucía
 
 
 tableList : List Table
 tableList =
-    [ Melchor, Miño, Sabicas, Avocado ]
+    [ Melchor, Miño, DeLucía, Serrano, Avocado ]
 
 
 decodeTable : String -> Maybe Table
@@ -22,16 +23,33 @@ decodeTable name =
         "Miño" ->
             Just Miño
 
-        "Sabicas" ->
-            Just Sabicas
+        "Serrano" ->
+            Just Serrano
 
         "Avocado" ->
             Just Avocado
+
+        "DeLucía" ->
+            Just DeLucía
 
         _ ->
             Debug.log ("unknown table: " ++ name) Nothing
 
 
 encodeTable : Table -> String
-encodeTable =
-    toString
+encodeTable table =
+    case table of
+        Melchor ->
+            "Melchor"
+
+        Miño ->
+            "Miño"
+
+        Serrano ->
+            "Serrano"
+
+        Avocado ->
+            "Avocado"
+
+        DeLucía ->
+            "DeLucía"

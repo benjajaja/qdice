@@ -14,7 +14,7 @@ import Material.Icon as Icon
 import Material.Button as Button
 import Ordinal exposing (ordinal)
 import Game.Types exposing (PlayerAction(..), ChatLogEntry(..), RollLog, Model)
-import Tables exposing (Table)
+import Tables exposing (Table, encodeTable)
 import Land exposing (Color)
 import Board.Colors exposing (baseCssRgb)
 
@@ -148,8 +148,10 @@ gameBox mdl lines id =
                                 ]
 
                         LogBegin table ->
-                            div [ class "chatbox" ]
-                                [ Html.text <| "Table " ++ toString table ]
+                            div [ class "chatbox--line" ]
+                                [ Html.text "At table "
+                                , Html.strong [] [ Html.text <| encodeTable table ]
+                                ]
                 )
             )
             <|

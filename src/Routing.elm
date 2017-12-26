@@ -4,7 +4,7 @@ import Http
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 import Types exposing (..)
-import Tables exposing (Table(..), decodeTable)
+import Tables exposing (Table(..), decodeTable, encodeTable)
 
 
 matchers : Parser (Route -> a) a
@@ -66,7 +66,7 @@ navigateTo route =
     Navigation.newUrl <|
         case route of
             GameRoute table ->
-                "#" ++ (toString table)
+                "#" ++ (encodeTable table)
 
             StaticPageRoute page ->
                 case page of
