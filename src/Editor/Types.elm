@@ -1,21 +1,16 @@
 module Editor.Types exposing (..)
 
-import Material
 import Board
 import Land exposing (Land)
 
 
 type Msg
-    = Mdl (Material.Msg Msg)
-    | BoardMsg Board.Msg
-    | ClickAdd
+    = BoardMsg Board.Msg
     | RandomLandColor Land.Land Land.Color
-    | ClickOutput String
+    | EmojiInput String
 
 
 type alias Model =
-    { mdl : Material.Model
-    , board : Board.Model
-    , selectedLands : List Land
-    , mapSave : List (List String)
+    { board : Board.Model
+    , emojiMap : String
     }

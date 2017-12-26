@@ -7,7 +7,7 @@ import Animation
 import Hexagons.Hex as HH exposing (Hex, Direction, (===))
 import Hexagons.Layout as HL exposing (offsetToHex, orientationLayoutPointy, Layout)
 import Hex exposing (Point, borderLeftCorner, center, cellCubicCoords)
-import Helpers exposing (findIndex)
+import Helpers exposing (find, findIndex)
 
 
 type alias Cells =
@@ -193,7 +193,7 @@ append map land =
 
 {-| return index of coord in map
 -}
-at : List Land -> ( Int, Int ) -> Int
+at : List Land -> ( Int, Int ) -> Maybe Land
 at lands coord =
     let
         hex =
@@ -202,11 +202,21 @@ at lands coord =
         cb : Hex -> Land -> Bool
         cb hex land =
             any (\h -> h === hex) land.cells
-
-        index =
-            findIndex (cb hex) lands
     in
-        index
+        find (cb hex) lands
+
+
+indexAt : List Land -> ( Int, Int ) -> Int
+indexAt lands coord =
+    let
+        hex =
+            offsetToHex coord
+
+        cb : Hex -> Land -> Bool
+        cb hex land =
+            any (\h -> h === hex) land.cells
+    in
+        findIndex (cb hex) lands
 
 
 {-| concat all cells in map to a single neutral land

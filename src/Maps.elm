@@ -1,4 +1,4 @@
-module Maps exposing (load, toCharList, consoleLogMap)
+module Maps exposing (load, toCharList, consoleLogMap, emojisToMap)
 
 import Dict
 import String
@@ -39,14 +39,26 @@ consoleLogMap map =
 
 load : Table -> ( Land.Map, Cmd msg )
 load table =
-    let
-        raw =
-            mapSourceString table
-                |> String.lines
+    ( emojisToMap <| mapSourceString table
+    , consoleDebug <|
+        "Emoji map"
+            ++ (String.join (String.fromChar '\n') <|
+                    List.map (\l -> String.join "" <| List.map Tuple.second l) <|
+                        (mapSourceString table
+                            |> String.lines
+                            |> List.indexedMap charRow
+                        )
+               )
+    )
 
+
+emojisToMap : String -> Land.Map
+emojisToMap raw =
+    let
         lines : List Line
         lines =
             raw
+                |> String.lines
                 |> List.indexedMap charRow
 
         widths : List Int
@@ -61,28 +73,19 @@ load table =
 
         lands =
             List.map (List.filter (\t -> Tuple.second t /= Land.emptyEmoji && Tuple.second t /= "〿")) lines
+                |> Debug.log "filter"
                 |> foldLines
                 |> List.foldr dedupeEmojis []
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)
-
-        cmd =
-            consoleDebug <|
-                "Emoji map"
-                    ++ (String.join (String.fromChar '\n') <|
-                            List.map (\l -> String.join "" <| List.map Tuple.second l) <|
-                                lines
-                       )
     in
-        ( Land.Map lands width (List.length lines)
-        , cmd
-        )
+        Land.Map lands width (List.length lines)
 
 
 charRow : Int -> String -> Line
 charRow row string =
     Regex.find Regex.All emojiRegex string
         |> List.map .match
-        |> List.indexedMap (\col -> \c -> ( ( col + 1, row ), c ))
+        |> List.indexedMap (\col -> \c -> ( ( col + (row % 2), row ), c ))
 
 
 foldLines : List Line -> List EmojiLand
@@ -138,7 +141,7 @@ toCharList map =
                 List.map
                     (\row ->
                         List.map (\col -> Land.at lands ( col, row )) (List.range 1 map.width)
-                            |> List.map indexSymbol
+                            |> List.map (Maybe.map .emoji >> Maybe.withDefault "\x3000")
                             |> offsetCharRow row
                             |> trimRight
                     )
