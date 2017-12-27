@@ -3,8 +3,7 @@ const R = require('ramda');
 const maps = require('../maps');
 
 module.exports.serializeTable = table => {
-  const derived = computePlayerDerived(table);
-  const players = table.players.map(player => Object.assign({}, player, { derived: derived(player) }));
+  const players = table.players.map(serializePlayer(table));
   const lands = table.lands.map(({ emoji, color, points }) => ({ emoji, color, points, }));
 
   const result = Object.assign({}, R.pick([
@@ -26,3 +25,8 @@ const computePlayerDerived = table => player => {
   };
 };
 
+const serializePlayer = table => player => {
+  return Object.assign({}, R.pick([
+    'id', 'name', 'picture', 'color', 'reserveDice', 'out', 'outTurns', 'derived'
+  ])(player), { derived: computePlayerDerived(table)(player) });
+};

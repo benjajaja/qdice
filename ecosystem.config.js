@@ -18,6 +18,7 @@ module.exports = {
         JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
         MQTT_URL: 'mqtt://localhost:11883',
         BOT_TOKEN: '478186891:AAF8m2BYVGF92p0L1oeCUOquvgF6ajLEvxc',
+        BOT_GAME: 'QueDice',
       }
     },
 

@@ -36,7 +36,7 @@ bot.command('dado', (ctx) => {
   const roll = rand(1, 6);
   ctx.reply(`${name} ha tirado un: ${roll} ${dice[roll - 1]}`);
 });
-bot.command('dados', (ctx) => ){
+bot.command('dados', (ctx) => {
   const { text, from: { first_name : name } } = ctx.message;
   let amount = Math.min(30, parseInt(text.split('/dados ').pop(), 10));
   if (isNaN(amount)) {
@@ -70,9 +70,11 @@ bot.on('inline_query', (ctx) => {
 });
 
 
-const gameShortName = 'QueDice';
+const gameShortName = process.env.BOT_GAME;
 //const gameUrl = 'http://lvh.me:5000';
-const gameUrl = 'https://quedice.host';
+const gameUrl = gameShortName === 'QueDiceTest'
+  ? 'http://lvh.me:5000'
+  : 'https://quedice.host';
 
 const markup = Extra.markup(
   Markup.inlineKeyboard([
@@ -81,10 +83,12 @@ const markup = Extra.markup(
   ])
 );
 bot.command('game', ctx => {
+  console.log('/game', gameShortName);
   ctx.replyWithGame(gameShortName, markup);
 });
+
 bot.gameQuery(ctx => {
-  console.log(ctx.from);
+  console.log('----------gameQuery', ctx.update.callback_query.message);
   telegram.getUserProfilePhotos(ctx.from.id, 0, 1)
   .then(({ photos: [ [ photo ] ] }) => {
     const { file_id } = photo;
@@ -98,13 +102,20 @@ bot.gameQuery(ctx => {
     return 'https://telegram.org/img/t_logo.png';
   })
   .then(url => {
-    console.log('telegram token', ctx.from);
-    const token = jwt.sign({
+    const profile = {
       id: 'telegram_' + ctx.from.id,
       name: ctx.from.first_name || ctx.from.username || 'Mr. Telegram',
       email: '',
       picture: url,
-    }, process.env.JWT_SECRET);
+      telegram: {
+        user_id: ctx.from.id,
+        chat_id: ctx.chat.id,
+        chat_type: ctx.chat.type,
+        message_id: ctx.update.callback_query.message.message_id,
+      },
+    };
+    console.log('telegram profile JWT', profile);
+    const token = jwt.sign(profile, process.env.JWT_SECRET);
     return ctx.answerGameQuery(gameUrl + '/#token/' + token);
   })
   .catch(e => {
@@ -137,6 +148,20 @@ module.exports.notify = string => {
   }
 };
 
-module.exports.setScore = () => {
-  //telegram.setGameScore(
+module.exports.setScore = ({ user_id, chat_id, chat_type, message_id }, score) => {
+  telegram.getGameHighScores(user_id, undefined, chat_id, message_id)
+  .then(scores => {
+    const playerScore = scores.filter(score => score.user.id === user_id).shift();
+    return playerScore ? playerScore.score : 0;
+  })
+  .catch(e => {
+    console.error('getscores failed', e);
+    return 0;
+  })
+  .then(currentScore => {
+    console.log('setScore', JSON.stringify([user_id, chat_id, chat_type, message_id, currentScore + score]));
+    return telegram.setGameScore(user_id, currentScore + score, undefined, chat_id, message_id, true, true);
+  })
+  .catch(e => console.error('setGameScore failed:', e));
 };
+

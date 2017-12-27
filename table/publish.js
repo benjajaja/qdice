@@ -61,6 +61,15 @@ module.exports.move = (table, move) => {
 };
 
 module.exports.elimination = (table, player, position, reason) => {
+  const score = {
+    1: 90,
+    2: 60,
+    3: 30,
+    4: 10,
+    5: 0,
+    6: 0,
+    7: 0,
+  }[position] || 0;
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'elimination',
@@ -75,6 +84,13 @@ module.exports.elimination = (table, player, position, reason) => {
 			if (err) {
 				console.log(err, 'tables/' + table.name + '/clients elimination', table);
 			}
+      if (player.telegram) {
+        try {
+          require('../telegram').setScore(player.telegram, score);
+        } catch (e) {
+          console.error('telegram setScore error', e);
+        }
+      }
 		}
   );
 };

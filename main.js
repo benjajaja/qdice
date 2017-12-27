@@ -99,7 +99,5 @@ client.on('connect', function () {
 
 client.on('error', err => console.error(err));
 
-if (process.env.NODE_ENV === 'production') {
-  require('./telegram');
-}
+require('./telegram');
 
