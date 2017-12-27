@@ -94,8 +94,6 @@ body.navigator-standalone textarea {
 }
 .edGameHeader__tableStatus {
 }
-.edGameHeader__buttons {
-}
 
 .edGameHeader__chip {
   padding-top: 4px;
@@ -107,6 +105,7 @@ body.navigator-standalone textarea {
   height: 20px;
   line-height: 20px;
   margin: 4px 8px;
+  flex: 1 0 auto;
 }
 
 .edPlayerChips {

@@ -76,9 +76,7 @@ header model =
                             ]
                     )
             ]
-        , Html.div [ class "edGameHeader__buttons" ]
-            [ endTurnButton model
-            ]
+        , endTurnButton model
         ]
 
 
