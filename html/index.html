@@ -2,7 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <link href="elm-dice.css" rel="stylesheet" />
+    <% for (var css in htmlWebpackPlugin.files.css) { %>
+    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
+    <% } %>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- fullscreen mode -->
@@ -30,6 +32,8 @@
   </head>
   <body>
     <div id="loading-indicator">Loading...<div id="loading-spinner"></div></div>
-    <script src="elm-dice.js" charset="utf-8"></script>
+    <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
+    <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>" charset="utf-8"></script>
+    <% } %>
   </body>
 </html>

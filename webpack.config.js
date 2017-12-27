@@ -3,19 +3,18 @@ var path = require('path');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 
 module.exports = {
   entry: [
     './html/elm-dice.js',
-    './html/index.html',
     './html/elm-dice.css',
-    //'./html/elm-dice-serviceworker.js',
   ],
 
   output: {
     path: path.join(__dirname, './dist'),
-    filename: 'elm-dice.js'
+    filename: 'elm-dice.[hash].js'
   },
 
   resolve: {
@@ -29,7 +28,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(html|woff2|png|xml|ico|svg|json)$/,
+        test: /\.(woff2|png|xml|ico|svg|json)$/,
         exclude: /node_modules/,
         use: [
           {
@@ -78,7 +77,7 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"'
     }),
-    new ExtractTextPlugin("elm-dice.css"),
+    new ExtractTextPlugin("elm-dice.[hash].css"),
     new CopyWebpackPlugin([
       { from: 'html/manifest.json' },
       { from: 'html/favicons', to: 'favicons'},
@@ -90,7 +89,11 @@ module.exports = {
       { from: 'html/sounds', to: 'sounds'},
       { from: 'html/assets', to: 'assets'},
     ]),
-  ].concat(process.env.NODE_ENV === 'production'
+    new HtmlWebpackPlugin({
+      template: 'html/index.html',
+      inject: false,
+    }),
+  ].concat(true /*process.env.NODE_ENV === 'production'*/
     ? new webpack.optimize.UglifyJsPlugin({
         compress: { warnings: false }
       })
