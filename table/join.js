@@ -33,7 +33,9 @@ module.exports = (user, table, res, next) => {
   }
   res.send(204);
   next();
-  require('../telegram').notify(`${user.name} joined https://quedice.host/#${table.name}`);
+  if (process.env.NODE_ENV === 'production') {
+    require('../telegram').notify(`${user.name} joined https://quedice.host/#${table.name}`);
+  }
 };
 
 const Player = user => ({
