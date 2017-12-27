@@ -5,7 +5,8 @@
   "main": "main.js",
   "author": "Benjamin Große",
   "scripts": {
-    "start": "node main.js",
+    "start": "pm2 startOrRestart ecosystem.config.js",
+    "stop": "pm2 stop ecosystem.config.js",
     "test": "mocha",
     "deploy": "./scripts/deploy.sh"
   },

@@ -49,10 +49,14 @@ const Player = user => ({
   reserveDice: 0,
   out: false,
   outTurns: 0,
+  points: 0,
+  level: 0,
   derived: {
     connectedLands: 0,
     totalLands: 0,
     currentDice: 0,
+    position: 0,
+    score: 0,
   },
   telegram: user.telegram || null,
 });

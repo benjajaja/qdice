@@ -12,6 +12,7 @@ const {
   COLOR_NEUTRAL,
   ELIMINATION_REASON_OUT,
   ELIMINATION_REASON_WIN,
+  OUT_TURN_COUNT_ELIMINATION,
 } = require('../constants');
 
 module.exports = table => {
@@ -29,7 +30,7 @@ module.exports = table => {
   const newPlayer = table.players[table.turnIndex];
   if (newPlayer.out) {
     newPlayer.outTurns += 1;
-    if (newPlayer.outTurns > 5) {
+    if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
       publish.elimination(table, newPlayer, table.players.length, {
         type: ELIMINATION_REASON_OUT,
         source: newPlayer.outTurns,

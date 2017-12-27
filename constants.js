@@ -15,3 +15,5 @@ exports.ELIMINATION_REASON_OUT = '💤';
 exports.ELIMINATION_REASON_WIN = '🏆';
 
 exports.MAX_NAME_LENGTH = 20;
+
+exports.OUT_TURN_COUNT_ELIMINATION = 5;
