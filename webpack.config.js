@@ -5,8 +5,7 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
-
-module.exports = {
+module.exports = env => ({
   entry: [
     './html/elm-dice.js',
     './html/elm-dice.css',
@@ -93,7 +92,7 @@ module.exports = {
       template: 'html/index.html',
       inject: false,
     }),
-  ].concat(true /*process.env.NODE_ENV === 'production'*/
+  ].concat(env && env.production
     ? new webpack.optimize.UglifyJsPlugin({
         compress: { warnings: false }
       })
@@ -108,5 +107,5 @@ module.exports = {
     historyApiFallback: true,
     disableHostCheck: true,
   }
-};
+});
 

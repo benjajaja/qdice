@@ -4,7 +4,7 @@
   "description": "eDice - Elm dice game",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist/* ; webpack --progress -p",
+    "build": "rm -rf dist/* ; webpack --progress -p --env.production",
     "watch": "webpack --watch",
     "start": "webpack-dev-server",
     "heroku-postbuild": "yarn build",
