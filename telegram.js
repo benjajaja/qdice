@@ -145,7 +145,7 @@ module.exports.notify = string => {
   }
 };
 
-module.exports.setScore = ({ user_id, chat_id, chat_type, message_id }, score) => {
+const setScore = ({ user_id, chat_id, chat_type, message_id }, score) => {
   telegram.getGameHighScores(user_id, undefined, chat_id, message_id)
   .then(scores => {
     const playerScore = scores.filter(score => score.user.id === user_id).shift();
@@ -181,6 +181,13 @@ client.on('message', (topic, message) => {
         subscribed.forEach(id =>
           telegram.sendMessage(id, `${event.player.name} joined ${event.table}`)
           .catch(e => console.error(e)));
+        break;
+      case 'elimination':
+        const { table, player, position, score } = event;
+        console.log('elimination', table, player.telegram, score);
+        if (player.telegram) {
+          setScore(player.telegram, score);
+        }
         break;
     }
   }

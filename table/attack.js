@@ -11,6 +11,7 @@ const {
 } = require('../constants');
 const { findLand, hasTurn } = require('../helpers');
 const publish = require('./publish');
+const endGame = require('./endGame');
 const { isBorder } = require('../maps');
 
 module.exports = (user, table, [emojiFrom, emojiTo], res, next) => {
@@ -77,15 +78,5 @@ module.exports = (user, table, [emojiFrom, emojiTo], res, next) => {
   });
   res.send(204);
   next();
-};
-
-const endGame = table => {
-  publish.elimination(table, table.players.shift(), 1, {
-    type: ELIMINATION_REASON_WIN,
-  });
-  table.players = [];
-  table.status = STATUS_FINISHED;
-  table.turnIndex = -1;
-  table.gameStart = 0;
 };
 

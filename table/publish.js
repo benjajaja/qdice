@@ -84,6 +84,14 @@ module.exports.elimination = (table, player, position, reason) => {
 			if (err) {
 				console.log(err, 'tables/' + table.name + '/clients elimination', table);
 			}
+
+      module.exports.event({
+        type: 'elimination',
+        table: table.name,
+        player,
+        position,
+        score,
+      });
 		}
   );
 };

@@ -1,6 +1,7 @@
 const R = require('ramda');
 const maps = require('../maps');
 const publish = require('./publish');
+const endGame = require('./endGame');
 const { rand } = require('../rand');
 
 const {
@@ -70,15 +71,5 @@ const removePlayer = table => player => {
   table.players = table.players.filter(R.complement(R.equals(player)));
   table.lands = table.lands.map(R.when(R.propEq('color', player.color), land => Object.assign(land, { color: COLOR_NEUTRAL })));
   return table;
-};
-
-const endGame = table => {
-  publish.elimination(table, table.players.shift(), 1, {
-    type: ELIMINATION_REASON_WIN,
-  });
-  table.players = [];
-  table.status = STATUS_FINISHED;
-  table.turnIndex = -1;
-  table.gameStart = 0;
 };
 
