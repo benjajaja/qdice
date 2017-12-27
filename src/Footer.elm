@@ -5,6 +5,7 @@ import Html.Attributes exposing (class, style)
 import Material.Footer as Footer
 import Material.Icon as Icon
 import Material.Options
+import Material.Menu as Menu
 import Types exposing (Model, Msg(..), User(..), Route(..), StaticPage(..))
 import Tables exposing (Table(..))
 import Backend.Types exposing (ConnectionStatus(..))
@@ -34,26 +35,51 @@ footer model =
             Footer.right [] <|
                 statusMessage model.backend.status
                     :: (if not model.isTelegram then
-                            [ Footer.link
-                                [ Material.Options.cs "footer--profile-link"
-                                , Material.Options.onClick <|
-                                    case model.user of
+                            [ Footer.html <|
+                                Html.div []
+                                    [ case model.user of
+                                        Logged user ->
+                                            Html.span [] [ Html.text user.name ]
+
                                         Anonymous ->
-                                            Authorize False
+                                            Html.text ""
+                                    , Menu.render Mdl
+                                        [ 0 ]
+                                        model.mdl
+                                        [ Menu.topRight, Menu.ripple ]
+                                      <|
+                                        case model.user of
+                                            Logged user ->
+                                                [ Menu.item
+                                                    [ Menu.onSelect Logout ]
+                                                    [ Html.text "Sign out" ]
+                                                ]
 
-                                        Logged _ ->
-                                            Logout
-                                ]
-                                (case model.user of
-                                    Logged user ->
-                                        [ Html.div [] [ Html.text <| user.name ]
-                                        , Html.img [ Html.Attributes.src user.picture ] []
-                                        ]
-
-                                    Anonymous ->
-                                        [ Icon.i "account_circle" ]
-                                )
+                                            Anonymous ->
+                                                [ Menu.item
+                                                    [ Menu.onSelect <| Authorize False ]
+                                                    [ Html.text "Sign in" ]
+                                                ]
+                                    ]
                             ]
+                            --[ Footer.link
+                            --[ Material.Options.cs "footer--profile-link"
+                            --, Material.Options.onClick <|
+                            --case model.user of
+                            --Anonymous ->
+                            --Authorize False
+                            --Logged _ ->
+                            --Logout
+                            --]
+                            --(case model.user of
+                            --Logged user ->
+                            --[ Html.div [] [ Html.text <| user.name ]
+                            --, Html.img [ Html.Attributes.src user.picture ] []
+                            --]
+                            --Anonymous ->
+                            --[ Icon.i "account_circle" ]
+                            --)
+                            --]
                         else
                             []
                        )

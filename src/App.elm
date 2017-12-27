@@ -14,6 +14,7 @@ import Material.Layout as Layout
 import Material.Icon as Icon
 import Material.Options
 import Material.Footer as Footer
+import Material.Menu as Menu
 import Animation
 import Types exposing (..)
 import Game.Types exposing (PlayerAction(..))
@@ -494,25 +495,29 @@ header model =
         [ Layout.title [] [ Html.text "¡Qué Dice!" ]
         , Layout.spacer
         , Layout.navigation []
-            [ Layout.link
-                [ Material.Options.cs "header--profile-link"
-                , Material.Options.onClick <|
-                    case model.user of
-                        Anonymous ->
-                            Authorize False
+            [ case model.user of
+                Logged user ->
+                    Html.text user.name
 
-                        Logged _ ->
-                            Logout
-                ]
-                (case model.user of
+                Anonymous ->
+                    Html.text ""
+            , Menu.render Mdl
+                [ 0 ]
+                model.mdl
+                [ Menu.bottomRight, Menu.ripple ]
+              <|
+                case model.user of
                     Logged user ->
-                        [ Html.div [] [ Html.text <| user.name ]
-                        , Html.img [ Html.Attributes.src user.picture ] []
+                        [ Menu.item
+                            [ Menu.onSelect Logout ]
+                            [ Html.text "Sign out" ]
                         ]
 
                     Anonymous ->
-                        [ Icon.i "account_circle" ]
-                )
+                        [ Menu.item
+                            [ Menu.onSelect <| Authorize False ]
+                            [ Html.text "Sign in" ]
+                        ]
             ]
         ]
     ]
@@ -583,6 +588,7 @@ subscriptions model =
         [ mainViewSubscriptions model
         , Backend.subscriptions model
         , Time.every (250) Tick
+        , Menu.subs Mdl model.mdl
         ]
 
 

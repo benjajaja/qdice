@@ -104,16 +104,16 @@ seatButton model =
                             ( "Sit out", Options.onClick <| GameCmd SitOut )
                         )
                      else
-                        ( "Leave game", Options.onClick <| GameCmd Leave )
+                        ( "Leave", Options.onClick <| GameCmd Leave )
                     )
 
                 Nothing ->
                     case model.user of
                         Types.Anonymous ->
-                            ( "Join game", Options.onClick <| ShowLogin True )
+                            ( "Join", Options.onClick <| ShowLogin True )
 
                         Types.Logged user ->
-                            ( "Join game", Options.onClick <| GameCmd Join )
+                            ( "Join", Options.onClick <| GameCmd Join )
     in
         Button.render
             Types.Mdl
@@ -158,17 +158,14 @@ gameLogOverlay model =
 gameChat : Model -> Html.Html Types.Msg
 gameChat model =
     Html.div [ class "chatboxContainer" ]
-        [ --Game.Chat.chatBox False "" model.mdl model.game.gameLog <|
-          --"gameLog-"
-          --++ (toString model.game.table)
-          --,
-          (if not model.isTelegram then
-            Game.Chat.chatBox True model.game.chatInput model.mdl model.game.chatLog <|
-                "chatLog-"
-                    ++ (toString model.game.table)
-           else
-            Html.text ""
-          )
+        [ Game.Chat.chatBox
+            (not model.isTelegram)
+            model.game.chatInput
+            model.mdl
+            model.game.chatLog
+          <|
+            "chatLog-"
+                ++ (toString model.game.table)
         ]
 
 

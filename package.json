@@ -11,7 +11,7 @@
     "test": "bundlesize",
     "generate-maps": "node ./scripts/generate-maps.js",
     "deploy": "rsync -az --force --delete --progress --exclude-from=rsync_exclude.txt -e \"ssh -p22\" ./dist/ gipsy@quedice.host:/var/www/quedice.host/",
-    "cowboy": "yarn build && yarn deploy && yarn test"
+    "cowboy": "yarn build && yarn test && yarn deploy"
   },
   "repository": {
     "type": "git",
