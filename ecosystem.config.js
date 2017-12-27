@@ -10,6 +10,14 @@ module.exports = {
       name      : 'nodice',
       script    : 'main.js',
       env: {
+        GOOGLE_OAUTH_SECRET: 'e8Nkmj9X05_hSrrREcRuDCFj',
+        PORT: 5001,
+        JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
+        MQTT_URL: 'mqtt://localhost:11883',
+        MQTT_USERNAME: 'client',
+        MQTT_PASSWORD: 'client',
+        BOT_TOKEN: '423731161:AAGtwf2CmhOFOnwVocSwe0ylyh63zCyfzbo',
+        BOT_GAME: 'QueDiceTest',
       },
       env_production : {
         NODE_ENV: 'production',
@@ -17,9 +25,32 @@ module.exports = {
         PORT: 5001,
         JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
         MQTT_URL: 'mqtt://localhost:11883',
+        MQTT_USERNAME: 'nodice',
+        MQTT_PASSWORD: 'PeyY9TYap2vaZxQ8tTMXcD57',
         BOT_TOKEN: '478186891:AAF8m2BYVGF92p0L1oeCUOquvgF6ajLEvxc',
         BOT_GAME: 'QueDice',
       }
+    },
+    {
+      name: 'telegram',
+      script: 'telegram.js',
+      env: {
+        JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
+        MQTT_URL: 'mqtt://localhost:11883',
+        MQTT_USERNAME: 'client',
+        MQTT_PASSWORD: 'client',
+        BOT_TOKEN: '423731161:AAGtwf2CmhOFOnwVocSwe0ylyh63zCyfzbo',
+        BOT_GAME: 'QueDiceTest',
+      },
+      env_production: {
+        NODE_ENV: 'production',
+        JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
+        MQTT_URL: 'mqtt://localhost:11883',
+        MQTT_USERNAME: 'nodice',
+        MQTT_PASSWORD: 'PeyY9TYap2vaZxQ8tTMXcD57',
+        BOT_TOKEN: '478186891:AAF8m2BYVGF92p0L1oeCUOquvgF6ajLEvxc',
+        BOT_GAME: 'QueDice',
+      },
     },
 
     // Second application

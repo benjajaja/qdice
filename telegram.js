@@ -140,9 +140,6 @@ bot.command('notifyme', ctx => {
 
 module.exports.notify = string => {
   try {
-    console.log('sendCopy', subscribed, string);
-    subscribed.forEach(id => telegram.sendMessage(id, string)
-      .catch(e => console.error(e)));
   } catch (e) {
     console.error(e);
   }
@@ -164,4 +161,28 @@ module.exports.setScore = ({ user_id, chat_id, chat_type, message_id }, score) =
   })
   .catch(e => console.error('setGameScore failed:', e));
 };
+
+
+const mqtt = require('mqtt');
+console.log('connecting to mqtt: ' + process.env.MQTT_URL);
+var client = mqtt.connect(process.env.MQTT_URL, {
+  username: process.env.MQTT_USERNAME,
+  password: process.env.MQTT_PASSWORD,
+});
+client.on('connect', () => {
+  client.subscribe('events');
+});
+client.on('message', (topic, message) => {
+  if (topic === 'events') {
+    const event = JSON.parse(message);
+    switch (event.type) {
+      case 'join':
+        console.log('sendCopy', subscribed, 'join', event.table, event.player.name);
+        subscribed.forEach(id =>
+          telegram.sendMessage(id, `${event.player.name} joined ${event.table}`)
+          .catch(e => console.error(e)));
+        break;
+    }
+  }
+});
 

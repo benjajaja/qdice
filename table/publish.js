@@ -84,13 +84,6 @@ module.exports.elimination = (table, player, position, reason) => {
 			if (err) {
 				console.log(err, 'tables/' + table.name + '/clients elimination', table);
 			}
-      if (player.telegram) {
-        try {
-          require('../telegram').setScore(player.telegram, score);
-        } catch (e) {
-          console.error('telegram setScore error', e);
-        }
-      }
 		}
   );
 };
@@ -109,3 +102,16 @@ module.exports.tables = globalTablesUpdate => {
     }
   );
 };
+
+module.exports.event = event => {
+  client.publish('events',
+    JSON.stringify(event),
+    undefined,
+    err => {
+      if (err) {
+        console.error('pub telegram error', err);
+      }
+    }
+  );
+};
+

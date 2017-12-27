@@ -99,5 +99,3 @@ client.on('connect', function () {
 
 client.on('error', err => console.error(err));
 
-require('./telegram');
-

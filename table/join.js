@@ -1,3 +1,4 @@
+const R = require('ramda');
 const publish = require('./publish');
 const startGame = require('./start');
 const {
@@ -33,7 +34,11 @@ module.exports = (user, table, res, next) => {
   }
   res.send(204);
   next();
-  require('../telegram').notify(`${user.name} joined https://quedice.host/#${table.name}`);
+  publish.event({
+    type: 'join',
+    table: table.name,
+    player: R.last(table.players),
+  });
 };
 
 const Player = user => ({
