@@ -339,32 +339,10 @@ toRollLog model roll =
 
         neutralPlayer : Game.Types.Player
         neutralPlayer =
-            { id = ""
-            , name = "Neutral"
-            , picture = ""
-            , color = Land.Neutral
-            , out = False
-            , gameStats =
-                { totalLands = 0
-                , connectedLands = 0
-                , currentDice = 0
-                }
-            , reserveDice = 0
-            }
+            Game.Types.makePlayer "Neutral"
 
         errorPlayer =
-            { id = ""
-            , name = "(⚠ unknown player)"
-            , picture = ""
-            , out = False
-            , color = Land.Neutral
-            , gameStats =
-                { totalLands = 0
-                , connectedLands = 0
-                , currentDice = 0
-                }
-            , reserveDice = 0
-            }
+            Game.Types.makePlayer "(⚠ unknown player)"
 
         attacker =
             case attackerLand of

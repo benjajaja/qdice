@@ -45,6 +45,8 @@ playersDecoder =
         |> required "out" bool
         |> required "derived" playerGameStatsDecoder
         |> required "reserveDice" int
+        |> required "points" int
+        |> required "level" int
 
 
 playerGameStatsDecoder : Decoder PlayerGameStats
@@ -53,6 +55,8 @@ playerGameStatsDecoder =
         |> required "totalLands" int
         |> required "connectedLands" int
         |> required "currentDice" int
+        |> required "position" int
+        |> required "score" int
 
 
 landsUpdateDecoder : Decoder Board.Types.LandUpdate

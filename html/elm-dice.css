@@ -164,8 +164,11 @@ body.navigator-standalone textarea {
 }
 .edPlayerChip__gameStats {
   display: flex;
+  flex-direction: column;
   justify-content: space-evenly;
   flex-wrap: wrap;
+  align-items: flex-start;
+  padding: 0 4px;
 }
 .edPlayerChip_clock {
 }

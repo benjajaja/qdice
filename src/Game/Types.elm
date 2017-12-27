@@ -46,6 +46,8 @@ type alias Player =
     , out : Bool
     , gameStats : PlayerGameStats
     , reserveDice : Int
+    , points : Int
+    , level : Int
     }
 
 
@@ -53,6 +55,8 @@ type alias PlayerGameStats =
     { totalLands : Int
     , connectedLands : Int
     , currentDice : Int
+    , position : Int
+    , score : Int
     }
 
 
@@ -145,3 +149,23 @@ type EliminationType
     = Death
     | Out
     | Win
+
+
+makePlayer : String -> Player
+makePlayer name =
+    { id = ""
+    , name = name
+    , picture = ""
+    , color = Land.Neutral
+    , out = False
+    , points = 0
+    , level = 0
+    , gameStats =
+        { totalLands = 0
+        , connectedLands = 0
+        , currentDice = 0
+        , position = 0
+        , score = 0
+        }
+    , reserveDice = 0
+    }

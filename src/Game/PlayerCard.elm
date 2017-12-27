@@ -5,6 +5,7 @@ import Html.Attributes exposing (class, style)
 import Svg
 import Svg.Attributes
 import Time exposing (inMilliseconds)
+import Ordinal exposing (ordinal)
 import Material
 import Material.Options as Options
 import Material.Elevation as Elevation
@@ -50,9 +51,9 @@ view model index player =
             ]
             [ Html.text player.name ]
         , Html.div [ class "edPlayerChip__gameStats" ]
-            [ Html.span [ class "edPlayerChip__gameStats__item" ]
+            [ Html.div [ class "edPlayerChip__gameStats__item" ]
                 [ Html.text <| "⬢ " ++ toString player.gameStats.totalLands ]
-            , Html.span [ class "edPlayerChip__gameStats__item" ]
+            , Html.div [ class "edPlayerChip__gameStats__item" ]
                 [ Html.text <|
                     ("⚂ "
                         ++ toString player.gameStats.currentDice
@@ -63,6 +64,27 @@ view model index player =
                            )
                     )
                 ]
+            , Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+                [ Html.text <|
+                    (if player.gameStats.position == 2 then
+                        "Pole"
+                     else
+                        ordinal player.gameStats.position
+                    )
+                ]
+              --, Html.div [ class "edPlayerChip__gameStats__item--soft" ]
+              --[ Html.text <|
+              --let
+              --score =
+              --player.gameStats.score
+              --in
+              --(if score >= 0 then
+              --"+"
+              --else
+              --"-"
+              --)
+              --++ toString score
+              --]
             ]
         ]
 
