@@ -99,3 +99,7 @@ client.on('connect', function () {
 
 client.on('error', err => console.error(err));
 
+require('./db').db().then(db => {
+  console.log('connected to postgres');
+});
+

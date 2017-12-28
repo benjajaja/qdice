@@ -16,8 +16,8 @@ module.exports = {
         MQTT_URL: 'mqtt://localhost:11883',
         MQTT_USERNAME: 'client',
         MQTT_PASSWORD: 'client',
-        BOT_TOKEN: '423731161:AAGtwf2CmhOFOnwVocSwe0ylyh63zCyfzbo',
-        BOT_GAME: 'QueDiceTest',
+        PGUSER: 'bgrosse',
+        PGDATABASE: 'nodice',
       },
       env_production : {
         NODE_ENV: 'production',
@@ -27,9 +27,10 @@ module.exports = {
         MQTT_URL: 'mqtt://localhost:11883',
         MQTT_USERNAME: 'nodice',
         MQTT_PASSWORD: 'PeyY9TYap2vaZxQ8tTMXcD57',
-        BOT_TOKEN: '478186891:AAF8m2BYVGF92p0L1oeCUOquvgF6ajLEvxc',
-        BOT_GAME: 'QueDice',
-      }
+        PGUSER: 'gipsy',
+        PGPASSWORD: '>SKBHS^$dS*7M<P^UkpL]Yb<L',
+        PGDATABASE: 'nodice',
+      },
     },
     {
       name: 'telegram',

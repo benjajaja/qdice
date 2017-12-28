@@ -1,11 +1,12 @@
+const R = require('ramda');
 const request = require('request');
 const jwt = require('jsonwebtoken');
-const ShortUniqueId = require('short-unique-id');
+const db = require('./db');
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 if (!GOOGLE_OAUTH_SECRET) throw new Error('GOOGLE_OAUTH_SECRET env var not found');
 
-exports.login = function(req, res, next) {
+exports.login = (req, res, next) => {
   request({
     url: 'https://www.googleapis.com/oauth2/v4/token',
     method: 'POST',
@@ -30,15 +31,27 @@ exports.login = function(req, res, next) {
       },
     }, function(err, response, body) {
       const profile = JSON.parse(body);
-      const user = {
-        id: 'google_' + profile.id,
-        name: profile.name,
-        email: profile.email,
-        picture: profile.picture,
-      };
-      const token = jwt.sign(user, process.env.JWT_SECRET);
-      res.send(200, token); //Object.assign({ token }, user));
-      next();
+
+      console.log('login', profile);
+      db.getUserFromAuthorization(db.NETWORK_GOOGLE, profile.id)
+      .then(user => {
+        console.log('got user', user);
+        if (user) {
+          return user;
+        }
+        console.log('create');
+        return db.createUser(db.NETWORK_GOOGLE, profile.id, profile.name, profile.email, profile.picture, profile);
+      })
+      .then(userProfile)
+      .then(profile => {
+        console.log('got profile', profile);
+        const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
+        res.send(200, token);
+        next();
+      }).catch(e => {
+        console.error('/login error', e.toString());
+        next(e);
+      });
     });
   });
 };
@@ -49,22 +62,38 @@ exports.me = function(req, res, next) {
 };
 
 exports.profile = function(req, res, next) {
-  const profile = Object.assign({}, req.user, { name: req.body.name });
-  const token = jwt.sign(profile, process.env.JWT_SECRET);
-  res.send(200, token);
-  next();
+  db.updateUser(req.user.id, req.body.name)
+  .then(userProfile)
+  .then(profile => {
+    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
+    res.send(200, token);
+    next();
+  })
+  .catch(e => {
+    console.error(e);
+    return Promise.reject(e);
+  })
+  .catch(e => next(e));
 };
 
-const uid = new ShortUniqueId();
 exports.register = function(req, res, next) {
-  const profile = {
-    name: req.body.name,
-    id: `quedice_${uid.randomUUID(16)}`,
-    email: '',
-    picture: 'assets/empty_profile_picture.svg',
-  };
-  const token = jwt.sign(profile, process.env.JWT_SECRET);
-  res.send(200, token);
-  next();
+  db.createUser(db.NETWORK_PASSWORD, null, req.body.name, null, null, null)
+  .then(userProfile)
+  .then(profile => {
+    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
+    res.send(200, token);
+    next();
+  })
+  .catch(e => next(e));
 };
+
+const userProfile = rows => Object.assign({},
+  R.pick(['id', 'name', 'email', 'picture', 'network'], rows[0]),
+  {
+    id: rows[0].id.toString(),
+    picture: rows[0].picture || 'assets/empty_profile_picture.svg',
+    claimed: rows.some(row => row.network !== db.NETWORK_PASSWORD
+      || row.network_id !== null),
+  }
+);
 

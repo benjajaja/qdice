@@ -26,8 +26,10 @@ bot.start((ctx) => {
   ctx.replyWithGame(gameShortName, markup);
 });
 
-bot.command('help', (ctx) => ctx.reply('Try send a sticker!'));
-bot.hears('que pasa', (ctx) => ctx.reply('¡Qué Dice!'));
+bot.hears('que pasa', (ctx) => {
+  ctx.reply('¡Qué Dice!');
+});
+
 const dice = [ "⚀", "⚁", "⚂", "⚃", "⚄", "⚅", ];
 bot.hears(/tira.*dado/i, (ctx) => ctx.reply(`Tirada de dado: ${dice[rand(1, 6) - 1]}`));
 
@@ -151,10 +153,7 @@ const setScore = ({ user_id, chat_id, chat_type, message_id }, score) => {
     const playerScore = scores.filter(score => score.user.id === user_id).shift();
     return playerScore ? playerScore.score : 0;
   })
-  .catch(e => {
-    console.error('getscores failed', e);
-    return 0;
-  })
+  .catch(e => 0)
   .then(currentScore => {
     console.log('setScore', JSON.stringify([user_id, chat_id, chat_type, message_id, currentScore + score]));
     return telegram.setGameScore(user_id, currentScore + score, undefined, chat_id, message_id, true, true);
@@ -162,6 +161,13 @@ const setScore = ({ user_id, chat_id, chat_type, message_id }, score) => {
   .catch(e => console.error('setGameScore failed:', e));
 };
 
+bot.command('score', ctx => {
+  console.log(ctx.message)
+  telegram.getGameHighScores(ctx.from.id, undefined, ctx.chat.id, ctx.message.message_id)
+  .then(scores => {
+    ctx.reply(JSON.stringify(scores, null, '\n'));
+  }).catch(e => ctx.reply('Error: ' + e));
+});
 
 const mqtt = require('mqtt');
 console.log('connecting to mqtt: ' + process.env.MQTT_URL);
