@@ -99,7 +99,7 @@ type User
 type alias LoggedUser =
     { id : UserId
     , name : Username
-    , email : String
+    , email : Maybe String
     , picture : String
     }
 

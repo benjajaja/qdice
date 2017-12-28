@@ -92,7 +92,7 @@ login model name =
         profile =
             { name = name
             , id = "💩"
-            , email = ""
+            , email = Nothing
             , picture = ""
             }
 
