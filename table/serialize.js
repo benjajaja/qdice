@@ -18,13 +18,16 @@ const scores = {
 module.exports.serializeTable = table => {
   const players = table.players.map(serializePlayer(table));
   const sortedPlayers = R.sortBy(R.path(['derived', 'totalLands']))(players).reverse();
-  const players_ = sortedPlayers.map((player, i) => {
-    const previousPlayer = sortedPlayers[i - 1];
-    if (previousPlayer && previousPlayer .derived.totalLands ===
+  const players_ = players.map(player => {
+    const index = sortedPlayers.indexOf(player);
+    player.derived.position = index + 1;
+    return player;
+  }).map(player => {
+    const index = sortedPlayers.indexOf(player);
+    const previousPlayer = sortedPlayers[index - 1];
+    if (previousPlayer && previousPlayer.derived.totalLands ===
       player.derived.totalLands) {
       player.derived.position = previousPlayer.derived.position;
-    } else {
-      player.derived.position = sortedPlayers.indexOf(player) + 1;
     }
     player.derived.score = scores[player.derived.position] || 0;
     return player;
@@ -54,6 +57,6 @@ const computePlayerDerived = table => player => {
 
 const serializePlayer = table => player => {
   return Object.assign({}, R.pick([
-    'id', 'name', 'picture', 'color', 'reserveDice', 'out', 'outTurns', 'derived', 'points', 'level',
+    'id', 'name', 'picture', 'color', 'reserveDice', 'out', 'outTurns', 'points', 'level',
   ])(player), { derived: computePlayerDerived(table)(player) });
 };
