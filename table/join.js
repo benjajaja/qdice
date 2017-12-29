@@ -58,6 +58,5 @@ const Player = user => ({
     position: 0,
     score: 0,
   },
-  telegram: user.telegram || null,
 });
   

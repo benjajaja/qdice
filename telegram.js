@@ -7,8 +7,14 @@ const jwt = require('jsonwebtoken');
 const ShortUniqueId = require('short-unique-id');
 const R = require('ramda');
 const { rand } = require('./rand');
+const { userProfile } = require('./user');
+const db = require('./db');
 
 const uid = new ShortUniqueId();
+
+require('./db').db().then(db => {
+  console.log('connected to postgres');
+});
 
 console.log('starting tg bot: ', process.env.BOT_TOKEN);
 const bot = new Telegraf(process.env.BOT_TOKEN, { username: 'quedice_bot' });
@@ -117,7 +123,30 @@ bot.gameQuery(ctx => {
       },
     };
     console.log('telegram profile JWT', profile);
-    const token = jwt.sign(profile, process.env.JWT_SECRET);
+		return db.getUserFromAuthorization(db.NETWORK_TELEGRAM, ctx.from.id)
+		.then(user => {
+			console.log('got user', user);
+			if (user) {
+				return user;
+			}
+			return db.createUser(db.NETWORK_TELEGRAM,
+				ctx.from.id,
+				ctx.from.first_name || ctx.from.username,
+				null,
+				url,
+				{
+					user_id: ctx.from.id,
+					chat_id: ctx.chat.id,
+					chat_type: ctx.chat.type,
+					message_id: ctx.update.callback_query.message.message_id,
+				}
+			);
+		});
+  })
+  .then(userProfile)
+  .then(profile => {
+    console.log('got profile', profile);
+    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
     return ctx.answerGameQuery(gameUrl + '/#token/' + token);
   })
   .catch(e => {

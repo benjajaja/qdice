@@ -1,3 +1,4 @@
+const R = require('ramda');
 let singleton;
 let client;
 
@@ -9,9 +10,24 @@ async function db() {
   }
 
   const { Client } = require('pg');
-  const client_ = client = new Client()
+  const client_ = client = new Client();
 
-  await client_.connect()
+  await client_.connect();
+
+	const res = await client.query({
+		text: 'SELECT unnest(enum_range(NULL::network))',
+		rowMode: 'array',
+	});
+	if (R.symmetricDifference(res.rows.map(R.head), networks).length !== 0) {
+		await client.query('ALTER TYPE network RENAME TO network_');
+		const enumValues = networks.map(n => `'${n}'`).join(', ');
+
+		await client.query(`CREATE TYPE network AS ENUM ( ${enumValues} )`);
+		await client.query('ALTER TABLE authorizations ALTER COLUMN network TYPE network USING network::network');
+		await client.query('DROP TYPE network_');
+	} else {
+		console.log('no new networks');
+	}
 
   return singleton = new Db(client_);
 }
@@ -24,6 +40,12 @@ class Db {
 
 module.exports.NETWORK_GOOGLE = 'google';
 module.exports.NETWORK_PASSWORD = 'password';
+module.exports.NETWORK_TELEGRAM = 'telegram';
+const networks = [
+  module.exports.NETWORK_GOOGLE,
+  module.exports.NETWORK_PASSWORD,
+  module.exports.NETWORK_TELEGRAM,
+];
 
 //module.exports.getUser = async id => {
   //const user = await client.query(`SELECT * FROM users WHERE id = $1 `, [id]);

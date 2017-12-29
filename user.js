@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const db = require('./db');
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
-if (!GOOGLE_OAUTH_SECRET) throw new Error('GOOGLE_OAUTH_SECRET env var not found');
 
 exports.login = (req, res, next) => {
   request({
@@ -87,7 +86,7 @@ exports.register = function(req, res, next) {
   .catch(e => next(e));
 };
 
-const userProfile = rows => Object.assign({},
+const userProfile = module.exports.userProfile = rows => Object.assign({},
   R.pick(['id', 'name', 'email', 'picture', 'network'], rows[0]),
   {
     id: rows[0].id.toString(),
