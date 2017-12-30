@@ -36,6 +36,11 @@ const tableApp = ({ tag }) => ({
   script: 'table.js',
   env: tableEnv(env_local)(tag),
   env_production: tableEnv(env_production)(tag),
+  source_map_support: false,
+  wait_ready: true,
+  restart_delay: 1000,
+  vizion: false,
+  max_restarts: 5,
 });
 
 module.exports = {
@@ -51,6 +56,11 @@ module.exports = {
       script: 'main.js',
       env: env_local,
       env_production: env_production,
+      source_map_support: false,
+      wait_ready: true,
+      restart_delay: 1000,
+      vizion: false,
+      max_restarts: 5,
     },
   ].concat(tableConfig.tables.map(tableApp)),
 };

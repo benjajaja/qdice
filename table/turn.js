@@ -58,7 +58,7 @@ const giveDice = table => player => {
   player.reserveDice = 0;
 
   R.range(0, newDies).forEach(i => {
-    const targets = playerLands.filter(land => land.points < 8);
+    const targets = playerLands.filter(land => land.points < table.stackSize);
     if (targets.length === 0) {
       player.reserveDice += 1;
     } else {
