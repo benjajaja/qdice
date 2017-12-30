@@ -2,7 +2,10 @@ const R = require('ramda');
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
 const jwt = require('restify-jwt-community');
+const mqtt = require('mqtt');
 
+const global = require('./global');
+const publish = require('./table/publish');
 
 const server = restify.createServer();
 server.pre(restify.pre.userAgentConnection());
@@ -54,26 +57,46 @@ server.use(jwt({
   }
 }));
 
-server.on('uncaughtException', function (req, res, err, cb) {
-    console.log(err);
-    return cb();
-});
 
 server.post('/login', require('./user').login);
 server.get('/me', require('./user').me);
 server.put('/profile', require('./user').profile);
 server.post('/register', require('./user').register);
 
-//const tables = require('./tables');
 
-server.get('/global', require('./global'));
+server.get('/global', global.global);
 
-server.listen(process.env.PORT || 5001, function() {
-  console.log('%s listening at %s port %s', server.name, server.url);
-});
+
 
 
 require('./db').db().then(db => {
-  console.log('connected to postgres');
+  console.log('connected to postgres.');
+
+  server.listen(process.env.PORT || 5001, function() {
+    console.log('%s listening at %s port %s', server.name, server.url);
+  });
+
+  console.log('connecting to mqtt: ' + process.env.MQTT_URL);
+  var client = mqtt.connect(process.env.MQTT_URL, {
+    username: process.env.MQTT_USERNAME,
+    password: process.env.MQTT_PASSWORD,
+  });
+  publish.setMqtt(client);
+  client.subscribe('events');
+  client.on('error', err => console.error(err));
+  client.on('connect', () => {
+    console.log('connected to mqtt.');
+    process.send('ready');
+  });
+
+  client.on('message', global.onMessage);
+
+  process.on('SIGINT', () => {
+    client.end(() => {
+      console.log('main stopped gracefully');
+      process.exit(0);
+    });
+  });
 });
+
 

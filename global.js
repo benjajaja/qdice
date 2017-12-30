@@ -1,5 +1,4 @@
 var R = require('ramda');
-const mqtt = require('mqtt');
 
 const {
   TURN_SECONDS,
@@ -25,7 +24,7 @@ const tables = tablesConfig.tables.map(config => ({
   players: [],
 }));
 
-module.exports = function(req, res, next) {
+module.exports.global = function(req, res, next) {
   res.send(200, {
     settings: {
       turnSeconds: TURN_SECONDS,
@@ -51,51 +50,43 @@ const getTablesStatus = module.exports.getTablesStatus = (tables) =>
     })
   );
 
-console.log('connecting to mqtt: ' + process.env.MQTT_URL);
-var client = mqtt.connect(process.env.MQTT_URL, {
-  username: process.env.MQTT_USERNAME,
-  password: process.env.MQTT_PASSWORD,
-});
-client.on('connect', () => {
-  client.subscribe('events');
-});
-publish.setMqtt(client);
+module.exports.onMessage = (topic, message) => {
+  try {
+    if (topic === 'events') {
+      const event = JSON.parse(message);
+      switch (event.type) {
 
-client.on('message', (topic, message) => {
-  if (topic === 'events') {
-    const event = JSON.parse(message);
-    switch (event.type) {
+        case 'join': {
+          const table = findTable(tables)(event.table);
+          if (!table) {
+            return;
+          }
+          table.players.push(event.player);
+          publish.tables(getTablesStatus(tables));
 
-      case 'join': {
-        const table = findTable(tables)(event.table);
-        if (!table) {
           return;
         }
-        table.players.push(event.player);
-        publish.tables(getTablesStatus(tables));
 
-        return;
-      }
-
-      case 'leave': {
-        const table = findTable(tables)(event.table);
-        if (!table) {
+        case 'leave': {
+          const table = findTable(tables)(event.table);
+          if (!table) {
+            return;
+          }
+          table.players = table.players.filter(p => p.id !== event.player.id);
+          publish.tables(getTablesStatus(tables));
           return;
         }
-        table.players = table.players.filter(p => p.id !== event.player.id);
-        console.log('left', table);
-        publish.tables(getTablesStatus(tables));
-        return;
-      }
 
-      case 'elimination': {
-        const { table, player, position, score } = event;
-        table.players = table.players.filter(p => p.id === event.player.id);
-        publish.tables(getTablesStatus(tables));
-        return;
+        case 'elimination': {
+          const { table, player, position, score } = event;
+          table.players = table.players.filter(p => p.id === event.player.id);
+          publish.tables(getTablesStatus(tables));
+          return;
+        }
       }
     }
+  } catch (e) {
+    console.error('table list event error', e);
   }
-});
-
+};
 

@@ -12,11 +12,11 @@ const {
 
 module.exports = (user, table, clientId) => {
   if (table.status === STATUS_PLAYING) {
-    return publish.clientError(clientId, new Error('already joined'));
+    return publish.clientError(clientId, new Error('not playing'));
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
-    return next(new Error('already joined'));
+    return publish.clientError(clientId, new Error('already joined'));
   } else {
     table.players.push(Player(user));
   }
@@ -26,7 +26,7 @@ module.exports = (user, table, clientId) => {
     startGame(table);
   } else {
     if (table.players.length >= 2 &&
-      Math.ceil(table.playerSlots / 2) <= table.players.length) {
+      table.players.length >= table.startSlots) {
       table.gameStart = Math.floor(Date.now() / 1000) + GAME_START_COUNTDOWN;
     }
     publish.tableStatus(table);

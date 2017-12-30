@@ -33,6 +33,7 @@ const Table = config => ({
   tag: config.tag,
   players: [],
   playerSlots: config.playerSlots,
+  startSlots: config.startSlots,
   status: STATUS_PAUSED,
   gameStart: 0,
   turnIndex: -1,
@@ -62,14 +63,23 @@ var client = mqtt.connect(process.env.MQTT_URL, {
   password: process.env.MQTT_PASSWORD,
 });
  
-client.on('connect', function () {
-  console.log('mqtt connected');
-  publish.setMqtt(client);
-  publish.tableStatus(table);
-});
-
 client.on('error', err => console.error(err));
 
+
+client.on('connect', function () {
+  console.log('mqtt connected');
+  publish.tableStatus(table);
+  process.send('ready');
+});
+
+process.on('SIGINT', () => {
+  client.end(() => {
+    console.log('table stopped gracefully');
+    process.exit(0);
+  });
+});
+
+publish.setMqtt(client);
 
 const tick = require('./table/tick');
 setInterval(function tick_() {
