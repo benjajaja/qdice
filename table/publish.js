@@ -30,6 +30,37 @@ module.exports.tableStatus = (table, clientId) => {
   publishTableMeter.mark();
 };
 
+module.exports.enter = (table, name) => {
+  client.publish('tables/' + table.name + '/clients',
+    JSON.stringify({
+      type: 'enter',
+      payload: name,
+    }),
+    undefined,
+    (err) => {
+			if (err) {
+				console.log(err, 'tables/' + table.name + '/clients enter', name);
+			}
+		}
+  );
+};
+
+
+module.exports.exit = (table, name) => {
+  client.publish('tables/' + table.name + '/clients',
+    JSON.stringify({
+      type: 'exit',
+      payload: name,
+    }),
+    undefined,
+    (err) => {
+			if (err) {
+				console.log(err, 'tables/' + table.name + '/clients exit', name);
+			}
+		}
+  );
+};
+
 module.exports.roll = (table, roll) => {
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
@@ -123,3 +154,31 @@ module.exports.event = event => {
   );
 };
 
+module.exports.clientError = (clientId, error) => {
+  console.error('client error', clientId, error);
+  client.publish(`clients/${clientId}`, JSON.stringify({
+    type: 'error',
+    payload: error.toString(),
+  }), undefined,
+    err => {
+      if (err) {
+        console.error('pub clientError error', err);
+      }
+    }
+  );
+};
+
+module.exports.chat = (table, user, message) => {
+  client.publish('tables/' + table.name + '/clients',
+    JSON.stringify({
+      type: 'chat',
+      payload: { user, message },
+    }),
+    undefined,
+    (err) => {
+			if (err) {
+				console.log(err, 'tables/' + table.name + '/clients chat', table);
+			}
+		}
+  );
+};

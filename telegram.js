@@ -212,14 +212,12 @@ client.on('message', (topic, message) => {
     const event = JSON.parse(message);
     switch (event.type) {
       case 'join':
-        console.log('sendCopy', subscribed, 'join', event.table, event.player.name);
         subscribed.forEach(id =>
           telegram.sendMessage(id, `${event.player.name} joined ${event.table}`)
           .catch(e => console.error(e)));
         break;
       case 'elimination':
         const { table, player, position, score } = event;
-        console.log('elimination', table, player.telegram, score);
         if (player.telegram) {
           setScore(player.telegram, score);
         }

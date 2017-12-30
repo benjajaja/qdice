@@ -42,6 +42,10 @@ module.exports = table => {
   table.turnStarted = Math.floor(Date.now() / 1000);
   table.turnActivity = false;
   publish.tableStatus(table);
+  publish.event({
+    type: 'start',
+    table: table.name,
+  });
   startCounter.inc();
   return table;
 };

@@ -18,9 +18,8 @@ const updateCounter = probe.counter({
 });
 
 
-module.exports = tables => {
-  tables.filter(table => table.status === STATUS_PLAYING)
-    .forEach(table => {
+module.exports = table => {
+  if (table.status === STATUS_PLAYING) {
     if (table.turnStarted < Date.now() / 1000 - (TURN_SECONDS + 1)) {
       nextTurn(table);
       publish.tableStatus(table);
@@ -28,27 +27,25 @@ module.exports = tables => {
       nextTurn(table);
       publish.tableStatus(table);
     }
-  });
 
-  tables.filter(table => table.status !== STATUS_PLAYING)
-    .forEach(table => {
+  } else if (table.status !== STATUS_PLAYING) {
     if (table.players.length >= 2
         && table.gameStart !== 0
         && table.gameStart < Date.now() / 1000) {
       startGame(table);
       publish.tableStatus(table);
     }
-  });
-
-  const newUpdate = require('../global').getTablesStatus(tables);
-  if (!R.equals(newUpdate)(globalTablesUpdate)) {
-    globalTablesUpdate = newUpdate;
-    publish.tables(globalTablesUpdate);
-    probe.metric({
-      name: 'Players',
-      value: R.always(R.sum(R.map(R.prop('playerCount'))(newUpdate))),
-    });
-    updateCounter.inc();
   }
+
+  //const newUpdate = require('../global').getTablesStatus(tables);
+  //if (!R.equals(newUpdate)(globalTablesUpdate)) {
+    //globalTablesUpdate = newUpdate;
+    //publish.tables(globalTablesUpdate);
+    //probe.metric({
+      //name: 'Players',
+      //value: R.always(R.sum(R.map(R.prop('playerCount'))(newUpdate))),
+    //});
+    //updateCounter.inc();
+  //}
 };
 

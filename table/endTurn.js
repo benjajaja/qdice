@@ -10,22 +10,20 @@ const {
   GAME_START_COUNTDOWN,
 } = require('../constants');
 
-module.exports = (user, table, res, next) => {
+module.exports = (user, table, clientId) => {
   if (table.status !== STATUS_PLAYING) {
-    return next(new Error('game not running'));
+    return publish.clientError(clientId, new Error('game not running'));
   }
   if (!hasTurn(table)(user)) {
-    return next(new Error('out of turn'));
+    return publish.clientError(clientId, new Error('out of turn'));
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
-    return next(new Error('not playing'));
+    return publish.clientError(clientId, new Error('not playing'));
   }
 
   table.turnActivity = true;
   nextTurn(table);
   publish.tableStatus(table);
-  res.send(204);
-  next();
 };
 

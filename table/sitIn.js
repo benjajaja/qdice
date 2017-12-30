@@ -11,14 +11,13 @@ const {
   GAME_START_COUNTDOWN,
 } = require('../constants');
 
-module.exports = (user, table, res, next) => {
+module.exports = (user, table, clientId) => {
   if (table.status !== STATUS_PLAYING) {
-    res.send(406);
-    return next();
+    return publish.clientError(clientId, new Error('not playing'));
   }
   const player = table.players.filter(p => p.id === user.id).pop();
   if (!player) {
-    return next(new Error('not playing'));
+    return publish.clientError(clientId, new Error('not playing'));
   } else {
     const allOut = table.players.every(R.prop('out'));
     player.out = false;
@@ -29,7 +28,5 @@ module.exports = (user, table, res, next) => {
   }
 
   publish.tableStatus(table);
-  res.send(204);
-  next();
 };
 

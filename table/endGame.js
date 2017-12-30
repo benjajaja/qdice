@@ -19,5 +19,9 @@ module.exports = table => {
   table.status = STATUS_FINISHED;
   table.turnIndex = -1;
   table.gameStart = 0;
+  publish.event({
+    type: 'end',
+    table: table.name,
+  });
 };
 

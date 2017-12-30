@@ -4,10 +4,15 @@ const publish = require('./publish');
 const enterCounter = probe.counter({
   name : 'Table enter',
 });
-module.exports = (user, table, clientId, res, next) => {
+
+module.exports = async (user, table, clientId) => {
   publish.tableStatus(table, clientId);
+  publish.enter(table, user.name);
+  publish.event({
+    type: 'enter',
+    table: table.name,
+    userId: user.id,
+  });
   enterCounter.inc();
-  res.send(204);
-  next();
 };
 

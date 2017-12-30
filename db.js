@@ -14,21 +14,6 @@ async function db() {
 
   await client_.connect();
 
-	const res = await client.query({
-		text: 'SELECT unnest(enum_range(NULL::network))',
-		rowMode: 'array',
-	});
-	if (R.symmetricDifference(res.rows.map(R.head), networks).length !== 0) {
-		await client.query('ALTER TYPE network RENAME TO network_');
-		const enumValues = networks.map(n => `'${n}'`).join(', ');
-
-		await client.query(`CREATE TYPE network AS ENUM ( ${enumValues} )`);
-		await client.query('ALTER TABLE authorizations ALTER COLUMN network TYPE network USING network::network');
-		await client.query('DROP TYPE network_');
-	} else {
-		console.log('no new networks');
-	}
-
   return singleton = new Db(client_);
 }
 

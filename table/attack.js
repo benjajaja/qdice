@@ -14,27 +14,27 @@ const publish = require('./publish');
 const endGame = require('./endGame');
 const { isBorder } = require('../maps');
 
-module.exports = (user, table, [emojiFrom, emojiTo], res, next) => {
+module.exports = (user, table, clientId, [emojiFrom, emojiTo]) => {
   if (table.status !== STATUS_PLAYING) {
-    return next(new Error('game not running'));
+    return publish.clientError(clientId, new Error('game not running'));
   }
   if (!hasTurn(table)(user)) {
-    return next(new Error('out of turn'));
+    return publish.clientError(clientId, new Error('out of turn'));
   }
   const find = findLand(table.lands);
   const fromLand = find(emojiFrom);
   const toLand = find(emojiTo);
   if (!fromLand || !toLand) {
-    return next(new Error('land not found'));
+    return publish.clientError(clientId, new Error('land not found'));
   }
   if (fromLand.color === COLOR_NEUTRAL) {
-    return next(new Error('illegal move (same color)'));
+    return publish.clientError(clientId, new Error('illegal move (same color)'));
   }
   if (fromLand.color === toLand.color) {
-    return next(new Error('illegal move (same color)'));
+    return publish.clientError(clientId, new Error('illegal move (same color)'));
   }
   if (!isBorder(table.adjacency, emojiFrom, emojiTo)) {
-    return next(new Error('illegal move (not adjacent)'));
+    return publish.clientError(clientId, new Error('illegal move (not adjacent)'));
   }
 
   table.turnStarted = Math.floor(Date.now() / 1000);
@@ -70,13 +70,12 @@ module.exports = (user, table, [emojiFrom, emojiTo], res, next) => {
       publish.tableStatus(table);
     } catch (e) {
       console.error(e);
+      return publish.clientError(clientId, new Error('roll failed'));
     }
   }, 500);
   publish.move(table, {
     from: emojiFrom,
     to: emojiTo,
   });
-  res.send(204);
-  next();
 };
 

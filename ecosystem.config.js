@@ -1,3 +1,43 @@
+const tableConfig = require('./tables.config');
+
+const env_production = {
+  NODE_ENV: 'production',
+  GOOGLE_OAUTH_SECRET: 'e8Nkmj9X05_hSrrREcRuDCFj',
+  PORT: 5001,
+  JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
+  MQTT_URL: 'mqtt://localhost:11883',
+  MQTT_USERNAME: 'nodice',
+  MQTT_PASSWORD: 'PeyY9TYap2vaZxQ8tTMXcD57',
+  PGUSER: 'gipsy',
+  PGPASSWORD: '>SKBHS^$dS*7M<P^UkpL]Yb<L',
+  PGDATABASE: 'nodice',
+  BOT_TOKEN: '478186891:AAF8m2BYVGF92p0L1oeCUOquvgF6ajLEvxc',
+  BOT_GAME: 'QueDice',
+};
+const env_local = {
+  GOOGLE_OAUTH_SECRET: 'e8Nkmj9X05_hSrrREcRuDCFj',
+  PORT: 5001,
+  JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
+  MQTT_URL: 'mqtt://localhost:11883',
+  MQTT_USERNAME: 'client',
+  MQTT_PASSWORD: 'client',
+  PGUSER: 'bgrosse',
+  PGDATABASE: 'nodice',
+  BOT_TOKEN: '423731161:AAGtwf2CmhOFOnwVocSwe0ylyh63zCyfzbo',
+  BOT_GAME: 'QueDiceTest',
+};
+
+const tableEnv = env => tag => Object.assign({
+  TABLE: tag,
+}, env);
+
+const tableApp = ({ tag }) => ({
+  name: 'nodice-' + tag.toLowerCase(),
+  script: 'table.js',
+  env: tableEnv(env_local)(tag),
+  env_production: tableEnv(env_production)(tag),
+});
+
 module.exports = {
   /**
    * Application configuration section
@@ -7,88 +47,16 @@ module.exports = {
 
     // First application
     {
-      name      : 'nodice',
-      script    : 'main.js',
-      env: {
-        GOOGLE_OAUTH_SECRET: 'e8Nkmj9X05_hSrrREcRuDCFj',
-        PORT: 5001,
-        JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
-        MQTT_URL: 'mqtt://localhost:11883',
-        MQTT_USERNAME: 'client',
-        MQTT_PASSWORD: 'client',
-        PGUSER: 'bgrosse',
-        PGDATABASE: 'nodice',
-      },
-      env_production : {
-        NODE_ENV: 'production',
-        GOOGLE_OAUTH_SECRET: 'e8Nkmj9X05_hSrrREcRuDCFj',
-        PORT: 5001,
-        JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
-        MQTT_URL: 'mqtt://localhost:11883',
-        MQTT_USERNAME: 'nodice',
-        MQTT_PASSWORD: 'PeyY9TYap2vaZxQ8tTMXcD57',
-        PGUSER: 'gipsy',
-        PGPASSWORD: '>SKBHS^$dS*7M<P^UkpL]Yb<L',
-        PGDATABASE: 'nodice',
-      },
+      name: 'main',
+      script: 'main.js',
+      env: env_local,
+      env_production: env_production,
     },
     {
       name: 'telegram',
       script: 'telegram.js',
-      env: {
-        JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
-        MQTT_URL: 'mqtt://localhost:11883',
-        MQTT_USERNAME: 'client',
-        MQTT_PASSWORD: 'client',
-        BOT_TOKEN: '423731161:AAGtwf2CmhOFOnwVocSwe0ylyh63zCyfzbo',
-        BOT_GAME: 'QueDiceTest',
-        PGUSER: 'bgrosse',
-        PGDATABASE: 'nodice',
-      },
-      env_production: {
-        NODE_ENV: 'production',
-        JWT_SECRET: 'dnauh23uasjdnlnalkslk1daWDEDasdd1madremia',
-        MQTT_URL: 'mqtt://localhost:11883',
-        MQTT_USERNAME: 'nodice',
-        MQTT_PASSWORD: 'PeyY9TYap2vaZxQ8tTMXcD57',
-        BOT_TOKEN: '478186891:AAF8m2BYVGF92p0L1oeCUOquvgF6ajLEvxc',
-        BOT_GAME: 'QueDice',
-        PGUSER: 'gipsy',
-        PGPASSWORD: '>SKBHS^$dS*7M<P^UkpL]Yb<L',
-        PGDATABASE: 'nodice',
-      },
+      env: env_local,
+      env_production: env_production,
     },
-
-    // Second application
-    //{
-      //name      : 'WEB',
-      //script    : 'web.js'
-    //}
-  ],
-
-  /**
-   * Deployment section
-   * http://pm2.keymetrics.io/docs/usage/deployment/
-   */
-  deploy : {
-    production : {
-      user : 'node',
-      host : '212.83.163.1',
-      ref  : 'origin/master',
-      repo : 'git@github.com:repo.git',
-      path : '/var/www/production',
-      'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env production'
-    },
-    dev : {
-      user : 'node',
-      host : '212.83.163.1',
-      ref  : 'origin/master',
-      repo : 'git@github.com:repo.git',
-      path : '/var/www/development',
-      'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env dev',
-      env  : {
-        NODE_ENV: 'dev'
-      }
-    }
-  }
+  ].concat(tableConfig.tables.map(tableApp)),
 };

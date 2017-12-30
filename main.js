@@ -1,8 +1,3 @@
-if (process.env.NODE_ENV !== 'production') {
-  console.log('Loading local .env vars')
-  require('./envs');
-}
-
 const R = require('ramda');
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
@@ -54,8 +49,6 @@ server.use(jwt({
       req => req.path() === '/login',
       req => req.path() === '/register',
       req => req.path() === '/global',
-      req => req.route.path === '/tables/:tableName/:command'
-        && req.context.command === 'Enter',
     ])(req);
     return ok;
   }
@@ -71,33 +64,14 @@ server.get('/me', require('./user').me);
 server.put('/profile', require('./user').profile);
 server.post('/register', require('./user').register);
 
-const tables = require('./tables');
-server.post('/tables/:tableName/:command', tables.command);
+//const tables = require('./tables');
 
-server.get('/global', require('./global')(tables.getTables));
+server.get('/global', require('./global'));
 
 server.listen(process.env.PORT || 5001, function() {
   console.log('%s listening at %s port %s', server.name, server.url);
 });
 
-setInterval(function tick() {
-  tables.tick();
-}, 500);
-
-
-const mqtt = require('mqtt');
-console.log('connecting to mqtt: ' + process.env.MQTT_URL);
-var client = mqtt.connect(process.env.MQTT_URL, {
-  username: process.env.MQTT_USERNAME,
-  password: process.env.MQTT_PASSWORD,
-});
-tables.setMqtt(client);
- 
-client.on('connect', function () {
-  console.log('mqtt connected');
-});
-
-client.on('error', err => console.error(err));
 
 require('./db').db().then(db => {
   console.log('connected to postgres');

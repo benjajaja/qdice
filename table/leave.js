@@ -8,14 +8,13 @@ const {
   GAME_START_COUNTDOWN,
 } = require('../constants');
 
-module.exports = (user, table, res, next) => {
+module.exports = async (user, table, clientId) => {
   if (table.status === STATUS_PLAYING) {
-    res.send(406);
-    return next();
+    return publish.clientError(clientId, new Error('already started'));
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
-    return next(new Error('not joined'));
+    return publish.clientError(clientId, new Error('not joined'));
   } else {
     table.players = table.players.filter(p => p !== existing);
   }
@@ -27,7 +26,11 @@ module.exports = (user, table, res, next) => {
   }
   table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1 }));
   publish.tableStatus(table);
-  res.send(204);
-  next();
+
+  publish.event({
+    type: 'leave',
+    table: table.name,
+    player: existing,
+  });
 };
 

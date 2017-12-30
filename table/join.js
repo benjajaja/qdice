@@ -10,10 +10,9 @@ const {
   GAME_START_COUNTDOWN,
 } = require('../constants');
 
-module.exports = (user, table, res, next) => {
+module.exports = (user, table, clientId) => {
   if (table.status === STATUS_PLAYING) {
-    res.send(406);
-    return next();
+    return publish.clientError(clientId, new Error('already joined'));
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
@@ -32,8 +31,6 @@ module.exports = (user, table, res, next) => {
     }
     publish.tableStatus(table);
   }
-  res.send(204);
-  next();
   publish.event({
     type: 'join',
     table: table.name,
