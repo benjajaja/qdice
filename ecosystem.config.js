@@ -52,11 +52,5 @@ module.exports = {
       env: env_local,
       env_production: env_production,
     },
-    {
-      name: 'telegram',
-      script: 'telegram.js',
-      env: env_local,
-      env_production: env_production,
-    },
   ].concat(tableConfig.tables.map(tableApp)),
 };

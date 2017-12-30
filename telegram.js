@@ -198,31 +198,27 @@ bot.command('score', ctx => {
   }).catch(e => ctx.reply('Error: ' + e));
 });
 
-const mqtt = require('mqtt');
-console.log('connecting to mqtt: ' + process.env.MQTT_URL);
-var client = mqtt.connect(process.env.MQTT_URL, {
-  username: process.env.MQTT_USERNAME,
-  password: process.env.MQTT_PASSWORD,
-});
-client.on('connect', () => {
+let client;
+module.exports.setMqtt = client_ => {
+  client = client_;
   client.subscribe('events');
-});
-client.on('message', (topic, message) => {
-  if (topic === 'events') {
-    const event = JSON.parse(message);
-    switch (event.type) {
-      case 'join':
-        subscribed.forEach(id =>
-          telegram.sendMessage(id, `${event.player.name} joined ${event.table}`)
-          .catch(e => console.error(e)));
-        break;
-      case 'elimination':
-        const { table, player, position, score } = event;
-        if (player.telegram) {
-          setScore(player.telegram, score);
-        }
-        break;
+  client.on('message', (topic, message) => {
+    if (topic === 'events') {
+      const event = JSON.parse(message);
+      switch (event.type) {
+        case 'join':
+          subscribed.forEach(id =>
+            telegram.sendMessage(id, `${event.player.name} joined ${event.table}`)
+            .catch(e => console.error(e)));
+          break;
+        case 'elimination':
+          const { table, player, position, score } = event;
+          if (player.telegram) {
+            setScore(player.telegram, score);
+          }
+          break;
+      }
     }
-  }
-});
+  });
+};
 
