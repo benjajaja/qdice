@@ -41,7 +41,6 @@ type Msg
     | BoardMsg Board.Msg
     | InputChat String
     | SendChat String
-    | ClearChat
     | GameCmd PlayerAction
       -- backend
     | LoadToken String
@@ -54,7 +53,6 @@ type Msg
     | AllClientsMsg Backend.Types.AllClientsMessage
     | TableMsg Table Backend.Types.TableMessage
     | UnknownTopicMessage String String String
-    | GameCommandResponse Table PlayerAction (Result Http.Error ())
 
 
 type StaticPage

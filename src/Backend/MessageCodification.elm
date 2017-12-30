@@ -3,6 +3,7 @@ module Backend.MessageCodification exposing (..)
 import Types exposing (Msg(..))
 import Backend.Types exposing (..)
 import Tables exposing (Table(..))
+import Game.Types
 import Json.Decode as Dec exposing (..)
 import Json.Encode as Enc exposing (..)
 import Backend.Decoding exposing (..)
@@ -42,7 +43,7 @@ decodeTopicMessage table topic message =
                                     Err err
 
                         _ ->
-                            Err <| "unknown type \"" ++ mtype ++ "\""
+                            Err <| "unknown global message type \"" ++ mtype ++ "\""
 
         Tables table direction ->
             decodeTableMessage table message
@@ -59,9 +60,11 @@ decodeTableMessage table message =
                 "chat" ->
                     case
                         decodeString
-                            (map2 (,)
-                                (field "user" Dec.string)
-                                (field "message" Dec.string)
+                            (field "payload"
+                                (map2 (,)
+                                    (field "user" Dec.string)
+                                    (field "message" Dec.string)
+                                )
                             )
                             message
                     of
@@ -71,16 +74,16 @@ decodeTableMessage table message =
                         Err err ->
                             Err err
 
-                "join" ->
-                    case decodeString (field "user" Dec.string) message of
+                "enter" ->
+                    case decodeString (field "payload" Dec.string) message of
                         Ok user ->
                             Ok <| TableMsg table <| Join user
 
                         Err err ->
                             Err err
 
-                "leave" ->
-                    case decodeString (field "user" Dec.string) message of
+                "exit" ->
+                    case decodeString (field "payload" Dec.string) message of
                         Ok user ->
                             Ok <| TableMsg table <| Leave user
 
@@ -119,59 +122,16 @@ decodeTableMessage table message =
                         Err err ->
                             Err err
 
+                "error" ->
+                    case decodeString (field "payload" Dec.string) message of
+                        Ok error ->
+                            Ok <| TableMsg table <| Error error
+
+                        Err err ->
+                            Ok <| TableMsg table <| Error <| "💣"
+
                 _ ->
-                    Err <| "unknown type \"" ++ mtype ++ "\""
-
-
-encodeTopicMessage : Msg -> ( String, String )
-encodeTopicMessage msg =
-    case msg of
-        TableMsg table message ->
-            ( encodeTopic <| Tables table Broadcast
-            , encode 2 <|
-                case message of
-                    Chat user text ->
-                        object
-                            [ ( "type", Enc.string "chat" )
-                            , ( "user", Enc.string user )
-                            , ( "message", Enc.string text )
-                            ]
-
-                    Join user ->
-                        object
-                            [ ( "type", Enc.string "join" )
-                            , ( "user", Enc.string user )
-                            ]
-
-                    Leave user ->
-                        object
-                            [ ( "type", Enc.string "leave" )
-                            , ( "user", Enc.string user )
-                            ]
-
-                    Update status ->
-                        object
-                            [ ( "type", Enc.string "status" )
-                            ]
-
-                    Roll status ->
-                        object
-                            [ ( "type", Enc.string "roll" )
-                            ]
-
-                    Move status ->
-                        object
-                            [ ( "type", Enc.string "move" )
-                            ]
-
-                    Elimination e ->
-                        object
-                            [ ( "type", Enc.string "elimination" )
-                            ]
-            )
-
-        _ ->
-            Debug.crash <| "cannot send " ++ (toString msg)
+                    Err <| "unknown table message type \"" ++ mtype ++ "\""
 
 
 encodeTopic : Topic -> String
@@ -198,8 +158,3 @@ encodeDirection direction =
 
         Broadcast ->
             "broadcast"
-
-
-attackEncoder : Emoji -> Emoji -> Enc.Value
-attackEncoder from to =
-    Enc.list [ Enc.string from, Enc.string to ]

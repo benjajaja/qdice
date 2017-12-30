@@ -12,7 +12,7 @@ import Land exposing (Color)
 import Tables exposing (Table(..))
 import Backend
 import Backend.Types exposing (Topic(..))
-import Backend.HttpCommands exposing (gameCommand, attack)
+import Backend.MqttCommands exposing (gameCommand, attack)
 import Helpers exposing (indexOf, playSound, pipeUpdates, find)
 
 
@@ -320,6 +320,9 @@ updateTable : Types.Model -> Table -> Backend.Types.TableMessage -> ( Types.Mode
 updateTable model table msg =
     if table == model.game.table then
         case msg of
+            Backend.Types.Error error ->
+                updateChatLog model <| LogError error
+
             Backend.Types.Join user ->
                 updateChatLog model <| LogJoin user
 

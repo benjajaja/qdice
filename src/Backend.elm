@@ -9,11 +9,42 @@ import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
 import Backend.HttpCommands exposing (..)
+import Backend.MqttCommands exposing (..)
 import Types exposing (Msg(..))
 import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (Player, PlayerAction(..), RollLog)
 import Land exposing (Color(..))
 import Helpers exposing (find)
+
+
+port onToken : (String -> msg) -> Sub msg
+
+
+port mqttConnect : String -> Cmd msg
+
+
+port mqttSubscribe : String -> Cmd msg
+
+
+port mqttUnsubscribe : String -> Cmd msg
+
+
+port mqttOnConnect : (String -> msg) -> Sub msg
+
+
+port mqttOnReconnect : (Int -> msg) -> Sub msg
+
+
+port mqttOnOffline : (String -> msg) -> Sub msg
+
+
+port mqttOnConnected : (String -> msg) -> Sub msg
+
+
+port mqttOnSubscribed : (String -> msg) -> Sub msg
+
+
+port mqttOnMessage : (( String, String ) -> msg) -> Sub msg
 
 
 connect : Cmd msg
@@ -53,7 +84,6 @@ updateConnected model clientId =
         setStatus SubscribingGeneral ({ model | backend = { backend | clientId = Just clientId } })
             ! [ subscribe <| Client clientId
               , subscribe AllClients
-                --, Debug.log "presence" <| publish <| ClientMsg <| Presence clientId
               ]
 
 
@@ -95,8 +125,8 @@ updateSubscribed model topic =
                                     model_ ! []
                             else if hasSubscribedTable subscribed table then
                                 setStatus Online model_
-                                    ! [ publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
-                                      , enter model.backend model_.game.table clientId
+                                    ! [ --publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
+                                        enter model.backend model_.game.table
                                       ]
                             else
                                 model_ ! []
@@ -116,7 +146,6 @@ subscribeGameTable model table =
     in
         setStatus SubscribingTable model
             ! [ subscribe <| Tables model.game.table ClientDirection
-              , subscribe <| Tables model.game.table ServerDirection
               , subscribe <| Tables model.game.table Broadcast
               ]
 
@@ -143,9 +172,9 @@ unsubscribeGameTable model table =
                 backend.subscribed
     in
         { model | backend = { backend | subscribed = subscribed } }
-            ! [ publish <| TableMsg table <| Backend.Types.Leave <| Types.getUsername model
+            ! [ --publish <| TableMsg table <| Backend.Types.Leave <| Types.getUsername model
+                exit model.backend table
               , unsubscribe <| Tables table ClientDirection
-              , unsubscribe <| Tables table ServerDirection
               , unsubscribe <| Tables table Broadcast
               ]
 
@@ -296,20 +325,8 @@ hasSubscribedTable subscribed table =
             List.member (Tables table direction) subscribed
         )
         [ ClientDirection
-        , ServerDirection
         , Broadcast
         ]
-
-
-port mqttConnect : String -> Cmd msg
-
-
-publish : Msg -> Cmd msg
-publish message =
-    encodeTopicMessage message |> Debug.log "publish" |> mqttPublish
-
-
-port mqttPublish : ( String, String ) -> Cmd msg
 
 
 subscribe : Topic -> Cmd msg
@@ -404,30 +421,3 @@ toDie face =
 
         _ ->
             "🎲"
-
-
-port onToken : (String -> msg) -> Sub msg
-
-
-port mqttSubscribe : String -> Cmd msg
-
-
-port mqttUnsubscribe : String -> Cmd msg
-
-
-port mqttOnConnect : (String -> msg) -> Sub msg
-
-
-port mqttOnReconnect : (Int -> msg) -> Sub msg
-
-
-port mqttOnOffline : (String -> msg) -> Sub msg
-
-
-port mqttOnConnected : (String -> msg) -> Sub msg
-
-
-port mqttOnSubscribed : (String -> msg) -> Sub msg
-
-
-port mqttOnMessage : (( String, String ) -> msg) -> Sub msg

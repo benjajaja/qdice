@@ -13,8 +13,10 @@ type GameStatus
 
 type PlayerAction
     = Enter
+    | Exit
     | Join
     | Leave
+    | Chat String
     | SitOut
     | SitIn
     | Attack Emoji Emoji

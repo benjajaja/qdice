@@ -27,7 +27,8 @@ import Static.View
 import Editor.Editor
 import MyProfile.MyProfile
 import Backend
-import Backend.HttpCommands exposing (gameCommand, authenticate, loadMe, loadGlobalSettings)
+import Backend.HttpCommands exposing (authenticate, loadMe, loadGlobalSettings)
+import Backend.MqttCommands exposing (gameCommand)
 import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionStatus(..))
 import Tables exposing (Table(..), tableList)
 import MyOauth
@@ -361,32 +362,19 @@ update msg model =
             let
                 game =
                     model.game
-            in
-                model
-                    ! [ Backend.Types.Chat (Types.getUsername model) model.game.chatInput
-                            |> TableMsg model.game.table
-                            |> Backend.publish
-                      , Task.perform (always ClearChat) (Task.succeed ())
-                      ]
-
-        ClearChat ->
-            let
-                game =
-                    model.game
 
                 game_ =
                     { game | chatInput = "" }
             in
-                { model | game = game_ } ! []
+                { model | game = game_ }
+                    ! [ gameCommand model.backend model.game.table <| Game.Types.Chat string
+                        --Backend.Types.Chat (Types.getUsername model) model.game.chatInput
+                        --|> TableMsg model.game.table
+                        --|> Backend.publish
+                      ]
 
         GameCmd playerAction ->
             model ! [ gameCommand model.backend model.game.table playerAction ]
-
-        GameCommandResponse table action (Ok response) ->
-            Game.State.updateCommandResponse table action model
-
-        GameCommandResponse table action (Err err) ->
-            Game.State.updateChatLog model <| Game.Types.LogError <| Game.Chat.toChatError table action err
 
         UnknownTopicMessage error topic message ->
             let

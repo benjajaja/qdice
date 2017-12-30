@@ -54,3 +54,4 @@ type TableMessage
     | Roll Game.Types.Roll
     | Move Game.Types.Move
     | Elimination Game.Types.Elimination
+    | Error String

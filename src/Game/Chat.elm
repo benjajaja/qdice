@@ -49,7 +49,7 @@ chatBox hasInput inputValue mdl lines id =
             )
             :: (if hasInput then
                     [ Card.actions [ cs "chatbox--actions" ]
-                        [ Html.form [ onSubmit (SendChat "hi"), class "chatbox--actions-form" ]
+                        [ Html.form [ onSubmit (SendChat inputValue), class "chatbox--actions-form" ]
                             [ input mdl inputValue
                             , Button.render
                                 Types.Mdl
