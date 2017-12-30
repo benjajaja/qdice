@@ -62,7 +62,7 @@ decodeTableMessage table message =
                         decodeString
                             (field "payload"
                                 (map2 (,)
-                                    (field "user" Dec.string)
+                                    (field "user" (Dec.nullable Dec.string))
                                     (field "message" Dec.string)
                                 )
                             )
@@ -77,18 +77,18 @@ decodeTableMessage table message =
                 "enter" ->
                     case decodeString (field "payload" Dec.string) message of
                         Ok user ->
-                            Ok <| TableMsg table <| Join user
+                            Ok <| TableMsg table <| Join <| Just user
 
                         Err err ->
-                            Err err
+                            Ok <| TableMsg table <| Join Nothing
 
                 "exit" ->
                     case decodeString (field "payload" Dec.string) message of
                         Ok user ->
-                            Ok <| TableMsg table <| Leave user
+                            Ok <| TableMsg table <| Leave <| Just user
 
                         Err err ->
-                            Err err
+                            Ok <| TableMsg table <| Leave Nothing
 
                 "update" ->
                     case decodeString (field "payload" tableDecoder) message of

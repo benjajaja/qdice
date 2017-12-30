@@ -330,7 +330,20 @@ updateTable model table msg =
                 updateChatLog model <| LogLeave user
 
             Backend.Types.Chat user text ->
-                updateChatLog model <| LogChat user text
+                let
+                    color =
+                        case user of
+                            Nothing ->
+                                Land.Black
+
+                            Just name ->
+                                model.game.players
+                                    |> List.filter (\p -> p.name == name)
+                                    |> List.head
+                                    |> Maybe.map .color
+                                    |> Maybe.withDefault Land.Black
+                in
+                    updateChatLog model <| LogChat user color text
 
             Backend.Types.Update status ->
                 updateTableStatus model status
@@ -423,7 +436,7 @@ updateChatLog model entry =
             LogLeave _ ->
                 ( addToChatLog, scrollElement <| "chatLog-" ++ (toString model.game.table) )
 
-            LogChat _ _ ->
+            LogChat _ _ _ ->
                 ( addToChatLog, scrollElement <| "chatLog-" ++ (toString model.game.table) )
 
             _ ->

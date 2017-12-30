@@ -47,9 +47,9 @@ type AllClientsMessage
 
 
 type TableMessage
-    = Join Game.Types.User
-    | Chat Game.Types.User String
-    | Leave Game.Types.User
+    = Join (Maybe Game.Types.User)
+    | Chat (Maybe Game.Types.User) String
+    | Leave (Maybe Game.Types.User)
     | Update Game.Types.TableStatus
     | Roll Game.Types.Roll
     | Move Game.Types.Move

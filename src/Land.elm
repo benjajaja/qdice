@@ -51,11 +51,13 @@ type Color
     = Neutral
     | Red
     | Green
-    | Blue
+    | Blue {- 3 -}
     | Yellow
     | Magenta
     | Cyan
-    | Black
+    | Orange {- 7 -}
+    | Beige {- 8 -}
+    | Black {- 9 -}
     | Editor
     | EditorSelected
 
@@ -279,10 +281,19 @@ playerColor i =
             Cyan
 
         7 ->
+            Orange
+
+        8 ->
+            Beige
+
+        9 ->
             Black
 
         0 ->
             Editor
+
+        (-1) ->
+            Neutral
 
         _ ->
             Neutral

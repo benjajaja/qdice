@@ -117,10 +117,10 @@ statusMessage status =
                     "signal_wifi_off"
 
                 Connecting ->
-                    "wifi_lock"
+                    "signal_wifi_off"
 
                 Reconnecting _ ->
-                    "wifi_lock"
+                    "signal_wifi_off"
 
                 SubscribingGeneral ->
                     "wifi"

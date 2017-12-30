@@ -26,21 +26,23 @@ chatBox hasInput inputValue mdl lines id =
             (List.map
                 (\c ->
                     case c of
-                        LogChat user message ->
+                        LogChat user color message ->
                             div [ class "chatbox--line--chat" ]
-                                [ Html.span []
-                                    [ Html.text <| user ++ ": " ]
+                                [ chatPlayerTag user color
+                                , Html.text ": "
                                 , Html.span []
                                     [ Html.text message ]
                                 ]
 
                         LogJoin user ->
                             div [ class "chatbox--line--join" ]
-                                [ Html.text <| user ++ " joined" ]
+                                [ Html.text <| (maybeUserChatTag user) ++ " joined"
+                                ]
 
                         LogLeave user ->
                             div [ class "chatbox--line--leave" ]
-                                [ Html.text <| user ++ " left" ]
+                                [ Html.text <| (maybeUserChatTag user) ++ " left"
+                                ]
 
                         _ ->
                             Html.text "^M"
@@ -112,13 +114,13 @@ gameBox mdl lines id =
             (List.map
                 (\c ->
                     case c of
-                        LogChat user message ->
+                        LogChat _ _ _ ->
                             Html.text "\x00"
 
-                        LogJoin user ->
+                        LogJoin _ ->
                             Html.text "\x01"
 
-                        LogLeave user ->
+                        LogLeave _ ->
                             Html.text "\x02"
 
                         LogError error ->
@@ -158,6 +160,27 @@ gameBox mdl lines id =
                 List.reverse <|
                     lines
         ]
+
+
+maybeUserChatTag : Maybe Game.Types.User -> String
+maybeUserChatTag user =
+    (case user of
+        Just user ->
+            user
+
+        Nothing ->
+            "🕵️ Anonymous"
+    )
+
+
+chatPlayerTag : Maybe Game.Types.User -> Color -> Html Types.Msg
+chatPlayerTag user color =
+    case user of
+        Just name ->
+            playerTag name color
+
+        Nothing ->
+            Html.span [] [ Html.text "Anonymous" ]
 
 
 playerTag : Game.Types.User -> Color -> Html Types.Msg

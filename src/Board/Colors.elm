@@ -33,6 +33,12 @@ base color =
         Land.Cyan ->
             Color.rgb 103 189 170
 
+        Land.Orange ->
+            Color.rgb 245 130 48
+
+        Land.Beige ->
+            Color.rgb 255 250 200
+
         Land.Editor ->
             Color.rgb 255 128 0
 
