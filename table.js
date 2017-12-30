@@ -34,7 +34,7 @@ const Table = config => ({
   players: [],
   playerSlots: config.playerSlots,
   startSlots: config.startSlots,
-  status: STATUS_PAUSED,
+  status: STATUS_FINISHED,
   gameStart: 0,
   turnIndex: -1,
   turnStarted: 0,
@@ -80,14 +80,6 @@ process.on('SIGINT', () => {
 });
 
 publish.setMqtt(client);
-
-const tick = require('./table/tick');
-setInterval(function tick_() {
-  tick(table);
-}, 500);
-
-
-
 
 client.subscribe(`tables/${table.tag}/server`);
 

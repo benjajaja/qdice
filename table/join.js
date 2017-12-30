@@ -1,6 +1,7 @@
 const R = require('ramda');
 const publish = require('./publish');
 const startGame = require('./start');
+const tick = require('./tick');
 const {
   STATUS_PAUSED,
   STATUS_PLAYING,
@@ -17,8 +18,12 @@ module.exports = (user, table, clientId) => {
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
     return publish.clientError(clientId, new Error('already joined'));
-  } else {
-    table.players.push(Player(user));
+  }
+
+  table.players.push(Player(user));
+  if (table.status === STATUS_FINISHED) {
+    table.status = STATUS_PAUSED;
+    tick.start(table);
   }
 
   table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1}));

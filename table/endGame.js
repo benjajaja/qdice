@@ -1,4 +1,5 @@
 const publish = require('./publish');
+const tick = require('./tick');
 const {
   STATUS_PAUSED,
   STATUS_PLAYING,
@@ -19,6 +20,7 @@ module.exports = table => {
   table.status = STATUS_FINISHED;
   table.turnIndex = -1;
   table.gameStart = 0;
+  tick.stop(table);
   publish.event({
     type: 'end',
     table: table.name,

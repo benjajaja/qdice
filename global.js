@@ -78,7 +78,8 @@ module.exports.onMessage = (topic, message) => {
         }
 
         case 'elimination': {
-          const { table, player, position, score } = event;
+          const { player, position, score } = event;
+          const table = findTable(tables)(event.table);
           table.players = table.players.filter(p => p.id === event.player.id);
           publish.tables(getTablesStatus(tables));
           return;
