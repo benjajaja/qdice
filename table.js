@@ -3,7 +3,6 @@ const R = require('ramda');
 
 const mqtt = require('mqtt');
 const jwt = require('jsonwebtoken');
-const probe = require('pmx').probe();
 
 const maps = require('./maps');
 const publish = require('./table/publish');

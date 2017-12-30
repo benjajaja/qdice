@@ -5,6 +5,6 @@ rsync -az --force --delete --progress --iconv=utf-8-mac,utf-8 --exclude-from=rsy
 ssh -tt gipsy@quedice.host <<'ENDSSH'
 cd nodice
 yarn
-pm2 startOrRestart ecosystem.config.js --env production
+pm2 startOrReload ecosystem.config.js --env production
 exit
 ENDSSH
