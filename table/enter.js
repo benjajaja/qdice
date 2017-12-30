@@ -6,12 +6,13 @@ const enterCounter = probe.counter({
 });
 
 module.exports = async (user, table, clientId) => {
+  console.log('enter', user);
   publish.tableStatus(table, clientId);
-  publish.enter(table, user.name);
+  publish.enter(table, user ? user.name : null);
   publish.event({
     type: 'enter',
     table: table.name,
-    userId: user.id,
+    userId: user ? user.id : null,
   });
   enterCounter.inc();
 };

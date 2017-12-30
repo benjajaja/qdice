@@ -93,7 +93,7 @@ client.on('message', async (topic, message) => {
     try {
       const user = await (token
         ? verifyJwt(token, process.env.JWT_SECRET)
-        : async () => null
+        : null
       );
       await command(user, clientId, table, type, payload);
     } catch (e) {

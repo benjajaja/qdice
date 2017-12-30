@@ -10,19 +10,23 @@ const {
 } = require('./constants');
 const publish = require('./table/publish');
 const { findTable } = require('./helpers');
+const maps = require('./maps');
 
 const tablesConfig = require('./tables.config');
 
-const tables = tablesConfig.tables.map(config => ({
-  tag: config.tag,
-  name: config.tag,
-  playerSlots: config.playerSlots,
-  stackSize: config.stackSize,
-  points: config.points,
-  status: STATUS_PAUSED,
-  landCount: 0,
-  players: [],
-}));
+const tables = tablesConfig.tables.map(config => {
+  const [ lands, adjacency ] = maps.loadMap(config.tag);
+  return {
+    tag: config.tag,
+    name: config.tag,
+    playerSlots: config.playerSlots,
+    stackSize: config.stackSize,
+    points: config.points,
+    status: STATUS_PAUSED,
+    landCount: lands.length,
+    players: [],
+  };
+});
 
 module.exports.global = function(req, res, next) {
   res.send(200, {

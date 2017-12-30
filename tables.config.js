@@ -6,7 +6,7 @@ module.exports = {
       playerSlots: 5,
       startSlots: 2,
       points: 0,
-      stackSize: 8,
+      stackSize: 4,
     },
     {
       tag: 'Miño',
