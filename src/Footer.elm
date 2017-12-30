@@ -14,75 +14,8 @@ import Backend.Types exposing (ConnectionStatus(..))
 footer : Model -> Html.Html Msg
 footer model =
     Footer.mini []
-        { left =
-            Footer.left []
-                [ Footer.links [] <|
-                    (List.map
-                        (\( label, path ) ->
-                            Footer.linkItem
-                                [ Material.Options.onClick <| DrawerNavigateTo path ]
-                                [ Footer.html <| text label ]
-                        )
-                        [ ( "Play", GameRoute Melchor )
-                        , ( "My profile", MyProfileRoute )
-                        , ( "Help", StaticPageRoute Help )
-                        , ( "About", StaticPageRoute About )
-                          --, ( "Editor", EditorRoute )
-                        ]
-                    )
-                ]
-        , right =
-            Footer.right [] <|
-                statusMessage model.backend.status
-                    :: (if not model.isTelegram then
-                            [ Footer.html <|
-                                Html.div []
-                                    [ case model.user of
-                                        Logged user ->
-                                            Html.span [] [ Html.text user.name ]
-
-                                        Anonymous ->
-                                            Html.text ""
-                                    , Menu.render Mdl
-                                        [ 0 ]
-                                        model.mdl
-                                        [ Menu.topRight, Menu.ripple ]
-                                      <|
-                                        case model.user of
-                                            Logged user ->
-                                                [ Menu.item
-                                                    [ Menu.onSelect Logout ]
-                                                    [ Html.text "Sign out" ]
-                                                ]
-
-                                            Anonymous ->
-                                                [ Menu.item
-                                                    [ Menu.onSelect <| Authorize False ]
-                                                    [ Html.text "Sign in" ]
-                                                ]
-                                    ]
-                            ]
-                            --[ Footer.link
-                            --[ Material.Options.cs "footer--profile-link"
-                            --, Material.Options.onClick <|
-                            --case model.user of
-                            --Anonymous ->
-                            --Authorize False
-                            --Logged _ ->
-                            --Logout
-                            --]
-                            --(case model.user of
-                            --Logged user ->
-                            --[ Html.div [] [ Html.text <| user.name ]
-                            --, Html.img [ Html.Attributes.src user.picture ] []
-                            --]
-                            --Anonymous ->
-                            --[ Icon.i "account_circle" ]
-                            --)
-                            --]
-                        else
-                            []
-                       )
+        { left = Footer.left [] [ statusMessage model.backend.status ]
+        , right = Footer.right [] []
         }
 
 

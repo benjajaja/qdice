@@ -15,16 +15,17 @@ import Backend.Encoding exposing (profileEncoder)
 
 loginDialog : Model -> Html Msg
 loginDialog model =
-    (if model.showLoginDialog then
-        div
-            [ class "edLoginBackdrop" ]
-            [ div
-                [ class "edLoginDialog" ]
-                [ body model ]
-            ]
-     else
-        Html.text ""
-    )
+    case model.showLoginDialog of
+        LoginHide ->
+            text ""
+
+        _ ->
+            div
+                [ class "edLoginBackdrop" ]
+                [ div
+                    [ class "edLoginDialog" ]
+                    [ body model ]
+                ]
 
 
 body model =
@@ -36,7 +37,14 @@ body model =
             , Button.render Mdl
                 [ 12 ]
                 model.mdl
-                [ Options.onClick <| Authorize True
+                [ Options.onClick <|
+                    Authorize <|
+                        case model.showLoginDialog of
+                            LoginShowJoin ->
+                                True
+
+                            _ ->
+                                False
                 , Button.raised
                 , Button.colored
                 , Button.ripple
@@ -68,7 +76,7 @@ body model =
             [ Button.render Mdl
                 [ 11 ]
                 model.mdl
-                [ Options.onClick <| ShowLogin False ]
+                [ Options.onClick <| ShowLogin LoginHide ]
                 [ text "Close" ]
             , Button.render Mdl
                 [ 10 ]
@@ -109,6 +117,6 @@ login model name =
                 , withCredentials = False
                 }
     in
-        { model | showLoginDialog = False }
+        { model | showLoginDialog = LoginHide }
             ! [ Http.send (Types.GetToken True) request
               ]

@@ -16,6 +16,7 @@
 }
 
 
+
 body.navigator-standalone {
   -webkit-user-select: none;
      -moz-user-select: -moz-none;
@@ -30,25 +31,36 @@ body.navigator-standalone textarea {
           user-select: text;
 }
 
-@media (min-width: 800px) and (max-width: 1100px) {
-  .Main {
-    padding: 0 calc(
-      10px +
-      100 *
-      (100vw - 800px) / (1100 - 800)
-    );
-  }
-}
+/*@media (min-width: 800px) and (max-width: 1100px) {
+}*/
 @media (min-width: 1100px) {
-  .Main {
-    padding: 0 100px;
-  }
+  /*.Main {*/
+    /*padding: 0 100px;*/
+  /*}*/
 }
+.mdl-layout__drawer-button {
+  color: rgba(0,0,0,.5);
+  margin: 4px;
+}
+
+
 .GLOBAL_ERROR {
   background-color: #ffcccc;
   padding: 2em;
   font-weight: bold;
   white-space: pre;
+}
+
+.edDrawer__login {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.edDrawer__login__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
 }
 
 .edBoard {
@@ -85,11 +97,13 @@ body.navigator-standalone textarea {
 .edGameHeader {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  height: 48px;
   background: url('board_header.svg');
   background-repeat: repeat-x;
   background-position: bottom;
   box-shadow: 0 -10px 10px black;
+  padding-left: 48px;
   padding-bottom: 10px;
 }
 .edGameHeader__tableStatus {
@@ -105,7 +119,7 @@ body.navigator-standalone textarea {
   height: 20px;
   line-height: 20px;
   margin: 4px 8px;
-  flex: 1 0 auto;
+  flex: 0 0 auto;
 }
 
 .edPlayerChips {
@@ -373,8 +387,27 @@ body.navigator-standalone textarea {
   width: 100%;
 }
 
-@media screen and (min-width: 1024px) {
-  .footer--profile-link {
-    display: none;
+
+@media (min-width: 896px) and (max-width: 1100px) {
+  .edMainScreen {
+    width: 800px;
+    margin: 0 auto;
+  }
+  .edGameHeader {
+    width: 800px;
+    margin: 0 auto;
+    padding-left: 0;
   }
 }
+@media (min-width: 1100px) {
+  .edMainScreen {
+    width: 1000px;
+    margin: 0 auto;
+  }
+  .edGameHeader {
+    width: 1000px;
+    margin: 0 auto;
+    padding-left: 0;
+  }
+}
+

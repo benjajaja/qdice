@@ -34,6 +34,7 @@ import Tables exposing (Table(..), tableList)
 import MyOauth
 import Snackbar exposing (toast)
 import Footer exposing (footer)
+import Drawer exposing (drawer)
 import LoginDialog exposing (loginDialog, login)
 
 
@@ -104,7 +105,7 @@ init flags location =
             , snackbar = Snackbar.init
             , isTelegram = flags.isTelegram
             , loginName = ""
-            , showLoginDialog = False
+            , showLoginDialog = LoginHide
             , settings =
                 { gameCountdownSeconds = 30
                 , maxNameLength = 20
@@ -267,7 +268,11 @@ update msg model =
             { model | loginName = text } ! []
 
         ShowLogin show ->
-            { model | showLoginDialog = show } ! []
+            { model | showLoginDialog = Debug.log "login" show }
+                ! if model.mdl.layout.isDrawerOpen then
+                    msgsToCmds [ Layout.toggleDrawer Mdl ]
+                  else
+                    []
 
         Login name ->
             login model name
@@ -452,18 +457,18 @@ view model =
           --, Layout.fixedHeader
         ]
         { header =
-            (if not model.isTelegram then
-                (lazyList header) model
-             else
-                []
-            )
-        , drawer =
             []
             --(if not model.isTelegram then
-            --(lazyList drawer) model
+            --(lazyList header) model
             --else
             --[]
             --)
+        , drawer =
+            (if not model.isTelegram then
+                (lazyList drawer) model.user
+             else
+                []
+            )
         , tabs = ( [], [] )
         , main =
             [ loginDialog model
@@ -508,26 +513,6 @@ header model =
                         ]
             ]
         ]
-    ]
-
-
-drawer : Model -> List (Html.Html Msg)
-drawer model =
-    [ Layout.title [] [ Html.text "¡Qué Dice!" ]
-    , Layout.navigation []
-        (List.map
-            (\( label, path ) ->
-                Layout.link
-                    [ {- Layout.href <| "#" ++ path, -} Material.Options.onClick <| DrawerNavigateTo path ]
-                    [ Html.text label ]
-            )
-            [ ( "Play", GameRoute Melchor )
-            , ( "My profile", MyProfileRoute )
-            , ( "Help", StaticPageRoute Help )
-            , ( "About", StaticPageRoute About )
-            , ( "Editor (experimental)", EditorRoute )
-            ]
-        )
     ]
 
 

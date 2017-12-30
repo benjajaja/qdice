@@ -29,13 +29,15 @@ view model =
     in
         Html.div [ class "edGame" ]
             [ header model
-            , board
-            , Html.div [ class "edGame__meta" ]
-                [ Html.div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view model) model.game.players
-                , gameChat model
+            , Html.div [ class "edMainScreen" ]
+                [ board
+                , Html.div [ class "edGame__meta" ]
+                    [ Html.div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view model) model.game.players
+                    , gameChat model
+                    ]
+                , gameLogOverlay model
+                , footer model
                 ]
-            , gameLogOverlay model
-            , footer model
             ]
 
 
@@ -110,7 +112,7 @@ seatButton model =
                 Nothing ->
                     case model.user of
                         Types.Anonymous ->
-                            ( "Join", Options.onClick <| ShowLogin True )
+                            ( "Join", Options.onClick <| ShowLogin Types.LoginShowJoin )
 
                         Types.Logged user ->
                             ( "Join", Options.onClick <| GameCmd Join )
