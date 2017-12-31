@@ -11,6 +11,16 @@
 }
 .Main {
   background-color: #e3f2fd;
+
+background: rgba(212,228,239,1);
+background: -moz-linear-gradient(top, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
+background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(212,228,239,1)), color-stop(100%, rgba(154,221,255,1)));
+background: -webkit-linear-gradient(top, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
+background: -o-linear-gradient(top, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
+background: -ms-linear-gradient(top, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
+background: linear-gradient(to bottom, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e4ef', endColorstr='#9addff', GradientType=0 );
+
   flex: 1 0 auto;
   padding: 0 0;
 }
@@ -95,16 +105,21 @@ body.navigator-standalone textarea {
   flex-direction: column;
 }
 .edGameHeader {
+  box-shadow: 0 -10px 10px black;
+}
+.edGameHeader__content {
+  height: 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 48px;
+  padding-left: 48px;
+  background: #ff3c58;
+}
+.edGameHeader__decoration {
+  height: 10px;
   background: url('board_header.svg');
   background-repeat: repeat-x;
-  background-position: bottom;
-  box-shadow: 0 -10px 10px black;
-  padding-left: 48px;
-  padding-bottom: 10px;
+  background-position: left bottom;
 }
 .edGameHeader__tableStatus {
 }
@@ -251,9 +266,10 @@ body.navigator-standalone textarea {
   margin-bottom: 5px;
   overflow-y: auto;
   font-size: 12px;
+  background: #DCEDC8;
 }
 .gamelog {
-  background-color: white;
+  background-color: #DCEDC8;
 }
 .chatbox--line--turn, .chatbox--line--roll {
 }
@@ -270,6 +286,7 @@ body.navigator-standalone textarea {
   height: 200px;
   width: 100%;
   display: flex;
+  background: #FFF9C4;
 }
 .chatbox--log {
   background-color: white;
@@ -278,6 +295,7 @@ body.navigator-standalone textarea {
   overflow-y: scroll;
   padding: 8px;
   font-size: 12px;
+  background-color: #FFF9C4;
 }
 .chatbox--actions {
   flex: 1 0 auto;

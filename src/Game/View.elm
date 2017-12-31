@@ -44,41 +44,44 @@ view model =
 header : Model -> Html.Html Types.Msg
 header model =
     Html.div [ class "edGameHeader" ]
-        [ seatButton model
-        , Html.div [ class "edGameHeader__tableStatus" ]
-            [ Html.span [ class "edGameHeader__chip" ]
-                [ Html.text "Table "
-                , Html.span [ class "edGameHeader__chip--strong" ]
-                    [ Html.text <| encodeTable model.game.table
-                    ]
-                ]
-            , Html.span [ class "edGameHeader__chip" ] <|
-                List.append
-                    [ Html.text ", "
+        [ Html.div [ class "edGameHeader__content" ]
+            [ seatButton model
+            , Html.div [ class "edGameHeader__tableStatus" ]
+                [ Html.span [ class "edGameHeader__chip" ]
+                    [ Html.text "Table "
                     , Html.span [ class "edGameHeader__chip--strong" ]
-                        [ Html.text <|
-                            (if model.game.playerSlots == 0 then
-                                "∅"
-                             else
-                                toString model.game.playerSlots
-                            )
+                        [ Html.text <| encodeTable model.game.table
                         ]
-                    , Html.text " player game is "
-                    , Html.span [ class "edGameHeader__chip--strong" ]
-                        [ Html.text <| toString model.game.status ]
                     ]
-                    (case model.game.gameStart of
-                        Nothing ->
-                            []
-
-                        Just timestamp ->
-                            [ Html.text " starting in "
-                            , Html.span [ class "edGameHeader__chip--strong" ]
-                                [ Html.text <| (toString (round <| (toFloat timestamp) - (inMilliseconds model.time / 1000))) ++ "s" ]
+                , Html.span [ class "edGameHeader__chip" ] <|
+                    List.append
+                        [ Html.text ", "
+                        , Html.span [ class "edGameHeader__chip--strong" ]
+                            [ Html.text <|
+                                (if model.game.playerSlots == 0 then
+                                    "∅"
+                                 else
+                                    toString model.game.playerSlots
+                                )
                             ]
-                    )
+                        , Html.text " player game is "
+                        , Html.span [ class "edGameHeader__chip--strong" ]
+                            [ Html.text <| toString model.game.status ]
+                        ]
+                        (case model.game.gameStart of
+                            Nothing ->
+                                []
+
+                            Just timestamp ->
+                                [ Html.text " starting in "
+                                , Html.span [ class "edGameHeader__chip--strong" ]
+                                    [ Html.text <| (toString (round <| (toFloat timestamp) - (inMilliseconds model.time / 1000))) ++ "s" ]
+                                ]
+                        )
+                ]
+            , endTurnButton model
             ]
-        , endTurnButton model
+        , Html.div [ class "edGameHeader__decoration" ] []
         ]
 
 
