@@ -110,25 +110,13 @@ bot.gameQuery(ctx => {
     return 'https://telegram.org/img/t_logo.png';
   })
   .then(url => {
-    const profile = {
-      id: 'telegram_' + ctx.from.id,
-      name: ctx.from.first_name || ctx.from.username || 'Mr. Telegram',
-      email: '',
-      picture: url,
-      telegram: {
-        user_id: ctx.from.id,
-        chat_id: ctx.chat.id,
-        chat_type: ctx.chat.type,
-        message_id: ctx.update.callback_query.message.message_id,
-      },
-    };
-    console.log('telegram profile JWT', profile);
 		return db.getUserFromAuthorization(db.NETWORK_TELEGRAM, ctx.from.id)
 		.then(user => {
 			console.log('got user', user);
 			if (user) {
 				return user;
 			}
+      console.log('create tg user', ctx.from);
 			return db.createUser(db.NETWORK_TELEGRAM,
 				ctx.from.id,
 				ctx.from.first_name || ctx.from.username,

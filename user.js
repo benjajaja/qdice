@@ -56,8 +56,14 @@ exports.login = (req, res, next) => {
 };
 
 exports.me = function(req, res, next) {
-  res.send(200, req.user);
-  next();
+  db.getUserRows(req.user.id)
+  .then(userProfile)
+  .then(profile => {
+    profile.name += (Date.now() % 1000);
+    res.send(200, profile);
+    next();
+  })
+  .catch(e => next(e));
 };
 
 exports.profile = function(req, res, next) {
