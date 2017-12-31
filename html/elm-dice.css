@@ -1,6 +1,10 @@
 @import "https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext";
 @import "https://fonts.googleapis.com/icon?family=Material+Icons";
 @import "./css/material.min.css";
+@import "./css/material-theme.css";
+
+
+
 
 .mdl-layout__content {
   display: flex;
@@ -10,16 +14,7 @@
   flex: 0 0 auto;
 }
 .Main {
-  background-color: #e3f2fd;
-
-background: rgba(212,228,239,1);
-background: -moz-linear-gradient(top, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
-background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(212,228,239,1)), color-stop(100%, rgba(154,221,255,1)));
-background: -webkit-linear-gradient(top, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
-background: -o-linear-gradient(top, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
-background: -ms-linear-gradient(top, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
-background: linear-gradient(to bottom, rgba(212,228,239,1) 0%, rgba(154,221,255,1) 100%);
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d4e4ef', endColorstr='#9addff', GradientType=0 );
+  background-color: #333;
 
   flex: 1 0 auto;
   padding: 0 0;
@@ -49,7 +44,7 @@ body.navigator-standalone textarea {
   /*}*/
 }
 .mdl-layout__drawer-button {
-  color: rgba(0,0,0,.5);
+  color: rgba(255,255,255,.5);
   margin: 4px;
 }
 
@@ -106,9 +101,11 @@ body.navigator-standalone textarea {
 }
 .edGameHeader {
   box-shadow: 0 -10px 10px black;
+  color: #fff;
 }
 .edGameHeader__content {
-  height: 48px;
+  height: 38px;
+  padding-top: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -266,10 +263,10 @@ body.navigator-standalone textarea {
   margin-bottom: 5px;
   overflow-y: auto;
   font-size: 12px;
-  background: #DCEDC8;
+  background: #ff3c58;
 }
 .gamelog {
-  background-color: #DCEDC8;
+  background-color: inherit;
 }
 .chatbox--line--turn, .chatbox--line--roll {
 }
@@ -286,7 +283,6 @@ body.navigator-standalone textarea {
   height: 200px;
   width: 100%;
   display: flex;
-  background: #FFF9C4;
 }
 .chatbox--log {
   background-color: white;
@@ -295,7 +291,6 @@ body.navigator-standalone textarea {
   overflow-y: scroll;
   padding: 8px;
   font-size: 12px;
-  background-color: #FFF9C4;
 }
 .chatbox--actions {
   flex: 1 0 auto;
@@ -406,7 +401,7 @@ body.navigator-standalone textarea {
 }
 
 
-@media (min-width: 896px) and (max-width: 1100px) {
+@media (min-width: 896px) {
   .edMainScreen {
     width: 800px;
     margin: 0 auto;
@@ -417,15 +412,19 @@ body.navigator-standalone textarea {
     padding-left: 0;
   }
 }
-@media (min-width: 1100px) {
-  .edMainScreen {
-    width: 1000px;
-    margin: 0 auto;
+@media (min-width: 1000px) {
+  .edMainScreen, .edGameHeader {
+    width: 900px;
   }
-  .edGameHeader {
+}
+@media (min-width: 1100px) {
+  .edMainScreen, .edGameHeader {
     width: 1000px;
-    margin: 0 auto;
-    padding-left: 0;
+  }
+}
+@media (min-width: 1800px) {
+  .edMainScreen, .edGameHeader {
+    width: 1700px;
   }
 }
 

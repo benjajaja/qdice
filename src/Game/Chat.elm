@@ -21,7 +21,7 @@ import Board.Colors exposing (baseCssRgb)
 
 chatBox : Bool -> String -> Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
 chatBox hasInput inputValue mdl lines id =
-    Card.view [ cs "chatbox", Material.Elevation.e2 ] <|
+    Card.view [ cs "chatbox" ] <|
         Card.media [ cs "chatbox--log", Options.id id ]
             (List.map
                 (\c ->
@@ -109,7 +109,7 @@ toChatError table action err =
 
 gameBox : Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
 gameBox mdl lines id =
-    Card.view [ cs "gamelogContainer", Material.Elevation.e2 ]
+    Card.view [ cs "gamelogContainer" ]
         [ Card.media [ cs "gamelog", Options.id id ] <|
             (List.map
                 (\c ->
