@@ -33,7 +33,7 @@ decodeTable name =
             Just DeLucía
 
         _ ->
-            Debug.log ("unknown table: " ++ name) Nothing
+            Nothing
 
 
 encodeTable : Table -> String

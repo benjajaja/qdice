@@ -44,6 +44,9 @@ port mqttOnConnected : (String -> msg) -> Sub msg
 port mqttOnSubscribed : (String -> msg) -> Sub msg
 
 
+port mqttOnUnSubscribed : (String -> msg) -> Sub msg
+
+
 port mqttOnMessage : (( String, String ) -> msg) -> Sub msg
 
 

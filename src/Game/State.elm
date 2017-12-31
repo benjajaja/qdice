@@ -67,7 +67,6 @@ changeTable model table =
             { model | game = game }
     in
         ( model_, cmd )
-            |> pipeUpdates Backend.unsubscribeGameTable previousTable
             |> pipeUpdates Backend.subscribeGameTable table
 
 

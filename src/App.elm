@@ -36,6 +36,7 @@ import Snackbar exposing (toast)
 import Footer exposing (footer)
 import Drawer exposing (drawer)
 import LoginDialog exposing (loginDialog, login)
+import Helpers exposing (pipeUpdates)
 
 
 type alias Flags =
@@ -291,12 +292,23 @@ update msg model =
                 model_ =
                     { model | route = newRoute }
             in
-                case newRoute of
-                    GameRoute table ->
-                        Game.State.changeTable model_ table
+                if newRoute == model.route then
+                    model ! []
+                else
+                    ( model_, Cmd.none )
+                        |> (case newRoute of
+                                GameRoute table ->
+                                    pipeUpdates Game.State.changeTable table
 
-                    _ ->
-                        model_ ! []
+                                _ ->
+                                    identity
+                           )
+                        |> case model.route of
+                            GameRoute table ->
+                                pipeUpdates Backend.unsubscribeGameTable table
+
+                            _ ->
+                                identity
 
         Mdl msg ->
             Material.update Mdl msg model
