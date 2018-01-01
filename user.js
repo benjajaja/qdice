@@ -59,8 +59,8 @@ exports.me = function(req, res, next) {
   db.getUserRows(req.user.id)
   .then(userProfile)
   .then(profile => {
-    profile.name += (Date.now() % 1000);
-    res.send(200, profile);
+    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
+    res.send(200, [profile, token]);
     next();
   })
   .catch(e => next(e));

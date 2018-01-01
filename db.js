@@ -61,7 +61,7 @@ module.exports.getUserFromAuthorization = async (network, id) => {
 };
 
 module.exports.createUser = async (network, network_id, name, email, picture, profileJson) => {
-  const { rows : [ user ] } = await client.query('INSERT INTO users (name,email,picture) VALUES ($1, $2, $3) RETURNING *', [name, email, picture]);
+  const { rows : [ user ] } = await client.query('INSERT INTO users (name,email,picture,registration_time) VALUES ($1, $2, $3, current_timestamp) RETURNING *', [name, email, picture]);
   console.log('created user', user);
   if (network !== module.exports.NETWORK_PASSWORD) {
     /*const { rows: [ auth ] } =*/

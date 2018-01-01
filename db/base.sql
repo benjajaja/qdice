@@ -35,8 +35,9 @@ SET search_path = public, pg_catalog;
 --
 
 CREATE TYPE network AS ENUM (
+    'google',
     'password',
-    'google'
+    'telegram'
 );
 
 
@@ -54,7 +55,7 @@ CREATE TABLE authorizations (
     user_id integer NOT NULL,
     profile jsonb,
     network network NOT NULL,
-    network_id character varying(100)
+    network_id character varying(100) NOT NULL
 );
 
 
@@ -70,7 +71,8 @@ CREATE TABLE users (
     email character varying(100),
     picture character varying(500),
     points bigint DEFAULT 0,
-    level integer DEFAULT 0
+    level integer DEFAULT 0,
+    registration_time timestamp with time zone NOT NULL
 );
 
 
@@ -109,7 +111,15 @@ ALTER TABLE ONLY users ALTER COLUMN id SET DEFAULT nextval('users_id_seq'::regcl
 --
 
 ALTER TABLE ONLY authorizations
-    ADD CONSTRAINT authorizations_pk PRIMARY KEY (user_id, network);
+    ADD CONSTRAINT authorizations_pk PRIMARY KEY (network, network_id);
+
+
+--
+-- Name: authorizations authorizations_uniq; Type: CONSTRAINT; Schema: public; Owner: bgrosse
+--
+
+ALTER TABLE ONLY authorizations
+    ADD CONSTRAINT authorizations_uniq UNIQUE (user_id, network, network_id);
 
 
 --
