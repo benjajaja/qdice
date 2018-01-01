@@ -13,6 +13,8 @@ const env_production = {
   PGDATABASE: 'nodice',
   BOT_TOKEN: '478186891:AAF8m2BYVGF92p0L1oeCUOquvgF6ajLEvxc',
   BOT_GAME: 'QueDice',
+  AVATAR_PATH: '/var/www/quevic.io/pictures',
+  PICTURE_URL_PREFIX: 'https://quevic.io/pictures/',
 };
 const env_local = {
   GOOGLE_OAUTH_SECRET: 'e8Nkmj9X05_hSrrREcRuDCFj',
@@ -25,6 +27,8 @@ const env_local = {
   PGDATABASE: 'nodice',
   BOT_TOKEN: '423731161:AAGtwf2CmhOFOnwVocSwe0ylyh63zCyfzbo',
   BOT_GAME: 'QueDiceTest',
+  AVATAR_PATH: '/Users/bgrosse/o/edice/html/pictures',
+  PICTURE_URL_PREFIX: '/pictures/',
 };
 
 const tableEnv = env => tag => Object.assign({
@@ -54,6 +58,17 @@ module.exports = {
     {
       name: 'main',
       script: 'main.js',
+      env: env_local,
+      env_production: env_production,
+      source_map_support: false,
+      wait_ready: true,
+      restart_delay: 1000,
+      vizion: false,
+      max_restarts: 5,
+    },
+    {
+      name: 'telegram',
+      script: 'telegram.js',
       env: env_local,
       env_production: env_production,
       source_map_support: false,

@@ -1,3 +1,6 @@
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
 const Telegram = require('telegraf/telegram');
 const telegram = new Telegram(process.env.BOT_TOKEN);
 const Telegraf = require('telegraf');
@@ -6,11 +9,40 @@ const Markup = require('telegraf/markup');
 const jwt = require('jsonwebtoken');
 const ShortUniqueId = require('short-unique-id');
 const R = require('ramda');
+const mqtt = require('mqtt');
 const { rand } = require('./rand');
 const { userProfile } = require('./user');
 const db = require('./db');
 
 const uid = new ShortUniqueId();
+
+
+console.log('connecting to mqtt: ' + process.env.MQTT_URL);
+var client = mqtt.connect(process.env.MQTT_URL, {
+  username: process.env.MQTT_USERNAME,
+  password: process.env.MQTT_PASSWORD,
+});
+client.subscribe('events');
+client.on('message', (topic, message) => {
+  if (topic === 'events') {
+    const event = JSON.parse(message);
+    switch (event.type) {
+      case 'join':
+        subscribed.forEach(id =>
+          telegram.sendMessage(id, `${event.player.name} joined ${event.table}`)
+          .catch(e => console.error(e)));
+        break;
+      case 'elimination':
+        const { table, player, position, score } = event;
+        console.log('telegram elim', player);
+        if (player.telegram) {
+          setScore(player.telegram, score);
+        }
+        break;
+    }
+  }
+});
+
 
 require('./db').db().then(db => {
   console.log('connected to postgres');
@@ -109,7 +141,8 @@ bot.gameQuery(ctx => {
     console.error('could not get photo', e);
     return 'https://telegram.org/img/t_logo.png';
   })
-  .then(url => {
+  .then(downloadAvatar(uid.randomUUID(16)))
+  .then(filename => {
 		return db.getUserFromAuthorization(db.NETWORK_TELEGRAM, ctx.from.id)
 		.then(user => {
 			console.log('got user', user);
@@ -121,7 +154,7 @@ bot.gameQuery(ctx => {
 				ctx.from.id,
 				ctx.from.first_name || ctx.from.username,
 				null,
-				url,
+				`${process.env.PICTURE_URL_PREFIX}/${filename}`,
 				{
 					user_id: ctx.from.id,
 					chat_id: ctx.chat.id,
@@ -139,6 +172,7 @@ bot.gameQuery(ctx => {
   })
   .catch(e => {
     console.error('gameQuery error: ' + e, e);
+    telegram.sendMessage(ctx.chat.id, `Could not register user ${ctx.from.first_name || ctx.from.username}`);
   });
 });
 
@@ -186,27 +220,12 @@ bot.command('score', ctx => {
   }).catch(e => ctx.reply('Error: ' + e));
 });
 
-let client;
-module.exports.setMqtt = client_ => {
-  client = client_;
-  client.subscribe('events');
-  client.on('message', (topic, message) => {
-    if (topic === 'events') {
-      const event = JSON.parse(message);
-      switch (event.type) {
-        case 'join':
-          subscribed.forEach(id =>
-            telegram.sendMessage(id, `${event.player.name} joined ${event.table}`)
-            .catch(e => console.error(e)));
-          break;
-        case 'elimination':
-          const { table, player, position, score } = event;
-          if (player.telegram) {
-            setScore(player.telegram, score);
-          }
-          break;
-      }
-    }
+const downloadAvatar = id => url => {
+  const filename = `user_${id}.jpg`;
+  const file = fs.createWriteStream(path.join(process.env.AVATAR_PATH, filename));
+  https.get(url, response => {
+    response.pipe(file);
   });
+  return filename;
 };
 

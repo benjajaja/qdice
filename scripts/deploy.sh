@@ -15,15 +15,7 @@ ssh -tt gipsy@quevic.io <<'ENDSSH'
 cd nodice
 yarn
 sleep 1
-pm2 startOrReload ecosystem.config.js --env production --only main
-sleep 1
-pm2 startOrReload ecosystem.config.js --env production --only nodice-melchor
-sleep 1
-pm2 startOrReload ecosystem.config.js --env production --only nodice-miño
-sleep 1
-pm2 startOrReload ecosystem.config.js --env production --only nodice-delucía
-sleep 1
-pm2 startOrReload ecosystem.config.js --env production --only nodice-serrano
+pm2 startOrReload ecosystem.config.js --env production
 exit
 ENDSSH
 fi

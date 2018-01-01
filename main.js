@@ -82,8 +82,7 @@ require('./db').db().then(db => {
     password: process.env.MQTT_PASSWORD,
   });
   publish.setMqtt(client);
-  const telegram = require('./telegram');
-  telegram.setMqtt(client);
+
   client.subscribe('events');
   client.on('error', err => console.error(err));
   client.on('connect', () => {
