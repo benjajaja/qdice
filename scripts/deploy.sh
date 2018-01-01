@@ -2,7 +2,7 @@
 
 rsync -az --force --delete --progress --iconv=utf-8-mac,utf-8 --exclude-from=rsync_exclude.txt -e "ssh -p22 " ./ gipsy@quevic.io:/home/gipsy/nodice
 
-if [ -z "$main" ]; then
+if [ $1 = "main" ]; then
 ssh -tt gipsy@quevic.io <<'ENDSSH'
 cd nodice
 yarn
