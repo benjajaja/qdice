@@ -218,13 +218,20 @@ update msg model =
                 case res of
                     Err err ->
                         let
-                            oauth_ =
-                                { oauth | error = Just "unable to fetch user profile ¯\\_(ツ)_/¯" }
+                            _ =
+                                Debug.log "error" err
                         in
-                            { model | oauth = oauth_ } ! []
+                            toast model "Could not sign in, please retry"
 
-                    Ok profile ->
-                        { model | user = Logged profile } ! []
+                    Ok ( profile, token ) ->
+                        let
+                            backend =
+                                model.backend
+
+                            backend_ =
+                                { backend | jwt = Just token }
+                        in
+                            { model | user = Logged profile, backend = backend_ } ! []
 
         Authorize doJoin ->
             MyOauth.authorize model doJoin

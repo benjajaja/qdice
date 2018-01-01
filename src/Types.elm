@@ -32,7 +32,7 @@ type Msg
     | Authorize Bool
     | Authenticate String Bool
     | GetToken Bool (Result Http.Error String)
-    | GetProfile (Result Http.Error LoggedUser)
+    | GetProfile (Result Http.Error ( LoggedUser, String ))
     | Logout
     | ShowLogin LoginDialogStatus
     | Login String

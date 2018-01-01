@@ -46,7 +46,7 @@ loadMe model =
             , url = (model.baseUrl ++ "/me")
             , body = Http.emptyBody
             , expect =
-                Http.expectJson <| profileDecoder
+                Http.expectJson <| meDecoder
             , timeout = Nothing
             , withCredentials = False
             }
