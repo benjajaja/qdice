@@ -35,7 +35,7 @@ module.exports = table => {
   table.players.forEach((player, index) => {
     const land = startLands[index];
     land.color = player.color;
-    land.points = Math.floor(table.stackSize / 2);
+    land.points = Math.max(4, Math.floor(table.stackSize / 2));
   });
   
   table.turnIndex = 0;
