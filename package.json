@@ -10,7 +10,7 @@
     "heroku-postbuild": "yarn build",
     "test": "bundlesize",
     "generate-maps": "node ./scripts/generate-maps.js",
-    "deploy": "rsync -az --force --delete --progress --exclude-from=rsync_exclude.txt -e \"ssh -p22\" ./dist/ gipsy@quedice.host:/var/www/quedice.host/",
+    "deploy": "rsync -az --force --delete --progress --exclude-from=rsync_exclude.txt -e \"ssh -p22\" ./dist/ gipsy@54.36.183.181:/var/www/quevic.io/",
     "cowboy": "yarn build && yarn test && yarn deploy"
   },
   "repository": {

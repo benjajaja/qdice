@@ -14,7 +14,7 @@ function getMqttConfig() {
   } else {
     return {
       protocol: 'wss',
-      hostname: 'mqtt.quedice.host',
+      hostname: 'mqtt.' + self.location.hostname,
       port: 8084,
       path: 'mqtt',
     };
