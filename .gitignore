@@ -5,3 +5,4 @@ dist
 .env
 stats.json
 src/Maps/Sources.elm
+html/pictures
