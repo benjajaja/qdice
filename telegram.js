@@ -82,12 +82,12 @@ const gameShortName = process.env.BOT_GAME;
 //const gameUrl = 'http://lvh.me:5000';
 const gameUrl = gameShortName === 'QueDiceTest'
   ? 'http://lvh.me:5000'
-  : 'https://quedice.host';
+  : 'https://quevic.io';
 
 const markup = Extra.markup(
   Markup.inlineKeyboard([
     Markup.gameButton('🎲 Play now!'),
-    Markup.urlButton('Play in browser', 'http://quedice.host')
+    Markup.urlButton('Play in browser', gameUrl)
   ])
 );
 bot.command('game', ctx => {
