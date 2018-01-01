@@ -71,7 +71,8 @@ module.exports.createUser = async (network, network_id, name, email, picture, pr
 };
 
 module.exports.updateUser = async (id, name) => {
-  const res = await client.query('UPDATE users SET name = $1 WHER id = $2', [name, id]);
+  console.log('update', id, name);
+  const res = await client.query('UPDATE users SET name = $1 WHERE id = $2', [name, id]);
   return await module.exports.getUserRows(id);
 };
 
