@@ -17,10 +17,12 @@ const {
 
 module.exports = table => {
   const currentPlayer = table.players[table.turnIndex];
-  if (!table.turnActivity && !currentPlayer.out) {
-    currentPlayer.out = true;
+  if (currentPlayer) { // not just removed
+    if (!table.turnActivity && !currentPlayer.out) {
+      currentPlayer.out = true;
+    }
+    giveDice(table)(currentPlayer);
   }
-  giveDice(table)(currentPlayer);
 
   const nextIndex = (i => i + 1 < table.players.length ? i + 1 : 0)(table.turnIndex);
   table.turnIndex = nextIndex;

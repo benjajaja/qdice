@@ -27,6 +27,7 @@ module.exports = (user, table, clientId) => {
   }
 
   table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1}));
+
   if (table.players.length === table.playerSlots) {
     startGame(table);
   } else {

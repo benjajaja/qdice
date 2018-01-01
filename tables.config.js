@@ -27,8 +27,8 @@ module.exports = {
     {
       tag: 'Serrano',
       name: 'Serrano',
-      playerSlots: 9,
-      startSlots: 4,
+      playerSlots: 7,
+      startSlots: 2,
       points: 100,
       stackSize: 8,
     },
