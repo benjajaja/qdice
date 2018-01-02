@@ -13,6 +13,7 @@ module.exports.tableStatus = (table, clientId) => {
     JSON.stringify({
       type: 'update',
       payload: serializeTable(table),
+      table: clientId ? table.name : undefined,
     }),
     undefined,
     (err) => {
