@@ -91,23 +91,14 @@ module.exports.move = (table, move) => {
   );
 };
 
-module.exports.elimination = (table, player, position, reason) => {
-  const score = {
-    1: 90,
-    2: 60,
-    3: 30,
-    4: 10,
-    5: 0,
-    6: 0,
-    7: 0,
-  }[position] || 0;
-
+module.exports.elimination = (table, player, position, score, reason) => {
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'elimination',
       payload: {
         player: serializePlayer(table)(player),
         position,
+        score,
         reason,
       },
     }),
@@ -123,6 +114,7 @@ module.exports.elimination = (table, player, position, reason) => {
         player,
         position,
         score,
+        reason,
       });
 		}
   );

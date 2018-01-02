@@ -12,9 +12,11 @@ const {
 
 
 module.exports = table => {
-  console.log('game finished');
-  const winner = table.players.shift();
-  elimination(table, winner, ELIMINATION_REASON_WIN);
+  const winner = table.players[0];
+  console.log('game finished', winner);
+  elimination(table, winner, ELIMINATION_REASON_WIN, {
+    turns: table.turnCount,
+  });
   table.players = [];
   table.status = STATUS_FINISHED;
   table.turnIndex = -1;

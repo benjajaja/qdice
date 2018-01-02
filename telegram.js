@@ -34,7 +34,6 @@ client.on('message', (topic, message) => {
         break;
       case 'elimination':
         const { table, player, position, score } = event;
-        console.log('telegram elim', player);
         if (player.telegram) {
           setScore(player.telegram, score);
         }

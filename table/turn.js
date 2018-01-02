@@ -28,12 +28,15 @@ module.exports = table => {
   table.turnIndex = nextIndex;
   table.turnStarted = Math.floor(Date.now() / 1000);
   table.turnActivity = false;
+  table.turnCount += 1;
 
   const newPlayer = table.players[table.turnIndex];
   if (newPlayer.out) {
     newPlayer.outTurns += 1;
     if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
-      elimination(table, newPlayer, ELIMINATION_REASON_OUT, newPlayer.outTurns);
+      elimination(table, newPlayer, ELIMINATION_REASON_OUT, {
+        turns: newPlayer.outTurns,
+      });
 
       table = removePlayer(table)(newPlayer);
 

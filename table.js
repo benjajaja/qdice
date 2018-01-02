@@ -33,6 +33,7 @@ const Table = config => ({
   players: [],
   playerSlots: config.playerSlots,
   startSlots: config.startSlots,
+  points: config.points,
   status: STATUS_FINISHED,
   gameStart: 0,
   turnIndex: -1,
@@ -41,6 +42,7 @@ const Table = config => ({
   lands: [],
   stackSize: config.stackSize,
   playerStartCount: 0,
+  turnCount: 0,
 });
 const loadLands = table => {
   const [ lands, adjacency, name ] = maps.loadMap(table.tag);

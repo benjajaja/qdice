@@ -14,6 +14,7 @@ const publish = require('./publish');
 const endGame = require('./endGame');
 const elimination = require('./elimination');
 const { isBorder } = require('../maps');
+const { serializePlayer } = require('./serialize');
 
 module.exports = (user, table, clientId, [emojiFrom, emojiTo]) => {
   if (table.status !== STATUS_PLAYING) {
@@ -53,8 +54,12 @@ module.exports = (user, table, clientId, [emojiFrom, emojiTo]) => {
         toLand.color = fromLand.color;
         if (loser && R.filter(R.propEq('color', loser.color), table.lands).length === 0) {
           const turnPlayer = table.players[table.turnIndex];
-          elimination(table, loser, ELIMINATION_REASON_DIE, turnPlayer);
+          elimination(table, loser, ELIMINATION_REASON_DIE, {
+            player: serializePlayer(table)(turnPlayer),
+            points: (table.points || 100) / 2,
+          });
           table.players = table.players.filter(R.complement(R.equals(loser)));
+          turnPlayer.score += (table.points || 100) / 2;
           if (table.players.length === 1) {
             endGame(table);
           }
