@@ -5,7 +5,6 @@ import Backend.Types exposing (..)
 import Tables exposing (Table(..))
 import Game.Types
 import Json.Decode as Dec exposing (..)
-import Json.Encode as Enc exposing (..)
 import Backend.Decoding exposing (..)
 import Land exposing (Emoji)
 
@@ -17,15 +16,23 @@ type alias ChatMessage =
 {-| Maybe Table because it might be a table message for this client only
 -}
 decodeTopicMessage : Maybe Table -> Topic -> String -> Result String Msg
-decodeTopicMessage table topic message =
+decodeTopicMessage userTable topic message =
     case topic of
         Client id ->
-            case table of
-                Just table ->
-                    decodeTableMessage table message
+            case decodeString (field "table" string) message of
+                Err err ->
+                    decodeClientMessage message
 
-                Nothing ->
-                    Err "not implemented"
+                Ok tableName ->
+                    case userTable of
+                        Just table ->
+                            if tableName == toString table then
+                                decodeTableMessage table message
+                            else
+                                Err <| "message for wrong table: " ++ tableName
+
+                        Nothing ->
+                            Err "not implemented"
 
         AllClients ->
             case decodeString (field "type" Dec.string) message of
@@ -132,6 +139,26 @@ decodeTableMessage table message =
 
                 _ ->
                     Err <| "unknown table message type \"" ++ mtype ++ "\""
+
+
+decodeClientMessage : String -> Result String Msg
+decodeClientMessage message =
+    case decodeString (field "type" Dec.string) message of
+        Err err ->
+            Err err
+
+        Ok mtype ->
+            case mtype of
+                "user" ->
+                    case decodeString (field "payload" meDecoder) message of
+                        Ok ( user, token ) ->
+                            Ok <| UpdateUser user token
+
+                        Err err ->
+                            Err err
+
+                _ ->
+                    Err <| "unkown client message type: " ++ mtype
 
 
 encodeTopic : Topic -> String

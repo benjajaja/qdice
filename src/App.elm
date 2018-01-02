@@ -208,30 +208,33 @@ update msg model =
                               ]
 
         GetProfile res ->
-            let
-                oauth =
-                    model.oauth
+            case res of
+                Err err ->
+                    let
+                        _ =
+                            Debug.log "error" err
+                    in
+                        toast model "Could not sign in, please retry"
 
+                Ok ( profile, token ) ->
+                    let
+                        backend =
+                            model.backend
+
+                        backend_ =
+                            { backend | jwt = Just token }
+                    in
+                        { model | user = Logged profile, backend = backend_ } ! []
+
+        UpdateUser profile token ->
+            let
                 backend =
                     model.backend
+
+                backend_ =
+                    { backend | jwt = Just token }
             in
-                case res of
-                    Err err ->
-                        let
-                            _ =
-                                Debug.log "error" err
-                        in
-                            toast model "Could not sign in, please retry"
-
-                    Ok ( profile, token ) ->
-                        let
-                            backend =
-                                model.backend
-
-                            backend_ =
-                                { backend | jwt = Just token }
-                        in
-                            { model | user = Logged profile, backend = backend_ } ! []
+                { model | user = Logged profile, backend = backend_ } ! []
 
         Authorize doJoin ->
             MyOauth.authorize model doJoin

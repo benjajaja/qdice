@@ -37,6 +37,7 @@ type Msg
     | ShowLogin LoginDialogStatus
     | Login String
     | SetLoginName String
+    | UpdateUser LoggedUser String
       -- game
     | BoardMsg Board.Msg
     | InputChat String

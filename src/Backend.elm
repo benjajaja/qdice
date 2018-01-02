@@ -80,9 +80,6 @@ updateConnected model clientId =
     let
         backend =
             model.backend
-
-        _ =
-            Debug.log "connected" clientId
     in
         setStatus SubscribingGeneral ({ model | backend = { backend | clientId = Just clientId } })
             ! [ subscribe <| Client clientId
@@ -100,9 +97,6 @@ updateSubscribed model topic =
             let
                 model_ =
                     addSubscribed model topic
-
-                _ =
-                    Debug.log "updateSubscribed" (topic)
 
                 subscribed =
                     model_.backend.subscribed
@@ -156,9 +150,6 @@ subscribeGameTable model table =
 unsubscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
 unsubscribeGameTable model table =
     let
-        _ =
-            Debug.log "unsubscribe" table
-
         backend =
             model.backend
 
@@ -235,7 +226,11 @@ decodeMessage clientId table ( stringTopic, message ) =
                             msg
 
                         Err err ->
-                            Debug.log "unknown message" <| UnknownTopicMessage err stringTopic message
+                            let
+                                _ =
+                                    Debug.log "unknown message" <| UnknownTopicMessage err stringTopic message
+                            in
+                                ErrorToast "Failed to parse an update"
 
                 Nothing ->
                     UnknownTopicMessage "unrecognized topic" stringTopic message
