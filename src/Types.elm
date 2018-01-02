@@ -99,6 +99,8 @@ type alias LoggedUser =
     , name : Username
     , email : Maybe String
     , picture : String
+    , points : Int
+    , level : Int
     }
 
 

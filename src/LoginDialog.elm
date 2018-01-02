@@ -102,6 +102,8 @@ login model name =
             , id = "💩"
             , email = Nothing
             , picture = ""
+            , points = 0
+            , level = 0
             }
 
         request =

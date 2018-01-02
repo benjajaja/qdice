@@ -21,6 +21,8 @@ profileDecoder =
         |> required "name" string
         |> required "email" (nullable string)
         |> required "picture" string
+        |> required "points" int
+        |> required "level" int
 
 
 meDecoder : Decoder ( LoggedUser, String )
