@@ -70,11 +70,6 @@ changeTable model table =
             |> pipeUpdates Backend.subscribeGameTable table
 
 
-updateCommandResponse : Table -> PlayerAction -> Types.Model -> ( Types.Model, Cmd Msg )
-updateCommandResponse table action model =
-    model ! []
-
-
 findUserPlayer : Types.User -> List Player -> Maybe Player
 findUserPlayer user players =
     case user of

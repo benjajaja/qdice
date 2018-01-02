@@ -206,13 +206,21 @@ rollLine roll =
                     ++ roll.defender
                     ++ " "
                     ++ (toString roll.attackRoll)
-                    ++ " to "
+                    ++ (if roll.success then
+                            " → "
+                        else
+                            " ↩ "
+                       )
                     ++ (toString roll.defendRoll)
                     ++ " ("
-                    ++ (roll.attackDiesEmojis)
-                    ++ " -> "
-                    ++ (roll.defendDiesEmojis)
+                    ++ (toString <| roll.attackDiceCount * 6)
+                    ++ "/"
+                    ++ (toString <| roll.defendDiceCount * 6)
                     ++ ")"
+                    ++ ": "
+                    ++ (roll.attackDiesEmojis)
+                    ++ " → "
+                    ++ (roll.defendDiesEmojis)
             ]
     in
         div [ class "chatbox--line--roll" ] text

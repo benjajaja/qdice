@@ -127,8 +127,10 @@ type alias RollLog =
     , defender : User
     , attackRoll : Int
     , attackDiesEmojis : String
+    , attackDiceCount : Int
     , defendDiesEmojis : String
     , defendRoll : Int
+    , defendDiceCount : Int
     , success : Bool
     }
 

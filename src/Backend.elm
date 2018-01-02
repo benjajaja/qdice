@@ -390,8 +390,10 @@ toRollLog model roll =
         , defender = Maybe.withDefault errorPlayer defender |> .name
         , attackRoll = List.sum roll.from.roll
         , attackDiesEmojis = toDiesEmojis roll.from.roll
+        , attackDiceCount = List.length roll.from.roll
         , defendRoll = List.sum roll.to.roll
         , defendDiesEmojis = toDiesEmojis roll.to.roll
+        , defendDiceCount = List.length roll.to.roll
         , success = List.sum roll.from.roll > List.sum roll.to.roll
         }
 
