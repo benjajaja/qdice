@@ -136,17 +136,21 @@ gameBox mdl lines id =
                                 , Html.text "'s turn"
                                 ]
 
-                        LogElimination user color position reason ->
+                        LogElimination user color position score reason ->
                             div [ class "chatbox--line--elimination" ]
-                                [ eliminationEmoji reason.eliminationType
+                                [ eliminationEmoji reason
                                 , Html.text " "
                                 , playerTag user color
-                                , Html.text <|
-                                    (if position == 1 then
-                                        " won the game!"
-                                     else
-                                        " finished " ++ (ordinal position)
-                                    )
+                                , Html.strong []
+                                    [ Html.text <|
+                                        (if position == 1 then
+                                            " won the game!"
+                                         else
+                                            " finished " ++ (ordinal position)
+                                        )
+                                    ]
+                                , Html.text <| " with " ++ (toString score) ++ " ✪"
+                                , Html.text <| " " ++ (eliminationReasonText reason)
                                 ]
 
                         LogBegin table ->
@@ -226,14 +230,26 @@ rollLine roll =
         div [ class "chatbox--line--roll" ] text
 
 
-eliminationEmoji type_ =
+eliminationEmoji reason =
     Html.text <|
-        case type_ of
-            Game.Types.Death ->
+        case reason of
+            Game.Types.ReasonDeath _ _ ->
                 "☠"
 
-            Game.Types.Out ->
+            Game.Types.ReasonOut _ ->
                 "💤"
 
-            Game.Types.Win ->
+            Game.Types.ReasonWin _ ->
                 "🏆"
+
+
+eliminationReasonText reason =
+    case reason of
+        Game.Types.ReasonDeath player points ->
+            "(Killed by " ++ (player.name) ++ " for " ++ (toString points) ++ "✪)"
+
+        Game.Types.ReasonOut turns ->
+            "(Out for " ++ (toString turns) ++ " turns)"
+
+        Game.Types.ReasonWin turns ->
+            "(Last standing player after " ++ (toString turns) ++ " turns)"

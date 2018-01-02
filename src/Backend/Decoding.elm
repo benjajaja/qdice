@@ -5,7 +5,7 @@ import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (TableStatus, Player, PlayerGameStats)
 import Board.Types
 import Land exposing (Color, playerColor)
-import Json.Decode exposing (int, string, float, bool, list, Decoder, map, index, succeed, field, nullable)
+import Json.Decode exposing (int, string, float, bool, list, Decoder, map, index, succeed, field, nullable, andThen)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
@@ -128,33 +128,30 @@ eliminationDecoder =
     decode Game.Types.Elimination
         |> required "player" playersDecoder
         |> required "position" int
+        |> required "score" int
         |> required "reason" eliminationReasonDecoder
 
 
 eliminationReasonDecoder : Decoder Game.Types.EliminationReason
 eliminationReasonDecoder =
-    decode Game.Types.EliminationReason
-        |> required "type" eliminationTypeTagDecoder
+    field "type" string
+        |> andThen
+            (\t ->
+                case t of
+                    "☠" ->
+                        Json.Decode.map2 Game.Types.ReasonDeath
+                            (field "player" playersDecoder)
+                            (field "points" int)
 
+                    "💤" ->
+                        field "turns" int |> Json.Decode.map Game.Types.ReasonOut
 
-eliminationTypeTagDecoder : Decoder Game.Types.EliminationType
-eliminationTypeTagDecoder =
-    map
-        (\s ->
-            case s of
-                "☠" ->
-                    Game.Types.Death
+                    "🏆" ->
+                        field "turns" int |> Json.Decode.map Game.Types.ReasonWin
 
-                "💤" ->
-                    Game.Types.Out
-
-                "🏆" ->
-                    Game.Types.Win
-
-                _ ->
-                    Game.Types.Death
-        )
-        string
+                    _ ->
+                        Json.Decode.fail <| "unknown elimination type: " ++ t
+            )
 
 
 globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo )

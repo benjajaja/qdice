@@ -118,7 +118,7 @@ type ChatLogEntry
     | LogError String
     | LogRoll RollLog
     | LogTurn User Color
-    | LogElimination User Color Int EliminationReason
+    | LogElimination User Color Int Int EliminationReason
     | LogBegin Table
 
 
@@ -138,21 +138,15 @@ type alias RollLog =
 type alias Elimination =
     { player : Player
     , position : Int
+    , score : Int
     , reason : EliminationReason
     }
 
 
-type alias EliminationReason =
-    { eliminationType :
-        EliminationType
-        --, source : String
-    }
-
-
-type EliminationType
-    = Death
-    | Out
-    | Win
+type EliminationReason
+    = ReasonDeath Player Int
+    | ReasonOut Int
+    | ReasonWin Int
 
 
 makePlayer : String -> Player

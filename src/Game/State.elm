@@ -406,7 +406,7 @@ updateTable model table msg =
                         Debug.log "kill" elimination
                 in
                     updateChatLog model <|
-                        Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.reason
+                        Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
     else
         model ! []
 
