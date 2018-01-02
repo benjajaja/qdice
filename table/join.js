@@ -20,8 +20,8 @@ const Player = (user, clientId) => ({
   reserveDice: 0,
   out: false,
   outTurns: 0,
-  points: 0,
-  level: 0,
+  points: user.points,
+  level: user.level,
   position: 0,
   score: 0,
 });

@@ -1,11 +1,5 @@
-const probe = require('pmx').probe();
 const { serializeTable, serializePlayer } = require('./serialize');
-
-const publishTableMeter = probe.meter({
-  name: 'Table mqtt updates',
-  samples: 1,
-  timeFrame: 60,
-});
+const jwt = require('jsonwebtoken');
 
 let client;
 module.exports.setMqtt = client_ => {
@@ -27,7 +21,6 @@ module.exports.tableStatus = (table, clientId) => {
 			}
 		}
   );
-  publishTableMeter.mark();
 };
 
 module.exports.enter = (table, name) => {
@@ -175,3 +168,20 @@ module.exports.chat = (table, user, message) => {
 		}
   );
 };
+
+module.exports.userUpdate = clientId => profile => {
+  const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
+  client.publish(`clients/${clientId}`,
+    JSON.stringify({
+      type: 'user',
+      payload: [profile, token],
+    }),
+    undefined,
+    (err) => {
+			if (err) {
+				console.log(err, 'tables/' + table.name + '/clients update', table);
+			}
+		}
+  );
+};
+

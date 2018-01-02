@@ -28,12 +28,13 @@ const networks = [
 
 
 const userProfile = rows => Object.assign({},
-  R.pick(['id', 'name', 'email', 'picture', 'network', 'points', 'level'], rows[0]),
+  R.pick(['id', 'name', 'email', 'picture', 'network', 'level'], rows[0]),
   {
     id: rows[0].id.toString(),
     picture: rows[0].picture || 'assets/empty_profile_picture.svg',
     claimed: rows.some(row => row.network !== db.NETWORK_PASSWORD
       || row.network_id !== null),
+    points: parseInt(rows[0].points, 10),
   }
 );
 
