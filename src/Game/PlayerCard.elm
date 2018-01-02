@@ -51,7 +51,15 @@ view model index player =
             ]
             [ Html.text player.name ]
         , Html.div [ class "edPlayerChip__gameStats" ]
-            [ Html.div [ class "edPlayerChip__gameStats__item" ]
+            [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+                [ Html.text <|
+                    (if player.gameStats.position == 2 then
+                        "Pole"
+                     else
+                        ordinal player.gameStats.position
+                    )
+                ]
+            , Html.div [ class "edPlayerChip__gameStats__item" ]
                 [ Html.text <| "⬢ " ++ toString player.gameStats.totalLands ]
             , Html.div [ class "edPlayerChip__gameStats__item" ]
                 [ Html.text <|
@@ -64,13 +72,16 @@ view model index player =
                            )
                     )
                 ]
-            , Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+            , Html.div [ class "edPlayerChip__gameStats__item" ]
+                [ Html.text <| "✪ " ++ toString player.points ]
+            , Html.div [ class "edPlayerChip__gameStats__item" ]
                 [ Html.text <|
-                    (if player.gameStats.position == 2 then
-                        "Pole"
+                    (if player.gameStats.score >= 0 then
+                        "✪+"
                      else
-                        ordinal player.gameStats.position
+                        "✪"
                     )
+                        ++ toString player.gameStats.score
                 ]
               --, Html.div [ class "edPlayerChip__gameStats__item--soft" ]
               --[ Html.text <|
