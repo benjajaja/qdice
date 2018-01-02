@@ -12,6 +12,7 @@ const {
 const { findLand, hasTurn } = require('../helpers');
 const publish = require('./publish');
 const endGame = require('./endGame');
+const elimination = require('./elimination');
 const { isBorder } = require('../maps');
 
 module.exports = (user, table, clientId, [emojiFrom, emojiTo]) => {
@@ -52,10 +53,7 @@ module.exports = (user, table, clientId, [emojiFrom, emojiTo]) => {
         toLand.color = fromLand.color;
         if (loser && R.filter(R.propEq('color', loser.color), table.lands).length === 0) {
           const turnPlayer = table.players[table.turnIndex];
-          publish.elimination(table, loser, table.players.length, {
-            type: ELIMINATION_REASON_DIE,
-            source: turnPlayer,
-          });
+          elimination(table, loser, ELIMINATION_REASON_DIE, turnPlayer);
           table.players = table.players.filter(R.complement(R.equals(loser)));
           if (table.players.length === 1) {
             endGame(table);

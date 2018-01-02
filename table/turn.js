@@ -1,7 +1,7 @@
 const R = require('ramda');
 const maps = require('../maps');
-const publish = require('./publish');
 const endGame = require('./endGame');
+const elimination = require('./elimination');
 const { rand } = require('../rand');
 
 const {
@@ -33,10 +33,7 @@ module.exports = table => {
   if (newPlayer.out) {
     newPlayer.outTurns += 1;
     if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
-      publish.elimination(table, newPlayer, table.players.length, {
-        type: ELIMINATION_REASON_OUT,
-        source: newPlayer.outTurns,
-      });
+      elimination(table, newPlayer, ELIMINATION_REASON_OUT, newPlayer.outTurns);
 
       table = removePlayer(table)(newPlayer);
 

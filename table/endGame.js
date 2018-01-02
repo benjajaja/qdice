@@ -1,5 +1,6 @@
 const publish = require('./publish');
 const tick = require('./tick');
+const elimination = require('./elimination');
 const {
   STATUS_PAUSED,
   STATUS_PLAYING,
@@ -13,9 +14,7 @@ const {
 module.exports = table => {
   console.log('game finished');
   const winner = table.players.shift();
-  publish.elimination(table, winner, 1, {
-    type: ELIMINATION_REASON_WIN,
-  });
+  elimination(table, winner, ELIMINATION_REASON_WIN);
   table.players = [];
   table.status = STATUS_FINISHED;
   table.turnIndex = -1;

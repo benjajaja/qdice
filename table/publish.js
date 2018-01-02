@@ -1,5 +1,5 @@
 const probe = require('pmx').probe();
-const { serializeTable } = require('./serialize');
+const { serializeTable, serializePlayer } = require('./serialize');
 
 const publishTableMeter = probe.meter({
   name: 'Table mqtt updates',
@@ -101,11 +101,12 @@ module.exports.elimination = (table, player, position, reason) => {
     6: 0,
     7: 0,
   }[position] || 0;
+
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'elimination',
       payload: {
-        player,
+        player: serializePlayer(table)(player),
         position,
         reason,
       },

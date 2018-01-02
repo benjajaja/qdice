@@ -54,12 +54,6 @@ const Player = user => ({
   outTurns: 0,
   points: 0,
   level: 0,
-  derived: {
-    connectedLands: 0,
-    totalLands: 0,
-    currentDice: 0,
-    position: 0,
-    score: 0,
-  },
+  score: 0,
 });
   

@@ -1,21 +1,8 @@
 const R = require('ramda');
 
 const maps = require('../maps');
-
-const scores = {
-  1: 90,
-  2: 60,
-  3: 30,
-  4: 10,
-  5: 0,
-  6: 0,
-  7: 0,
-  8: 0,
-  9: 0,
-  10: 0,
-};
-
 module.exports.serializeTable = table => {
+  const log = baseLog(table.playerStartCount);
   const players = table.players.map(serializePlayer(table));
   const sortedPlayers = R.sortBy(R.path(['derived', 'totalLands']))(players).reverse();
   const players_ = players.map(player => {
@@ -29,7 +16,15 @@ module.exports.serializeTable = table => {
       player.derived.totalLands) {
       player.derived.position = previousPlayer.derived.position;
     }
-    player.derived.score = scores[player.derived.position] || 0;
+
+    const size = table.playerStartCount;
+    const position = size - player.derived.position + 1;
+    player.derived.score = Math.round(
+      R.defaultTo(0)(
+        position * ((position + size) / size) - position
+      ) * 100
+    );
+    console.log('score', player.derived.score, size, position);
     return player;
   });
   const lands = table.lands.map(({ emoji, color, points }) => ({ emoji, color, points, }));
@@ -51,12 +46,14 @@ const computePlayerDerived = table => player => {
     totalLands: lands.length,
     currentDice: R.sum(lands.map(R.prop('points'))),
     position: 0,
-    score: 0,
+    score: player.score,
   };
 };
 
-const serializePlayer = table => player => {
+const serializePlayer = module.exports.serializePlayer = table => player => {
   return Object.assign({}, R.pick([
     'id', 'name', 'picture', 'color', 'reserveDice', 'out', 'outTurns', 'points', 'level',
   ])(player), { derived: computePlayerDerived(table)(player) });
 };
+
+const baseLog = x => y => Math.round(Math.log(y) / Math.log(x));
