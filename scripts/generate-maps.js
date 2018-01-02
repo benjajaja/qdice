@@ -38,9 +38,8 @@ const loadMap = rawMap => {
         if (char !== land.emoji) {
           return rowCells;
         } else {
-          //const x_ = rowCells[0] === '〿' ? x - 1 : x;
           return rowCells.concat([
-            grid.Hex(x, y + 1)
+            grid.Hex(y % 2 === 0 ? x : x - 1, y)
           ]);
         }
       }, cells);

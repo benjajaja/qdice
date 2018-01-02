@@ -13,7 +13,7 @@ describe('Array', function() {
 describe('Maps', () => {
   describe('Loading', () => {
     it('should load a map', () => {
-      const lands = maps.loadMap('Melchor');
+      const [ lands, adjacency ] = maps.loadMap('Melchor');
       assert.equal(lands.length, 13);
 
       landSpecs = [
@@ -40,10 +40,6 @@ describe('Maps', () => {
         const spec = landSpecs[i];
         if (spec) {
           assert.strictEqual(land.emoji, spec.emoji);
-          assert.strictEqual(land.color, -1);
-          assert.strictEqual(typeof land.points, 'number');
-          assert(land.points > 0);
-          assert(land.points <= 8);
 
           assert.equal(land.cells instanceof Array, true);
           land.cells.forEach((cell, i) => {
@@ -55,17 +51,18 @@ describe('Maps', () => {
   });
 
   describe('Borders', () => {
-    const lands = maps.loadMap('Melchor');
+    const [ lands, adjacency ] = maps.loadMap('Melchor');
     [
       ['🍋', '🔥', true],
-      ['🔥', '🔥', true],
       ['🍋', '💰', false],
       ['😺', '🐵', true],
-      ['🐵', '🐵', true],
       ['🐙', '🐵', false],
+      ['🐵', '🍺', true],
+      ['🐵', '🌵', true],
+      ['🐵', '🥑', true],
     ].forEach(([from, to, isBorder]) => {
       it(`${from}  should ${isBorder ? '' : 'NOT '}border ${to}`, () => {
-        assert.equal(maps.isBorder(lands, from, to), isBorder, `${[from, to]} expected to border: ${isBorder}`);
+        assert.equal(maps.isBorder(adjacency, from, to), isBorder, `${[from, to].join(' ->')} expected to border: ${isBorder}`);
       });
     });
   });
@@ -74,31 +71,52 @@ describe('Maps', () => {
   describe('Connected lands count', () => {
     it('should count simple relation', () => {
       const redEmojis = ['🍋', '💰', '🐸', '🐵'];
-      const lands = maps.loadMap('Melchor').map(land =>
-        Object.assign(land, { color: R.contains(land.emoji, redEmojis) ? 1 : -1 }));
+      const [ lands, adjacency ] = maps.loadMap('Melchor');
 
-      assert.equal(maps.countConnectedLands(lands)(1), 2);
+      assert.equal(maps.countConnectedLands({ 
+        lands: lands.map(land =>
+          Object.assign(land, {
+            color: R.contains(land.emoji, redEmojis) ? 1 : -1,
+          })
+        ),
+       adjacency })(1), 2);
     });
     it('should count complex relation', () => {
       const redEmojis = ['🍋', '💰', '🐸', '🐵', '🥑', '👑', '🌙', '🌵', '🐙'];
-      const lands = maps.loadMap('Melchor').map(land =>
-        Object.assign(land, { color: R.contains(land.emoji, redEmojis) ? 1 : -1 }));
+      const [ lands, adjacency ] = maps.loadMap('Melchor');
 
-      assert.equal(maps.countConnectedLands(lands)(1), 5);
+      assert.equal(maps.countConnectedLands({ 
+        lands: lands.map(land =>
+          Object.assign(land, {
+            color: R.contains(land.emoji, redEmojis) ? 1 : -1,
+          })
+        ),
+         adjacency })(1), 5);
     });
+
     it('should count simple big relation', () => {
       const redEmojis = ['🍋', '💰', '🐸', '🐵', '🥑', '👑', '🌙', '🌵', '🐙', '🍺'];
-      const lands = maps.loadMap('Melchor').map(land =>
-        Object.assign(land, { color: R.contains(land.emoji, redEmojis) ? 1 : -1 }));
+      const [ lands, adjacency ] = maps.loadMap('Melchor');
 
-      assert.equal(maps.countConnectedLands(lands)(1), 9);
+      assert.equal(maps.countConnectedLands({ 
+        lands: lands.map(land =>
+          Object.assign(land, {
+            color: R.contains(land.emoji, redEmojis) ? 1 : -1,
+          })
+        ),
+        adjacency })(1), 9);
     });
+
     it('should count two equals relations', () => {
       const redEmojis = ['🍋', '💰', '🐸', '🐵', '🥑'];
-      const lands = maps.loadMap('Melchor').map(land =>
-        Object.assign(land, { color: R.contains(land.emoji, redEmojis) ? 1 : -1 }));
-
-      assert.equal(maps.countConnectedLands(lands)(1), 2);
+      const [ lands, adjacency ] = maps.loadMap('Melchor');
+      assert.equal(maps.countConnectedLands({
+        lands: lands.map(land =>
+          Object.assign(land, {
+            color: R.contains(land.emoji, redEmojis) ? 1 : -1,
+          })
+        ),
+        adjacency })(1), 2);
     });
   });
 });
