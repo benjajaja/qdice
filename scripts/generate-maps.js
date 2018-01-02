@@ -39,7 +39,7 @@ const loadMap = rawMap => {
           return rowCells;
         } else {
           return rowCells.concat([
-            grid.Hex(y % 2 === 0 ? x : x - 1, y)
+            grid.Hex(/*y % 2 === 0 ? x : x - 1*/x, y + 1)
           ]);
         }
       }, cells);
