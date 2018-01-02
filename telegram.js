@@ -43,7 +43,7 @@ client.on('message', (topic, message) => {
 });
 
 
-require('./db').db().then(db => {
+require('./db').connect().then(db => {
   console.log('connected to postgres');
 });
 

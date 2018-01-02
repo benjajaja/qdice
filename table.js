@@ -3,7 +3,7 @@ const R = require('ramda');
 
 const mqtt = require('mqtt');
 const jwt = require('jsonwebtoken');
-
+const db = require('./db');
 const maps = require('./maps');
 const publish = require('./table/publish');
 const startGame = require('./table/start');
@@ -73,6 +73,8 @@ client.on('connect', function () {
   publish.tableStatus(table);
   process.send('ready');
 });
+
+db.connect().then(() => console.log('table connected to DB'));
 
 process.on('SIGINT', () => {
   client.end(() => {

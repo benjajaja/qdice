@@ -41,7 +41,6 @@ exports.login = (req, res, next) => {
         console.log('create');
         return db.createUser(db.NETWORK_GOOGLE, profile.id, profile.name, profile.email, profile.picture, profile);
       })
-      .then(userProfile)
       .then(profile => {
         console.log('got profile', profile);
         const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
@@ -56,8 +55,7 @@ exports.login = (req, res, next) => {
 };
 
 exports.me = function(req, res, next) {
-  db.getUserRows(req.user.id)
-  .then(userProfile)
+  db.getUser(req.user.id)
   .then(profile => {
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
     res.send(200, [profile, token]);
@@ -68,7 +66,6 @@ exports.me = function(req, res, next) {
 
 exports.profile = function(req, res, next) {
   db.updateUser(req.user.id, req.body.name)
-  .then(userProfile)
   .then(profile => {
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
     res.send(200, token);
@@ -83,7 +80,6 @@ exports.profile = function(req, res, next) {
 
 exports.register = function(req, res, next) {
   db.createUser(db.NETWORK_PASSWORD, null, req.body.name, null, null, null)
-  .then(userProfile)
   .then(profile => {
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
     res.send(200, token);
@@ -91,14 +87,4 @@ exports.register = function(req, res, next) {
   })
   .catch(e => next(e));
 };
-
-const userProfile = module.exports.userProfile = rows => Object.assign({},
-  R.pick(['id', 'name', 'email', 'picture', 'network'], rows[0]),
-  {
-    id: rows[0].id.toString(),
-    picture: rows[0].picture || 'assets/empty_profile_picture.svg',
-    claimed: rows.some(row => row.network !== db.NETWORK_PASSWORD
-      || row.network_id !== null),
-  }
-);
 

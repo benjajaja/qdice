@@ -11,6 +11,21 @@ const {
   GAME_START_COUNTDOWN,
 } = require('../constants');
 
+const Player = (user, clientId) => ({
+  id: user.id,
+  clientId,
+  name: user.name,
+  picture: user.picture || '',
+  color: COLOR_NEUTRAL,
+  reserveDice: 0,
+  out: false,
+  outTurns: 0,
+  points: 0,
+  level: 0,
+  position: 0,
+  score: 0,
+});
+  
 module.exports = (user, table, clientId) => {
   if (table.status === STATUS_PLAYING) {
     return publish.clientError(clientId, new Error('not playing'));
@@ -20,7 +35,7 @@ module.exports = (user, table, clientId) => {
     return publish.clientError(clientId, new Error('already joined'));
   }
 
-  table.players.push(Player(user));
+  table.players.push(Player(user, clientId));
   if (table.status === STATUS_FINISHED) {
     table.status = STATUS_PAUSED;
     tick.start(table);
@@ -44,17 +59,3 @@ module.exports = (user, table, clientId) => {
   });
 };
 
-const Player = user => ({
-  id: user.id,
-  name: user.name,
-  picture: user.picture || '',
-  color: COLOR_NEUTRAL,
-  reserveDice: 0,
-  out: false,
-  outTurns: 0,
-  points: 0,
-  level: 0,
-  position: 0,
-  score: 0,
-});
-  

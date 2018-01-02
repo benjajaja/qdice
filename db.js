@@ -1,26 +1,20 @@
 const R = require('ramda');
-let singleton;
+
 let client;
 
-module.exports.db = db;
+module.exports.connect = db;
 
 async function db() {
-  if (singleton) {
-    return singleton;
+  if (client) {
+    return client;
   }
 
   const { Client } = require('pg');
-  const client_ = client = new Client();
+  client = new Client();
 
-  await client_.connect();
+  await client.connect();
 
-  return singleton = new Db(client_);
-}
-
-class Db {
-  constructor(client) {
-    this.client = client;
-  }
+  return client;
 }
 
 module.exports.NETWORK_GOOGLE = 'google';
@@ -32,10 +26,21 @@ const networks = [
   module.exports.NETWORK_TELEGRAM,
 ];
 
-//module.exports.getUser = async id => {
-  //const user = await client.query(`SELECT * FROM users WHERE id = $1 `, [id]);
-  //return user.rows[0];
-//};
+
+const userProfile = rows => Object.assign({},
+  R.pick(['id', 'name', 'email', 'picture', 'network', 'points', 'level'], rows[0]),
+  {
+    id: rows[0].id.toString(),
+    picture: rows[0].picture || 'assets/empty_profile_picture.svg',
+    claimed: rows.some(row => row.network !== db.NETWORK_PASSWORD
+      || row.network_id !== null),
+  }
+);
+
+module.exports.getUser = async id => {
+  const rows = await module.exports.getUserRows(id);
+  return userProfile(rows);
+};
 
 module.exports.getUserRows = async id => {
   const user = await client.query(`
@@ -53,7 +58,7 @@ module.exports.getUserFromAuthorization = async (network, id) => {
     if (res.rows.length === 0) {
       return undefined;
     }
-    return await module.exports.getUserRows(res.rows[0].user_id);
+    return await module.exports.getUser(res.rows[0].user_id);
   } catch (e) {
     console.error('user dont exist', e.toString());
     return undefined;
@@ -67,12 +72,22 @@ module.exports.createUser = async (network, network_id, name, email, picture, pr
     /*const { rows: [ auth ] } =*/
     await client.query('INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *', [user.id, network, network_id, profileJson]);
   }
-  return await module.exports.getUserRows(user.id);
+  return await module.exports.getUser(user.id);
 };
 
 module.exports.updateUser = async (id, name) => {
   console.log('update', id, name);
   const res = await client.query('UPDATE users SET name = $1 WHERE id = $2', [name, id]);
-  return await module.exports.getUserRows(id);
+  return await module.exports.getUser(id);
+};
+
+
+module.exports.addScore = async (id, score) => {
+  console.log('addScore', id, score);
+  const res = await client.query(`
+UPDATE users
+SET points = GREATEST(points + $1, 0)
+WHERE id = $2`, [score, id]);
+  return await module.exports.getUser(id);
 };
 

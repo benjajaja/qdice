@@ -69,7 +69,7 @@ server.get('/global', global.global);
 
 
 
-require('./db').db().then(db => {
+require('./db').connect().then(db => {
   console.log('connected to postgres.');
 
   server.listen(process.env.PORT || 5001, function() {
