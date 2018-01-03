@@ -13,6 +13,7 @@ const env_production = {
   PGDATABASE: 'nodice',
   BOT_TOKEN: '478186891:AAF8m2BYVGF92p0L1oeCUOquvgF6ajLEvxc',
   BOT_GAME: 'QueDice',
+  BOT_OFFICIAL_GROUPS: '-286837303',
   AVATAR_PATH: '/var/www/quevic.io/pictures',
   PICTURE_URL_PREFIX: 'https://quevic.io/pictures/',
 };
@@ -27,6 +28,7 @@ const env_local = {
   PGDATABASE: 'nodice',
   BOT_TOKEN: '423731161:AAGtwf2CmhOFOnwVocSwe0ylyh63zCyfzbo',
   BOT_GAME: 'QueDiceTest',
+  BOT_OFFICIAL_GROUPS: '',
   AVATAR_PATH: '/Users/bgrosse/o/edice/html/pictures',
   PICTURE_URL_PREFIX: '/pictures/',
 };

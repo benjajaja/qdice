@@ -43,6 +43,7 @@ module.exports.getUser = async id => {
   return userProfile(rows);
 };
 
+
 module.exports.getUserRows = async id => {
   const user = await client.query(`
 SELECT *

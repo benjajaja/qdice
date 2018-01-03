@@ -16,6 +16,7 @@ const db = require('./db');
 
 const uid = new ShortUniqueId();
 
+const officialGroups = process.env.BOT_OFFICIAL_GROUPS.split(',');
 
 console.log('connecting to mqtt: ' + process.env.MQTT_URL);
 var client = mqtt.connect(process.env.MQTT_URL, {
@@ -38,6 +39,13 @@ client.on('message', (topic, message) => {
           setScore(player.telegram, score);
         }
         break;
+      case 'countdown':
+        if (officialGroups.length) {
+          const { table } = event;
+          officialGroups.forEach(id =>
+            telegram.sendMessage(id, `A game countdown has started in table ${table}.`)
+          );
+        }
     }
   }
 });
