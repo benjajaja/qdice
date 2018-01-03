@@ -12,6 +12,21 @@ import Backend.MessageCodification exposing (..)
 import Snackbar exposing (toastCmd)
 
 
+findBestTable : Model -> Cmd Msg
+findBestTable model =
+    Http.send FindBestTable <|
+        Http.request
+            { method = "GET"
+            , headers = []
+            , url = (model.baseUrl ++ "/findtable")
+            , body = Http.emptyBody
+            , expect =
+                Http.expectJson <| tableNameDecoder
+            , timeout = Just 500
+            , withCredentials = False
+            }
+
+
 loadGlobalSettings : Model -> Cmd Msg
 loadGlobalSettings model =
     Http.send (GetGlobalSettings) <|

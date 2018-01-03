@@ -38,6 +38,7 @@ type Msg
     | Login String
     | SetLoginName String
     | UpdateUser LoggedUser String
+    | FindBestTable (Result Http.Error Table)
       -- game
     | BoardMsg Board.Msg
     | InputChat String
@@ -62,7 +63,8 @@ type StaticPage
 
 
 type Route
-    = GameRoute Table
+    = HomeRoute
+    | GameRoute Table
     | EditorRoute
     | StaticPageRoute StaticPage
     | NotFoundRoute

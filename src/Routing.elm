@@ -10,7 +10,7 @@ import Tables exposing (Table(..), decodeTable, encodeTable)
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map (GameRoute Melchor) top
+        [ map (HomeRoute) top
         , tableMatcher
         , map StaticPageRoute (s "static" </> staticPageMatcher)
         , map EditorRoute (s "editor")
@@ -66,6 +66,9 @@ navigateTo : Route -> Cmd Msg
 navigateTo route =
     Navigation.newUrl <|
         case route of
+            HomeRoute ->
+                ""
+
             GameRoute table ->
                 "#" ++ (encodeTable table)
 

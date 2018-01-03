@@ -22,7 +22,7 @@
 }
 .MainBody {
   flex: 2 1 auto;
-  background: rgb(240, 240, 240);
+  color: rgb(240, 240, 240);
   padding: 20px 8%;
 }
 

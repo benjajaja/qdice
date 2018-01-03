@@ -27,7 +27,7 @@ import Static.View
 import Editor.Editor
 import MyProfile.MyProfile
 import Backend
-import Backend.HttpCommands exposing (authenticate, loadMe, loadGlobalSettings)
+import Backend.HttpCommands exposing (authenticate, loadMe, loadGlobalSettings, findBestTable)
 import Backend.MqttCommands exposing (gameCommand)
 import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionStatus(..))
 import Tables exposing (Table(..), tableList)
@@ -90,7 +90,15 @@ init flags location =
                         )
 
                 _ ->
-                    ( backend, [ Cmd.none ] )
+                    ( backend
+                    , [ case route of
+                            HomeRoute ->
+                                findBestTable backend
+
+                            _ ->
+                                Cmd.none
+                      ]
+                    )
 
         model =
             { route = route
@@ -288,6 +296,19 @@ update msg model =
         Login name ->
             login model name
 
+        FindBestTable res ->
+            case res of
+                Err err ->
+                    let
+                        _ =
+                            Debug.log "error" err
+                    in
+                        --toast model "Could not find a good table for you"
+                        ( model, navigateTo <| GameRoute Melchor )
+
+                Ok table ->
+                    ( model, navigateTo <| GameRoute table )
+
         NavigateTo route ->
             model ! [ navigateTo route ]
 
@@ -309,6 +330,10 @@ update msg model =
                         |> (case newRoute of
                                 GameRoute table ->
                                     pipeUpdates Game.State.changeTable table
+
+                                HomeRoute ->
+                                    -- cmd is ignored because it is hardcode "none"
+                                    (\( m, c ) -> ( m, navigateTo <| GameRoute Melchor ))
 
                                 _ ->
                                     identity
@@ -541,6 +566,10 @@ header model =
 mainView : Model -> Html.Html Msg
 mainView model =
     case model.route of
+        HomeRoute ->
+            viewWrapper
+                [ Html.text "Searching for a table..." ]
+
         GameRoute table ->
             Game.View.view model
 
