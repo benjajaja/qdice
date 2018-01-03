@@ -545,24 +545,40 @@ mainView model =
             Game.View.view model
 
         StaticPageRoute page ->
-            Static.View.view model page
+            viewWrapper
+                [ Static.View.view model page
+                ]
 
         EditorRoute ->
-            Editor.Editor.view model
+            viewWrapper
+                [ Editor.Editor.view model ]
 
         NotFoundRoute ->
-            Html.text "404"
+            viewWrapper
+                [ Html.text "404" ]
 
         MyProfileRoute ->
-            case model.user of
-                Anonymous ->
-                    Html.text "404"
+            viewWrapper
+                [ case model.user of
+                    Anonymous ->
+                        Html.text "404"
 
-                Logged user ->
-                    MyProfile.MyProfile.view model user
+                    Logged user ->
+                        MyProfile.MyProfile.view model user
+                ]
 
         TokenRoute token ->
-            Html.text "Getting user ready..."
+            viewWrapper
+                [ Html.text "Getting user ready..." ]
+
+        ProfileRoute id ->
+            viewWrapper
+                [ Html.text "WIP" ]
+
+
+viewWrapper : List (Html.Html Msg) -> Html.Html Msg
+viewWrapper =
+    Html.div [ Html.Attributes.class "MainBody" ]
 
 
 mainViewSubscriptions : Model -> Sub Msg

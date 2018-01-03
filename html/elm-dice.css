@@ -15,11 +15,16 @@
 }
 .Main {
   background-color: #333;
-
   flex: 1 0 auto;
   padding: 0 0;
+  display: flex;
+  flex-direction: column;
 }
-
+.MainBody {
+  flex: 2 1 auto;
+  background: rgb(240, 240, 240);
+  padding: 20px 8%;
+}
 
 
 body.navigator-standalone {
@@ -255,9 +260,15 @@ body.navigator-standalone textarea {
   justify-content: space-between;
   flex-wrap: wrap;
 }
+.edGame__meta2 {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
 
 .gamelogContainer {
-  width: 100%;
+  flex: 2 1 auto;
   height: 162px;
   padding: 8px;
   margin-bottom: 5px;
@@ -269,6 +280,15 @@ body.navigator-standalone textarea {
   background-color: inherit;
 }
 .chatbox--line--turn, .chatbox--line--roll {
+}
+
+.edGame__user {
+  flex: 1 1 auto;
+  background: #fff;
+  margin-bottom: 5px;
+  margin-left: 4px;
+  padding: 8px;
+  background: rgb(240, 240, 240);
 }
 
 .chatboxContainer {

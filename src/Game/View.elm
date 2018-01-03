@@ -7,6 +7,7 @@ import Game.Footer exposing (footer)
 import Game.PlayerCard as PlayerCard
 import Html
 import Html.Attributes exposing (class, style)
+import Html.Events
 import Material
 import Material.Options as Options
 import Material.Button as Button
@@ -35,7 +36,10 @@ view model =
                     [ Html.div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view model) model.game.players
                     , gameChat model
                     ]
-                , gameLogOverlay model
+                , Html.div [ class "edGame__meta2" ]
+                    [ gameLogOverlay model
+                    , userCard model.user
+                    ]
                 , footer model
                 ]
             ]
@@ -172,6 +176,32 @@ gameChat model =
             "chatLog-"
                 ++ (toString model.game.table)
         ]
+
+
+userCard : Types.User -> Html.Html Types.Msg
+userCard user =
+    case user of
+        Types.Logged user ->
+            Html.div [ class "edGame__user", Html.Events.onClick <| NavigateTo <| Types.ProfileRoute user.id ] <|
+                [ Html.div
+                    [ class "edPlayerChip__picture"
+                    , style [ ( "width", "70px" ), ( "height", "70px" ) ]
+                    ]
+                    [ Html.div
+                        [ class "edPlayerChip__picture__image"
+                        , style
+                            [ ( "background-image", ("url(" ++ user.picture ++ ")") )
+                            , ( "background-size", "cover" )
+                            ]
+                        ]
+                        []
+                    ]
+                , Html.div [] [ Html.text <| user.name ]
+                , Html.div [] [ Html.text <| "✪ " ++ toString user.points ]
+                ]
+
+        Types.Anonymous ->
+            Html.text "not logged"
 
 
 isPlayerInGame : Model -> Bool

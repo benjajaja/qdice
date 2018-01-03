@@ -68,6 +68,7 @@ type Route
     | NotFoundRoute
     | MyProfileRoute
     | TokenRoute String
+    | ProfileRoute String
 
 
 type alias Model =

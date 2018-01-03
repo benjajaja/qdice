@@ -16,6 +16,7 @@ matchers =
         , map EditorRoute (s "editor")
         , map MyProfileRoute (s "me")
         , map TokenRoute (s "token" </> string)
+        , map ProfileRoute (s "profile" </> string)
         ]
 
 
@@ -87,3 +88,6 @@ navigateTo route =
 
             TokenRoute token ->
                 "#token/" ++ token
+
+            ProfileRoute id ->
+                "#profile/" ++ id
