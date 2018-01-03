@@ -40,6 +40,16 @@ module.exports.global = function(req, res, next) {
   next();
 };
 
+module.exports.findtable = (req, res, next) => {
+  res.send(200, R.pipe(
+    R.map(table => [table.name, table.players.length]),
+    R.tap(console.log),
+    R.reduce(R.maxBy(R.nth(1)), ['', -1]),
+    R.tap(console.log),
+    R.nth(0),
+  )(tables));
+};
+
 const getTablesStatus = module.exports.getTablesStatus = (tables) =>
   tables.map(table =>
     Object.assign(R.pick([

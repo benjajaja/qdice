@@ -52,6 +52,7 @@ server.use(jwt({
       req => req.path() === '/login',
       req => req.path() === '/register',
       req => req.path() === '/global',
+      req => req.path() === '/findtable',
     ])(req);
     return ok;
   }
@@ -65,6 +66,7 @@ server.post('/register', require('./user').register);
 
 
 server.get('/global', global.global);
+server.get('/findtable', global.findtable);
 
 
 
