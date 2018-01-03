@@ -128,26 +128,27 @@ bot.command('game', ctx => {
 
 bot.gameQuery(ctx => {
   console.log('----------gameQuery', ctx.update.callback_query.message);
-  telegram.getUserProfilePhotos(ctx.from.id, 0, 1)
-  .then(({ photos: [ [ photo ] ] }) => {
-    const { file_id } = photo;
-    return telegram.getFile(file_id);
-  })
-  .then(({ file_path }) => {
-    return `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${file_path}`;
-  })
-  .catch(e => {
-    console.error('could not get photo', e);
-    return 'https://telegram.org/img/t_logo.png';
-  })
-  .then(downloadAvatar(uid.randomUUID(16)))
-  .then(filename => {
-		return db.getUserFromAuthorization(db.NETWORK_TELEGRAM, ctx.from.id)
-		.then(user => {
-			console.log('got user', user);
-			if (user) {
-				return user;
-			}
+  db.getUserFromAuthorization(db.NETWORK_TELEGRAM, ctx.from.id)
+  .then(user => {
+    console.log('got user', user);
+    if (user) {
+      return user;
+    }
+
+    return telegram.getUserProfilePhotos(ctx.from.id, 0, 1)
+    .then(({ photos: [ [ photo ] ] }) => {
+      const { file_id } = photo;
+      return telegram.getFile(file_id);
+    })
+    .then(({ file_path }) => {
+      return `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${file_path}`;
+    })
+    .catch(e => {
+      console.error('could not get photo', e);
+      return 'https://telegram.org/img/t_logo.png';
+    })
+    .then(downloadAvatar(uid.randomUUID(16)))
+    .then(filename => {
       console.log('create tg user', ctx.from);
 			return db.createUser(db.NETWORK_TELEGRAM,
 				ctx.from.id,
