@@ -120,6 +120,11 @@ init flags location =
                 , maxNameLength = 20
                 , turnSeconds = 10
                 }
+            , staticPage =
+                { help =
+                    { tab = 0
+                    }
+                }
             }
 
         cmds =
@@ -162,6 +167,9 @@ update msg model =
 
         MyProfileMsg msg ->
             MyProfile.MyProfile.update model msg
+
+        StaticPageMsg msg ->
+            Static.View.update model msg
 
         GetGlobalSettings res ->
             case res of

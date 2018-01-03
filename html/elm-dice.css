@@ -28,6 +28,9 @@ body {
   color: rgb(240, 240, 240);
   padding: 20px 8%;
 }
+.MainBody img {
+  max-width: 100%;
+}
 
 
 body.navigator-standalone {

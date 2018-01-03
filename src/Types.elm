@@ -13,6 +13,7 @@ import MyProfile.Types
 import Backend.Types
 import Board exposing (Msg)
 import Tables exposing (Table(..))
+import Static.Types
 
 
 type Msg
@@ -39,6 +40,7 @@ type Msg
     | SetLoginName String
     | UpdateUser LoggedUser String
     | FindBestTable (Result Http.Error Table)
+    | StaticPageMsg Static.Types.Msg
       -- game
     | BoardMsg Board.Msg
     | InputChat String
@@ -90,6 +92,10 @@ type alias Model =
     , loginName : String
     , showLoginDialog : LoginDialogStatus
     , settings : GlobalSettings
+    , staticPage :
+        { help :
+            { tab : Int }
+        }
     }
 
 
