@@ -55,6 +55,7 @@
     "elm-webpack-loader": "3.0.6",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "0.9.0",
+    "ga-lite": "^2.0.1",
     "html-webpack-plugin": "^2.30.1",
     "materialize-css": "0.97.7",
     "mqtt": "^2.1.3",

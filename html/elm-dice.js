@@ -35,6 +35,12 @@ setTimeout(function() {
       return false; // let built in handler log it too
     };
     window.dialogPolyfill = require('dialog-polyfill');
+
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== 'lvh.me') {
+      const galite = require('ga-lite');
+      galite('create', 'UA-111861514-1', 'auto');
+      galite('send', 'pageview');
+    }
   });
 
 
