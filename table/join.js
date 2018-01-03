@@ -28,7 +28,7 @@ const Player = (user, clientId) => ({
   
 module.exports = (user, table, clientId) => {
   if (table.status === STATUS_PLAYING) {
-    return publish.clientError(clientId, new Error('not playing'));
+    return publish.clientError(clientId, new Error('already playing'));
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
@@ -38,6 +38,11 @@ module.exports = (user, table, clientId) => {
   table.players.push(Player(user, clientId));
   if (table.status === STATUS_FINISHED) {
     table.status = STATUS_PAUSED;
+    table.lands = table.lands.map(land => Object.assign({}, land, {
+      points: 1,
+      color: -1,
+    }));
+    table.turnCount = 1;
     tick.start(table);
   }
 

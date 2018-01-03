@@ -42,7 +42,7 @@ const Table = config => ({
   lands: [],
   stackSize: config.stackSize,
   playerStartCount: 0,
-  turnCount: 0,
+  turnCount: 1,
 });
 const loadLands = table => {
   const [ lands, adjacency, name ] = maps.loadMap(table.tag);
