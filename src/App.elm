@@ -399,11 +399,10 @@ update msg model =
             in
                 case boardMsg of
                     Board.Types.ClickLand land ->
-                        let
-                            ( model, cmd ) =
-                                Game.State.clickLand model_ land
-                        in
-                            ( model, cmd )
+                        Game.State.clickLand model_ land
+
+                    Board.Types.HoverLand land ->
+                        Game.State.hoverLand model_ land
 
                     _ ->
                         model_ ! [ Cmd.map BoardMsg newBoardMsg ]

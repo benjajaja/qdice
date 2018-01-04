@@ -305,6 +305,56 @@ clickLand model land =
                 { model | game = game_ } ! [ cmd ]
 
 
+hoverLand : Types.Model -> Land.Land -> ( Types.Model, Cmd Types.Msg )
+hoverLand model land =
+    case model.game.player of
+        Nothing ->
+            ( model, Cmd.none )
+
+        Just player ->
+            let
+                hovered =
+                    if not model.game.hasTurn then
+                        Nothing
+                    else
+                        case model.game.board.move of
+                            Board.Types.Idle ->
+                                if land.points > 1 && land.color == player.color then
+                                    Just land
+                                else
+                                    Nothing
+
+                            Board.Types.From from ->
+                                if land == from then
+                                    -- same land: deselect
+                                    Just land
+                                else if land.color == player.color then
+                                    -- same color and...
+                                    if land.points > 1 then
+                                        -- could move: select
+                                        Just land
+                                    else
+                                        -- could not move: do nothing
+                                        Nothing
+                                else if not <| Land.isBordering land from then
+                                    -- not bordering: do nothing
+                                    Nothing
+                                else
+                                    -- is bordering, different land and color: attack
+                                    Just land
+
+                            Board.Types.FromTo from to ->
+                                Nothing
+
+                game =
+                    model.game
+
+                board =
+                    game.board
+            in
+                { model | game = { game | board = { board | hovered = hovered } } } ! []
+
+
 updateTable : Types.Model -> Table -> Backend.Types.TableMessage -> ( Types.Model, Cmd Types.Msg )
 updateTable model table msg =
     if table == model.game.table then

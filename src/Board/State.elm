@@ -16,7 +16,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         HoverLand land ->
-            { model | hovered = Just land } ! []
+            model ! []
 
         UnHoverLand land ->
             case model.hovered of
@@ -73,7 +73,7 @@ updateLands model update move =
                 Dict.empty
                 landUpdates
     in
-        { model | map = map_, move = move_, animations = animations }
+        { model | map = map_, move = move_, animations = animations, hovered = Nothing }
 
 
 updateLand : Land.Layout -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, Animation.State ) )
