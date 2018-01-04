@@ -7,6 +7,7 @@ type Table
     | Serrano
     | Avocado
     | DeLucía
+    | Sabicas
 
 
 tableList : List Table
@@ -32,6 +33,9 @@ decodeTable name =
         "DeLucía" ->
             Just DeLucía
 
+        "Sabicas" ->
+            Just Sabicas
+
         _ ->
             Nothing
 
@@ -53,3 +57,6 @@ encodeTable table =
 
         DeLucía ->
             "DeLucía"
+
+        Sabicas ->
+            "Sabicas"
