@@ -93,3 +93,20 @@ WHERE id = $2`, [score, id]);
   return await module.exports.getUser(id);
 };
 
+module.exports.leaderBoardTop = async (page = 1) => {
+  const limit = 10;
+  const result = await client.query(`
+SELECT id, name, picture, points, level, ROW_NUMBER () OVER (ORDER BY points DESC) AS rank
+FROM users
+ORDER BY points DESC
+LIMIT $1 OFFSET $2`,
+    [limit, limit * Math.max(0, page - 1)]
+  );
+  return result.rows.map(row => Object.assign(row, {
+    id: row.id.toString(),
+    points: parseInt(row.points, 10),
+    rank: parseInt(row.rank, 10),
+    picture: row.picture || '',
+  }));
+};
+

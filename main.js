@@ -5,6 +5,7 @@ const jwt = require('restify-jwt-community');
 const mqtt = require('mqtt');
 
 const global = require('./global');
+const leaderboard = require('./leaderboard');
 const publish = require('./table/publish');
 
 const server = restify.createServer();
@@ -53,6 +54,7 @@ server.use(jwt({
       req => req.path() === '/register',
       req => req.path() === '/global',
       req => req.path() === '/findtable',
+      req => req.path() === '/leaderboard',
     ])(req);
     return ok;
   }
@@ -67,6 +69,7 @@ server.post('/register', require('./user').register);
 
 server.get('/global', global.global);
 server.get('/findtable', global.findtable);
+server.get('/leaderboard', leaderboard.leaderboard);
 
 
 
