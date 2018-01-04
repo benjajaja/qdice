@@ -443,12 +443,11 @@ update msg model =
                 game_ =
                     { game | chatInput = "" }
             in
-                { model | game = game_ }
-                    ! [ gameCommand model.backend model.game.table <| Game.Types.Chat string
-                        --Backend.Types.Chat (Types.getUsername model) model.game.chatInput
-                        --|> TableMsg model.game.table
-                        --|> Backend.publish
-                      ]
+                if string /= "" then
+                    { model | game = game_ }
+                        ! [ gameCommand model.backend model.game.table <| Game.Types.Chat string ]
+                else
+                    ( model, Cmd.none )
 
         GameCmd playerAction ->
             model ! [ gameCommand model.backend model.game.table playerAction ]
