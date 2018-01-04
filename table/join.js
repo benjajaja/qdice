@@ -53,11 +53,14 @@ module.exports = (user, table, clientId) => {
   } else {
     if (table.players.length >= 2 &&
       table.players.length >= table.startSlots) {
+      if (table.gameStart === 0) {
+        publish.event({
+          type: 'countdown',
+          table: table.name,
+          players: table.players.map(R.prop('name')),
+        });
+      }
       table.gameStart = Math.floor(Date.now() / 1000) + GAME_START_COUNTDOWN;
-      publish.event({
-        type: 'countdown',
-        table: table.name,
-      });
     }
     publish.tableStatus(table);
   }
