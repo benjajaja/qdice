@@ -21,7 +21,7 @@ module.exports = {
       name: 'De Lucía',
       playerSlots: 7,
       startSlots: 3,
-      points: 0,
+      points: 100,
       stackSize: 8,
     },
     {
@@ -29,6 +29,14 @@ module.exports = {
       name: 'Serrano',
       playerSlots: 7,
       startSlots: 2,
+      points: 0,
+      stackSize: 8,
+    },
+    {
+      tag: 'Sabicas',
+      name: 'Sabicas',
+      playerSlots: 9,
+      startSlots: 4,
       points: 100,
       stackSize: 8,
     },
