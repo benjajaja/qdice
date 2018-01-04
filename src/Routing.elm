@@ -5,6 +5,7 @@ import Navigation exposing (Location)
 import UrlParser exposing (..)
 import Types exposing (..)
 import Tables exposing (Table(..), decodeTable, encodeTable)
+import Backend.HttpCommands exposing (findBestTable)
 
 
 matchers : Parser (Route -> a) a
@@ -17,6 +18,7 @@ matchers =
         , map MyProfileRoute (s "me")
         , map TokenRoute (s "token" </> string)
         , map ProfileRoute (s "profile" </> string)
+        , map LeaderBoardRoute (s "leaderboard")
         ]
 
 
@@ -67,7 +69,7 @@ navigateTo route =
     Navigation.newUrl <|
         case route of
             HomeRoute ->
-                ""
+                "#"
 
             GameRoute table ->
                 "#" ++ (encodeTable table)
@@ -94,3 +96,19 @@ navigateTo route =
 
             ProfileRoute id ->
                 "#profile/" ++ id
+
+            LeaderBoardRoute ->
+                "#leaderboard"
+
+
+routeEnterCmd : Model -> Route -> Cmd Msg
+routeEnterCmd model route =
+    case route of
+        LeaderBoardRoute ->
+            Debug.log "enter hiscore" Cmd.none
+
+        HomeRoute ->
+            findBestTable model.backend
+
+        _ ->
+            Debug.log ("enter " ++ toString route) Cmd.none

@@ -2,6 +2,7 @@ module Backend.Types exposing (..)
 
 import Tables exposing (Table)
 import Game.Types
+import Time
 
 
 type alias Model =
@@ -10,6 +11,7 @@ type alias Model =
     , clientId : Maybe ClientId
     , subscribed : List Topic
     , status : ConnectionStatus
+    , findTableTimeout : Time.Time
     }
 
 

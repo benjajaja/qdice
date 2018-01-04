@@ -22,7 +22,7 @@ findBestTable model =
             , body = Http.emptyBody
             , expect =
                 Http.expectJson <| tableNameDecoder
-            , timeout = Just 500
+            , timeout = Just model.findTableTimeout
             , withCredentials = False
             }
 

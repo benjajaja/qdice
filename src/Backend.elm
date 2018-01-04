@@ -63,13 +63,18 @@ baseUrl location =
         location.protocol ++ "//" ++ "api." ++ location.hostname
 
 
-init : Location -> Table -> ( Model, Cmd Msg )
-init location table =
+init : Location -> Table -> Bool -> ( Model, Cmd Msg )
+init location table isTelegram =
     ( { baseUrl = baseUrl location
       , jwt = Nothing
       , clientId = Nothing
       , subscribed = []
       , status = Offline
+      , findTableTimeout =
+            if isTelegram then
+                2000
+            else
+                500
       }
     , connect
     )

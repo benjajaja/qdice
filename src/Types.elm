@@ -73,6 +73,7 @@ type Route
     | MyProfileRoute
     | TokenRoute String
     | ProfileRoute String
+    | LeaderBoardRoute
 
 
 type alias Model =

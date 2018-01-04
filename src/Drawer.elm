@@ -42,7 +42,8 @@ drawer user =
                     [ Options.onClick <| DrawerNavigateTo path ]
                     [ text label ]
             )
-            [ ( "Play", GameRoute Melchor )
+            [ ( "Play", HomeRoute )
+            , ( "Leaderboard", LeaderBoardRoute )
             , ( "My profile", MyProfileRoute )
             , ( "Help", StaticPageRoute Help )
             , ( "About", StaticPageRoute About )

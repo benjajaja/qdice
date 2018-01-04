@@ -70,7 +70,7 @@ init flags location =
             Editor.Editor.init
 
         ( backend, backendCmd ) =
-            Backend.init location table
+            Backend.init location table flags.isTelegram
 
         ( oauth, oauthCmds ) =
             MyOauth.init location
@@ -138,6 +138,7 @@ init flags location =
                       ]
                     , oauthCmds
                     , [ loadGlobalSettings backend ]
+                    , [ Routing.routeEnterCmd model route ]
                     ]
     in
         ( model, cmds )
@@ -330,19 +331,20 @@ update msg model =
 
                 model_ =
                     { model | route = newRoute }
+
+                cmd =
+                    Routing.routeEnterCmd model_ newRoute
             in
                 if newRoute == model.route then
                     model ! []
                 else
-                    ( model_, Cmd.none )
+                    ( model_, cmd )
                         |> (case newRoute of
                                 GameRoute table ->
                                     pipeUpdates Game.State.changeTable table
 
-                                HomeRoute ->
-                                    -- cmd is ignored because it is hardcode "none"
-                                    (\( m, c ) -> ( m, navigateTo <| GameRoute Melchor ))
-
+                                --HomeRoute ->
+                                --(\( m, c ) -> m ! [ navigateTo <| GameRoute Melchor, c ])
                                 _ ->
                                     identity
                            )
@@ -610,6 +612,10 @@ mainView model =
         ProfileRoute id ->
             viewWrapper
                 [ Html.text "WIP" ]
+
+        LeaderBoardRoute ->
+            viewWrapper
+                [ Html.text "HISCORE" ]
 
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg
