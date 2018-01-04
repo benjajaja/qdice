@@ -79,7 +79,7 @@ module.exports = env => ({
     new ExtractTextPlugin("elm-dice.[hash].css"),
     new CopyWebpackPlugin([
       { from: 'html/manifest.json' },
-      { from: 'html/favicons', to: 'favicons'},
+      { from: 'html/favicons-2', to: 'favicons-2'},
       { from: 'html/favicon.ico' },
       { from: 'html/die.svg' },
       { from: 'html/board_header.svg' },

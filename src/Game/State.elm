@@ -110,9 +110,7 @@ updateTableStatus model status =
                     False
 
                 Just player ->
-                    hasTurn
-                        && indexOf player game.players
-                        /= game.turnIndex
+                    hasTurn && not game.hasTurn
 
         hasLostTurn =
             case player of
@@ -120,10 +118,7 @@ updateTableStatus model status =
                     False
 
                 Just player ->
-                    hasTurn
-                        == False
-                        && indexOf player game.players
-                        == game.turnIndex
+                    not hasTurn && game.hasTurn
 
         move =
             if hasLostTurn then
