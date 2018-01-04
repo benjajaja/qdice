@@ -12,7 +12,7 @@ const grid = Grid({
 const loadMap = rawMap => {
   //const rawMap = fs.readFileSync('./maps/' + tableName + '.emoji')
     //.toString().split('\n').filter(line => line !== '');
-  const regex = new RegExp('〿|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]', 'gi');
+  const regex = new RegExp('〿|\\u30C3|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]', 'gi');
 
   const rows = rawMap.map(line => {
     const results = [];
@@ -27,6 +27,7 @@ const loadMap = rawMap => {
   //const maxWidth = rows.map(row => row.length).reduce((max, width) => Math.max(max, width));
   const lands = R.uniq(rows.reduce(R.concat, []))
     .filter(R.complement(R.equals('〿')))
+    .filter(R.complement(R.equals('ｯ')))
     .filter(R.complement(R.equals('\u3000')))
     .map(emoji => ({
       emoji: emoji,
