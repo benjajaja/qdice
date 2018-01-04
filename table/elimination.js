@@ -2,7 +2,7 @@ const {
   ELIMINATION_REASON_WIN,
 } = require('../constants');
 const publish = require('./publish');
-const { playerPositions, positionScore } = require('../helpers');
+const { playerPositions, positionScore, tablePoints } = require('../helpers');
 const db = require('../db');
 
 
@@ -11,7 +11,7 @@ module.exports = (table, player, reason, source, points) => {
     ? 1
     : table.players.length;
 
-  const score = player.score + positionScore(table.points || 100)(table.playerStartCount)(position);
+  const score = player.score + positionScore(tablePoints(table))(table.playerStartCount)(position);
 
   console.log('ELIMINATION-------------');
   console.log(position, player);

@@ -1,7 +1,7 @@
 const R = require('ramda');
 
 const maps = require('../maps');
-const { groupedPlayerPositions, positionScore } = require('../helpers');
+const { groupedPlayerPositions, positionScore, tablePoints } = require('../helpers');
 
 module.exports.serializeTable = table => {
 
@@ -30,7 +30,7 @@ const serializePlayer = module.exports.serializePlayer = table => {
 
 const computePlayerDerived = table => {
   const positions = groupedPlayerPositions(table);
-  const getScore = positionScore(table.points || 100)(table.playerStartCount);
+  const getScore = positionScore(tablePoints(table))(table.playerStartCount);
   return player => {
     const lands = table.lands.filter(R.propEq('color', player.color));
     const connectedLands = maps.countConnectedLands(table)(player.color);

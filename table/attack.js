@@ -9,7 +9,7 @@ const {
   ELIMINATION_REASON_DIE,
   ELIMINATION_REASON_WIN,
 } = require('../constants');
-const { findLand, hasTurn } = require('../helpers');
+const { findLand, hasTurn, tablePoints } = require('../helpers');
 const publish = require('./publish');
 const endGame = require('./endGame');
 const elimination = require('./elimination');
@@ -56,10 +56,10 @@ module.exports = (user, table, clientId, [emojiFrom, emojiTo]) => {
           const turnPlayer = table.players[table.turnIndex];
           elimination(table, loser, ELIMINATION_REASON_DIE, {
             player: serializePlayer(table)(turnPlayer),
-            points: (table.points || 100) / 2,
+            points: tablePoints(table) / 2,
           });
           table.players = table.players.filter(R.complement(R.equals(loser)));
-          turnPlayer.score += (table.points || 100) / 2;
+          turnPlayer.score += tablePoints(table) / 2;
           if (table.players.length === 1) {
             endGame(table);
           }

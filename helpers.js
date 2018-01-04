@@ -43,10 +43,11 @@ module.exports.groupedPlayerPositions = table => {
 
 
 module.exports.playerPositions = table => {
-  //const positions = R.sort((a, b) => {
-  //})(table.players)
-  //.map((player, index) => [player.id, index + 1]);
-
   return player => R.find(R.propEq(0, player.id), positions)[1];
 };
+
+module.exports.tablePoints = table =>
+  table.points === 0
+    ? 50
+    : table.points;
 
