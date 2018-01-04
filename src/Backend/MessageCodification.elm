@@ -157,6 +157,14 @@ decodeClientMessage message =
                         Err err ->
                             Err err
 
+                "error" ->
+                    case decodeString (field "payload" Dec.string) message of
+                        Ok error ->
+                            Ok <| ErrorToast <| "Server error: " ++ error
+
+                        Err err ->
+                            Ok <| ErrorToast <| "💣 Server-client error: " ++ err
+
                 _ ->
                     Err <| "unkown client message type: " ++ mtype
 
