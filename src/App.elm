@@ -39,6 +39,7 @@ import LoginDialog exposing (loginDialog, login)
 import Helpers exposing (pipeUpdates)
 import LeaderBoard.State
 import LeaderBoard.View
+import GA exposing (ga)
 
 
 type alias Flags =
@@ -247,7 +248,9 @@ update msg model =
                         backend_ =
                             { backend | jwt = Just token }
                     in
-                        { model | user = Logged profile, backend = backend_ } ! []
+                        { model | user = Logged profile, backend = backend_ }
+                            ! [ ga [ "send", "event", "auth", "GetProfile" ]
+                              ]
 
         GetLeaderBoard res ->
             LeaderBoard.State.setLeaderBoard model res
@@ -274,10 +277,13 @@ update msg model =
                     { backend | jwt = Just token }
             in
                 { model | backend = backend_ }
-                    ! [ loadMe backend_ ]
+                    ! [ loadMe backend_, ga [ "send", "event", "auth", "LoadToken" ] ]
 
         Authenticate code doJoin ->
-            model ! [ authenticate model.backend code doJoin ]
+            model
+                ! [ authenticate model.backend code doJoin
+                  , ga [ "send", "event", "auth", "Authenticate" ]
+                  ]
 
         Logout ->
             let
@@ -299,6 +305,7 @@ update msg model =
                             Nothing ->
                                 Cmd.none
                         )
+                      , ga [ "send", "event", "auth", "Logout" ]
                       ]
 
         SetLoginName text ->

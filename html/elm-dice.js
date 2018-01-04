@@ -20,6 +20,7 @@ if (window.navigator.standalone === true) {
   viewportmeta.content = 'user-scalable=NO, width=device-width, initial-scale=1.0'
 }
 
+var ga = function(){ console.debug('ga', arguments); };
 setTimeout(function() {
   var Elm = require('../src/App');
 
@@ -28,18 +29,20 @@ setTimeout(function() {
     isTelegram: isTelegram,
   });
 
+
   app.ports.started.subscribe(function(msg) {
     document.getElementById('loading-indicator').remove();
     window.onerror = function(messageOrEvent, source, lineno, colno, error) {
+      ga('send', 'exception', { exDescription: error.toString() });
       window.alert(messageOrEvent.toString());
       return false; // let built in handler log it too
     };
     window.dialogPolyfill = require('dialog-polyfill');
 
     if (window.location.hostname !== 'localhost' && window.location.hostname !== 'lvh.me') {
-      const galite = require('ga-lite');
-      galite('create', 'UA-111861514-1', 'auto');
-      galite('send', 'pageview');
+      ga = require('ga-lite');
+      ga('create', 'UA-111861514-1', 'auto');
+      ga('send', 'pageview');
     }
   });
 
@@ -125,37 +128,30 @@ setTimeout(function() {
     });
     app.ports.mqttPublish.subscribe(function(args) {
       worker.postMessage({type: 'publish', payload: args});
+      logPublish(args);
     });
   });
 
 
+  app.ports.ga.subscribe(function(args) {
+    ga.apply(null, args);
+  });
+
   global.edice = app;
 });
 
-//function createServiceWorker(cb) {
-  //if ('serviceWorker' in navigator) {
-    //var registerServiceWorker = require('serviceworker-loader!./elm-dice-serviceworker.js');
-    //registerServiceWorker({
-      //scope: '/',
-    //}).then(function() {
-        //console.log('◕‿◕');
-        //navigator.serviceWorker.ready.then(function() {
-          //if (navigator.serviceWorker.controller) {
-            //cb({
-              //postMessage: function(message) {
-                //navigator.serviceWorker.controller.postMessage(message);
-              //},
-              //addEventListener: function(_, listener) {
-                //navigator.serviceWorker.onmessage = listener;
-              //},
-            //});
-          //} else {
-            //console.log('service worker controller is null');
-          //}
-        //});
-    //}).catch(function(err) {
-      //console.log('ಠ_ಠ', err);
-    //});
-  //}
-//}
+var logPublish = function(args) {
+  try {
+    var topic = args[0];
+    var message = args[1];
+    var json = JSON.parse(message);
+    ga('send', 'event', 'game', json.type, topic);
+    switch (json.type) {
+      case 'Enter':
+        break;
+    }
+  } catch (e) {
+    console.error('could not log pub', e);
+  }
+};
 
