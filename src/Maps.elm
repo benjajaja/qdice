@@ -29,7 +29,7 @@ type alias Line =
 
 emojiRegex : Regex.Regex
 emojiRegex =
-    Regex.regex "〿|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]"
+    Regex.regex "〿|ｯ|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]"
 
 
 consoleLogMap : Land.Map -> Cmd msg
@@ -72,7 +72,7 @@ emojisToMap raw =
             List.maximum widths |> Maybe.withDefault 0
 
         lands =
-            List.map (List.filter (\t -> Tuple.second t /= Land.emptyEmoji && Tuple.second t /= "〿")) lines
+            List.map (List.filter isEmptyEmoji) lines
                 |> foldLines
                 |> List.foldr dedupeEmojis []
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)
@@ -98,6 +98,12 @@ foldChars ( ( row, col ), char ) accum =
         accum
     else
         (EmojiLand [ Land.offsetToHex ( row, col ) ] char) :: accum
+
+
+isEmptyEmoji : ( a, String ) -> Bool
+isEmptyEmoji t =
+    Tuple.second t
+        |> (\c -> c /= Land.emptyEmoji && c /= "〿" && c /= "ｯ")
 
 
 dedupeEmojis : EmojiLand -> List EmojiLand -> List EmojiLand
@@ -157,7 +163,7 @@ offsetCharRow : Int -> List String -> List String
 offsetCharRow row line =
     case row % 2 of
         0 ->
-            "〿" :: line
+            "ｯ" :: line
 
         _ ->
             line
