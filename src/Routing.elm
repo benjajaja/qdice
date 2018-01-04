@@ -5,7 +5,7 @@ import Navigation exposing (Location)
 import UrlParser exposing (..)
 import Types exposing (..)
 import Tables exposing (Table(..), decodeTable, encodeTable)
-import Backend.HttpCommands exposing (findBestTable)
+import Backend.HttpCommands exposing (findBestTable, leaderBoard)
 
 
 matchers : Parser (Route -> a) a
@@ -105,7 +105,7 @@ routeEnterCmd : Model -> Route -> Cmd Msg
 routeEnterCmd model route =
     case route of
         LeaderBoardRoute ->
-            Debug.log "enter hiscore" Cmd.none
+            leaderBoard model.backend
 
         HomeRoute ->
             findBestTable model.backend

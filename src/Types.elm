@@ -34,6 +34,7 @@ type Msg
     | Authenticate String Bool
     | GetToken Bool (Result Http.Error String)
     | GetProfile (Result Http.Error ( LoggedUser, String ))
+    | GetLeaderBoard (Result Http.Error ( String, List Profile ))
     | Logout
     | ShowLogin LoginDialogStatus
     | Login String
@@ -96,6 +97,10 @@ type alias Model =
     , staticPage :
         { help :
             { tab : Int }
+        , leaderBoard :
+            { month : String
+            , top : List Profile
+            }
         }
     }
 
@@ -152,3 +157,13 @@ type LoginDialogStatus
     = LoginShow
     | LoginShowJoin
     | LoginHide
+
+
+type alias Profile =
+    { id : UserId
+    , name : Username
+    , rank : Int
+    , picture : String
+    , points : Int
+    , level : Int
+    }

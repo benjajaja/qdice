@@ -65,3 +65,10 @@ loadMe model =
             , timeout = Nothing
             , withCredentials = False
             }
+
+
+leaderBoard : Model -> Cmd Msg
+leaderBoard model =
+    Http.send (GetLeaderBoard) <|
+        Http.get (model.baseUrl ++ "/leaderboard") <|
+            leaderBoardDecoder

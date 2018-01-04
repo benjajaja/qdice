@@ -1,9 +1,10 @@
 module Backend.Decoding exposing (..)
 
-import Types exposing (LoggedUser)
+import Types exposing (LoggedUser, Profile)
 import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (TableStatus, Player, PlayerGameStats)
 import Board.Types
+import LeaderBoard.Types exposing (LeaderBoardModel)
 import Land exposing (Color, playerColor)
 import Json.Decode exposing (int, string, float, bool, list, Decoder, map, index, succeed, fail, field, nullable, andThen)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
@@ -14,8 +15,8 @@ tokenDecoder =
     string
 
 
-profileDecoder : Decoder LoggedUser
-profileDecoder =
+userDecoder : Decoder LoggedUser
+userDecoder =
     decode LoggedUser
         |> required "id" string
         |> required "name" string
@@ -27,7 +28,7 @@ profileDecoder =
 
 meDecoder : Decoder ( LoggedUser, String )
 meDecoder =
-    Json.Decode.map2 (,) (index 0 profileDecoder) (index 1 tokenDecoder)
+    Json.Decode.map2 (,) (index 0 userDecoder) (index 1 tokenDecoder)
 
 
 tableNameDecoder : Decoder Table
@@ -207,3 +208,21 @@ tableInfoDecoder =
         |> required "status" gameStatusDecoder
         |> required "landCount" int
         |> required "stackSize" int
+
+
+profileDecoder : Decoder Profile
+profileDecoder =
+    decode Profile
+        |> required "id" string
+        |> required "name" string
+        |> required "rank" int
+        |> required "picture" string
+        |> required "points" int
+        |> required "level" int
+
+
+leaderBoardDecoder : Decoder ( String, List Profile )
+leaderBoardDecoder =
+    Json.Decode.map2 (,)
+        (field "month" string)
+        (field "top" (list profileDecoder))

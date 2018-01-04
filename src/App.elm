@@ -37,6 +37,8 @@ import Footer exposing (footer)
 import Drawer exposing (drawer)
 import LoginDialog exposing (loginDialog, login)
 import Helpers exposing (pipeUpdates)
+import LeaderBoard.State
+import LeaderBoard.View
 
 
 type alias Flags =
@@ -102,7 +104,7 @@ init flags location =
 
         model =
             { route = route
-            , mdl = Debug.log "mdl" Material.model
+            , mdl = Material.model
             , oauth = oauth
             , game = game
             , editor = editor
@@ -123,6 +125,10 @@ init flags location =
             , staticPage =
                 { help =
                     { tab = 0
+                    }
+                , leaderBoard =
+                    { month = "This month"
+                    , top = []
                     }
                 }
             }
@@ -242,6 +248,9 @@ update msg model =
                             { backend | jwt = Just token }
                     in
                         { model | user = Logged profile, backend = backend_ } ! []
+
+        GetLeaderBoard res ->
+            LeaderBoard.State.setLeaderBoard model res
 
         UpdateUser profile token ->
             let
@@ -615,7 +624,7 @@ mainView model =
 
         LeaderBoardRoute ->
             viewWrapper
-                [ Html.text "HISCORE" ]
+                [ LeaderBoard.View.view model ]
 
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg
