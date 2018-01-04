@@ -102,7 +102,7 @@ client.on('message', async (topic, message) => {
       );
       await command(user, clientId, table, type, payload);
     } catch (e) {
-      publish.clientError(clientId, e.toString());
+      publish.clientError(clientId, e);
     }
   } catch (e) {
     console.error('error parsing message', e);

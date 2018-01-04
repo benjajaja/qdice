@@ -153,6 +153,9 @@ module.exports.clientError = (clientId, error) => {
       }
     }
   );
+  if (!(error instanceof Error)) {
+    console.trace('client error must be Error', error);
+  }
 };
 
 module.exports.chat = (table, user, message) => {

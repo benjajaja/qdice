@@ -18,7 +18,7 @@ module.exports = (table, player, reason, source, points) => {
   db.addScore(player.id, score)
   .then(publish.userUpdate(player.clientId))
   .catch(error => {
-    publish.clientError(player.clientId, `You earned ${score} points, but I failed to add them to your profile.`);
+    publish.clientError(player.clientId, new Error(`You earned ${score} points, but I failed to add them to your profile.`));
     console.error('error addScore', error);
   });
 

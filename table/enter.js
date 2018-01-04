@@ -10,11 +10,13 @@ module.exports = async (user, table, clientId) => {
     table: table.name,
     userId: user ? user.id : null,
   });
-  const player = R.find(R.propEq('id', user.id), table.players);
-  if (player) {
-    if (player.clientId !== clientId) {
-      console.log(`player clientId changed ${player.clientId} -> ${clientId}`);
-      player.clientId = clientId;
+  if (user) {
+    const player = R.find(R.propEq('id', user.id), table.players);
+    if (player) {
+      if (player.clientId !== clientId) {
+        console.log(`player clientId changed ${player.clientId} -> ${clientId}`);
+        player.clientId = clientId;
+      }
     }
   }
 };
