@@ -70,7 +70,7 @@ updateLands model update move =
                             dict
                             diceAnimations
                 )
-                model.animations
+                Dict.empty
                 landUpdates
     in
         { model | map = map_, move = move_, animations = animations }
@@ -110,18 +110,18 @@ updateLand layout updates land =
                                 in
                                     ( index
                                     , Animation.interrupt
-                                        [ Animation.wait (100 * index)
-                                        , Animation.to
+                                        [ Animation.wait (10 * index)
+                                        , Animation.toWith
+                                            (Animation.easing
+                                                { duration = 100
+                                                , ease = (\x -> x ^ 2)
+                                                }
+                                            )
                                             [ Animation.y <| y ]
                                         ]
                                       <|
-                                        Animation.styleWith
-                                            (Animation.spring
-                                                { stiffness = 210
-                                                , damping = 30
-                                                }
-                                            )
-                                            [ Animation.y (y - 50) ]
+                                        Animation.style
+                                            [ Animation.y <| y - 10 * index ]
                                     )
                             )
                         <|
