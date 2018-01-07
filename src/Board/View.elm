@@ -40,8 +40,11 @@ board map pathCache animations selected hovered =
         ( layout, sWidth, sHeight ) =
             getLayout map
 
-        landF =
-            Html.Lazy.lazy <| landElement layout pathCache animations selected hovered
+        landShapeF =
+            Html.Lazy.lazy <| landElement layout pathCache selected hovered
+
+        landDiesF =
+            Html.Lazy.lazy <| landDies layout animations
     in
         Html.div [ class "edBoard" ]
             [ Svg.svg
@@ -52,7 +55,8 @@ board map pathCache animations selected hovered =
                 , class "edBoard--svg"
                 ]
                 (List.concat
-                    [ List.map landF map.lands
+                    [ List.map landShapeF map.lands
+                    , List.map landDiesF map.lands
                     , [ Svg.defs []
                             [ Svg.radialGradient [ id "editorGradient" ]
                                 [ Svg.stop [ offset "0.8", stopColor "gold" ] []
@@ -81,8 +85,8 @@ board map pathCache animations selected hovered =
             ]
 
 
-landElement : Layout -> PathCache -> Animations -> List Land.Land -> Maybe Land -> Land.Land -> Svg Msg
-landElement layout pathCache animations selected hovered land =
+landElement : Layout -> PathCache -> List Land.Land -> Maybe Land -> Land.Land -> Svg Msg
+landElement layout pathCache selected hovered land =
     let
         isSelected =
             List.member land selected
@@ -95,15 +99,15 @@ landElement layout pathCache animations selected hovered land =
                 Nothing ->
                     False
     in
-        g
-            [ onClick (ClickLand land)
-            , onMouseOver (HoverLand land)
-            , onMouseOut (UnHoverLand land)
-            ]
-            [ polygon (polygonAttrs layout pathCache isSelected isHovered land) []
-            , landDies layout animations land
-            , landText layout land
-            ]
+        polygon
+            (List.append
+                (polygonAttrs layout pathCache isSelected isHovered land)
+                [ onClick (ClickLand land)
+                , onMouseOver (HoverLand land)
+                , onMouseOut (UnHoverLand land)
+                ]
+            )
+            []
 
 
 polygonAttrs : Layout -> PathCache -> Bool -> Bool -> Land.Land -> List (Svg.Attribute Msg)
