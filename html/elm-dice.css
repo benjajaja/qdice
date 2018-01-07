@@ -375,6 +375,8 @@ body.navigator-standalone textarea {
     padding: 0;
     min-width: auto;
 }
+.chatbox--actions-predefined {
+}
 .chatbox--line--chat {}
 .chatbox--line--join {
   color: #666;

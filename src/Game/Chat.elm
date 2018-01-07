@@ -20,8 +20,8 @@ import Board.Colors exposing (baseCssRgb)
 import Ordinal exposing (ordinal)
 
 
-chatBox : Bool -> String -> Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
-chatBox hasInput inputValue mdl lines id =
+chatBox : Bool -> String -> List Color -> Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
+chatBox hasInput inputValue colors mdl lines id =
     Card.view [ cs "chatbox" ] <|
         Card.media [ cs "chatbox--log", Options.id id ]
             (List.map
@@ -69,7 +69,29 @@ chatBox hasInput inputValue mdl lines id =
                         ]
                     ]
                 else
-                    []
+                    [ Card.actions [ cs "chatbox--actions" ] <|
+                        List.map
+                            (\t ->
+                                Button.render
+                                    Types.Mdl
+                                    [ 0 ]
+                                    mdl
+                                    [ Button.primary
+                                    , Button.colored
+                                    , Button.ripple
+                                    , cs "chatbox--actions-predefined"
+                                    , Options.onClick <| SendChat t
+                                    ]
+                                    [ text t ]
+                            )
+                        <|
+                            List.append
+                                [ "OK", "No", "Flag" ]
+                            <|
+                                List.map
+                                    toString
+                                    colors
+                    ]
                )
 
 

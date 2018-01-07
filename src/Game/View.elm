@@ -145,6 +145,7 @@ gameChat model =
         [ Game.Chat.chatBox
             (not model.isTelegram)
             model.game.chatInput
+            (List.map .color model.game.players)
             model.mdl
             model.game.chatLog
           <|
