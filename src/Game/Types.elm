@@ -105,6 +105,7 @@ type alias TableInfo =
     , status : GameStatus
     , landCount : Int
     , stackSize : Int
+    , points : Int
     }
 
 

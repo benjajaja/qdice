@@ -16,7 +16,7 @@ import Material.Footer as Footer
 import Material.List as Lists
 import Material.Toggles as Toggles
 import Types exposing (Model, Msg(..))
-import Tables exposing (Table, tableList, encodeTable)
+import Tables exposing (Table, encodeTable)
 import Board
 import Backend.Types exposing (ConnectionStatus(..))
 import Time exposing (inMilliseconds)

@@ -214,6 +214,7 @@ tableInfoDecoder =
         |> required "status" gameStatusDecoder
         |> required "landCount" int
         |> required "stackSize" int
+        |> required "points" int
 
 
 profileDecoder : Decoder Profile

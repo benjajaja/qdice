@@ -24,22 +24,6 @@ footer model =
     div [ class "edTables" ] [ tableOfTables model ]
 
 
-
---Footer.mega []
---{ top =
---Footer.top []
---{ left = Footer.left [] []
---, right = Footer.right [] []
---}
-
-
-
---, middle =
---Footer.middle [] [ Footer.html <| tableOfTables model ]
---, bottom = Footer.bottom [] []
---}
-
-
 tableOfTables : Model -> Html.Html Types.Msg
 tableOfTables model =
     Options.div [ Elevation.e2 ]
@@ -47,6 +31,7 @@ tableOfTables model =
             [ thead []
                 [ tr []
                     [ th [] [ text "Table" ]
+                    , th [] [ text "Level" ]
                     , th [] [ text "Players" ]
                     , th [] [ text "Status" ]
                     , th [] [ text "Size" ]
@@ -62,6 +47,7 @@ tableOfTables model =
                                 [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                                 ]
                                 [ td [] [ text <| encodeTable table.table ]
+                                , td [] [ text <| toString table.points ]
                                 , td []
                                     [ text <|
                                         (toString table.playerCount)
