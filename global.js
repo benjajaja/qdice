@@ -59,6 +59,7 @@ const getTablesStatus = module.exports.getTablesStatus = (tables) =>
       'status',
       'playerSlots',
       'landCount',
+      'points',
     ])(table), {
       playerCount: table.players.length,
     })
