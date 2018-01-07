@@ -295,6 +295,22 @@ body.navigator-standalone textarea {
   position: relative;
 }
 
+.edGameFlag {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+.edGameFlag .mdl-checkbox__box-outline {
+  border-color: #FFC107;
+}
+.edGameFlag .mdl-checkbox.is-checked .mdl-checkbox__box-outline {
+  border-color: #FFC107;
+}
+
+.edGameStatus {
+  color: #ccc;
+}
+
 .gamelogContainer {
   flex: 2 1 auto;
   height: 162px;

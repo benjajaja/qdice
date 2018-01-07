@@ -55,6 +55,8 @@ tableDecoder =
         |> required "turnIndex" int
         |> required "turnStarted" int
         |> required "lands" (list landsUpdateDecoder)
+        |> required "roundCount" int
+        |> required "canFlag" bool
 
 
 playersDecoder : Decoder Player
@@ -69,6 +71,7 @@ playersDecoder =
         |> required "reserveDice" int
         |> required "points" int
         |> required "level" int
+        |> required "flag" (nullable int)
 
 
 playerGameStatsDecoder : Decoder PlayerGameStats
@@ -165,6 +168,9 @@ eliminationReasonDecoder =
 
                     "🏆" ->
                         field "turns" int |> Json.Decode.map Game.Types.ReasonWin
+
+                    "🏳" ->
+                        field "flag" int |> Json.Decode.map Game.Types.ReasonFlag
 
                     _ ->
                         Json.Decode.fail <| "unknown elimination type: " ++ t

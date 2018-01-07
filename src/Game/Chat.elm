@@ -17,6 +17,7 @@ import Game.Types exposing (PlayerAction(..), ChatLogEntry(..), RollLog, Model)
 import Tables exposing (Table, encodeTable)
 import Land exposing (Color)
 import Board.Colors exposing (baseCssRgb)
+import Ordinal exposing (ordinal)
 
 
 chatBox : Bool -> String -> Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
@@ -242,6 +243,9 @@ eliminationEmoji reason =
             Game.Types.ReasonWin _ ->
                 "🏆"
 
+            Game.Types.ReasonFlag _ ->
+                "🏳"
+
 
 eliminationReasonText reason =
     case reason of
@@ -253,3 +257,6 @@ eliminationReasonText reason =
 
         Game.Types.ReasonWin turns ->
             "(Last standing player after " ++ (toString turns) ++ " turns)"
+
+        Game.Types.ReasonFlag position ->
+            "(Flagged for " ++ (ordinal position) ++ ")"

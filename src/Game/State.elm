@@ -42,6 +42,8 @@ init model table =
           , chatLog = []
           , gameLog = [ LogBegin table ]
           , isPlayerOut = False
+          , roundCount = 0
+          , canFlag = False
           }
             |> (\m ->
                     case model of
@@ -158,6 +160,22 @@ updateTableStatus model status =
                         timestamp ->
                             Just timestamp
 
+        canFlag =
+            case player of
+                Nothing ->
+                    False
+
+                Just player ->
+                    status.canFlag
+                        && player.gameStats.position
+                        > 1
+                        && case player.flag of
+                            Just f ->
+                                False
+
+                            Nothing ->
+                                True
+
         game_ =
             { game
                 | players = status.players
@@ -169,6 +187,8 @@ updateTableStatus model status =
                 , turnStarted = status.turnStarted
                 , isPlayerOut = isOut
                 , board = board_
+                , roundCount = status.roundCount
+                , canFlag = canFlag
             }
 
         ( model_, turnChangeCmd ) =

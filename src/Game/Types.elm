@@ -21,6 +21,7 @@ type PlayerAction
     | SitIn
     | Attack Emoji Emoji
     | EndTurn
+    | Flag
 
 
 type alias Model =
@@ -38,6 +39,8 @@ type alias Model =
     , chatLog : List ChatLogEntry
     , gameLog : List ChatLogEntry
     , isPlayerOut : Bool
+    , roundCount : Int
+    , canFlag : Bool
     }
 
 
@@ -51,6 +54,7 @@ type alias Player =
     , reserveDice : Int
     , points : Int
     , level : Int
+    , flag : Maybe Int
     }
 
 
@@ -79,6 +83,8 @@ type alias TableStatus =
     , turnIndex : Int
     , turnStarted : Int
     , lands : List LandUpdate
+    , roundCount : Int
+    , canFlag : Bool
     }
 
 
@@ -148,6 +154,7 @@ type EliminationReason
     = ReasonDeath Player Int
     | ReasonOut Int
     | ReasonWin Int
+    | ReasonFlag Int
 
 
 makePlayer : String -> Player
@@ -167,4 +174,5 @@ makePlayer name =
         , score = 0
         }
     , reserveDice = 0
+    , flag = Nothing
     }

@@ -6,7 +6,7 @@ import Game.Chat
 import Game.Footer exposing (footer)
 import Game.PlayerCard as PlayerCard
 import Html exposing (..)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, style, type_)
 import Html.Events
 import Material
 import Material.Options as Options
@@ -14,11 +14,13 @@ import Material.Button as Button
 import Material.Icon as Icon
 import Material.Footer as Footer
 import Material.List as Lists
+import Material.Toggles as Toggles
 import Types exposing (Model, Msg(..))
 import Tables exposing (Table, tableList, encodeTable)
 import Board
 import Backend.Types exposing (ConnectionStatus(..))
 import Time exposing (inMilliseconds)
+import Ordinal exposing (ordinal)
 
 
 view : Model -> Html.Html Types.Msg
@@ -32,7 +34,10 @@ view model =
             [ header model
             , div [ class "edMainScreen" ]
                 [ div [ class "edGameBoardWrapper" ]
-                    [ board, sitInModal model ]
+                    [ tableInfo model
+                    , board
+                    , sitInModal model
+                    ]
                 , div [ class "edGame__meta" ]
                     [ div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view model) model.game.players
                     , gameChat model
@@ -51,39 +56,8 @@ header model =
     div [ class "edGameHeader" ]
         [ div [ class "edGameHeader__content" ]
             [ seatButton model
-            , div [ class "edGameHeader__tableStatus" ]
-                [ span [ class "edGameHeader__chip" ]
-                    [ text "Table "
-                    , span [ class "edGameHeader__chip--strong" ]
-                        [ text <| encodeTable model.game.table
-                        ]
-                    ]
-                , span [ class "edGameHeader__chip" ] <|
-                    List.append
-                        [ text ", "
-                        , span [ class "edGameHeader__chip--strong" ]
-                            [ text <|
-                                (if model.game.playerSlots == 0 then
-                                    "∅"
-                                 else
-                                    toString model.game.playerSlots
-                                )
-                            ]
-                        , text " player game is "
-                        , span [ class "edGameHeader__chip--strong" ]
-                            [ text <| toString model.game.status ]
-                        ]
-                        (case model.game.gameStart of
-                            Nothing ->
-                                []
-
-                            Just timestamp ->
-                                [ text " starting in "
-                                , span [ class "edGameHeader__chip--strong" ]
-                                    [ text <| (toString (round <| (toFloat timestamp) - (inMilliseconds model.time / 1000))) ++ "s" ]
-                                ]
-                        )
-                ]
+            , text <| encodeTable model.game.table
+            , flagCheckbox model
             , endTurnButton model
             ]
         , div [ class "edGameHeader__decoration" ] []
@@ -227,4 +201,77 @@ sitInModal model =
             , Options.onClick <| GameCmd SitIn
             ]
             [ text "Sit in!" ]
+        ]
+
+
+flagCheckbox : Model -> Html Types.Msg
+flagCheckbox model =
+    div [ class "edGameFlag" ] <|
+        case model.game.player of
+            Nothing ->
+                []
+
+            Just player ->
+                [ Toggles.checkbox Mdl
+                    []
+                    model.mdl
+                    [ Options.onToggle <| GameCmd Flag
+                    , Options.disabled <| (not model.game.canFlag)
+                    , Toggles.ripple
+                    , Toggles.value <|
+                        case player.flag of
+                            Nothing ->
+                                False
+
+                            Just _ ->
+                                True
+                    ]
+                    [ text <|
+                        "Flag "
+                            ++ (ordinal <|
+                                    case player.flag of
+                                        Nothing ->
+                                            player.gameStats.position
+
+                                        Just position ->
+                                            position
+                               )
+                    ]
+                ]
+
+
+tableInfo : Model -> Html Types.Msg
+tableInfo model =
+    div [ class "edGameStatus" ]
+        [ span [ class "edGameStatus__chip" ]
+            [ text "Table "
+            , span [ class "edGameStatus__chip--strong" ]
+                [ text <| encodeTable model.game.table
+                ]
+            ]
+        , span [ class "edGameStatus__chip" ] <|
+            List.append
+                [ text ", "
+                , span [ class "edGameStatus__chip--strong" ]
+                    [ text <|
+                        (if model.game.playerSlots == 0 then
+                            "∅"
+                         else
+                            toString model.game.playerSlots
+                        )
+                    ]
+                , text " player game is "
+                , span [ class "edGameStatus__chip--strong" ]
+                    [ text <| toString model.game.status ]
+                ]
+                (case model.game.gameStart of
+                    Nothing ->
+                        [ text <| " round " ++ toString model.game.roundCount ]
+
+                    Just timestamp ->
+                        [ text " starting in "
+                        , span [ class "edGameStatus__chip--strong" ]
+                            [ text <| (toString (round <| (toFloat timestamp) - (inMilliseconds model.time / 1000))) ++ "s" ]
+                        ]
+                )
         ]
