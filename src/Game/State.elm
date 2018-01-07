@@ -41,6 +41,7 @@ init model table =
           , chatInput = ""
           , chatLog = []
           , gameLog = [ LogBegin table ]
+          , isPlayerOut = False
           }
             |> (\m ->
                     case model of
@@ -86,6 +87,7 @@ updateTableStatus model status =
         game =
             model.game
 
+        player : Maybe Player
         player =
             findUserPlayer model.user status.players
 
@@ -119,6 +121,14 @@ updateTableStatus model status =
 
                 Just player ->
                     not hasTurn && game.hasTurn
+
+        isOut =
+            case player of
+                Nothing ->
+                    False
+
+                Just player ->
+                    player.out
 
         move =
             if hasLostTurn then
@@ -157,6 +167,7 @@ updateTableStatus model status =
                 , turnIndex = status.turnIndex
                 , hasTurn = hasTurn
                 , turnStarted = status.turnStarted
+                , isPlayerOut = isOut
                 , board = board_
             }
 

@@ -37,6 +37,7 @@ type alias Model =
     , chatInput : String
     , chatLog : List ChatLogEntry
     , gameLog : List ChatLogEntry
+    , isPlayerOut : Bool
     }
 
 

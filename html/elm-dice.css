@@ -276,6 +276,24 @@ body.navigator-standalone textarea {
   flex-wrap: wrap;
 }
 
+.edGame__SitInModal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  background: rgba(0,0,0,0.5);
+}
+.edGame__SitInModal > button {
+  transform: scale(2);
+}
+.edGameBoardWrapper {
+  position: relative;
+}
 
 .gamelogContainer {
   flex: 2 1 auto;

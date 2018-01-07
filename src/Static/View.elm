@@ -41,8 +41,8 @@ Created by <ste3ls@gmail.com>.
 #### Roadmap:
   * ✓ Leaderboard
   * ✓ Show who's turn it is better
+  * ✓ Supermodal when you are out/away
   * x Show when it is your turn better
-  * x Supermodal when you are out/away
   * x Flags
   * x Attack animation
   * x Heartbeat, remove player in game queue if not beating
