@@ -38,6 +38,12 @@ module.exports = (user, table, clientId) => {
           flag: player.flag,
         });
         table.players = table.players.filter(R.complement(R.propEq('id', player.id)));
+        table.lands = table.lands.map(land => {
+          if (land.color === player.color) {
+            land.color = COLOR_NEUTRAL;
+          }
+          return land;
+        });
         if (table.players.length === 1) {
           endGame(table);
         } else {

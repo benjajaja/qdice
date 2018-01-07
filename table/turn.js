@@ -41,10 +41,16 @@ module.exports = table => {
       flag: newPlayer.flag,
     });
     table.players = table.players.filter(R.complement(R.equals(newPlayer)));
+    table.lands = table.lands.map(land => {
+      if (land.color === newPlayer.color) {
+        land.color = COLOR_NEUTRAL;
+      }
+      return land;
+    });
     if (table.players.length === 1) {
       endGame(table);
     } else {
-      nextTurn(table);
+      return module.exports(table);
     }
 
   } else if (newPlayer.out) {
