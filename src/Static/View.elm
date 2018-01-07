@@ -42,8 +42,8 @@ Created by <ste3ls@gmail.com>.
   * ✓ Leaderboard
   * ✓ Show who's turn it is better
   * ✓ Supermodal when you are out/away
-  * x Show when it is your turn better
-  * x Flags
+  * ✓ Flags
+  * ✓ Simple keyboard inside telegram
   * x Attack animation
   * x Heartbeat, remove player in game queue if not beating
   * x Profile page
