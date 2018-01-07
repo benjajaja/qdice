@@ -40,7 +40,7 @@ Created by <ste3ls@gmail.com>.
 
 #### Roadmap:
   * ✓ Leaderboard
-  * x Show who's turn it is better
+  * ✓ Show who's turn it is better
   * x Show when it is your turn better
   * x Supermodal when you are out/away
   * x Flags

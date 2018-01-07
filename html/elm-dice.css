@@ -156,6 +156,7 @@ body.navigator-standalone textarea {
   margin-right: 4px;
   margin-bottom: 5px;
   background: #fff;
+  transition: transform 0.25s ease;
 }
 .edPlayerChip__progress {
   height: 2px;
@@ -220,6 +221,9 @@ body.navigator-standalone textarea {
   content: 'OUT';
 }
 
+.edPlayerChip--turn {
+  transform: translateY(-10px);
+}
 
 
 .edGameList {

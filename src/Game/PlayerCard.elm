@@ -22,20 +22,8 @@ import Board.Colors
 
 view : Model -> Int -> Player -> Html.Html Types.Msg
 view model index player =
-    Options.div
-        [ Options.cs <|
-            String.join " " <|
-                "edPlayerChip"
-                    :: (if player.out then
-                            [ "edPlayerChip--out" ]
-                        else
-                            []
-                       )
-        , if index == model.game.turnIndex then
-            Elevation.e6
-          else
-            Elevation.e2
-        ]
+    playerContainer player
+        (index == model.game.turnIndex)
         [ playerImageProgress model index player
         , Html.div
             [ class "edPlayerChip__name"
@@ -83,20 +71,29 @@ view model index player =
                     )
                         ++ toString player.gameStats.score
                 ]
-              --, Html.div [ class "edPlayerChip__gameStats__item--soft" ]
-              --[ Html.text <|
-              --let
-              --score =
-              --player.gameStats.score
-              --in
-              --(if score >= 0 then
-              --"+"
-              --else
-              --"-"
-              --)
-              --++ toString score
-              --]
             ]
+        ]
+
+
+playerContainer player hasTurn =
+    Options.div
+        [ Options.cs <|
+            String.join " " <|
+                List.concat
+                    [ [ "edPlayerChip" ]
+                    , if player.out then
+                        [ "edPlayerChip--out" ]
+                      else
+                        []
+                    , if hasTurn then
+                        [ "edPlayerChip--turn" ]
+                      else
+                        []
+                    ]
+        , if hasTurn then
+            Elevation.e6
+          else
+            Elevation.e2
         ]
 
 
