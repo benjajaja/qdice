@@ -24,6 +24,7 @@ const Player = (user, clientId) => ({
   level: user.level,
   position: 0,
   score: 0,
+  flag: null,
 });
   
 module.exports = (user, table, clientId) => {

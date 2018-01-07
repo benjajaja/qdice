@@ -2,6 +2,7 @@ const R = require('ramda');
 const maps = require('../maps');
 const endGame = require('./endGame');
 const elimination = require('./elimination');
+const { serializePlayer } = require('./serialize');
 const { rand } = require('../rand');
 
 const {
@@ -12,6 +13,7 @@ const {
   COLOR_NEUTRAL,
   ELIMINATION_REASON_OUT,
   ELIMINATION_REASON_WIN,
+  ELIMINATION_REASON_SURRENDER,
   OUT_TURN_COUNT_ELIMINATION,
 } = require('../constants');
 
@@ -29,9 +31,23 @@ module.exports = table => {
   table.turnStarted = Math.floor(Date.now() / 1000);
   table.turnActivity = false;
   table.turnCount += 1;
+  if (table.turnIndex === 0) {
+    table.roundCount += 1;
+  }
 
   const newPlayer = table.players[table.turnIndex];
-  if (newPlayer.out) {
+  if (newPlayer.flag === table.players.length) {
+    elimination(table, newPlayer, ELIMINATION_REASON_SURRENDER, {
+      flag: newPlayer.flag,
+    });
+    table.players = table.players.filter(R.complement(R.equals(newPlayer)));
+    if (table.players.length === 1) {
+      endGame(table);
+    } else {
+      nextTurn(table);
+    }
+
+  } else if (newPlayer.out) {
     newPlayer.outTurns += 1;
     if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
       elimination(table, newPlayer, ELIMINATION_REASON_OUT, {

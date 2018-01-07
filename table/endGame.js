@@ -21,6 +21,8 @@ module.exports = table => {
   table.status = STATUS_FINISHED;
   table.turnIndex = -1;
   table.gameStart = 0;
+  table.turnCount = 1;
+  table.roundCount = 1;
   tick.stop(table);
   publish.event({
     type: 'end',

@@ -34,6 +34,7 @@ exports.COLORS = [
 exports.ELIMINATION_REASON_DIE = '☠';
 exports.ELIMINATION_REASON_OUT = '💤';
 exports.ELIMINATION_REASON_WIN = '🏆';
+exports.ELIMINATION_REASON_SURRENDER = '🏳';
 
 exports.MAX_NAME_LENGTH = 20;
 

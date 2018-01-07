@@ -11,9 +11,11 @@ module.exports.serializeTable = table => {
 
   const result = Object.assign({}, R.pick([
     'name', 'playerSlots', 'status', 'turnIndex', 'turnStarted', 'gameStart',
+    'turnCount', 'roundCount',
   ])(table), {
     players: players,
-    lands
+    lands,
+    canFlag: table.roundCount >= table.noFlagRounds,
   });
   return result;
 };
@@ -23,7 +25,7 @@ const serializePlayer = module.exports.serializePlayer = table => {
   const derived = computePlayerDerived(table);
   return player => {
     return Object.assign({}, R.pick([
-      'id', 'name', 'picture', 'color', 'reserveDice', 'out', 'outTurns', 'points', 'level', 'score',
+      'id', 'name', 'picture', 'color', 'reserveDice', 'out', 'outTurns', 'points', 'level', 'score', 'flag',
     ])(player), { derived: derived(player) });
   };
 };

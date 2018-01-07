@@ -43,6 +43,8 @@ const Table = config => ({
   stackSize: config.stackSize,
   playerStartCount: 0,
   turnCount: 1,
+  roundCount: 1,
+  noFlagRounds: config.noFlagRounds,
 });
 const loadLands = table => {
   const [ lands, adjacency, name ] = maps.loadMap(table.tag);
@@ -129,6 +131,8 @@ const command = async (user, clientId, table, type, payload) => {
       return await require('./table/sitIn')(user, table, clientId);
     case 'Chat':
       return await require('./table/chat')(user, table, clientId, payload);
+    case 'Flag':
+      return await require('./table/flag')(user, table, clientId, payload);
     default:
       throw new Error(`unknown command "${type}"`);
   }

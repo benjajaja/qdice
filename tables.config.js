@@ -7,6 +7,7 @@ module.exports = {
       startSlots: 2,
       points: 0,
       stackSize: 4,
+      noFlagRounds: 1,
     },
     {
       tag: 'Miño',
@@ -15,6 +16,7 @@ module.exports = {
       startSlots: 2,
       points: 0,
       stackSize: 4,
+      noFlagRounds: 5,
     },
     {
       tag: 'DeLucía',
@@ -23,6 +25,7 @@ module.exports = {
       startSlots: 3,
       points: 100,
       stackSize: 8,
+      noFlagRounds: 5,
     },
     {
       tag: 'Serrano',
@@ -31,6 +34,7 @@ module.exports = {
       startSlots: 2,
       points: 0,
       stackSize: 8,
+      noFlagRounds: 5,
     },
     {
       tag: 'Sabicas',
@@ -39,6 +43,7 @@ module.exports = {
       startSlots: 4,
       points: 100,
       stackSize: 8,
+      noFlagRounds: 5,
     },
   ],
 };
