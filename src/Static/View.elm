@@ -37,6 +37,21 @@ view model page =
 A dice game, written in [Elm](https://elm-lang.org). A simplified Risk, inspired by [dicewars](http://www.gamedesign.jp/games/dicewars/) and its successor.
 
 Created by <ste3ls@gmail.com>.
+
+#### Roadmap:
+  * ✓ Leaderboard
+  * x Show who's turn it is better
+  * x Show when it is your turn better
+  * x Supermodal when you are out/away
+  * x Flags
+  * x Attack animation
+  * x Heartbeat, remove player in game queue if not beating
+  * x Profile page
+  * x Save all board moves/events
+  * x Replay a game
+  * x Fix triple "X joined" message
+  * x Login with facebook
+  * x Login with github
 """
 
 
