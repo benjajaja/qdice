@@ -101,12 +101,12 @@ updateLand layout updates land =
                                 let
                                     yOffset =
                                         if index >= 4 then
-                                            1.15
+                                            1.1
                                         else
-                                            1.5
+                                            2
 
                                     y =
-                                        cy - yOffset - (toFloat (index % 4) * 1.8)
+                                        cy - yOffset - (toFloat (index % 4) * 1.2)
                                 in
                                     ( index
                                     , Animation.interrupt

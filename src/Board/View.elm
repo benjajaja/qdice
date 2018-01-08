@@ -147,13 +147,13 @@ landDie getAnimation ( cx, cy ) points index =
             if index >= 4 then
                 1.0
             else
-                2.75
+                2.2
 
         yOffset =
             if index >= 4 then
-                1.15
+                1.1
             else
-                1.5
+                2
 
         animation =
             getAnimation index
@@ -171,7 +171,7 @@ landDie getAnimation ( cx, cy ) points index =
                         []
 
                     Nothing ->
-                        [ y <| toString <| cy - yOffset - (toFloat (index % 4) * 1.8) ]
+                        [ y <| toString <| cy - yOffset - (toFloat (index % 4) * 1.2) ]
                 , [ x <| toString <| cx - xOffset
                   , textAnchor "middle"
                   , alignmentBaseline "central"
