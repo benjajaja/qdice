@@ -6,7 +6,7 @@ import Game.Types exposing (TableStatus, Player, PlayerGameStats)
 import Board.Types
 import LeaderBoard.Types exposing (LeaderBoardModel)
 import Land exposing (Color, playerColor)
-import Json.Decode exposing (int, string, float, bool, list, Decoder, map, index, succeed, fail, field, nullable, andThen)
+import Json.Decode exposing (int, string, float, bool, list, Decoder, map, map2, map3, index, succeed, fail, field, nullable, andThen)
 import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
@@ -28,7 +28,7 @@ userDecoder =
 
 meDecoder : Decoder ( LoggedUser, String )
 meDecoder =
-    Json.Decode.map2 (,) (index 0 userDecoder) (index 1 tokenDecoder)
+    map2 (,) (index 0 userDecoder) (index 1 tokenDecoder)
 
 
 tableNameDecoder : Decoder Table
@@ -86,10 +86,7 @@ playerGameStatsDecoder =
 
 landsUpdateDecoder : Decoder Board.Types.LandUpdate
 landsUpdateDecoder =
-    decode Board.Types.LandUpdate
-        |> required "emoji" string
-        |> required "color" colorDecoder
-        |> required "points" int
+    map3 Board.Types.LandUpdate (index 0 string) (index 1 colorDecoder) (index 2 int)
 
 
 colorDecoder : Decoder Color
@@ -159,7 +156,7 @@ eliminationReasonDecoder =
             (\t ->
                 case t of
                     "☠" ->
-                        Json.Decode.map2 Game.Types.ReasonDeath
+                        map2 Game.Types.ReasonDeath
                             (field "player" playersDecoder)
                             (field "points" int)
 
@@ -179,7 +176,7 @@ eliminationReasonDecoder =
 
 globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo )
 globalDecoder =
-    Json.Decode.map2 (,) (field "settings" globalSettingsDecoder) (field "tables" (list tableInfoDecoder))
+    map2 (,) (field "settings" globalSettingsDecoder) (field "tables" (list tableInfoDecoder))
 
 
 globalSettingsDecoder : Decoder Types.GlobalSettings
@@ -230,6 +227,6 @@ profileDecoder =
 
 leaderBoardDecoder : Decoder ( String, List Profile )
 leaderBoardDecoder =
-    Json.Decode.map2 (,)
+    map2 (,)
         (field "month" string)
         (field "top" (list profileDecoder))
