@@ -15,7 +15,6 @@ function getMqttConfig() {
     return {
       protocol: 'wss',
       hostname: 'mqtt.' + self.location.hostname,
-      port: 8084,
       path: 'mqtt',
     };
   }
