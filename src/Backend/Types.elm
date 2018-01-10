@@ -12,6 +12,7 @@ type alias Model =
     , subscribed : List Topic
     , status : ConnectionStatus
     , findTableTimeout : Time.Time
+    , lastHeartbeat : Time.Time
     }
 
 

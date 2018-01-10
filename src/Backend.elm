@@ -75,6 +75,7 @@ init location table isTelegram =
                 2000
             else
                 1000
+      , lastHeartbeat = 0
       }
     , connect
     )

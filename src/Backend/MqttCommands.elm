@@ -1,6 +1,8 @@
 port module Backend.MqttCommands exposing (..)
 
 import Http
+import Task
+import Time
 import Land exposing (Color(..))
 import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (Player, PlayerAction(..))
@@ -19,11 +21,14 @@ publish : Maybe String -> Maybe ClientId -> Table -> PlayerAction -> Cmd Msg
 publish jwt clientId table action =
     case clientId of
         Just clientId ->
-            ( encodeTopic <|
-                Tables table ServerDirection
-            , encodePlayerAction jwt clientId action
-            )
-                |> mqttPublish
+            Cmd.batch
+                [ ( encodeTopic <|
+                        Tables table ServerDirection
+                  , encodePlayerAction jwt clientId action
+                  )
+                    |> mqttPublish
+                , Task.perform SetLastHeartbeat Time.now
+                ]
 
         Nothing ->
             toastCmd "Command error: not connected"

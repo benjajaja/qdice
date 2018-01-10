@@ -22,6 +22,7 @@ type PlayerAction
     | Attack Emoji Emoji
     | EndTurn
     | Flag
+    | Heartbeat
 
 
 type alias Model =

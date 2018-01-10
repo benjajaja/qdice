@@ -496,7 +496,31 @@ update msg model =
             Game.State.updateTable model table msg
 
         Tick newTime ->
-            { model | time = newTime } ! []
+            let
+                cmd =
+                    case model.route of
+                        GameRoute table ->
+                            case model.backend.clientId of
+                                Just c ->
+                                    if Time.inSeconds newTime - Time.inSeconds model.backend.lastHeartbeat > 30 then
+                                        gameCommand model.backend model.game.table Heartbeat
+                                    else
+                                        Cmd.none
+
+                                Nothing ->
+                                    Cmd.none
+
+                        _ ->
+                            Cmd.none
+            in
+                ( { model | time = newTime }, cmd )
+
+        SetLastHeartbeat time ->
+            let
+                backend =
+                    model.backend
+            in
+                ( { model | backend = { backend | lastHeartbeat = time } }, Cmd.none )
 
 
 msgsToCmds : List Msg -> List (Cmd Msg)
