@@ -74,7 +74,7 @@ init location table isTelegram =
             if isTelegram then
                 2000
             else
-                500
+                1000
       }
     , connect
     )

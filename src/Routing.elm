@@ -66,39 +66,48 @@ parseLocation location =
 
 navigateTo : Route -> Cmd Msg
 navigateTo route =
-    Navigation.newUrl <|
-        case route of
-            HomeRoute ->
-                "#"
+    Navigation.newUrl <| routeToString route
 
-            GameRoute table ->
-                "#" ++ (encodeTable table)
 
-            StaticPageRoute page ->
-                case page of
-                    Help ->
-                        "#static/help"
+replaceNavigateTo : Route -> Cmd Msg
+replaceNavigateTo route =
+    Navigation.modifyUrl <| routeToString route
 
-                    About ->
-                        "#static/about"
 
-            EditorRoute ->
-                "#editor"
+routeToString : Route -> String
+routeToString route =
+    case route of
+        HomeRoute ->
+            "#"
 
-            NotFoundRoute ->
-                "#404"
+        GameRoute table ->
+            "#" ++ (encodeTable table)
 
-            MyProfileRoute ->
-                "#me"
+        StaticPageRoute page ->
+            case page of
+                Help ->
+                    "#static/help"
 
-            TokenRoute token ->
-                "#token/" ++ token
+                About ->
+                    "#static/about"
 
-            ProfileRoute id ->
-                "#profile/" ++ id
+        EditorRoute ->
+            "#editor"
 
-            LeaderBoardRoute ->
-                "#leaderboard"
+        NotFoundRoute ->
+            "#404"
+
+        MyProfileRoute ->
+            "#me"
+
+        TokenRoute token ->
+            "#token/" ++ token
+
+        ProfileRoute id ->
+            "#profile/" ++ id
+
+        LeaderBoardRoute ->
+            "#leaderboard"
 
 
 routeEnterCmd : Model -> Route -> Cmd Msg

@@ -3,7 +3,7 @@ port module Edice exposing (..)
 import Task
 import Maybe
 import Navigation exposing (Location)
-import Routing exposing (parseLocation, navigateTo)
+import Routing exposing (parseLocation, navigateTo, replaceNavigateTo)
 import Html
 import Html.Lazy
 import Html.Attributes
@@ -64,7 +64,7 @@ init flags location =
             Routing.parseLocation location
 
         table =
-            Maybe.withDefault Melchor <| currentTable route
+            Maybe.withDefault Serrano <| currentTable route
 
         ( game, gameCmd ) =
             Game.State.init Nothing table
@@ -88,7 +88,7 @@ init flags location =
                         ( backend_
                         , [ auth [ token ]
                           , loadMe backend_
-                          , navigateTo <| GameRoute Melchor
+                          , navigateTo <| GameRoute Serrano
                           ]
                         )
 
@@ -329,10 +329,15 @@ update msg model =
                             Debug.log "error" err
                     in
                         --toast model "Could not find a good table for you"
-                        ( model, navigateTo <| GameRoute Melchor )
+                        ( model, replaceNavigateTo <| GameRoute Serrano )
 
                 Ok table ->
-                    ( model, navigateTo <| GameRoute table )
+                    ( model
+                    , if model.route /= GameRoute table then
+                        replaceNavigateTo <| GameRoute table
+                      else
+                        Cmd.none
+                    )
 
         NavigateTo route ->
             model ! [ navigateTo route ]
@@ -359,8 +364,6 @@ update msg model =
                                 GameRoute table ->
                                     pipeUpdates Game.State.changeTable table
 
-                                --HomeRoute ->
-                                --(\( m, c ) -> m ! [ navigateTo <| GameRoute Melchor, c ])
                                 _ ->
                                     identity
                            )
