@@ -33,6 +33,7 @@ tableOfTables model =
                     [ th [] [ text "Table" ]
                     , th [] [ text "Level" ]
                     , th [] [ text "Players" ]
+                    , th [] [ text "Watching" ]
                     , th [] [ text "Status" ]
                     , th [] [ text "Size" ]
                     , th [] [ text "Stacks" ]
@@ -55,6 +56,7 @@ tableOfTables model =
                                             ++ (toString table.playerSlots)
                                             ++ " playing"
                                     ]
+                                , td [] [ text <| toString table.watchCount ]
                                 , td [] [ text <| toString table.status ]
                                 , td [] [ text <| toString table.landCount ]
                                 , td [] [ text <| toString table.stackSize ]

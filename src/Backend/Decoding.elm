@@ -57,6 +57,7 @@ tableDecoder =
         |> required "lands" (list landsUpdateDecoder)
         |> required "roundCount" int
         |> required "canFlag" bool
+        |> required "watchCount" int
 
 
 playersDecoder : Decoder Player
@@ -208,6 +209,7 @@ tableInfoDecoder =
         |> required "name" tableTagDecoder
         |> required "playerSlots" int
         |> required "playerCount" int
+        |> required "watchCount" int
         |> required "status" gameStatusDecoder
         |> required "landCount" int
         |> required "stackSize" int

@@ -85,6 +85,7 @@ type alias TableStatus =
     , lands : List LandUpdate
     , roundCount : Int
     , canFlag : Bool
+    , watchCount : Int
     }
 
 
@@ -102,6 +103,7 @@ type alias TableInfo =
     { table : Table
     , playerSlots : Int
     , playerCount : Int
+    , watchCount : Int
     , status : GameStatus
     , landCount : Int
     , stackSize : Int
