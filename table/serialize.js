@@ -16,6 +16,7 @@ module.exports.serializeTable = table => {
     players: players,
     lands,
     canFlag: table.roundCount >= table.noFlagRounds,
+    watchCount: table.watching.length,
   });
   return result;
 };

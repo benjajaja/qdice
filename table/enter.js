@@ -2,14 +2,19 @@ const R = require('ramda');
 const publish = require('./publish');
 
 module.exports = async (user, table, clientId) => {
-  console.log('enter', user);
+  const existing = R.find(R.propEq('clientId', clientId), table.watching);
+  if (!existing) {
+    table.watching = R.append({ clientId, name: user ? user.name : null, lastBeat: Date.now() }, table.watching);
+    publish.enter(table, user ? user.name : null);
+    publish.event({
+      type: 'watching',
+      table: table.name,
+      watching: table.watching.map(R.prop('name')),
+    });
+  }
+
   publish.tableStatus(table, clientId);
-  publish.enter(table, user ? user.name : null);
-  publish.event({
-    type: 'enter',
-    table: table.name,
-    userId: user ? user.id : null,
-  });
+
   if (user) {
     const player = R.find(R.propEq('id', user.id), table.players);
     if (player) {

@@ -7,6 +7,7 @@ const db = require('./db');
 const maps = require('./maps');
 const publish = require('./table/publish');
 const startGame = require('./table/start');
+const tick = require('./table/tick');
 const {
   STATUS_PAUSED,
   STATUS_PLAYING,
@@ -45,6 +46,7 @@ const Table = config => ({
   turnCount: 1,
   roundCount: 1,
   noFlagRounds: config.noFlagRounds,
+  watching: [],
 });
 const loadLands = table => {
   const [ lands, adjacency, name ] = maps.loadMap(table.tag);
@@ -112,6 +114,7 @@ client.on('message', async (topic, message) => {
 });
 
 const command = async (user, clientId, table, type, payload) => {
+  require('./table/heartbeat')(user, table, clientId);
   switch (type) {
     case 'Enter':
       return await require('./table/enter')(user, table, clientId);
@@ -133,11 +136,14 @@ const command = async (user, clientId, table, type, payload) => {
       return await require('./table/chat')(user, table, clientId, payload);
     case 'Flag':
       return await require('./table/flag')(user, table, clientId, payload);
+    case 'Heartbeat':
+      return;
     default:
       throw new Error(`unknown command "${type}"`);
   }
 };
 
+tick.start(table);
 
 //tables.forEach(table =>
   //table.players = R.range(0,7).map(i =>

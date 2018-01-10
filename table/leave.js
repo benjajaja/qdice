@@ -29,7 +29,7 @@ module.exports = async (user, table, clientId) => {
 
   if (table.players.length === 0 && table.status === STATUS_PAUSED) {
     table.status = STATUS_FINISHED;
-    tick.stop(table);
+    //tick.stop(table);
   }
 
   table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1 }));

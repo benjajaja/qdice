@@ -25,6 +25,7 @@ const tables = tablesConfig.tables.map(config => {
     status: STATUS_PAUSED,
     landCount: lands.length,
     players: [],
+    watching: [],
   };
 });
 
@@ -43,9 +44,7 @@ module.exports.global = function(req, res, next) {
 module.exports.findtable = (req, res, next) => {
   res.send(200, R.pipe(
     R.map(table => [table.name, table.players.length]),
-    R.tap(console.log),
     R.reduce(R.maxBy(R.nth(1)), ['', -1]),
-    R.tap(console.log),
     R.nth(0),
   )(tables));
 };
@@ -62,6 +61,7 @@ const getTablesStatus = module.exports.getTablesStatus = (tables) =>
       'points',
     ])(table), {
       playerCount: table.players.length,
+      watchCount: table.watching.length,
     })
   );
 
@@ -99,6 +99,19 @@ module.exports.onMessage = (topic, message) => {
           publish.tables(getTablesStatus(tables));
           return;
         }
+
+        case 'watching': {
+          const table = findTable(tables)(event.table);
+          if (!table) {
+            return;
+          }
+
+          table.watching = event.watching;
+          publish.tables(getTablesStatus(tables));
+
+          return;
+        }
+
       }
     }
   } catch (e) {

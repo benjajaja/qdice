@@ -44,7 +44,7 @@ module.exports = (user, table, clientId) => {
       color: -1,
     }));
     table.turnCount = 1;
-    tick.start(table);
+    //tick.start(table);
   }
 
   table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1}));

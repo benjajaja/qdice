@@ -51,6 +51,22 @@ const tick = table => {
     }
   }
 
+  const [ stillWatching, stoppedWatching ] = table.watching.reduce(([yes, no], watcher) => {
+    if (watcher.lastBeat > Date.now() - 30 * 1000) {
+      return [R.append(watcher, yes), no];
+    } else {
+      return [yes, R.append(watcher, no)];
+    }
+  }, [[], []]);
+  table.watching = stillWatching;
+  if (stoppedWatching.length > 0) {
+    publish.event({
+      type: 'watching',
+      table: table.name,
+      watching: table.watching.map(R.prop('name')),
+    });
+  }
+
   //const newUpdate = require('../global').getTablesStatus(tables);
   //if (!R.equals(newUpdate)(globalTablesUpdate)) {
     //globalTablesUpdate = newUpdate;
