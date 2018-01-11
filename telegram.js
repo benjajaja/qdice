@@ -40,12 +40,12 @@ client.on('message', (topic, message) => {
         }
         break;
       case 'countdown':
-        if (officialGroups.length) {
-          const { table, players } = event;
-          officialGroups.forEach(id =>
-            telegram.sendMessage(id, `A game countdown has started in table ${table}, with ${players.join(', ')}`)
-          );
-        }
+        //if (officialGroups.length) {
+          //const { table, players } = event;
+          //officialGroups.forEach(id =>
+            //telegram.sendMessage(id, `A game countdown has started in table ${table}, with ${players.join(', ')}`)
+          //);
+        //}
     }
   }
 });
