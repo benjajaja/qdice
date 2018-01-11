@@ -8,7 +8,6 @@ module.exports = {
       points: 0,
       stackSize: 8,
       noFlagRounds: 5,
-      singleLandStart: true,
     },
     {
       tag: 'DeLucía',
@@ -18,7 +17,6 @@ module.exports = {
       points: 100,
       stackSize: 8,
       noFlagRounds: 5,
-      singleLandStart: true,
     },
     {
       tag: 'Melchor',
@@ -28,7 +26,6 @@ module.exports = {
       points: 0,
       stackSize: 4,
       noFlagRounds: 1,
-      singleLandStart: false,
     },
     //{
       //tag: 'Miño',
@@ -38,7 +35,6 @@ module.exports = {
       //points: 0,
       //stackSize: 4,
       //noFlagRounds: 5,
-      //singleLandStart: true,
     //},
     {
       tag: 'Sabicas',
@@ -48,7 +44,6 @@ module.exports = {
       points: 200,
       stackSize: 8,
       noFlagRounds: 5,
-      singleLandStart: false,
     },
   ],
 };

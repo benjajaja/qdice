@@ -49,19 +49,13 @@ module.exports = table => {
     land.color = player.color;
     land.points = 1;//randomPoints(table.stackSize);
   });
-  table.players.forEach((player, index) => {
+  table.players.forEach(player => {
     const landCount = table.lands.length;
     const colorsCount = landCount - (landCount % table.players.length);
-    const playerLands = shuffledLands.filter(R.propEq('color', player.color));
-    const playerLandCount = playerLands.length;
-
-    R.range(0, index + 2).forEach(i => {
-      playerLands[i].points =
-        Math.max(1, Math.min(table.stackSize / 2, playerLands[i].points + 1 + index));
+    const playerLandCount = colorsCount / table.players.length;
+    R.range(0, playerLandCount).forEach(i => {
+      shuffledLands.filter(R.propEq('color', player.color))[i].points = Math.min(table.stackSize, i + 1);
     });
-    if (index === table.players.length - 1) {
-      playerLands[0].points = Math.floor(table.stackSize / 2) + 1;
-    }
   });
   
   table.turnIndex = 0;
