@@ -60,7 +60,7 @@ baseUrl location =
     if "localhost" == location.hostname || "lvh.me" == location.hostname then
         "http://localhost:5001"
     else
-        location.protocol ++ "//" ++ "api." ++ location.hostname
+        location.protocol ++ "//" ++ "api.quevic.io"
 
 
 init : Location -> Table -> Bool -> ( Model, Cmd Msg )

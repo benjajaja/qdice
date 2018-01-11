@@ -14,7 +14,7 @@ function getMqttConfig() {
   } else {
     return {
       protocol: 'wss',
-      hostname: 'mqtt.' + self.location.hostname,
+      hostname: 'mqtt.quevic.io',
       path: 'mqtt',
     };
   }
