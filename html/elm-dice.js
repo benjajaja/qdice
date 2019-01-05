@@ -20,7 +20,7 @@ if (window.navigator.standalone === true) {
   viewportmeta.content = 'user-scalable=NO, width=device-width, initial-scale=1.0'
 }
 
-var ga = function(){ console.debug('ga', arguments); };
+var ga = function(){};
 setTimeout(function() {
   var Elm = require('../src/App');
 
