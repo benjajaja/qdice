@@ -32,6 +32,9 @@ module.exports = (user, table, clientId, [emojiFrom, emojiTo]) => {
   if (fromLand.color === COLOR_NEUTRAL) {
     return publish.clientError(clientId, new Error('illegal move (same color)'));
   }
+  if (fromLand.points === 1) {
+    return publish.clientError(clientId, new Error('illegal move (single dice)'));
+  }
   if (fromLand.color === toLand.color) {
     return publish.clientError(clientId, new Error('illegal move (same color)'));
   }

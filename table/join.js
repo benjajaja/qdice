@@ -69,6 +69,7 @@ module.exports = (user, table, clientId) => {
     type: 'join',
     table: table.name,
     player: R.last(table.players),
+    playerCount: table.players.length,
   });
 };
 
