@@ -1,105 +1,39 @@
-const promisify = require('util').promisify;
+import { promisify } from 'util';
 import * as R from 'ramda';
-
 import * as mqtt from 'mqtt';
 import * as jwt from 'jsonwebtoken';
+
+import { UserId, Table } from './types';
 import * as db from './db';
-import * as maps from './maps.js';
 import * as publish from './table/publish';
-import * as startGame from './table/start';
 import * as tick from './table/tick';
-import {
-  STATUS_PAUSED,
-  STATUS_PLAYING,
-  STATUS_FINISHED,
-  COLOR_NEUTRAL,
-  GAME_START_COUNTDOWN,
-} from './constants';
+import { getTable } from './table/get';
 import { findTable, hasTurn } from './helpers';
 
+import * as heartbeat from './table/heartbeat';
+import * as enter from './table/enter';
+import * as exit from './table/exit';
+import join from './table/join';
+import * as leave from './table/leave';
+import * as attack from './table/attack';
+import * as endTurn from './table/endTurn';
+import * as sitOut from './table/sitOut';
+import * as sitIn from './table/sitIn';
+import * as chat from './table/chat';
+import * as flag from './table/flag';
 
-const Table = config => ({
-  name: config.tag,
-  tag: config.tag,
-  players: [],
-  playerSlots: config.playerSlots,
-  startSlots: config.startSlots,
-  points: config.points,
-  status: STATUS_FINISHED,
-  gameStart: 0,
-  turnIndex: -1,
-  turnStarted: 0,
-  turnActivity: false,
-  lands: [],
-  stackSize: config.stackSize,
-  playerStartCount: 0,
-  turnCount: 1,
-  roundCount: 1,
-  noFlagRounds: config.noFlagRounds,
-  watching: [],
-});
-const loadLands = table => {
-  const [ lands, adjacency, name ] = maps.loadMap(table.tag);
-  return Object.assign({}, table, {
-    name,
-    lands: lands.map(land => Object.assign({}, land, {
-      color: COLOR_NEUTRAL,
-      points: 1,
-    })),
-    adjacency
-  });
-};
+const verifyJwt = promisify(jwt.verify);
 
-module.exports = function(tableTag) {
-  if (R.isEmpty(tableTag)) {
-    throw new Error('table proc did not get env TABLENAME, exitting');
-  }
-  console.log(`Table proc for ${tableTag} starting up...`);
+export const start = async (tableTag: string, client: mqtt.MqttClient) => {
 
-  const tableConfig = require('./tables.config').tables.filter(
-    config => config.tag === tableTag
-  ).pop();
+  publish.tableStatus(await getTable(tableTag));
+
+  client.subscribe(`tables/${tableTag}/server`);
 
 
-
-  const table = loadLands(Table(tableConfig));
-
-
-  console.log('connecting to mqtt: ' + process.env.MQTT_URL);
-  var client = mqtt.connect(process.env.MQTT_URL, {
-    username: process.env.MQTT_USERNAME,
-    password: process.env.MQTT_PASSWORD,
-  });
-   
-  client.on('error', err => console.error(err));
-
-
-  client.on('connect', function () {
-    console.log('mqtt connected');
-    publish.tableStatus(table);
-    if (process.send) {
-      process.send('ready');
-    }
-  });
-
-  db.connect().then(() => console.log('table connected to DB'));
-
-  process.on('SIGINT', () => {
-    (client.end as any)(() => {
-      console.log('table stopped gracefully');
-      process.exit(0);
-    });
-  });
-
-  publish.setMqtt(client);
-
-  client.subscribe(`tables/${table.tag}/server`);
-
-  const verifyJwt = promisify(jwt.verify);
-
-  client.on('message', async (topic, message) => {
-    if (topic !== `tables/${table.tag}/server`) {
-      return console.error('bad topic: ' + topic);
+  const onMessage = async (topic, message) => {
+    if (topic !== `tables/${tableTag}/server`) {
+      return;
     }
     try {
       const { type, client: clientId, token, payload } = JSON.parse(message.toString());
@@ -109,6 +43,7 @@ module.exports = function(tableTag) {
           ? verifyJwt(token, process.env.JWT_SECRET)
           : null
         );
+        const table = await getTable(tableTag);
         await command(user, clientId, table, type, payload);
       } catch (e) {
         publish.clientError(clientId, e);
@@ -116,52 +51,43 @@ module.exports = function(tableTag) {
     } catch (e) {
       console.error('error parsing message', e);
     }
-  });
-
-  const command = async (user, clientId, table, type, payload) => {
-    require('./table/heartbeat')(user, table, clientId);
-    switch (type) {
-      case 'Enter':
-        return await require('./table/enter')(user, table, clientId);
-      case 'Exit':
-        return await require('./table/exit')(user, table, clientId);
-      case 'Join':
-        return await require('./table/join')(user, table, clientId);
-      case 'Leave':
-        return await require('./table/leave')(user, table, clientId);
-      case 'Attack':
-        return await require('./table/attack')(user, table, clientId, payload);
-      case 'EndTurn':
-        return await require('./table/endTurn')(user, table, clientId);
-      case 'SitOut':
-        return await require('./table/sitOut')(user, table, clientId);
-      case 'SitIn':
-        return await require('./table/sitIn')(user, table, clientId);
-      case 'Chat':
-        return await require('./table/chat')(user, table, clientId, payload);
-      case 'Flag':
-        return await require('./table/flag')(user, table, clientId, payload);
-      case 'Heartbeat':
-        return;
-      default:
-        throw new Error(`unknown command "${type}"`);
-    }
   };
+  client.on('message', onMessage);
 
-  tick.start(table);
-
-  //tables.forEach(table =>
-    //table.players = R.range(0,7).map(i =>
-      //Object.assign(Player({
-        //id: `fake_${i}`,
-        //name: `Pikachu${i} Random name`,
-        //picture: 'http://i.imgur.com/WgP9bNm.jpg',
-      //}), {
-        //color: i + 1
-      //})
-    //)
-  //);
-  //module.exports.getTables = function() {
-    //return tables;
-  //};
+  tick.start(tableTag);
+  return () => {
+    client.off('message', onMessage);
+    tick.stop(tableTag);
+  };
 };
+
+const command = async (user, clientId, table: Table, type, payload) => {
+  heartbeat(user, table, clientId);
+  switch (type) {
+    case 'Enter':
+      return await enter(user, table, clientId);
+    case 'Exit':
+      return await exit(user, table, clientId);
+    case 'Join':
+      return await join(user, table, clientId);
+    case 'Leave':
+      return await leave(user, table, clientId);
+    case 'Attack':
+      return await attack(user, table, clientId, payload);
+    case 'EndTurn':
+      return await endTurn(user, table, clientId);
+    case 'SitOut':
+      return await sitOut(user, table, clientId);
+    case 'SitIn':
+      return await sitIn(user, table, clientId);
+    case 'Chat':
+      return await chat(user, table, clientId, payload);
+    case 'Flag':
+      return await flag(user, table, clientId, payload);
+    case 'Heartbeat':
+      return;
+    default:
+      throw new Error(`unknown command "${type}"`);
+  }
+};
+

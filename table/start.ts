@@ -1,4 +1,6 @@
-const R = require('ramda');
+import * as R from 'ramda';
+import { Table, Player, Land } from '../types';
+import { update } from './get';
 const probe = require('pmx').probe();
 const publish = require('./publish');
 const { rand } = require('../rand');
@@ -27,27 +29,26 @@ function shuffle(a) {
   return a;
 }
 
-const randomLandOrder = table => {
-  const landCount = table.lands.length;
-  const colorsCount = landCount - (landCount % table.players.length);
-  return shuffle(table.lands.slice()).slice(0, colorsCount);
+const randomLandOrder = (lands: Land[], playerCount: number) => {
+  const landCount = lands.length;
+  const colorsCount = landCount - (landCount % playerCount);
+  return shuffle(lands.slice()).slice(0, colorsCount);
 };
 
-module.exports = table => {
-  table.status = STATUS_PLAYING;
-  table.gameStart = Date.now();
+const start = (table: Table): Table => {
 
-  table.lands = table.lands.map(land => Object.assign({}, land, {
+  const lands = table.lands.map(land => Object.assign({}, land, {
     points: randomPoints(table.stackSize),
     color: -1,
   }));
 
-  const shuffledLands = randomLandOrder(table);
+  const shuffledLands = randomLandOrder(lands, table.players.length);
 
-  shuffledLands.forEach((land, index) => {
+  const assignedLands = shuffledLands.map((land, index) => {
     const player = table.players[index % table.players.length];
     land.color = player.color;
     land.points = 1;//randomPoints(table.stackSize);
+    return land;
   });
   table.players.forEach(player => {
     const landCount = table.lands.length;
@@ -58,16 +59,19 @@ module.exports = table => {
     });
   });
   
-  table.turnIndex = 0;
-  table.turnStarted = Math.floor(Date.now() / 1000);
-  table.turnActivity = false;
-  table.playerStartCount = table.players.length;
-  publish.tableStatus(table);
+  const newTable = update(table, {
+    status: STATUS_PLAYING,
+    gameStart: Date.now(),
+    turnIndex: 0,
+    turnStarted: Math.floor(Date.now() / 1000),
+    turnActivity: false,
+    playerStartCount: table.players.length,
+  }, undefined, lands);
   publish.event({
     type: 'start',
-    table: table.name,
+    table: newTable.name,
   });
   startCounter.inc();
-  return table;
+  return newTable;
 };
-
+export default start;

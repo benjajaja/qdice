@@ -1,5 +1,7 @@
-const R = require('ramda');
-const probe = require('pmx').probe();
+import * as R from 'ramda';
+import * as pmx from 'pmx';
+import { getTable, save } from './get';
+const probe = pmx.probe();
 
 const {
   STATUS_PAUSED,
@@ -9,7 +11,7 @@ const {
 } = require('../constants');
 const nextTurn = require('./turn');
 const publish = require('./publish');
-const startGame = require('./start');
+import startGame from './start';
 
 let globalTablesUpdate = null;
 
@@ -17,22 +19,25 @@ const updateCounter = probe.counter({
   name : 'Global mqtt updates'
 });
 
-let intervalId = null;
-module.exports.start = table => {
-  if (intervalId !== null) {
+const intervalIds: {[tableTag: string]: any} = {};
+export const start = (tableTag: string) => {
+  if (intervalIds[tableTag]) {
     throw new Error('already ticking');
   }
-  intervalId = setInterval(tick.bind(null, table), 500);
+  intervalIds[tableTag] = setInterval(() => {
+    tick(tableTag);
+  }, 500);
 };
-module.exports.stop = table => {
-  if (intervalId === null) {
+export const stop = (tableTag: string) => {
+  if (intervalIds[tableTag] === null) {
     throw new Error('cannot stop, not ticking');
   }
-  clearInterval(intervalId);
-  intervalId = null;
+  clearInterval(intervalIds[tableTag]);
+  delete intervalIds[tableTag];
 };
 
-const tick = table => {
+const tick = async (tableTag: string) => {
+  let table = await getTable(tableTag);
   if (table.status === STATUS_PLAYING) {
     if (table.turnStarted < Date.now() / 1000 - (TURN_SECONDS + 1)) {
       nextTurn(table);
@@ -46,7 +51,8 @@ const tick = table => {
     if (table.players.length >= 2
         && table.gameStart !== 0
         && table.gameStart < Date.now() / 1000) {
-      startGame(table);
+      table = startGame(table);
+      table = await save(table, table);
       publish.tableStatus(table);
     }
   }
@@ -58,14 +64,16 @@ const tick = table => {
       return [yes, R.append(watcher, no)];
     }
   }, [[], []]);
-  table.watching = stillWatching;
+
   if (stoppedWatching.length > 0) {
     publish.event({
       type: 'watching',
       table: table.name,
-      watching: table.watching.map(R.prop('name')),
+      watching: stillWatching.map(R.prop('name')),
     });
   }
+
+  await save(table, { watching: stillWatching });
 
   //const newUpdate = require('../global').getTablesStatus(tables);
   //if (!R.equals(newUpdate)(globalTablesUpdate)) {

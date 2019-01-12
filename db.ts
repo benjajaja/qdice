@@ -1,10 +1,8 @@
 import * as R from 'ramda';
 import { Client } from 'pg';
+import { UserId, Network, Table } from './types';
 
 let client: Client;
-
-type UserId = number
-type Network = 'google' | 'password' | 'telegram';
 
 export const connect = async function db() {
   if (client) {

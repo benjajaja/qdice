@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 import * as db from './db';
+import * as table from './table';
 
 const R = require('ramda');
 const restify = require('restify');
@@ -75,10 +76,6 @@ server.get('/global', globalServer.global);
 server.get('/findtable', globalServer.findtable);
 server.get('/leaderboard', leaderboard.leaderboard);
 
-
-
-
-console.log('DB', db)
 db.connect().then(() => {
   console.log('connected to postgres.');
 
@@ -100,6 +97,8 @@ db.connect().then(() => {
     if (process.send) {
       process.send('ready');
     }
+    publish.setMqtt(client);
+    table.start('Serrano', client);
   });
 
   client.on('message', globalServer.onMessage);
@@ -110,8 +109,12 @@ db.connect().then(() => {
       process.exit(0);
     });
   });
+
 });
 
+process.on('unhandledRejection', (reason, p) => {
+  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  // application specific logging, throwing an error, or other logic here
+  throw reason
+});
 
-// tables
-require('./table.ts')('Serrano');

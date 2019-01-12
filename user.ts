@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import * as request from 'request';
 import * as jwt from 'jsonwebtoken';
-import db from './db';
+import * as db from './db';
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 
