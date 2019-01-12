@@ -1,50 +1,35 @@
-const R = require('ramda');
+import * as R from 'ramda';
+import { Client } from 'pg';
 
-let client;
+let client: Client;
 
-module.exports.connect = db;
+type UserId = number
+type Network = 'google' | 'password' | 'telegram';
 
-async function db() {
+export const connect = async function db() {
   if (client) {
     return client;
   }
 
-  const { Client } = require('pg');
   client = new Client();
 
   await client.connect();
 
   return client;
-}
+};
 
-module.exports.NETWORK_GOOGLE = 'google';
-module.exports.NETWORK_PASSWORD = 'password';
-module.exports.NETWORK_TELEGRAM = 'telegram';
-const networks = [
-  module.exports.NETWORK_GOOGLE,
-  module.exports.NETWORK_PASSWORD,
-  module.exports.NETWORK_TELEGRAM,
-];
+export const NETWORK_GOOGLE: Network = 'google';
+export const NETWORK_PASSWORD: Network = 'password';
+export const NETWORK_TELEGRAM: Network = 'telegram';
 
 
-const userProfile = rows => Object.assign({},
-  R.pick(['id', 'name', 'email', 'picture', 'network', 'level'], rows[0]),
-  {
-    id: rows[0].id.toString(),
-    picture: rows[0].picture || 'assets/empty_profile_picture.svg',
-    claimed: rows.some(row => row.network !== db.NETWORK_PASSWORD
-      || row.network_id !== null),
-    points: parseInt(rows[0].points, 10),
-  }
-);
-
-module.exports.getUser = async id => {
-  const rows = await module.exports.getUserRows(id);
+export const getUser = async (id: UserId) => {
+  const rows = await getUserRows(id);
   return userProfile(rows);
 };
 
 
-module.exports.getUserRows = async id => {
+export const getUserRows = async (id: UserId) => {
   const user = await client.query(`
 SELECT *
 FROM users
@@ -54,46 +39,46 @@ WHERE id = $1
   return user.rows;
 };
 
-module.exports.getUserFromAuthorization = async (network, id) => {
+export const getUserFromAuthorization = async (network: Network, id: UserId) => {
   try {
     const res = await client.query('SELECT * FROM authorizations WHERE network = $1 AND network_id = $2', [network, id]);
     if (res.rows.length === 0) {
       return undefined;
     }
-    return await module.exports.getUser(res.rows[0].user_id);
+    return await getUser(res.rows[0].user_id);
   } catch (e) {
     console.error('user dont exist', e.toString());
     return undefined;
   }
 };
 
-module.exports.createUser = async (network, network_id, name, email, picture, profileJson) => {
+export const createUser = async (network: Network, network_id: string | null, name: String, email: string | null, picture: string | null, profileJson: any | null) => {
   const { rows : [ user ] } = await client.query('INSERT INTO users (name,email,picture,registration_time) VALUES ($1, $2, $3, current_timestamp) RETURNING *', [name, email, picture]);
   console.log('created user', user);
-  if (network !== module.exports.NETWORK_PASSWORD) {
+  if (network !== NETWORK_PASSWORD) {
     /*const { rows: [ auth ] } =*/
     await client.query('INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *', [user.id, network, network_id, profileJson]);
   }
-  return await module.exports.getUser(user.id);
+  return await getUser(user.id);
 };
 
-module.exports.updateUser = async (id, name) => {
+export const updateUser = async (id: UserId, name: string) => {
   console.log('update', id, name);
   const res = await client.query('UPDATE users SET name = $1 WHERE id = $2', [name, id]);
-  return await module.exports.getUser(id);
+  return await getUser(id);
 };
 
 
-module.exports.addScore = async (id, score) => {
+export const addScore = async (id: UserId, score: number) => {
   console.log('addScore', id, score);
   const res = await client.query(`
 UPDATE users
 SET points = GREATEST(points + $1, 0)
 WHERE id = $2`, [score, id]);
-  return await module.exports.getUser(id);
+  return await getUser(id);
 };
 
-module.exports.leaderBoardTop = async (page = 1) => {
+export const leaderBoardTop = async (page = 1) => {
   const limit = 10;
   const result = await client.query(`
 SELECT id, name, picture, points, level, ROW_NUMBER () OVER (ORDER BY points DESC) AS rank
@@ -109,4 +94,15 @@ LIMIT $1 OFFSET $2`,
     picture: row.picture || '',
   }));
 };
+
+const userProfile = (rows: any[]) => Object.assign({},
+  R.pick(['id', 'name', 'email', 'picture', 'network', 'level'], rows[0]),
+  {
+    id: rows[0].id.toString(),
+    picture: rows[0].picture || 'assets/empty_profile_picture.svg',
+    claimed: rows.some(row => row.network !== NETWORK_PASSWORD
+      || row.network_id !== null),
+    points: parseInt(rows[0].points, 10),
+  }
+);
 

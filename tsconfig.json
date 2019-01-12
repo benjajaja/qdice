@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "lib": ["es2018"],
+    "types": ["node"]
+  }
+}

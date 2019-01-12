@@ -1,10 +1,14 @@
+require('dotenv').config();
+
+import * as db from './db';
+
 const R = require('ramda');
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
 const jwt = require('restify-jwt-community');
 const mqtt = require('mqtt');
 
-const global = require('./global');
+const globalServer = require('./global');
 const leaderboard = require('./leaderboard');
 const publish = require('./table/publish');
 
@@ -40,7 +44,7 @@ server.use(cors.actual);
 server.use(jwt({
   secret: process.env.JWT_SECRET,
   credentialsRequired: true,
-  getToken: function fromHeaderOrQuerystring (req) {
+  getToken: function fromHeaderOrQuerystring (req: any) {
     if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
         return req.headers.authorization.split(' ')[1] || null;
     }
@@ -48,13 +52,13 @@ server.use(jwt({
   },
 })
 .unless({
-  custom: req => {
+  custom: (req: any) => {
     const ok = R.anyPass([
-      req => req.path() === '/login',
-      req => req.path() === '/register',
-      req => req.path() === '/global',
-      req => req.path() === '/findtable',
-      req => req.path() === '/leaderboard',
+      (req: any) => req.path() === '/login',
+      (req: any) => req.path() === '/register',
+      (req: any) => req.path() === '/global',
+      (req: any) => req.path() === '/findtable',
+      (req: any) => req.path() === '/leaderboard',
     ])(req);
     return ok;
   }
@@ -67,14 +71,15 @@ server.put('/profile', require('./user').profile);
 server.post('/register', require('./user').register);
 
 
-server.get('/global', global.global);
-server.get('/findtable', global.findtable);
+server.get('/global', globalServer.global);
+server.get('/findtable', globalServer.findtable);
 server.get('/leaderboard', leaderboard.leaderboard);
 
 
 
 
-require('./db').connect().then(db => {
+console.log('DB', db)
+db.connect().then(() => {
   console.log('connected to postgres.');
 
   server.listen(process.env.PORT || 5001, function() {
@@ -89,13 +94,15 @@ require('./db').connect().then(db => {
   publish.setMqtt(client);
 
   client.subscribe('events');
-  client.on('error', err => console.error(err));
+  client.on('error', (err: Error) => console.error(err));
   client.on('connect', () => {
     console.log('connected to mqtt.');
-    process.send('ready');
+    if (process.send) {
+      process.send('ready');
+    }
   });
 
-  client.on('message', global.onMessage);
+  client.on('message', globalServer.onMessage);
 
   process.on('SIGINT', () => {
     client.end(() => {
@@ -106,3 +113,5 @@ require('./db').connect().then(db => {
 });
 
 
+// tables
+require('./table.ts')('Serrano');

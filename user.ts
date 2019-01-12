@@ -1,7 +1,7 @@
-const R = require('ramda');
-const request = require('request');
-const jwt = require('jsonwebtoken');
-const db = require('./db');
+import * as R from 'ramda';
+import * as request from 'request';
+import * as jwt from 'jsonwebtoken';
+import db from './db';
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 
