@@ -1,12 +1,13 @@
-const { serializeTable, serializePlayer } = require('./serialize');
-const jwt = require('jsonwebtoken');
+import { Table } from '../types';
+import { serializeTable, serializePlayer } from './serialize';
+import * as jwt from 'jsonwebtoken';
 
 let client;
-module.exports.setMqtt = client_ => {
+export const setMqtt = client_ => {
   client = client_;
 };
 
-module.exports.tableStatus = (table, clientId) => {
+export const tableStatus = (table: Table, clientId?) => {
   client.publish(clientId
     ? `clients/${clientId}`
     : `tables/${table.name}/clients`,
@@ -24,7 +25,7 @@ module.exports.tableStatus = (table, clientId) => {
   );
 };
 
-module.exports.enter = (table, name) => {
+export const enter = (table: Table, name) => {
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'enter',
@@ -40,7 +41,7 @@ module.exports.enter = (table, name) => {
 };
 
 
-module.exports.exit = (table, name) => {
+export const exit = (table, name) => {
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'exit',
@@ -55,7 +56,7 @@ module.exports.exit = (table, name) => {
   );
 };
 
-module.exports.roll = (table, roll) => {
+export const roll = (table, roll) => {
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'roll',
@@ -70,7 +71,7 @@ module.exports.roll = (table, roll) => {
   );
 };
 
-module.exports.move = (table, move) => {
+export const move = (table, move) => {
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'move',
@@ -85,7 +86,7 @@ module.exports.move = (table, move) => {
   );
 };
 
-module.exports.elimination = (table, player, position, score, reason) => {
+export const elimination = (table, player, position, score, reason) => {
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'elimination',
@@ -114,7 +115,7 @@ module.exports.elimination = (table, player, position, score, reason) => {
   );
 };
 
-module.exports.tables = globalTablesUpdate => {
+export const tables = globalTablesUpdate => {
   client.publish('clients',
     JSON.stringify({
       type: 'tables',
@@ -129,7 +130,7 @@ module.exports.tables = globalTablesUpdate => {
   );
 };
 
-module.exports.event = event => {
+export const event = event => {
   client.publish('events',
     JSON.stringify(event),
     undefined,
@@ -141,7 +142,7 @@ module.exports.event = event => {
   );
 };
 
-module.exports.clientError = (clientId, error) => {
+export const clientError = (clientId, error) => {
   console.error('client error', clientId, error);
   client.publish(`clients/${clientId}`, JSON.stringify({
     type: 'error',
@@ -158,7 +159,7 @@ module.exports.clientError = (clientId, error) => {
   }
 };
 
-module.exports.chat = (table, user, message) => {
+export const chat = (table, user, message) => {
   client.publish('tables/' + table.name + '/clients',
     JSON.stringify({
       type: 'chat',
@@ -173,7 +174,7 @@ module.exports.chat = (table, user, message) => {
   );
 };
 
-module.exports.userUpdate = clientId => profile => {
+export const userUpdate = clientId => profile => {
   const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
   client.publish(`clients/${clientId}`,
     JSON.stringify({
@@ -183,7 +184,7 @@ module.exports.userUpdate = clientId => profile => {
     undefined,
     (err) => {
 			if (err) {
-				console.log(err, 'tables/' + table.name + '/clients update', table);
+				console.log(err, 'tables/?/clients update', clientId);
 			}
 		}
   );

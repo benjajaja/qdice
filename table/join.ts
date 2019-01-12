@@ -1,16 +1,16 @@
 import * as R from 'ramda';
 import { Table, Player } from '../types';
 import { save } from './get';
-const publish = require('./publish');
+import * as publish from './publish';
 import startGame from './start';
-const {
+import {
   STATUS_PAUSED,
   STATUS_PLAYING,
   STATUS_FINISHED,
   TURN_SECONDS,
   COLOR_NEUTRAL,
   GAME_START_COUNTDOWN,
-} = require('../constants');
+} from '../constants';
 
 const makePlayer = (user, clientId, playerCount): Player => ({
   id: user.id,
@@ -28,13 +28,15 @@ const makePlayer = (user, clientId, playerCount): Player => ({
   flag: null,
 });
   
-const join = async (user, table: Table, clientId) => {
+const join = async (user, table: Table, clientId): Promise<Table | undefined> => {
   if (table.status === STATUS_PLAYING) {
-    return publish.clientError(clientId, new Error('already playing'));
+    publish.clientError(clientId, new Error('already playing'));
+    return;
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
-    return publish.clientError(clientId, new Error('already joined'));
+    publish.clientError(clientId, new Error('already joined'));
+    return;
   }
 
   const players = table.players.concat([makePlayer(user, clientId, table.players.length)]);
@@ -76,6 +78,7 @@ const join = async (user, table: Table, clientId) => {
     player: R.last(newTable.players),
     playerCount: newTable.players.length,
   });
+  return newTable;
 };
 export default join;
 

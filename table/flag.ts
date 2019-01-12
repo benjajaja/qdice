@@ -1,5 +1,5 @@
-const R = require('ramda');
-const publish = require('./publish');
+import * as R from 'ramda';
+import * as publish from './publish';
 const elimination = require('./elimination');
 const nextTurn = require('./turn');
 const { hasTurn, groupedPlayerPositions } = require('../helpers');
@@ -15,7 +15,7 @@ const {
   ELIMINATION_REASON_SURRENDER,
 } = require('../constants');
 
-module.exports = (user, table, clientId) => {
+const flag = (user, table, clientId) => {
   if (table.status !== STATUS_PLAYING) {
     return publish.clientError(clientId, new Error('not playing'));
   }
@@ -54,4 +54,5 @@ module.exports = (user, table, clientId) => {
   }
   publish.tableStatus(table);
 };
+export default flag;
 

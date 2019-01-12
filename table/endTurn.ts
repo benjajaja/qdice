@@ -1,16 +1,18 @@
-const publish = require('./publish');
-const nextTurn = require('./turn');
-const { hasTurn } = require('../helpers');
-const {
+import * as publish from './publish';
+import turn from './turn';
+import { hasTurn } from '../helpers';
+import {
   STATUS_PAUSED,
   STATUS_PLAYING,
   STATUS_FINISHED,
   TURN_SECONDS,
   COLOR_NEUTRAL,
   GAME_START_COUNTDOWN,
-} = require('../constants');
+} from '../constants';
+import { Table, Land, UserLike } from '../types';
+import { update, save } from './get';
 
-module.exports = (user, table, clientId) => {
+const endTurn = async (user: UserLike, table: Table, clientId) => {
   if (table.status !== STATUS_PLAYING) {
     return publish.clientError(clientId, new Error('game not running'));
   }
@@ -22,8 +24,9 @@ module.exports = (user, table, clientId) => {
     return publish.clientError(clientId, new Error('not playing'));
   }
 
-  table.turnActivity = true;
-  nextTurn(table);
-  publish.tableStatus(table);
+  const newTable = await turn(update(table, { turnActivity: true }));
+  publish.tableStatus(newTable);
+  return newTable;
 };
+export default endTurn;
 

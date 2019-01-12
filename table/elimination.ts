@@ -1,12 +1,13 @@
-const {
+import {
   ELIMINATION_REASON_WIN,
-} = require('../constants');
-const publish = require('./publish');
-const { playerPositions, positionScore, tablePoints } = require('../helpers');
-const db = require('../db');
+} from '../constants';
+import * as publish from './publish';
+import { positionScore, tablePoints } from '../helpers';
+import * as db from '../db';
+import { Table } from '../types';
 
 
-module.exports = (table, player, reason, source, points) => {
+const elimination = (table: Table, player, reason, source) => {
   const position = reason === ELIMINATION_REASON_WIN
     ? 1
     : table.players.length;
@@ -27,4 +28,5 @@ module.exports = (table, player, reason, source, points) => {
     ...source,
   });
 };
+export default elimination;
 

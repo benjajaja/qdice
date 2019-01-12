@@ -1,16 +1,17 @@
-var R = require('ramda');
-
-const {
+import * as R from 'ramda';
+import { Table, Adjacency, Land, Emoji } from './types';
+import { findTable } from './helpers';
+//import { get } from './table/get';
+import {
   TURN_SECONDS,
   GAME_START_COUNTDOWN,
   MAX_NAME_LENGTH,
   STATUS_PAUSED,
   STATUS_PLAYING,
   STATUS_FINISHED,
-} = require('./constants');
-const publish = require('./table/publish');
-const { findTable } = require('./helpers');
-const maps = require('./maps');
+} from './constants';
+import * as publish from './table/publish';
+import * as maps from './maps';
 
 const tablesConfig = require('./tables.config');
 
@@ -29,7 +30,7 @@ const tables = tablesConfig.tables.map(config => {
   };
 });
 
-module.exports.global = function(req, res, next) {
+export const global = function(req, res, next) {
   res.send(200, {
     settings: {
       turnSeconds: TURN_SECONDS,
@@ -41,15 +42,15 @@ module.exports.global = function(req, res, next) {
   next();
 };
 
-module.exports.findtable = (req, res, next) => {
+export const findtable = (req, res, next) => {
   res.send(200, R.pipe(
-    R.map(table => [table.name, table.players.length]),
-    R.reduce(R.maxBy(R.nth(1)), ['', -1]),
+    R.map<any, any>(table => [table.name, table.players.length]),
+    R.reduce((R.maxBy as any)(R.nth(1)), ['', -1]),
     R.nth(0),
   )(tables));
 };
 
-const getTablesStatus = module.exports.getTablesStatus = (tables) =>
+const getTablesStatus = (tables) =>
   tables.map(table =>
     Object.assign(R.pick([
       'name',
@@ -65,7 +66,7 @@ const getTablesStatus = module.exports.getTablesStatus = (tables) =>
     })
   );
 
-module.exports.onMessage = (topic, message) => {
+export const onMessage = (topic, message) => {
   try {
     if (topic === 'events') {
       const event = JSON.parse(message);
@@ -76,7 +77,7 @@ module.exports.onMessage = (topic, message) => {
           if (!table) {
             return;
           }
-          table.players.push(event.player);
+          //table.players.push(event.player);
           publish.tables(getTablesStatus(tables));
 
           return;
@@ -87,7 +88,7 @@ module.exports.onMessage = (topic, message) => {
           if (!table) {
             return;
           }
-          table.players = table.players.filter(p => p.id !== event.player.id);
+          //table.players = table.players.filter(p => p.id !== event.player.id);
           publish.tables(getTablesStatus(tables));
           return;
         }
@@ -95,7 +96,7 @@ module.exports.onMessage = (topic, message) => {
         case 'elimination': {
           const { player, position, score } = event;
           const table = findTable(tables)(event.table);
-          table.players = table.players.filter(p => p.id === event.player.id);
+          //table.players = table.players.filter(p => p.id === event.player.id);
           publish.tables(getTablesStatus(tables));
           return;
         }
@@ -106,7 +107,7 @@ module.exports.onMessage = (topic, message) => {
             return;
           }
 
-          table.watching = event.watching;
+          //table.watching = event.watching;
           publish.tables(getTablesStatus(tables));
 
           return;

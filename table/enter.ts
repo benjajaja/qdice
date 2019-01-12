@@ -1,7 +1,7 @@
-const R = require('ramda');
-const publish = require('./publish');
+import * as R from 'ramda';
+import * as publish from './publish';
 
-module.exports = async (user, table, clientId) => {
+const enter = async (user, table, clientId) => {
   const existing = R.find(R.propEq('clientId', clientId), table.watching);
   if (!existing) {
     table.watching = R.append({ clientId, name: user ? user.name : null, lastBeat: Date.now() }, table.watching);
@@ -25,4 +25,5 @@ module.exports = async (user, table, clientId) => {
     }
   }
 };
+export default enter;
 

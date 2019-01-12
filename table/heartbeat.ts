@@ -1,7 +1,7 @@
-const R = require('ramda');
-const publish = require('./publish');
+import * as R from 'ramda';
+import * as publish from './publish';
 
-module.exports = (user, table, clientId) => {
+const heartbeat = (user, table, clientId) => {
   const existing = R.find(R.propEq('clientId', clientId), table.watching);
   if (existing) {
     existing.lastBeat = Date.now();
@@ -15,5 +15,5 @@ module.exports = (user, table, clientId) => {
     });
   }
 };
-
+export default heartbeat;
 

@@ -8,12 +8,13 @@ export type Table = {
   readonly playerSlots: number;
   readonly startSlots: number;
   readonly points: number;
-  readonly status: typeof STATUS_FINISHED | typeof STATUS_PLAYING | typeof STATUS_PAUSED;
+  readonly status: TableStatus;
   readonly gameStart: number;
   readonly turnIndex: number;
   readonly turnStarted: number;
   readonly turnActivity: boolean;
   readonly lands: ReadonlyArray<Land>
+  readonly adjacency: Adjacency;
   readonly stackSize: number;
   readonly playerStartCount: number;
   readonly turnCount: number;
@@ -22,13 +23,29 @@ export type Table = {
   readonly watching: ReadonlyArray<Watcher>;
 }
 
-export type Land = any
+export type Land = {
+  readonly emoji: Emoji;
+  readonly cells: ReadonlyArray<{ x: number, y: number, z: number }>;
+  readonly color: string;
+  readonly points: number;
+};
 
-export type Player = {
+export type Emoji = string;
+export type TableStatus = typeof STATUS_FINISHED | typeof STATUS_PLAYING | typeof STATUS_PAUSED;
+
+export type Adjacency = {
+  readonly matrix: ReadonlyArray<ReadonlyArray<bool>>;
+  indexes: Readonly<{ [index:Emoji]: number }>;
+};
+
+export type UserLike = {
   readonly id: UserId;
-  readonly clientId: any;
   readonly name: string;
+  readonly clientId: any;
   readonly picture: string;
+};
+
+export type Player = UserLike & {
   readonly color: string;
   readonly reserveDice: number;
   readonly out: boolean;
@@ -38,6 +55,9 @@ export type Player = {
   readonly position: number;
   readonly score: number;
   readonly flag: any;
+}
+
+export type User = UserLike & {
 }
 
 export type Watcher = { clientId: any, name: string | null, lastBeat: number }

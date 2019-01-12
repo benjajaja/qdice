@@ -10,17 +10,17 @@ import * as tick from './table/tick';
 import { getTable } from './table/get';
 import { findTable, hasTurn } from './helpers';
 
-import * as heartbeat from './table/heartbeat';
-import * as enter from './table/enter';
-import * as exit from './table/exit';
+import heartbeat from './table/heartbeat';
+import enter from './table/enter';
+import exit from './table/exit';
 import join from './table/join';
-import * as leave from './table/leave';
-import * as attack from './table/attack';
-import * as endTurn from './table/endTurn';
-import * as sitOut from './table/sitOut';
-import * as sitIn from './table/sitIn';
-import * as chat from './table/chat';
-import * as flag from './table/flag';
+import leave from './table/leave';
+import attack from './table/attack';
+import endTurn from './table/endTurn';
+import sitOut from './table/sitOut';
+import sitIn from './table/sitIn';
+import chat from './table/chat';
+import flag from './table/flag';
 
 const verifyJwt = promisify(jwt.verify);
 
@@ -83,7 +83,7 @@ const command = async (user, clientId, table: Table, type, payload) => {
     case 'Chat':
       return await chat(user, table, clientId, payload);
     case 'Flag':
-      return await flag(user, table, clientId, payload);
+      return await flag(user, table, clientId);
     case 'Heartbeat':
       return;
     default:

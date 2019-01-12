@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import * as pmx from 'pmx';
 import { getTable, save } from './get';
+import { Table, Player } from '../types';
 const probe = pmx.probe();
 
 const {
@@ -9,8 +10,8 @@ const {
   STATUS_FINISHED,
   TURN_SECONDS,
 } = require('../constants');
-const nextTurn = require('./turn');
-const publish = require('./publish');
+import nextTurn from './turn';
+import * as publish from './publish';
 import startGame from './start';
 
 let globalTablesUpdate = null;
@@ -40,10 +41,10 @@ const tick = async (tableTag: string) => {
   let table = await getTable(tableTag);
   if (table.status === STATUS_PLAYING) {
     if (table.turnStarted < Date.now() / 1000 - (TURN_SECONDS + 1)) {
-      nextTurn(table);
+      table = await nextTurn(table);
       publish.tableStatus(table);
     } else if (table.players.every(R.prop('out'))) {
-      nextTurn(table);
+      table = await nextTurn(table);
       publish.tableStatus(table);
     }
 
@@ -52,7 +53,6 @@ const tick = async (tableTag: string) => {
         && table.gameStart !== 0
         && table.gameStart < Date.now() / 1000) {
       table = startGame(table);
-      table = await save(table, table);
       publish.tableStatus(table);
     }
   }

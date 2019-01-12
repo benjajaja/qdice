@@ -1,5 +1,7 @@
+import { Table, Adjacency, Land, Emoji } from './types';
+
 const fs = require('fs');
-const R = require('ramda');
+import * as R from 'ramda';
 const { Grid, HEX_ORIENTATIONS } = require('honeycomb-grid');
 const { rand } = require('./rand');
 const {
@@ -13,20 +15,20 @@ const grid = Grid({
 });
 
 
-module.exports.loadMap = tag => {
+export const loadMap = (tag: string): [ Land[], Adjacency, string ] => {
   const { lands, adjacency, name } = mapJson.maps
     .filter(R.propEq('tag', tag)).pop();
   return [ lands, adjacency, name ];
 };
 
-const isBorder = module.exports.isBorder = ({ indexes, matrix }, from, to) => {
+const isBorder = ({ indexes, matrix }: Adjacency, from: Emoji, to: Emoji): boolean => {
   return matrix[indexes[from]][indexes[to]];
 };
 
-module.exports.landMasses = table => color => {
-  const colorLands = table.lands.filter(R.propEq('color', color));
+export const landMasses = (table: Table) => (color: string): Emoji[][] => {
+  const colorLands: Land[] = table.lands.filter(R.propEq('color', color));
 
-  const landMasses = colorLands.reduce((masses, land) => {
+  const landMasses: Land[][] = colorLands.reduce((masses: Land[][], land: Land): Land[][] => {
     const bordering = masses.filter(mass =>
       mass.some(existing =>
         isBorder(table.adjacency, land.emoji, existing.emoji)));
@@ -42,14 +44,15 @@ module.exports.landMasses = table => color => {
       } else {
         return mass;
       }
-    }).filter(R.identity);
-  }, []);
-  return R.map(R.map(R.prop('emoji')))(landMasses);
+    }).filter(R.identity) as Land[][];
+  }, [] as Land[][]);
+
+  return landMasses.map(mass =>
+    mass.map(land => land.emoji));
 };
 
-module.exports.countConnectedLands = table => color => {
-  const landMasses = module.exports.landMasses(table)(color);
-  const counts = landMasses.map(R.prop('length'));
-  return R.reduce(R.max, 0, counts);
+export const countConnectedLands = (table: Table) => (color: string): number => {
+  const counts: number[] = landMasses(table)(color).map(R.prop('length'));
+  return R.reduce(R.max, 0, counts) as number;
 };
 

@@ -1,9 +1,9 @@
-const R = require('ramda');
+import * as R from 'ramda';
 
-const maps = require('../maps');
-const { groupedPlayerPositions, positionScore, tablePoints } = require('../helpers');
+import * as maps from '../maps';
+import { groupedPlayerPositions, positionScore, tablePoints } from '../helpers';
 
-module.exports.serializeTable = table => {
+export const serializeTable = table => {
 
   const players = table.players.map(serializePlayer(table));  
 
@@ -22,7 +22,7 @@ module.exports.serializeTable = table => {
 };
 
 
-const serializePlayer = module.exports.serializePlayer = table => {
+export const serializePlayer = table => {
   const derived = computePlayerDerived(table);
   return player => {
     return Object.assign({}, R.pick([

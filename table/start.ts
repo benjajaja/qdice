@@ -2,11 +2,11 @@ import * as R from 'ramda';
 import { Table, Player, Land } from '../types';
 import { update } from './get';
 const probe = require('pmx').probe();
-const publish = require('./publish');
-const { rand } = require('../rand');
-const {
+import * as publish from './publish';
+import { rand } from '../rand';
+import {
   STATUS_PLAYING,
-} = require('../constants');
+} from '../constants';
 
 const startCounter = probe.counter({
   name : 'Games started',

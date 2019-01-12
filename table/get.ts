@@ -1,5 +1,5 @@
 import { UserId, Table, Player, Land } from '../types';
-import * as maps from '../maps.js';
+import * as maps from '../maps';
 import * as db from '../db';
 import {
   STATUS_PAUSED,
@@ -23,6 +23,10 @@ const makeTable = (config: any): Table => ({
   turnStarted: 0,
   turnActivity: false,
   lands: [],
+  adjacency: {
+    matrix: [],
+    indexes: {},
+  },
   stackSize: config.stackSize,
   playerStartCount: 0,
   turnCount: 1,

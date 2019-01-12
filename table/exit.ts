@@ -1,7 +1,7 @@
-const R = require('ramda');
-const publish = require('./publish');
+import * as R from 'ramda';
+import * as publish from './publish';
 
-module.exports = async (user, table, clientId) => {
+const exit = async (user, table, clientId) => {
   publish.exit(table, user ? user.name : null);
   table.watching = R.filter(R.complement(R.propEq('clientId', clientId)), table.watching);
   publish.event({
@@ -10,4 +10,5 @@ module.exports = async (user, table, clientId) => {
     watching: table.watching.map(R.prop('name')),
   });
 };
+export default exit;
 
