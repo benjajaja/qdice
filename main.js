@@ -31,7 +31,7 @@ server.use(restify.plugins.throttle({
 server.use(restify.plugins.conditionalRequest());
 const cors = corsMiddleware({
   preflightMaxAge: 5, //Optional
-  origins: ['http://localhost:5000', 'http://lvh.me:5000', 'https://quedice.host', 'https://quevic.io', 'https://elm-dice.herokuapp.com', 'https://*.hwcdn.net'],
+  origins: ['http://localhost:5000', 'http://lvh.me:5000', 'https://quedice.host', 'https://quevic.io', 'https://qdice.wtf', 'https://www.qdice.wtf', 'https://elm-dice.herokuapp.com', 'https://*.hwcdn.net'],
   allowHeaders: ['authorization'],
   exposeHeaders: ['authorization']
 });
