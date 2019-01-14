@@ -1,22 +1,23 @@
-module Tables exposing (Table(..), decodeTable, encodeTable, tableList)
+module Tables exposing (Table, Map(..), decodeMap)
 
+type alias Table = String
 
-type Table
-    = Melchor
+type Map
+    = Null
+    | Melchor
     | Miño
     | Serrano
-    | Avocado
     | DeLucía
     | Sabicas
 
 
-tableList : List Table
-tableList =
-    [ Melchor, Miño, DeLucía, Serrano, Avocado ]
+--tableList : List Table
+--tableList =
+--    [ Melchor, Miño, DeLucía, Serrano, Avocado ]
 
 
-decodeTable : String -> Maybe Table
-decodeTable name =
+decodeMap : String -> Maybe Map
+decodeMap name =
     case name of
         "Melchor" ->
             Just Melchor
@@ -26,9 +27,6 @@ decodeTable name =
 
         "Serrano" ->
             Just Serrano
-
-        "Avocado" ->
-            Just Avocado
 
         "DeLucía" ->
             Just DeLucía
@@ -40,23 +38,27 @@ decodeTable name =
             Nothing
 
 
-encodeTable : Table -> String
-encodeTable table =
-    case table of
-        Melchor ->
-            "Melchor"
+-- encodeMap : Map -> String
+-- encodeMap map =
+--     case map of
+--         Null ->
+--             "Null"
 
-        Miño ->
-            "Miño"
+--         Melchor ->
+--             "Melchor"
 
-        Serrano ->
-            "Serrano"
+--         Miño ->
+--             "Miño"
 
-        Avocado ->
-            "Avocado"
+--         Serrano ->
+--             "Serrano"
 
-        DeLucía ->
-            "DeLucía"
+--         Avocado ->
+--             "Avocado"
 
-        Sabicas ->
-            "Sabicas"
+--         DeLucía ->
+--             "DeLucía"
+
+--         Sabicas ->
+--             "Sabicas"
+

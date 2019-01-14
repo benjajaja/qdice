@@ -2,13 +2,13 @@ const fs = require('fs');
 
 const write = fs.createWriteStream('./src/Maps/Sources.elm');
 write.write('module Maps.Sources exposing (mapSourceString)\n');
-write.write('import Tables exposing (Table(..))\n');
+write.write('import Tables exposing (Map(..))\n');
 write.write('\n');
-write.write('mapSourceString : Table -> String\n');
+write.write('mapSourceString : Map -> String\n');
 write.write('mapSourceString table =\n');
 write.write('    case table of\n');
 
-fs.readdirSync('./maps').forEach(file => {
+fs.readdirSync('./maps').sort().forEach(file => {
   const buffer = fs.readFileSync(`./maps/${file}`);
   const lines = buffer.toString().split('\n');
   const name = lines.shift();

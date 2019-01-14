@@ -4,7 +4,7 @@ import Http
 import Navigation exposing (Location)
 import UrlParser exposing (..)
 import Types exposing (..)
-import Tables exposing (Table(..), decodeTable, encodeTable)
+import Tables exposing (Table)
 import Backend.HttpCommands exposing (findBestTable, leaderBoard)
 
 
@@ -12,13 +12,13 @@ matchers : Parser (Route -> a) a
 matchers =
     oneOf
         [ map (HomeRoute) top
-        , tableMatcher
         , map StaticPageRoute (s "static" </> staticPageMatcher)
         , map EditorRoute (s "editor")
         , map MyProfileRoute (s "me")
         , map TokenRoute (s "token" </> string)
         , map ProfileRoute (s "profile" </> string)
         , map LeaderBoardRoute (s "leaderboard")
+        , tableMatcher
         ]
 
 
@@ -42,13 +42,8 @@ tableMatcher =
     UrlParser.custom "GAME" <|
         \segment ->
             case Http.decodeUri segment of
-                Just decoded ->
-                    case decodeTable decoded of
-                        Just table ->
-                            Ok (GameRoute table)
-
-                        Nothing ->
-                            Err <| "No such table: " ++ decoded
+                Just table ->
+                    Ok (GameRoute table)
 
                 Nothing ->
                     Err <| "No such table: " ++ segment
@@ -81,7 +76,7 @@ routeToString route =
             "#"
 
         GameRoute table ->
-            "#" ++ (encodeTable table)
+            "#" ++ table
 
         StaticPageRoute page ->
             case page of

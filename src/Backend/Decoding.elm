@@ -1,7 +1,7 @@
 module Backend.Decoding exposing (..)
 
 import Types exposing (LoggedUser, Profile)
-import Tables exposing (Table(..), decodeTable)
+import Tables exposing (Table)
 import Game.Types exposing (TableStatus, Player, PlayerGameStats)
 import Board.Types
 import LeaderBoard.Types exposing (LeaderBoardModel)
@@ -32,23 +32,24 @@ meDecoder =
 
 
 tableNameDecoder : Decoder Table
-tableNameDecoder =
-    map decodeTable string
-        |> andThen
-            (\t ->
-                case t of
-                    Just table ->
-                        succeed table
+tableNameDecoder = string
+    -- map decodeTable string
+    --     |> andThen
+    --         (\t ->
+    --             case t of
+    --                 Just table ->
+    --                     succeed table
 
-                    Nothing ->
-                        fail "unknown table"
-            )
+    --                 Nothing ->
+    --                     fail "unknown table"
+    --         )
 
 
 tableDecoder : Decoder TableStatus
 tableDecoder =
     decode TableStatus
         |> required "players" (list playersDecoder)
+        |> required "mapName" mapNameDecoder
         |> required "playerSlots" int
         |> required "status" gameStatusDecoder
         |> required "gameStart" int
@@ -188,25 +189,38 @@ globalSettingsDecoder =
         |> required "turnSeconds" int
 
 
-tableTagDecoder : Decoder Table
-tableTagDecoder =
-    let
-        convert : String -> Decoder Table
-        convert string =
-            case decodeTable string of
-                Just table ->
-                    Json.Decode.succeed table
+-- tableTagDecoder : Decoder Table
+-- tableTagDecoder =
+--     let
+--         convert : String -> Decoder Table
+--         convert string =
+--             case decodeTable string of
+--                 Just table ->
+--                     Json.Decode.succeed table
 
-                Nothing ->
-                    Json.Decode.fail <| "cannot decode table name: " ++ string
-    in
-        string |> Json.Decode.andThen convert
+--                 Nothing ->
+--                     Json.Decode.fail <| "cannot decode table name: " ++ string
+--     in
+--         string |> Json.Decode.andThen convert
 
+mapNameDecoder : Decoder Tables.Map
+mapNameDecoder =
+    map Tables.decodeMap string
+        |> andThen
+            (\m ->
+                case m of
+                    Just map ->
+                        succeed map
+
+                    Nothing ->
+                        fail "unknown map"
+            )
 
 tableInfoDecoder : Decoder Game.Types.TableInfo
 tableInfoDecoder =
     decode Game.Types.TableInfo
-        |> required "name" tableTagDecoder
+        |> required "name" string
+        |> required "mapName" mapNameDecoder
         |> required "playerSlots" int
         |> required "playerCount" int
         |> required "watchCount" int

@@ -12,7 +12,7 @@ import Editor.Types
 import MyProfile.Types
 import Backend.Types
 import Board exposing (Msg)
-import Tables exposing (Table(..))
+import Tables exposing (Table)
 import Static.Types
 
 

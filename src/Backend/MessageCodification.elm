@@ -2,7 +2,7 @@ module Backend.MessageCodification exposing (..)
 
 import Types exposing (Msg(..))
 import Backend.Types exposing (..)
-import Tables exposing (Table(..))
+import Tables exposing (Table)
 import Game.Types
 import Json.Decode as Dec exposing (..)
 import Backend.Decoding exposing (..)
@@ -26,7 +26,7 @@ decodeTopicMessage userTable topic message =
                 Ok tableName ->
                     case userTable of
                         Just table ->
-                            if tableName == toString table then
+                            if tableName == table then
                                 decodeTableMessage table message
                             else
                                 Err <| "message for wrong table: " ++ tableName
@@ -179,7 +179,7 @@ encodeTopic topic =
             "clients/" ++ id
 
         Tables table direction ->
-            "tables/" ++ (toString table) ++ "/" ++ (encodeDirection direction)
+            "tables/" ++ table ++ "/" ++ (encodeDirection direction)
 
 
 encodeDirection : TopicDirection -> String

@@ -9,19 +9,19 @@ import Board.State
 import Board.Types
 import Maps exposing (load)
 import Land exposing (Color)
-import Tables exposing (Table(..))
+import Tables exposing (Table, Map)
 import Backend
 import Backend.Types exposing (Topic(..))
 import Backend.MqttCommands exposing (gameCommand, attack)
 import Helpers exposing (indexOf, playSound, pipeUpdates, find)
 
 
-init : Maybe Types.Model -> Table -> ( Game.Types.Model, Cmd Types.Msg )
-init model table =
+init : Maybe Types.Model -> Table -> Maybe Map -> ( Game.Types.Model, Cmd Types.Msg )
+init model table tableMap =
     let
-        ( map, mapCmd ) =
-            Maps.load table
-
+        map = Maybe.map Maps.load tableMap
+            |> Maybe.withDefault Land.emptyMap
+        
         board =
             Board.init map
 
@@ -53,7 +53,7 @@ init model table =
                         Nothing ->
                             m
                )
-        , mapCmd
+        , Cmd.none
         )
 
 
@@ -63,8 +63,9 @@ changeTable model table =
         previousTable =
             model.game.table
 
+        map = tableMap table model
         ( game, cmd ) =
-            init (Just model) table
+            init (Just model) table map
 
         model_ =
             { model | game = game }
@@ -72,6 +73,12 @@ changeTable model table =
         ( model_, cmd )
             |> pipeUpdates Backend.subscribeGameTable table
 
+tableMap : Table -> Types.Model -> Maybe Map
+tableMap table model =
+    case List.filter (\t -> t.table == table) model.tableList
+            |> List.head of
+        Just tableInfo -> Just tableInfo.mapName
+        Nothing -> Nothing
 
 findUserPlayer : Types.User -> List Player -> Maybe Player
 findUserPlayer user players =
@@ -138,8 +145,12 @@ updateTableStatus model status =
             else
                 Nothing
 
+        oldBoard = if model.game.board.map == Land.emptyMap
+        then Board.init <| Maps.load status.mapName
+        else model.game.board
+        
         board_ =
-            Board.State.updateLands model.game.board status.lands move
+            Board.State.updateLands oldBoard status.lands move
 
         hasStarted =
             game.status /= Playing && status.status == Playing

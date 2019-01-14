@@ -7,7 +7,7 @@ import Material.Layout as Layout
 import Material.Options as Options
 import Material.Icon as Icon
 import Types exposing (..)
-import Tables exposing (Table(..))
+import Tables exposing (Table)
 
 
 drawer : User -> List (Html Msg)

@@ -22,7 +22,7 @@ init =
         board =
             Board.init (Land.fullCellMap 30 30 Land.Editor)
 
-        ( map, _ ) =
+        map =
             Maps.load Tables.Melchor
 
         board_ =

@@ -30,7 +30,7 @@ import Backend
 import Backend.HttpCommands exposing (authenticate, loadMe, loadGlobalSettings, findBestTable)
 import Backend.MqttCommands exposing (gameCommand)
 import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionStatus(..))
-import Tables exposing (Table(..), tableList)
+import Tables exposing (Table, Map(..))
 import MyOauth
 import Snackbar exposing (toast)
 import Footer exposing (footer)
@@ -64,10 +64,10 @@ init flags location =
             Routing.parseLocation location
 
         table =
-            Maybe.withDefault Serrano <| currentTable route
+            Maybe.withDefault "" <| currentTable route
 
         ( game, gameCmd ) =
-            Game.State.init Nothing table
+            Game.State.init Nothing table Nothing
 
         ( editor, editorCmd ) =
             Editor.Editor.init
@@ -88,7 +88,7 @@ init flags location =
                         ( backend_
                         , [ auth [ token ]
                           , loadMe backend_
-                          , navigateTo <| GameRoute Serrano
+                          , navigateTo <| GameRoute ""
                           ]
                         )
 
@@ -191,12 +191,9 @@ update msg model =
                 Ok ( settings, tables ) ->
                     let
                         game =
-                            model.game
-
-                        game_ =
                             Game.State.updateGameInfo model.game tables
                     in
-                        { model | settings = settings, tableList = tables, game = game_ } ! []
+                    { model | settings = settings, tableList = tables, game = game } ! []
 
         GetToken doJoin res ->
             case res of
@@ -329,7 +326,7 @@ update msg model =
                             Debug.log "error" err
                     in
                         --toast model "Could not find a good table for you"
-                        ( model, replaceNavigateTo <| GameRoute Serrano )
+                        ( model, replaceNavigateTo <| GameRoute "" )
 
                 Ok table ->
                     ( model

@@ -6,7 +6,7 @@ import Land exposing (Cells)
 import Maps.Sources exposing (mapSourceString)
 import Regex
 import Helpers exposing (..)
-import Tables exposing (Table(..))
+import Tables exposing (Table, Map)
 
 
 type alias MapSource =
@@ -37,19 +37,19 @@ consoleLogMap map =
     consoleDebug <| toEmojiString <| toCharList map
 
 
-load : Table -> ( Land.Map, Cmd msg )
-load table =
-    ( emojisToMap <| mapSourceString table
-    , consoleDebug <|
-        "Emoji map"
-            ++ (String.join (String.fromChar '\n') <|
-                    List.map (\l -> String.join "" <| List.map Tuple.second l) <|
-                        (mapSourceString table
-                            |> String.lines
-                            |> List.indexedMap charRow
-                        )
-               )
-    )
+load : Map -> Land.Map
+load map =
+    emojisToMap <| mapSourceString map
+    -- , consoleDebug <|
+    --     "Emoji map"
+    --         ++ (String.join (String.fromChar '\n') <|
+    --                 List.map (\l -> String.join "" <| List.map Tuple.second l) <|
+    --                     (mapSourceString map
+    --                         |> String.lines
+    --                         |> List.indexedMap charRow
+    --                     )
+    --            )
+    -- )
 
 
 emojisToMap : String -> Land.Map

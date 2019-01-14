@@ -2,16 +2,11 @@ port module Backend exposing (..)
 
 import String
 import Navigation exposing (Location)
-import Json.Decode exposing (list, string)
-import Task
 import Backend.Types exposing (..)
-import Backend.Decoding exposing (..)
-import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
-import Backend.HttpCommands exposing (..)
 import Backend.MqttCommands exposing (..)
 import Types exposing (Msg(..))
-import Tables exposing (Table(..), decodeTable)
+import Tables exposing (Table)
 import Game.Types exposing (Player, PlayerAction(..), RollLog)
 import Land exposing (Color(..))
 import Helpers exposing (find)
@@ -261,23 +256,18 @@ decodeTopic clientId string =
                 Nothing ->
                     Nothing
 
-                Just tableName ->
-                    case decodeTable tableName of
+                Just table ->
+                    case direction of
                         Nothing ->
                             Nothing
 
-                        Just table ->
-                            case direction of
+                        Just direction ->
+                            case decodeDirection direction of
                                 Nothing ->
                                     Nothing
 
                                 Just direction ->
-                                    case decodeDirection direction of
-                                        Nothing ->
-                                            Nothing
-
-                                        Just direction ->
-                                            Just <| Tables table direction
+                                    Just <| Tables table direction
     else
         case string of
             "clients" ->

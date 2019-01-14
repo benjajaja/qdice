@@ -16,7 +16,7 @@ import Material.Footer as Footer
 import Material.List as Lists
 import Material.Toggles as Toggles
 import Types exposing (Model, Msg(..))
-import Tables exposing (Table, encodeTable)
+import Tables exposing (Table)
 import Board
 import Backend.Types exposing (ConnectionStatus(..))
 import Time exposing (inMilliseconds)
@@ -56,7 +56,7 @@ header model =
     div [ class "edGameHeader" ]
         [ div [ class "edGameHeader__content" ]
             [ seatButton model
-            , text <| encodeTable model.game.table
+            , text <| model.game.table
             , flagCheckbox model
             , endTurnButton model
             ]
@@ -247,7 +247,7 @@ tableInfo model =
         [ span [ class "edGameStatus__chip" ]
             [ text "Table "
             , span [ class "edGameStatus__chip--strong" ]
-                [ text <| encodeTable model.game.table
+                [ text <| model.game.table
                 ]
             ]
         , span [ class "edGameStatus__chip" ] <|

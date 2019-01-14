@@ -7,7 +7,6 @@ import Material.Icon as Icon
 import Material.Options
 import Material.Menu as Menu
 import Types exposing (Model, Msg(..), User(..), Route(..), StaticPage(..))
-import Tables exposing (Table(..))
 import Backend.Types exposing (ConnectionStatus(..))
 
 

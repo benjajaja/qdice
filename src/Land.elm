@@ -145,6 +145,9 @@ fullCellMap w h color =
         w
         h
 
+emptyMap : Map
+emptyMap =
+    Map [] 30 20
 
 isBordering : Land -> Land -> Bool
 isBordering a b =

@@ -2,7 +2,6 @@ module Backend.HttpCommands exposing (..)
 
 import Http
 import Land exposing (Color(..))
-import Tables exposing (Table(..), decodeTable)
 import Game.Types exposing (Player, PlayerAction(..))
 import Backend.Types exposing (..)
 import Types exposing (Msg(..))
