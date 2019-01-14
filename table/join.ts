@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { Table, Player } from '../types';
-import { save } from './get';
+import { save, update } from './get';
 import * as publish from './publish';
 import startGame from './start';
 import {
@@ -54,7 +54,7 @@ const join = async (user, table: Table, clientId): Promise<Table | undefined> =>
   //table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1}));
 
   let gameStart = table.gameStart;
-  let newTable = await save(table, { status, turnCount }, players, lands);
+  let newTable = update(table, { status, turnCount }, players, lands);
   if (table.players.length === table.playerSlots) {
     newTable = startGame(newTable);
   } else {

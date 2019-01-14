@@ -1,13 +1,12 @@
-import { Table, Adjacency, Land, Emoji } from './types';
-
-const fs = require('fs');
 import * as R from 'ramda';
-const { Grid, HEX_ORIENTATIONS } = require('honeycomb-grid');
-const { rand } = require('./rand');
-const {
+import { Grid, HEX_ORIENTATIONS } from 'honeycomb-grid';
+import { Table, Adjacency, Land, Emoji } from './types';
+import { rand } from './rand';
+import {
   COLOR_NEUTRAL,
-} = require('./constants');
-const mapJson = require('./map-sources.json');
+} from './constants';
+
+import * as mapJson from './map-sources.json';
 
 const grid = Grid({
   size: 100,
@@ -17,11 +16,11 @@ const grid = Grid({
 
 export const loadMap = (tag: string): [ Land[], Adjacency, string ] => {
   const { lands, adjacency, name } = mapJson.maps
-    .filter(R.propEq('tag', tag)).pop();
-  return [ lands, adjacency, name ];
+    .filter(R.propEq('tag', tag)).pop()!;
+  return [ lands.map(land => ({ ...land, color: COLOR_NEUTRAL, points: 0 })), adjacency, name ];
 };
 
-const isBorder = ({ indexes, matrix }: Adjacency, from: Emoji, to: Emoji): boolean => {
+export const isBorder = ({ indexes, matrix }: Adjacency, from: Emoji, to: Emoji): boolean => {
   return matrix[indexes[from]][indexes[to]];
 };
 

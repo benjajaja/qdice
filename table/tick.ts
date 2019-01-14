@@ -38,7 +38,8 @@ export const stop = (tableTag: string) => {
 };
 
 const tick = async (tableTag: string) => {
-  let table = await getTable(tableTag);
+  const oldTable = await getTable(tableTag);
+  let table = oldTable;
   if (table.status === STATUS_PLAYING) {
     if (table.turnStarted < Date.now() / 1000 - (TURN_SECONDS + 1)) {
       table = await nextTurn(table);
@@ -73,7 +74,9 @@ const tick = async (tableTag: string) => {
     });
   }
 
-  await save(table, { watching: stillWatching });
+  if (table !== oldTable) {
+    await save(table, { watching: stillWatching });
+  }
 
   //const newUpdate = require('../global').getTablesStatus(tables);
   //if (!R.equals(newUpdate)(globalTablesUpdate)) {

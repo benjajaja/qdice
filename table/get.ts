@@ -9,6 +9,8 @@ import {
   GAME_START_COUNTDOWN,
 } from '../constants';
 import * as config from '../tables.config';
+import logger from '../logger';
+
 
 const makeTable = (config: any): Table => ({
   name: config.name,
@@ -49,7 +51,8 @@ const loadLands = (table: Table): Table => {
 
 const tables: {[index: string]: Table} = {};
 
-export const getTable = async (tableTag: string, map: string): Promise<Table> => {
+export const getTable = async (tableTag: string): Promise<Table> => {
+  //logger.info(`get ${tableTag}`);
   if (tables[tableTag]) {
     return tables[tableTag];
   }
@@ -84,6 +87,8 @@ export const save = async (
   players?: Player[] | ReadonlyArray<Player>,
   lands?: Land[] | ReadonlyArray<Land>
 ): Promise<Table> => {
+  console.trace('save');
+  logger.info(`save ${table.tag}`);
   const newTable = update(table, props, players, lands);
   tables[table.tag] = newTable;
   return Promise.resolve(newTable);

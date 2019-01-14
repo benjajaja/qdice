@@ -5,34 +5,45 @@ export type Table = {
   readonly name: string;
   readonly tag: string;
   readonly mapName: string;
-  readonly players: ReadonlyArray<Player>;
+  readonly adjacency: Adjacency;
+  readonly stackSize: number;
+  readonly noFlagRounds: number;
   readonly playerSlots: number;
   readonly startSlots: number;
   readonly points: number;
+
+  readonly playerStartCount: number;
+  readonly players: ReadonlyArray<Player>;
   readonly status: TableStatus;
   readonly gameStart: number;
   readonly turnIndex: number;
   readonly turnStarted: number;
   readonly turnActivity: boolean;
   readonly lands: ReadonlyArray<Land>
-  readonly adjacency: Adjacency;
-  readonly stackSize: number;
-  readonly playerStartCount: number;
   readonly turnCount: number;
   readonly roundCount: number;
-  readonly noFlagRounds: number;
   readonly watching: ReadonlyArray<Watcher>;
 }
 
 export type Land = {
   readonly emoji: Emoji;
   readonly cells: ReadonlyArray<{ x: number, y: number, z: number }>;
-  readonly color: string;
+  readonly color: Color;
   readonly points: number;
 };
 
 export type Emoji = string;
 export type TableStatus = typeof STATUS_FINISHED | typeof STATUS_PLAYING | typeof STATUS_PAUSED;
+export type Color
+  = typeof COLOR_RED
+  | typeof COLOR_BLUE
+  | typeof COLOR_GREEN
+  | typeof COLOR_YELLOW
+  | typeof COLOR_MAGENTA
+  | typeof COLOR_CYAN
+  | typeof COLOR_ORANGE
+  | typeof COLOR_BEIGE
+  | typeof COLOR_BLACK
 
 export type Adjacency = {
   readonly matrix: ReadonlyArray<ReadonlyArray<bool>>;
@@ -47,7 +58,7 @@ export type UserLike = {
 };
 
 export type Player = UserLike & {
-  readonly color: string;
+  readonly color: Color;
   readonly reserveDice: number;
   readonly out: boolean;
   readonly outTurns: number;
