@@ -4,6 +4,7 @@ export type Network = 'google' | 'password' | 'telegram';
 export type Table = {
   readonly name: string;
   readonly tag: string;
+  readonly mapName: string;
   readonly players: ReadonlyArray<Player>;
   readonly playerSlots: number;
   readonly startSlots: number;

@@ -1,8 +1,9 @@
 module.exports = {
   tables: [
     {
-      tag: 'Serrano',
-      name: 'Serrano',
+      tag: 'España',
+      name: 'España',
+      mapName: 'Serrano',
       playerSlots: 7,
       startSlots: 2,
       points: 0,
@@ -36,15 +37,16 @@ module.exports = {
       //stackSize: 4,
       //noFlagRounds: 5,
     //},
-    //{
-      //tag: 'Sabicas',
-      //name: 'Sabicas',
-      //playerSlots: 9,
-      //startSlots: 4,
-      //points: 200,
-      //stackSize: 8,
-      //noFlagRounds: 5,
-    //},
+    {
+      tag: 'Arabia',
+      name: 'Arabia',
+      mapName: 'Sabicas',
+      playerSlots: 9,
+      startSlots: 4,
+      points: 200,
+      stackSize: 8,
+      noFlagRounds: 5,
+    },
   ],
 };
 

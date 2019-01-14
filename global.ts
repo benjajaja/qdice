@@ -16,9 +16,10 @@ import * as maps from './maps';
 const tablesConfig = require('./tables.config');
 
 const tables = tablesConfig.tables.map(config => {
-  const [ lands, adjacency ] = maps.loadMap(config.tag);
+  const [ lands, adjacency ] = maps.loadMap(config.mapName);
   return {
     tag: config.tag,
+    mapName: config.mapName,
     name: config.tag,
     playerSlots: config.playerSlots,
     stackSize: config.stackSize,
@@ -55,6 +56,7 @@ const getTablesStatus = (tables) =>
     Object.assign(R.pick([
       'name',
       'tag',
+      'mapName',
       'stackSize',
       'status',
       'playerSlots',

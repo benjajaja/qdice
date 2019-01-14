@@ -11,8 +11,9 @@ import {
 import * as config from '../tables.config';
 
 const makeTable = (config: any): Table => ({
-  name: config.tag,
+  name: config.name,
   tag: config.tag,
+  mapName: config.mapName,
   players: [],
   playerSlots: config.playerSlots,
   startSlots: config.startSlots,
@@ -36,9 +37,8 @@ const makeTable = (config: any): Table => ({
 });
 
 const loadLands = (table: Table): Table => {
-  const [ lands, adjacency, name ] = maps.loadMap(table.tag);
+  const [ lands, adjacency ] = maps.loadMap(table.mapName);
   return Object.assign({}, table, {
-    name,
     lands: lands.map(land => Object.assign({}, land, {
       color: COLOR_NEUTRAL,
       points: 1,
@@ -49,7 +49,7 @@ const loadLands = (table: Table): Table => {
 
 const tables: {[index: string]: Table} = {};
 
-export const getTable = async (tableTag: string): Promise<Table> => {
+export const getTable = async (tableTag: string, map: string): Promise<Table> => {
   if (tables[tableTag]) {
     return tables[tableTag];
   }

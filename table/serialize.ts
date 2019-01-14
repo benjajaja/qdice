@@ -10,7 +10,7 @@ export const serializeTable = table => {
   const lands = table.lands.map(({ emoji, color, points }) => [emoji, color, points]);
 
   const result = Object.assign({}, R.pick([
-    'name', 'playerSlots', 'status', 'turnIndex', 'turnStarted', 'gameStart',
+    'tag', 'name', 'mapName', 'playerSlots', 'status', 'turnIndex', 'turnStarted', 'gameStart',
     'turnCount', 'roundCount',
   ])(table), {
     players: players,

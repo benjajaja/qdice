@@ -10,7 +10,7 @@ export const setMqtt = client_ => {
 export const tableStatus = (table: Table, clientId?) => {
   client.publish(clientId
     ? `clients/${clientId}`
-    : `tables/${table.name}/clients`,
+    : `tables/${table.tag}/clients`,
     JSON.stringify({
       type: 'update',
       payload: serializeTable(table),

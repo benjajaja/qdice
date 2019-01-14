@@ -98,8 +98,10 @@ db.connect().then(() => {
       process.send('ready');
     }
     publish.setMqtt(client);
-    table.start('Serrano', client);
+
   });
+  table.start('España', client);
+  table.start('Arabia', client);
 
   client.on('message', globalServer.onMessage);
 
