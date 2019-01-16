@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import { Grid, HEX_ORIENTATIONS } from 'honeycomb-grid';
+import logger from './logger';
 import { Table, Adjacency, Land, Emoji } from './types';
 import { rand } from './rand';
 import {
@@ -14,9 +15,10 @@ const grid = Grid({
 });
 
 
-export const loadMap = (tag: string): [ Land[], Adjacency, string ] => {
+export const loadMap = (mapName: string): [ Land[], Adjacency, string ] => {
+  logger.info(`Loading map: ${mapName}`);
   const { lands, adjacency, name } = mapJson.maps
-    .filter(R.propEq('tag', tag)).pop()!;
+    .filter(R.propEq('tag', mapName)).pop()!;
   return [ lands.map(land => ({ ...land, color: COLOR_NEUTRAL, points: 0 })), adjacency, name ];
 };
 

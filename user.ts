@@ -5,7 +5,7 @@ import * as db from './db';
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 
-exports.login = (req, res, next) => {
+export const login = (req, res, next) => {
   request({
     url: 'https://www.googleapis.com/oauth2/v4/token',
     method: 'POST',
@@ -54,7 +54,7 @@ exports.login = (req, res, next) => {
   });
 };
 
-exports.me = function(req, res, next) {
+export const me = function(req, res, next) {
   db.getUser(req.user.id)
   .then(profile => {
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
@@ -64,7 +64,7 @@ exports.me = function(req, res, next) {
   .catch(e => next(e));
 };
 
-exports.profile = function(req, res, next) {
+export const profile = function(req, res, next) {
   db.updateUser(req.user.id, req.body.name)
   .then(profile => {
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
@@ -78,7 +78,7 @@ exports.profile = function(req, res, next) {
   .catch(e => next(e));
 };
 
-exports.register = function(req, res, next) {
+export const register = function(req, res, next) {
   db.createUser(db.NETWORK_PASSWORD, null, req.body.name, null, null, null)
   .then(profile => {
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);

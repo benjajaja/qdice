@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import { Client } from 'pg';
+import * as camelize from 'camelize';
 import { UserId, Network, Table } from './types';
 
 let client: Client;
@@ -103,4 +104,68 @@ const userProfile = (rows: any[]) => Object.assign({},
     points: parseInt(rows[0].points, 10),
   }
 );
+
+export const getTable = async (tag: string) => {
+  const result = await client.query(`
+SELECT *
+FROM tables
+WHERE tag = $1
+LIMIT 1`,
+    [tag]
+  );
+  const row = camelize(result.rows.pop());
+  if (!row) {
+    return null;
+  }
+  return Object.assign({}, row, {
+    gameStart: row.gameStart ? row.gameStart.getTime() / 1000 : 0,
+    turnStarted: row.turnStarted ? row.turnStarted.getTime() / 1000 : 0,
+  });
+};
+
+export const createTable = async (table: Table) => {
+  const result = await client.query(`
+INSERT INTO tables
+(tag, name, map_name, stack_size, player_slots, start_slots, points, players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+RETURNING *`,
+    [table.tag,
+      table.name,
+      table.mapName,
+      table.stackSize,
+      table.playerSlots,
+      table.startSlots,
+      table.points,
+      JSON.stringify(table.players),
+      JSON.stringify(table.lands),
+      JSON.stringify(table.watching),
+      table.playerStartCount, table.status, table.turnIndex, table.turnActivity, table.turnCount, table.roundCount,
+      new (Date as any)(table.gameStart * 1000),
+      new (Date as any)(table.turnStarted * 1000),
+    ]
+  );
+  const row = result.rows.pop();
+  console.log('row', row);
+  return camelize(row);
+};
+
+export const saveTable = async (table: Table) => {
+  console.log(table.players);
+  const result = await client.query(`
+UPDATE tables
+SET (players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start)
+  = ($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+WHERE tag = $1
+RETURNING *`,
+    [table.tag,
+      JSON.stringify(table.players),
+      JSON.stringify(table.lands),
+      JSON.stringify(table.watching),
+      table.playerStartCount, table.status, table.turnIndex, table.turnActivity, table.turnCount, table.roundCount,
+      new (Date as any)(table.gameStart * 1000),
+      new (Date as any)(table.turnStarted * 1000),
+    ]
+  );
+  return camelize(result.rows.pop());
+};
 

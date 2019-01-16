@@ -28,6 +28,7 @@
     "@types/ramda": "^0.25.46",
     "@types/restify": "^7.2.7",
     "bluebird": "^3.5.1",
+    "camelize": "^1.0.0",
     "dotenv": "^6.2.0",
     "honeycomb-grid": "^0.6.1",
     "jsonwebtoken": "^8.1.0",

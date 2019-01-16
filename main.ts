@@ -1,17 +1,22 @@
-require('dotenv').config();
+import * as dotenv from 'dotenv';
 
+import logger from './logger';
 import * as db from './db';
 import * as table from './table';
 
-const R = require('ramda');
-const restify = require('restify');
-const corsMiddleware = require('restify-cors-middleware');
-const jwt = require('restify-jwt-community');
-const mqtt = require('mqtt');
+import * as R from 'ramda';
 
-const globalServer = require('./global');
-const leaderboard = require('./leaderboard');
-const publish = require('./table/publish');
+import * as restify from 'restify';
+import * as corsMiddleware from 'restify-cors-middleware';
+import * as jwt from 'restify-jwt-community';
+import * as mqtt from 'mqtt';
+
+import * as globalServer from './global';
+import { leaderboard } from './leaderboard';
+import * as publish from './table/publish';
+import * as user from './user';
+
+dotenv.config();
 
 const server = restify.createServer();
 server.pre(restify.pre.userAgentConnection());
@@ -66,24 +71,24 @@ server.use(jwt({
 }));
 
 
-server.post('/login', require('./user').login);
-server.get('/me', require('./user').me);
-server.put('/profile', require('./user').profile);
-server.post('/register', require('./user').register);
+server.post('/login', user.login);
+server.get('/me', user.me);
+server.put('/profile', user.profile);
+server.post('/register', user.register);
 
 
 server.get('/global', globalServer.global);
 server.get('/findtable', globalServer.findtable);
-server.get('/leaderboard', leaderboard.leaderboard);
+server.get('/leaderboard', leaderboard);
 
 db.connect().then(() => {
-  console.log('connected to postgres.');
+  logger.info('connected to postgres.');
 
   server.listen(process.env.PORT || 5001, function() {
-    console.log('%s listening at %s port %s', server.name, server.url);
+    logger.info('%s listening at %s port %s', server.name, server.url);
   });
 
-  console.log('connecting to mqtt: ' + process.env.MQTT_URL);
+  logger.info('connecting to mqtt: ' + process.env.MQTT_URL);
   var client = mqtt.connect(process.env.MQTT_URL, {
     username: process.env.MQTT_USERNAME,
     password: process.env.MQTT_PASSWORD,
@@ -91,9 +96,9 @@ db.connect().then(() => {
   publish.setMqtt(client);
 
   client.subscribe('events');
-  client.on('error', (err: Error) => console.error(err));
+  client.on('error', (err: Error) => logger.error(err));
   client.on('connect', () => {
-    console.log('connected to mqtt.');
+    logger.info('connected to mqtt.');
     if (process.send) {
       process.send('ready');
     }
@@ -105,17 +110,17 @@ db.connect().then(() => {
 
   client.on('message', globalServer.onMessage);
 
-  process.on('SIGINT', () => {
-    client.end(() => {
-      console.log('main stopped gracefully');
-      process.exit(0);
-    });
-  });
+  //process.on('SIGINT', () => {
+    //(client.end as any)(() => {
+      //logger.info('main stopped gracefully');
+      //process.exit(0);
+    //});
+  //});
 
 });
 
 process.on('unhandledRejection', (reason, p) => {
-  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
+  logger.error('Unhandled Rejection at: Promise', p, 'reason:', reason);
   // application specific logging, throwing an error, or other logic here
   throw reason
 });
