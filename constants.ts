@@ -3,6 +3,7 @@ export const STATUS_PLAYING = 'PLAYING';
 export const STATUS_FINISHED = 'FINISHED';
 
 export const TURN_SECONDS = 10;
+export const ROLL_SECONDS = 1.0;
 export const GAME_START_COUNTDOWN = 
   process.env.NODE_ENV === 'production'
     ? 30

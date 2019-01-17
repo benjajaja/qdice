@@ -23,6 +23,7 @@ export type Table = {
   readonly turnCount: number;
   readonly roundCount: number;
   readonly watching: ReadonlyArray<Watcher>;
+  readonly attack: Attack | null;
 }
 
 export type Land = {
@@ -31,6 +32,13 @@ export type Land = {
   readonly color: Color;
   readonly points: number;
 };
+
+export type Attack = {
+  start: number;
+  from: Emoji;
+  to: Emoji;
+  clientId: string;
+}
 
 export type Emoji = string;
 export enum TableStatus {

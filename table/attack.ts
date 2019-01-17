@@ -46,62 +46,70 @@ const attack = async (user, table: Table, clientId, [emojiFrom, emojiTo]) => {
     throw new IllegalMoveError('attack not border', user, emojiFrom, emojiTo, fromLand, toLand);
   }
 
-  const newTable = await save(table, { turnStart: Math.floor(Date.now() / 1000), turnActivity: true });
+  const newTable = await save(table, {
+    turnStart: Math.floor(Date.now() / 1000),
+    turnActivity: true,
+    attack: {
+      start: Math.floor(Date.now() / 1000),
+      from: emojiFrom,
+      to: emojiTo,
+      clientId: clientId,
+    },
+  });
   publish.move(newTable, {
     from: emojiFrom,
     to: emojiTo,
   });
-
-  setTimeout(() => {
-    rollResult(newTable.tag, fromLand, toLand, clientId);
-  }, 1000);
 };
 export default attack;
 
-const rollResult = async (tableTag: string, fromLand: Land, toLand: Land, clientId: string) => {
-    try {
-      let emojiFrom = fromLand.emoji;
-      let emojiTo = toLand.emoji;
-      let table = await getTable(tableTag);
-      const [fromRoll, toRoll, isSuccess] = diceRoll(fromLand.points, toLand.points);
-      publish.roll(table, {
-        from: { emoji: emojiFrom, roll: fromRoll },
-        to: { emoji: emojiTo, roll: toRoll },
-      });
-      let lands = table.lands;
-      if (isSuccess) {
-        const loser = R.find(R.propEq('color', toLand.color), table.players);
-        lands = updateLand(table.lands, toLand, { points: fromLand.points - 1, color: fromLand.color });
-        if (loser && R.filter(R.propEq('color', loser.color), table.lands).length === 0) {
-          const turnPlayer = table.players[table.turnIndex];
-          elimination(table, loser, ELIMINATION_REASON_DIE, {
-            player: serializePlayer(table)(turnPlayer),
-            points: tablePoints(table) / 2,
-          });
-          const players = table.players.filter(R.complement(R.equals(loser)))
-            .map(player => {
-              if (player === turnPlayer) {
-                return ({ ...player, score: player.score + tablePoints(table) / 2 });
-              }
-              return player;
-            });
-          table = update(table, { }, players);
-          if (table.players.length === 1) {
-            return await endGame(table);
-          }
-          table = update(table, { turnIndex: table.players.indexOf(turnPlayer) });
-        }
-      }
-
-      lands = updateLand(lands, fromLand, { points: 1 })
-
-      table = await save(table, { turnStart: Math.floor(Date.now() / 1000) }, undefined, lands);
-      publish.tableStatus(table);
-    } catch (e) {
-      publish.clientError(clientId, new Error('roll failed'));
-      throw e;
-    }
+export const rollResult = async (table: Table): Promise<Table> => {
+  if (!table.attack || !table.attack.clientId) {
+    throw new Error(`rollResult without attack.clientId: ${table.attack}`);
   }
+  try {
+    const find = findLand(table.lands);
+    const fromLand: Land = find(table.attack.from);
+    const toLand = find(table.attack.to);
+    const [fromRoll, toRoll, isSuccess] = diceRoll(fromLand.points, toLand.points);
+    publish.roll(table, {
+      from: { emoji: table.attack.from, roll: fromRoll },
+      to: { emoji: table.attack.to, roll: toRoll },
+    });
+    let lands = table.lands;
+    if (isSuccess) {
+      const loser = R.find(R.propEq('color', toLand.color), table.players);
+      lands = updateLand(table.lands, toLand, { points: fromLand.points - 1, color: fromLand.color });
+      if (loser && R.filter(R.propEq('color', loser.color), table.lands).length === 0) {
+        const turnPlayer = table.players[table.turnIndex];
+        elimination(table, loser, ELIMINATION_REASON_DIE, {
+          player: serializePlayer(table)(turnPlayer),
+          points: tablePoints(table) / 2,
+        });
+        const players = table.players.filter(R.complement(R.equals(loser)))
+          .map(player => {
+            if (player === turnPlayer) {
+              return ({ ...player, score: player.score + tablePoints(table) / 2 });
+            }
+            return player;
+          });
+        table = update(table, { }, players);
+        if (table.players.length === 1) {
+          return await endGame(table);
+        }
+        table = update(table, { turnIndex: table.players.indexOf(turnPlayer) });
+      }
+    }
+
+    lands = updateLand(lands, fromLand, { points: 1 })
+
+    return await update(table, { turnStart: Math.floor(Date.now() / 1000), attack: null }, undefined, lands);
+  } catch (e) {
+    publish.clientError(table.attack.clientId, new Error('Roll failed'));
+    logger.error(e);
+    throw e;
+  }
+}
 
 const updateLand = (lands: ReadonlyArray<Land>, target: Land, props: Partial<Land>): ReadonlyArray<Land> => {
   return lands.map(land => {

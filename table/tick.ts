@@ -9,10 +9,12 @@ const {
   STATUS_PLAYING,
   STATUS_FINISHED,
   TURN_SECONDS,
+  ROLL_SECONDS,
 } = require('../constants');
-import nextTurn from './turn';
 import * as publish from './publish';
+import nextTurn from './turn';
 import startGame from './start';
+import { rollResult } from './attack';
 
 let globalTablesUpdate = null;
 
@@ -41,7 +43,10 @@ const tick = async (tableTag: string) => {
   const oldTable = await getTable(tableTag);
   let table = oldTable;
   if (table.status === STATUS_PLAYING) {
-    if (table.turnStart < Date.now() / 1000 - (TURN_SECONDS + 1)) {
+    if (table.attack && table.attack.start < Date.now() / 1000 - ROLL_SECONDS) {
+      table = await rollResult(table);
+      publish.tableStatus(table);
+    } else if (table.turnStart < Date.now() / 1000 - (TURN_SECONDS + 1)) {
       table = await nextTurn(table);
       publish.tableStatus(table);
     } else if (table.players.every(R.prop('out'))) {
