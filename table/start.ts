@@ -63,7 +63,7 @@ const start = (table: Table): Table => {
     status: STATUS_PLAYING,
     gameStart: Date.now(),
     turnIndex: 0,
-    turnStarted: Math.floor(Date.now() / 1000),
+    turnStart: Math.floor(Date.now() / 1000),
     turnActivity: false,
     playerStartCount: table.players.length,
   }, undefined, lands);

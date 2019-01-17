@@ -1,6 +1,8 @@
 import * as R from 'ramda';
 import { Client } from 'pg';
 import * as camelize from 'camelize';
+
+import logger from './logger';
 import { UserId, Network, Table } from './types';
 
 let client: Client;
@@ -53,7 +55,7 @@ export const getUserFromAuthorization = async (network: Network, id: UserId) => 
 
 export const createUser = async (network: Network, network_id: string | null, name: String, email: string | null, picture: string | null, profileJson: any | null) => {
   const { rows : [ user ] } = await client.query('INSERT INTO users (name,email,picture,registration_time) VALUES ($1, $2, $3, current_timestamp) RETURNING *', [name, email, picture]);
-  console.log('created user', user);
+  logger.info('created user', user);
   if (network !== NETWORK_PASSWORD) {
     /*const { rows: [ auth ] } =*/
     await client.query('INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *', [user.id, network, network_id, profileJson]);
@@ -62,14 +64,14 @@ export const createUser = async (network: Network, network_id: string | null, na
 };
 
 export const updateUser = async (id: UserId, name: string) => {
-  console.log('update', id, name);
+  logger.info('update user', id, name);
   const res = await client.query('UPDATE users SET name = $1 WHERE id = $2', [name, id]);
   return await getUser(id);
 };
 
 
 export const addScore = async (id: UserId, score: number) => {
-  console.log('addScore', id, score);
+  logger.debug('addScore', id, score);
   const res = await client.query(`
 UPDATE users
 SET points = GREATEST(points + $1, 0)
@@ -119,7 +121,7 @@ LIMIT 1`,
   }
   return Object.assign({}, row, {
     gameStart: row.gameStart ? row.gameStart.getTime() / 1000 : 0,
-    turnStarted: row.turnStarted ? row.turnStarted.getTime() / 1000 : 0,
+    turnStart: row.turnStart ? row.turnStart.getTime() / 1000 : 0,
   });
 };
 
@@ -141,16 +143,14 @@ RETURNING *`,
       JSON.stringify(table.watching),
       table.playerStartCount, table.status, table.turnIndex, table.turnActivity, table.turnCount, table.roundCount,
       new (Date as any)(table.gameStart * 1000),
-      new (Date as any)(table.turnStarted * 1000),
+      new (Date as any)(table.turnStart * 1000),
     ]
   );
   const row = result.rows.pop();
-  console.log('row', row);
   return camelize(row);
 };
 
 export const saveTable = async (table: Table) => {
-  console.log(table.players);
   const result = await client.query(`
 UPDATE tables
 SET (players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start)
@@ -163,9 +163,18 @@ RETURNING *`,
       JSON.stringify(table.watching),
       table.playerStartCount, table.status, table.turnIndex, table.turnActivity, table.turnCount, table.roundCount,
       new (Date as any)(table.gameStart * 1000),
-      new (Date as any)(table.turnStarted * 1000),
+      new (Date as any)(table.turnStart * 1000),
     ]
   );
   return camelize(result.rows.pop());
+};
+
+export const getTablesStatus = async (): Promise<any> => {
+  const result = await client.query(`
+SELECT tag, name, map_name, stack_size, status, player_slots, points, players, watching
+FROM tables
+LIMIT 100`
+  );
+  return result.rows.map(camelize);
 };
 

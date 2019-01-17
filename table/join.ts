@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { Table, Player } from '../types';
+import { Table, Player, IllegalMoveError } from '../types';
 import { save, update } from './get';
 import * as publish from './publish';
 import startGame from './start';
@@ -30,13 +30,11 @@ const makePlayer = (user, clientId, playerCount): Player => ({
   
 const join = async (user, table: Table, clientId): Promise<Table | undefined> => {
   if (table.status === STATUS_PLAYING) {
-    publish.clientError(clientId, new Error('already playing'));
-    return;
+    throw new IllegalMoveError('join while STATUS_PLAYING', user);
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
-    publish.clientError(clientId, new Error('already joined'));
-    return;
+    throw new IllegalMoveError('already joined', user);
   }
 
   const players = table.players.concat([makePlayer(user, clientId, table.players.length)]);

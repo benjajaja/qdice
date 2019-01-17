@@ -41,7 +41,7 @@ const tick = async (tableTag: string) => {
   const oldTable = await getTable(tableTag);
   let table = oldTable;
   if (table.status === STATUS_PLAYING) {
-    if (table.turnStarted < Date.now() / 1000 - (TURN_SECONDS + 1)) {
+    if (table.turnStart < Date.now() / 1000 - (TURN_SECONDS + 1)) {
       table = await nextTurn(table);
       publish.tableStatus(table);
     } else if (table.players.every(R.prop('out'))) {

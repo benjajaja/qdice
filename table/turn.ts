@@ -30,7 +30,7 @@ const turn = async (table: Table): Promise<Table> => {
   const nextIndex = (i => i + 1 < table.players.length ? i + 1 : 0)(table.turnIndex);
   newTable = update(newTable, {
     turnIndex: nextIndex,
-    turnStarted: Math.floor(Date.now() / 1000),
+    turnStart: Math.floor(Date.now() / 1000),
     turnActivity: false,
     turnCount: newTable.turnCount + 1,
     roundCount: newTable.turnIndex === 0
@@ -59,7 +59,7 @@ const turn = async (table: Table): Promise<Table> => {
   } else*/
   if (newPlayer.out) {
     if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
-      elimination(newTable, newPlayer, ELIMINATION_REASON_OUT, {
+      await elimination(newTable, newPlayer, ELIMINATION_REASON_OUT, {
         turns: newPlayer.outTurns,
       });
       newTable = removePlayer(newTable)(newPlayer);
@@ -77,7 +77,7 @@ const turn = async (table: Table): Promise<Table> => {
       }));
     }
     if (!newTable.players.every(R.prop('out'))) {
-      return turn(newTable);
+      return await turn(newTable);
     }
   }
   return await save(table, newTable);
@@ -95,7 +95,7 @@ const giveDice = (table: Table) => (player: Player): Table => {
 
   let reserveDice = 0;
 
-  let lands = [...table.lands];
+  let lands: Land[] = [...table.lands];
   R.range(0, newDies).forEach(i => {
     const targets = playerLands.filter(land => land.points < table.stackSize);
     if (targets.length === 0) {
@@ -103,9 +103,12 @@ const giveDice = (table: Table) => (player: Player): Table => {
     } else {
       let index = rand(0, targets.length - 1);
       const target = targets[index];
-      lands = [...lands.slice(0, index), { ...target, points: target.points + 1 }, ...lands.slice(index)];
+      lands = [...lands.slice(0, index), { ...target, points: target.points + 1 }, ...lands.slice(index + 1)];
     }
   });
+  if (lands.length !== table.lands.length) {
+    throw new Error('giveDice error');
+  }
   return update(
     table,
     {},

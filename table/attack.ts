@@ -16,43 +16,53 @@ import elimination from './elimination';
 import { isBorder } from '../maps';
 import { serializePlayer } from './serialize';
 import { getTable, update, save } from './get';
-import { Table, Land } from '../types';
+import { Table, Land, IllegalMoveError } from '../types';
+import logger from '../logger';
 
 const attack = async (user, table: Table, clientId, [emojiFrom, emojiTo]) => {
   if (table.status !== STATUS_PLAYING) {
-    return publish.clientError(clientId, new Error('game not running'));
+    throw new IllegalMoveError('attack while not STATUS_PLAYING', user, emojiFrom, emojiTo);
   }
   if (!hasTurn(table)(user)) {
-    return publish.clientError(clientId, new Error('out of turn'));
+    throw new IllegalMoveError('attack while not having turn', user, emojiFrom, emojiTo);
   }
+
   const find = findLand(table.lands);
   const fromLand: Land = find(emojiFrom);
   const toLand = find(emojiTo);
   if (!fromLand || !toLand) {
-    return publish.clientError(clientId, new Error('land not found'));
+    throw new IllegalMoveError('some land not found in attack', user, emojiFrom, emojiTo, fromLand, toLand);
   }
   if (fromLand.color === COLOR_NEUTRAL) {
-    return publish.clientError(clientId, new Error('illegal move (same color)'));
+    throw new IllegalMoveError('attack from neutral', user, emojiFrom, emojiTo, fromLand, toLand);
   }
   if (fromLand.points === 1) {
-    return publish.clientError(clientId, new Error('illegal move (single dice)'));
+    throw new IllegalMoveError('attack from single-die land', user, emojiFrom, emojiTo, fromLand, toLand);
   }
   if (fromLand.color === toLand.color) {
-    return publish.clientError(clientId, new Error('illegal move (same color)'));
+    throw new IllegalMoveError('attack same color', user, emojiFrom, emojiTo, fromLand, toLand);
   }
   if (!isBorder(table.adjacency, emojiFrom, emojiTo)) {
-    return publish.clientError(clientId, new Error('illegal move (not adjacent)'));
+    throw new IllegalMoveError('attack not border', user, emojiFrom, emojiTo, fromLand, toLand);
   }
 
-  const newTable = await save(table, { turnStarted: Math.floor(Date.now() / 1000), turnActivity: true });
+  const newTable = await save(table, { turnStart: Math.floor(Date.now() / 1000), turnActivity: true });
   publish.move(newTable, {
     from: emojiFrom,
     to: emojiTo,
   });
 
-  setTimeout(async () => {
+  setTimeout(() => {
+    rollResult(newTable.tag, fromLand, toLand, clientId);
+  }, 1000);
+};
+export default attack;
+
+const rollResult = async (tableTag: string, fromLand: Land, toLand: Land, clientId: string) => {
     try {
-      let table = await getTable(newTable.tag);
+      let emojiFrom = fromLand.emoji;
+      let emojiTo = toLand.emoji;
+      let table = await getTable(tableTag);
       const [fromRoll, toRoll, isSuccess] = diceRoll(fromLand.points, toLand.points);
       publish.roll(table, {
         from: { emoji: emojiFrom, roll: fromRoll },
@@ -77,7 +87,7 @@ const attack = async (user, table: Table, clientId, [emojiFrom, emojiTo]) => {
             });
           table = update(table, { }, players);
           if (table.players.length === 1) {
-            table = await endGame(table);
+            return await endGame(table);
           }
           table = update(table, { turnIndex: table.players.indexOf(turnPlayer) });
         }
@@ -85,21 +95,20 @@ const attack = async (user, table: Table, clientId, [emojiFrom, emojiTo]) => {
 
       lands = updateLand(lands, fromLand, { points: 1 })
 
-      table = await save(table, { turnStarted: Math.floor(Date.now() / 1000) }, undefined, lands);
+      table = await save(table, { turnStart: Math.floor(Date.now() / 1000) }, undefined, lands);
       publish.tableStatus(table);
     } catch (e) {
-      console.error(e);
-      return publish.clientError(clientId, new Error('roll failed'));
+      publish.clientError(clientId, new Error('roll failed'));
+      throw e;
     }
-  }, 1000);
-};
-export default attack;
+  }
 
 const updateLand = (lands: ReadonlyArray<Land>, target: Land, props: Partial<Land>): ReadonlyArray<Land> => {
   return lands.map(land => {
-    if (land !== target) {
+    if (land.emoji !== target.emoji) {
       return land;
     }
+    logger.debug('updateLand', land.emoji, props)
     return { ...land, ...props };
   });
 };

@@ -11,48 +11,51 @@ import {
   STATUS_FINISHED,
 } from './constants';
 import * as publish from './table/publish';
-import * as maps from './maps';
+import { getStatuses } from './table/get';
 
-const tablesConfig = require('./tables.config');
+//const tablesConfig = require('./tables.config');
 
-const tables = tablesConfig.tables.map(config => {
-  const [ lands, adjacency ] = maps.loadMap(config.mapName);
-  return {
-    tag: config.tag,
-    mapName: config.mapName,
-    name: config.tag,
-    playerSlots: config.playerSlots,
-    stackSize: config.stackSize,
-    points: config.points,
-    status: STATUS_PAUSED,
-    landCount: lands.length,
-    players: [],
-    watching: [],
-  };
-});
+//const tables = tablesConfig.tables.map(config => {
+  //const [ lands, adjacency ] = maps.loadMap(config.mapName);
+  //return {
+    //tag: config.tag,
+    //mapName: config.mapName,
+    //name: config.tag,
+    //playerSlots: config.playerSlots,
+    //stackSize: config.stackSize,
+    //points: config.points,
+    //status: STATUS_PAUSED,
+    //landCount: lands.length,
+    //players: [],
+    //watching: [],
+  //};
+//});
 
-export const global = function(req, res, next) {
-  res.send(200, {
-    settings: {
-      turnSeconds: TURN_SECONDS,
-      gameCountdownSeconds: GAME_START_COUNTDOWN,
-      maxNameLength: MAX_NAME_LENGTH,
-    },
-    tables: getTablesStatus(tables),
+export const global = (req, res, next) => {
+  getTablesStatus().then(tables => {
+    res.send(200, {
+      settings: {
+        turnSeconds: TURN_SECONDS,
+        gameCountdownSeconds: GAME_START_COUNTDOWN,
+        maxNameLength: MAX_NAME_LENGTH,
+      },
+      tables,
+    });
   });
-  next();
 };
 
 export const findtable = (req, res, next) => {
-  res.send(200, R.pipe(
-    R.map<any, any>(table => [table.name, table.players.length]),
-    R.reduce((R.maxBy as any)(R.nth(1)), ['', -1]),
-    R.nth(0),
-  )(tables));
+  getTablesStatus().then(tables => {
+    let best = tables.reduce((best, table) =>
+      table.playerCount > best.playerCount ? table : best, 
+      tables[0]);
+    res.send(200, best.tag);
+  });
 };
 
-const getTablesStatus = (tables) =>
-  tables.map(table =>
+const getTablesStatus = async () => {
+  let tables = await getStatuses();
+  return tables.map(table =>
     Object.assign(R.pick([
       'name',
       'tag',
@@ -67,11 +70,13 @@ const getTablesStatus = (tables) =>
       watchCount: table.watching.length,
     })
   );
+};
 
-export const onMessage = (topic, message) => {
+export const onMessage = async (topic, message) => {
   try {
     if (topic === 'events') {
       const event = JSON.parse(message);
+      const tables = await getTablesStatus();
       switch (event.type) {
 
         case 'join': {
@@ -80,7 +85,7 @@ export const onMessage = (topic, message) => {
             return;
           }
           //table.players.push(event.player);
-          publish.tables(getTablesStatus(tables));
+          publish.tables(tables);
 
           return;
         }
@@ -91,7 +96,7 @@ export const onMessage = (topic, message) => {
             return;
           }
           //table.players = table.players.filter(p => p.id !== event.player.id);
-          publish.tables(getTablesStatus(tables));
+          publish.tables(tables);
           return;
         }
 
@@ -99,7 +104,7 @@ export const onMessage = (topic, message) => {
           const { player, position, score } = event;
           const table = findTable(tables)(event.table);
           //table.players = table.players.filter(p => p.id === event.player.id);
-          publish.tables(getTablesStatus(tables));
+          publish.tables(tables);
           return;
         }
 
@@ -110,7 +115,7 @@ export const onMessage = (topic, message) => {
           }
 
           //table.watching = event.watching;
-          publish.tables(getTablesStatus(tables));
+          publish.tables(tables);
 
           return;
         }

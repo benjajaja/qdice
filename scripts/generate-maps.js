@@ -84,7 +84,7 @@ const findLand = lands => emoji => R.find(R.propEq('emoji', emoji))(lands);
 
 const write = fs.createWriteStream('./map-sources.json');
 write.write(JSON.stringify({
-  maps: fs.readdirSync(srcDir).map(file => {
+  maps: fs.readdirSync(srcDir).reduce((dict, file) => {
     const buffer = fs.readFileSync(`${srcDir}/${file}`);
     const lines = buffer.toString().split('\n');
     const name = lines.shift();
@@ -92,12 +92,13 @@ write.write(JSON.stringify({
     console.log(name);
     const [ lands, adjacency ] = loadMap(lines);
     console.log(`${lands.length} lands`);
-    return {
+    dict[name] = {
       name,
       tag: name,
       lands,
       adjacency,
     };
-  }),
+    return dict;
+  }, {}),
 }, null, '\t'));
 

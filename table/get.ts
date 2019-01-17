@@ -27,9 +27,9 @@ const makeTable = (config: any): Table => {
     status: STATUS_FINISHED,
     gameStart: 0,
     turnIndex: -1,
-    turnStarted: 0,
+    turnStart: 0,
     turnActivity: false,
-    lands: config.lands || [],
+    lands: [],
     adjacency: {
       matrix: [],
       indexes: {},
@@ -44,34 +44,24 @@ const makeTable = (config: any): Table => {
 };
 
 const loadLands = (table: Table): Table => {
-  if (table.lands.length && table.adjacency.matrix.length) {
-    return table;
-  }
-  logger.info('loadLands', table.lands, table.adjacency);
   const [ lands, adjacency ] = maps.loadMap(table.mapName);
   return Object.assign({}, table, {
-    lands: table.lands || lands.map(land => Object.assign({}, land, {
-      color: COLOR_NEUTRAL,
-      points: 1,
-    })),
+    lands: table.lands.length ? table.lands : lands,
     adjacency
   });
 };
 
-const tables: {[index: string]: Table} = {};
 
 export const getTable = async (tableTag: string): Promise<Table> => {
-  if (tables[tableTag]) {
-    return tables[tableTag];
-  }
   let dbTable = await db.getTable(tableTag);
   if (!dbTable) {
     const tableConfig = config.tables.filter(config => config.tag === tableTag).pop();
     const dbTableData = loadLands(makeTable(tableConfig));
+    logger.debug('dbTableData', dbTableData);
     dbTable = await db.createTable(dbTableData);
   }
-  const table = loadLands(makeTable(dbTable));
-  tables[tableTag] = table;
+  const table = loadLands(dbTable);
+  logger.debug('get', table.turnStart);
   return Promise.resolve(table);
 };
 
@@ -98,11 +88,20 @@ export const save = async (
   players?: Player[] | ReadonlyArray<Player>,
   lands?: Land[] | ReadonlyArray<Land>
 ): Promise<Table> => {
-  console.trace('save');
-  logger.info(`save ${table.tag}`);
   const newTable = update(table, props, players, lands);
-  tables[table.tag] = newTable;
+  //tables[table.tag] = newTable;
   await db.saveTable(newTable);
+  logger.debug('set', new Date(newTable.turnStart * 1000));
   return newTable;
 };
 
+export const getStatuses = async () => {
+  logger.debug('getStatuses');
+  const tables = await db.getTablesStatus();
+  logger.debug('gotStatuses');
+  const statuses = tables.map(tableStatus => Object.assign(tableStatus, {
+    landCount: maps.loadMap(tableStatus.mapName)[0].length,
+  }));
+  logger.debug('gotStatuses mapped');
+  return statuses;
+};

@@ -105,8 +105,9 @@ db.connect().then(() => {
     publish.setMqtt(client);
 
   });
-  table.start('España', client);
-  table.start('Arabia', client);
+  //table.start('España', client);
+  //table.start('Arabia', client);
+  table.start('Melchor', client);
 
   client.on('message', globalServer.onMessage);
 

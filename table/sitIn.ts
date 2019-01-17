@@ -10,24 +10,28 @@ import {
   COLOR_NEUTRAL,
   GAME_START_COUNTDOWN,
 } from '../constants';
+import { Table, Land, IllegalMoveError } from '../types';
+import { save, update } from './get';
 
-const sitIn = (user, table, clientId) => {
+const sitIn = async (user, table: Table, clientId) => {
   if (table.status !== STATUS_PLAYING) {
-    return publish.clientError(clientId, new Error('not playing'));
+    throw new IllegalMoveError('sitIn while not STATUS_PLAYING', user);
   }
   const player = table.players.filter(p => p.id === user.id).pop();
   if (!player) {
-    return publish.clientError(clientId, new Error('not playing'));
-  } else {
-    const allOut = table.players.every(R.prop('out'));
-    player.out = false;
-    player.outTurns = 0;
-    if (allOut) {
-      nextTurn(table);
-    }
+    throw new IllegalMoveError('sitIn while not in game', user);
   }
 
-  publish.tableStatus(table);
+  const allOut = table.players.every(R.prop('out'));
+  const newTable = update(table, {}, table.players.map(p => p === player
+    ? { ...p, out: false, outTurns: 0 }
+    : p));
+  if (allOut) {
+    return await nextTurn(newTable);
+  }
+
+  publish.tableStatus(newTable);
+  return save(newTable, {});
 };
 export default sitIn;
 

@@ -3,12 +3,13 @@ import * as R from 'ramda';
 import * as mqtt from 'mqtt';
 import * as jwt from 'jsonwebtoken';
 
-import { UserId, Table } from './types';
+import { UserId, Table, IllegalMoveError } from './types';
 import * as db from './db';
 import * as publish from './table/publish';
 import * as tick from './table/tick';
 import { getTable } from './table/get';
 import { findTable, hasTurn } from './helpers';
+import logger from './logger';
 
 import heartbeat from './table/heartbeat';
 import enter from './table/enter';
@@ -35,23 +36,31 @@ export const start = async (tableTag: string, client: mqtt.MqttClient) => {
     if (topic !== `tables/${tableTag}/server`) {
       return;
     }
-    try {
-      const { type, client: clientId, token, payload } = JSON.parse(message.toString());
 
-      try {
-        const user = await (token
-          ? verifyJwt(token, process.env.JWT_SECRET)
-          : null
-        );
-        const table = await getTable(tableTag);
-        await command(user, clientId, table, type, payload);
-      } catch (e) {
-        publish.clientError(clientId, e);
-      }
+    const parsedMessage = parseMessage(message.toString());
+    if (!parsedMessage) {
+      return;
+    }
+
+    const { type, clientId, token, payload } = parsedMessage;
+    try {
+      const user = await (token
+        ? verifyJwt(token, process.env.JWT_SECRET)
+        : null
+      );
+      const table = await getTable(tableTag);
+
+      await command(user, clientId, table, type, payload);
     } catch (e) {
-      console.error('error parsing message', e);
+      publish.clientError(clientId, e);
+      if ((e instanceof IllegalMoveError)) {
+        logger.error(e, 'illegal move caught gracefully');
+      } else {
+        throw e;
+      }
     }
   };
+
   client.on('message', onMessage);
 
   tick.start(tableTag);
@@ -60,6 +69,16 @@ export const start = async (tableTag: string, client: mqtt.MqttClient) => {
     tick.stop(tableTag);
   };
 };
+
+const parseMessage = (message: string): { type: string, clientId: string, token: string, payload: any | undefined } | null => {
+  try {
+    const { type, client: clientId, token, payload } = JSON.parse(message.toString());
+    return { type, clientId, token, payload };
+  } catch (e) {
+    logger.error(e, 'Could not parse message');
+    return null;
+  }
+}
 
 const command = async (user, clientId, table: Table, type, payload) => {
   heartbeat(user, table, clientId);

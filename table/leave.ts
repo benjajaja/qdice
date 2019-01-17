@@ -8,18 +8,16 @@ import {
   COLOR_NEUTRAL,
   GAME_START_COUNTDOWN,
 } from '../constants';
-import { Table, Player, User } from '../types';
+import { Table, Player, User, IllegalMoveError } from '../types';
 import { save } from './get';
 
 const leave = async (user: User, table: Table, clientId): Promise<Table | undefined> => {
   if (table.status === STATUS_PLAYING) {
-    publish.clientError(clientId, new Error('already started'));
-    return;
+    throw new IllegalMoveError('leave while STATUS_PLAYING', user);
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
-    publish.clientError(clientId, new Error('not joined'));
-    return;
+    throw new IllegalMoveError('not joined', user);
   }
 
   const players = table.players.filter(p => p !== existing);

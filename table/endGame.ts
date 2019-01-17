@@ -16,7 +16,7 @@ import { update, save } from './get';
 const endGame = async (table: Table): Promise<Table> => {
   const winner = table.players[0];
   console.log('game finished', winner);
-  elimination(table, winner, ELIMINATION_REASON_WIN, {
+  await elimination(table, winner, ELIMINATION_REASON_WIN, {
     turns: table.turnCount,
   });
 

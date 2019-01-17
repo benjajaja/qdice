@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Grid, HEX_ORIENTATIONS } from 'honeycomb-grid';
 import logger from './logger';
-import { Table, Adjacency, Land, Emoji } from './types';
+import { Table, Adjacency, Land, Emoji, Color } from './types';
 import { rand } from './rand';
 import {
   COLOR_NEUTRAL,
@@ -16,9 +16,7 @@ const grid = Grid({
 
 
 export const loadMap = (mapName: string): [ Land[], Adjacency, string ] => {
-  logger.info(`Loading map: ${mapName}`);
-  const { lands, adjacency, name } = mapJson.maps
-    .filter(R.propEq('tag', mapName)).pop()!;
+  const { lands, adjacency, name } = mapJson.maps[mapName];
   return [ lands.map(land => ({ ...land, color: COLOR_NEUTRAL, points: 0 })), adjacency, name ];
 };
 
@@ -26,7 +24,7 @@ export const isBorder = ({ indexes, matrix }: Adjacency, from: Emoji, to: Emoji)
   return matrix[indexes[from]][indexes[to]];
 };
 
-export const landMasses = (table: Table) => (color: string): Emoji[][] => {
+export const landMasses = (table: Table) => (color: Color): Emoji[][] => {
   const colorLands: Land[] = table.lands.filter(R.propEq('color', color));
 
   const landMasses: Land[][] = colorLands.reduce((masses: Land[][], land: Land): Land[][] => {
@@ -52,7 +50,7 @@ export const landMasses = (table: Table) => (color: string): Emoji[][] => {
     mass.map(land => land.emoji));
 };
 
-export const countConnectedLands = (table: Table) => (color: string): number => {
+export const countConnectedLands = (table: Table) => (color: Color): number => {
   const counts: number[] = landMasses(table)(color).map(R.prop('length'));
   return R.reduce(R.max, 0, counts) as number;
 };

@@ -17,7 +17,7 @@ export type Table = {
   readonly status: TableStatus;
   readonly gameStart: number;
   readonly turnIndex: number;
-  readonly turnStarted: number;
+  readonly turnStart: number;
   readonly turnActivity: boolean;
   readonly lands: ReadonlyArray<Land>
   readonly turnCount: number;
@@ -33,21 +33,28 @@ export type Land = {
 };
 
 export type Emoji = string;
-export type TableStatus = typeof STATUS_FINISHED | typeof STATUS_PLAYING | typeof STATUS_PAUSED;
-export type Color
-  = typeof COLOR_RED
-  | typeof COLOR_BLUE
-  | typeof COLOR_GREEN
-  | typeof COLOR_YELLOW
-  | typeof COLOR_MAGENTA
-  | typeof COLOR_CYAN
-  | typeof COLOR_ORANGE
-  | typeof COLOR_BEIGE
-  | typeof COLOR_BLACK
+export enum TableStatus {
+  Paused = 'PAUSED',
+  Playing = 'PLAYING',
+  Finished = 'FINISHED',
+}
+
+export enum Color {
+  Neutral = -1,
+  Red = 1,
+  Blue = 2,
+  Green = 3,
+  Yellow = 4,
+  Magenta = 5,
+  Cyan = 6,
+  Orange = 7,
+  Beige = 8,
+  Black = 9,
+}
 
 export type Adjacency = {
-  readonly matrix: ReadonlyArray<ReadonlyArray<bool>>;
-  indexes: Readonly<{ [index:Emoji]: number }>;
+  readonly matrix: ReadonlyArray<ReadonlyArray<boolean>>;
+  indexes: Readonly<{ [index: string]: number }>;
 };
 
 export type UserLike = {
@@ -73,4 +80,11 @@ export type User = UserLike & {
 }
 
 export type Watcher = { clientId: any, name: string | null, lastBeat: number }
+
+export class IllegalMoveError extends Error {
+    constructor(message: string, user: User, emojiFrom?: Emoji, emojiTo?: Emoji, fromLand?: Land, toLand?: Land) {
+        super(message);
+        Object.setPrototypeOf(this, IllegalMoveError.prototype);
+    }
+}
 
