@@ -206,10 +206,10 @@ turnProgress model =
         timestamp =
             inMilliseconds model.time / 1000
 
-        turnStarted =
-            toFloat model.game.turnStarted
+        turnStart =
+            toFloat model.game.turnStart
     in
         max 0.0 <|
             min 1 <|
-                (turnTime - (timestamp - turnStarted))
+                (turnTime - (timestamp - turnStart))
                     / turnTime

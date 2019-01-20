@@ -35,7 +35,7 @@ type alias Model =
     , playerSlots : Int
     , turnIndex : Int
     , hasTurn : Bool
-    , turnStarted : Int
+    , turnStart : Int
     , chatInput : String
     , chatLog : List ChatLogEntry
     , gameLog : List ChatLogEntry
@@ -83,7 +83,7 @@ type alias TableStatus =
     , status : GameStatus
     , gameStart : Int
     , turnIndex : Int
-    , turnStarted : Int
+    , turnStart : Int
     , lands : List LandUpdate
     , roundCount : Int
     , canFlag : Bool

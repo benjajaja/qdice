@@ -54,7 +54,7 @@ tableDecoder =
         |> required "status" gameStatusDecoder
         |> required "gameStart" int
         |> required "turnIndex" int
-        |> required "turnStarted" int
+        |> required "turnStart" int
         |> required "lands" (list landsUpdateDecoder)
         |> required "roundCount" int
         |> required "canFlag" bool
