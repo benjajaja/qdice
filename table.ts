@@ -3,25 +3,27 @@ import * as R from 'ramda';
 import * as mqtt from 'mqtt';
 import * as jwt from 'jsonwebtoken';
 
-import { UserId, Table, IllegalMoveError } from './types';
+import { UserId, Table, CommandResult, Elimination, IllegalMoveError } from './types';
 import * as db from './db';
 import * as publish from './table/publish';
 import * as tick from './table/tick';
 import { getTable } from './table/get';
-import { findTable, hasTurn } from './helpers';
+import { findTable, hasTurn, positionScore, tablePoints } from './helpers';
 import logger from './logger';
 
-import heartbeat from './table/heartbeat';
-import enter from './table/enter';
-import exit from './table/exit';
-import join from './table/join';
-import leave from './table/leave';
-import attack from './table/attack';
-import endTurn from './table/endTurn';
-import sitOut from './table/sitOut';
-import sitIn from './table/sitIn';
-import chat from './table/chat';
-import flag from './table/flag';
+import {
+  heartbeat,
+  enter,
+  exit,
+  join,
+  leave,
+  attack,
+  endTurn,
+  sitOut,
+  sitIn,
+  chat,
+} from './table/commands';
+import { save } from './table/get';
 
 const verifyJwt = promisify(jwt.verify);
 
@@ -50,7 +52,9 @@ export const start = async (tableTag: string, client: mqtt.MqttClient) => {
       );
       const table = await getTable(tableTag);
 
-      await command(user, clientId, table, type, payload);
+      const result = command(user, clientId, table, type, payload);
+      await processComandResult(table, result);
+
     } catch (e) {
       publish.clientError(clientId, e);
       if ((e instanceof IllegalMoveError)) {
@@ -78,35 +82,72 @@ const parseMessage = (message: string): { type: string, clientId: string, token:
     logger.error(e, 'Could not parse message');
     return null;
   }
-}
+};
 
-const command = async (user, clientId, table: Table, type, payload) => {
-  heartbeat(user, table, clientId);
+const command = (user, clientId, table: Table, type, payload): CommandResult | void => {
   switch (type) {
     case 'Enter':
-      return await enter(user, table, clientId);
+      return enter(user, table, clientId);
     case 'Exit':
-      return await exit(user, table, clientId);
+      return exit(user, table, clientId);
     case 'Join':
-      return await join(user, table, clientId);
+      return join(user, table, clientId);
     case 'Leave':
-      return await leave(user, table, clientId);
+      return leave(user, table, clientId);
     case 'Attack':
-      return await attack(user, table, clientId, payload);
+      return attack(user, table, clientId, payload);
     case 'EndTurn':
-      return await endTurn(user, table, clientId);
+      return endTurn(user, table, clientId);
     case 'SitOut':
-      return await sitOut(user, table, clientId);
+      return sitOut(user, table, clientId);
     case 'SitIn':
-      return await sitIn(user, table, clientId);
+      return sitIn(user, table, clientId);
     case 'Chat':
-      return await chat(user, table, clientId, payload);
-    case 'Flag':
-      return await flag(user, table, clientId);
+      return chat(user, table, clientId, payload);
+    //case 'Flag':
+      //return flag(user, table, clientId);
     case 'Heartbeat':
-      return;
+      return heartbeat(user, table, clientId);
     default:
       throw new Error(`unknown command "${type}"`);
   }
 };
 
+export const processComandResult = async (table: Table, result: CommandResult | void) => {
+  if (result) {
+    const { type, table: props, lands, players, watchers, eliminations } = result;
+    if (type !== 'Heartbeat') {
+      logger.debug(`Command ${type} modified ${Object.keys(props || {})}, lands:${(lands || []).length}, players:${(players || []).length}, watchers:${(watchers || []).length}, eliminations:${(eliminations || []).length}`);
+    }
+    const newTable = await save(table, props, players, lands, watchers);
+    if (eliminations) {
+      await processEliminations(newTable, eliminations);
+    }
+
+    publish.tableStatus(newTable);
+  }
+};
+
+const processEliminations = async (table: Table, eliminations: ReadonlyArray<Elimination>): Promise<void> => {
+  return Promise.all(eliminations.map(async (elimination) => {
+    const { player, position, reason, source } = elimination;
+
+    const score = player.score + positionScore(tablePoints(table))(table.playerStartCount)(position);
+
+    publish.elimination(table, player, position, score, {
+      type: reason,
+      ...source,
+    });
+
+    console.log('ELIMINATION-------------');
+    console.log(position, player.name);
+    try {
+      const user = await db.addScore(player.id, score);
+      publish.userUpdate(player.clientId)(user);
+    } catch (e) {
+      // send a message to this specific player
+      publish.clientError(player.clientId, new Error(`You earned ${score} points, but I failed to add them to your profile.`));
+      throw e;
+    }
+  })).then(() => undefined);
+};

@@ -1,5 +1,20 @@
 export type UserId = number
 export type Network = 'google' | 'password' | 'telegram';
+export type Emoji = string;
+export type Timestamp = number;
+
+export enum Color {
+  Neutral = -1,
+  Red = 1,
+  Blue = 2,
+  Green = 3,
+  Yellow = 4,
+  Magenta = 5,
+  Cyan = 6,
+  Orange = 7,
+  Beige = 8,
+  Black = 9,
+}
 
 export type Table = {
   readonly name: string;
@@ -15,9 +30,9 @@ export type Table = {
   readonly playerStartCount: number;
   readonly players: ReadonlyArray<Player>;
   readonly status: TableStatus;
-  readonly gameStart: number;
+  readonly gameStart: Timestamp;
   readonly turnIndex: number;
-  readonly turnStart: number;
+  readonly turnStart: Timestamp;
   readonly turnActivity: boolean;
   readonly lands: ReadonlyArray<Land>
   readonly turnCount: number;
@@ -34,31 +49,14 @@ export type Land = {
 };
 
 export type Attack = {
-  start: number;
+  start: Timestamp;
   from: Emoji;
   to: Emoji;
   clientId: string;
 }
 
-export type Emoji = string;
-export enum TableStatus {
-  Paused = 'PAUSED',
-  Playing = 'PLAYING',
-  Finished = 'FINISHED',
-}
+export type TableStatus = 'PAUSED' | 'PLAYING' | 'FINISHED';
 
-export enum Color {
-  Neutral = -1,
-  Red = 1,
-  Blue = 2,
-  Green = 3,
-  Yellow = 4,
-  Magenta = 5,
-  Cyan = 6,
-  Orange = 7,
-  Beige = 8,
-  Black = 9,
-}
 
 export type Adjacency = {
   readonly matrix: ReadonlyArray<ReadonlyArray<boolean>>;
@@ -89,10 +87,56 @@ export type User = UserLike & {
 
 export type Watcher = { clientId: any, name: string | null, lastBeat: number }
 
-export class IllegalMoveError extends Error {
-    constructor(message: string, user: User, emojiFrom?: Emoji, emojiTo?: Emoji, fromLand?: Land, toLand?: Land) {
-        super(message);
-        Object.setPrototypeOf(this, IllegalMoveError.prototype);
-    }
+export type Elimination = {
+  player: Player,
+  position: number,
+  reason: EliminationReason,
+  source: { turns: number } | { player: Player, points: number },
 }
+
+export type EliminationReason = '☠' | '💤' | '🏆' | '🏳' ;
+
+export class IllegalMoveError extends Error {
+  user?: User;
+  emojiFrom?: Emoji;
+  emojiTo?: Emoji;
+  fromLand?: Land;
+  toLand?: Land;
+
+  constructor(message: string, user: User, emojiFrom?: Emoji, emojiTo?: Emoji, fromLand?: Land, toLand?: Land) {
+    super(message);
+    Object.setPrototypeOf(this, IllegalMoveError.prototype);
+    this.user = user;
+    this.emojiFrom = emojiFrom;
+    this.emojiTo = emojiTo;
+    this.fromLand = fromLand;
+    this.toLand = toLand;
+  }
+}
+
+export type CommandType
+  = 'Enter'
+  | 'Exit'
+  | 'Join'
+  | 'Leave'
+  | 'Attack'
+  | 'EndTurn'
+  | 'SitOut'
+  | 'SitIn'
+  | 'Chat'
+  | 'Heartbeat'
+  | 'Roll'
+  | 'TickTurnOver'
+  | 'TickTurnOut'
+  | 'TickTurnAllOut'
+  | 'TickStart';
+
+export type CommandResult = {
+  readonly type: CommandType,
+  readonly table?: Partial<Table>,
+  readonly lands?: ReadonlyArray<Land>,
+  readonly players?: ReadonlyArray<Player>,
+  readonly watchers?: ReadonlyArray<Watcher>,
+  readonly eliminations?: ReadonlyArray<Elimination>,
+};
 

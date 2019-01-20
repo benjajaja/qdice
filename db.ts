@@ -1,9 +1,11 @@
 import * as R from 'ramda';
 import { Client } from 'pg';
 import * as camelize from 'camelize';
+import * as decamelize from 'decamelize';
 
 import logger from './logger';
-import { UserId, Network, Table } from './types';
+import { UserId, Network, Table, Player, Land, Emoji, Color, Watcher } from './types';
+import { date } from './timestamp';
 
 let client: Client;
 
@@ -120,8 +122,8 @@ LIMIT 1`,
     return null;
   }
   return Object.assign({}, row, {
-    gameStart: row.gameStart ? row.gameStart.getTime() / 1000 : 0,
-    turnStart: row.turnStart ? row.turnStart.getTime() / 1000 : 0,
+    gameStart: row.gameStart ? row.gameStart.getTime() : 0,
+    turnStart: row.turnStart ? row.turnStart.getTime() : 0,
   });
 };
 
@@ -142,30 +144,49 @@ RETURNING *`,
       JSON.stringify(table.lands),
       JSON.stringify(table.watching),
       table.playerStartCount, table.status, table.turnIndex, table.turnActivity, table.turnCount, table.roundCount,
-      new (Date as any)(table.gameStart * 1000),
-      new (Date as any)(table.turnStart * 1000),
+      date(table.gameStart),
+      date(table.turnStart),
     ]
   );
   const row = result.rows.pop();
   return camelize(row);
 };
 
-export const saveTable = async (table: Table) => {
-  const result = await client.query(`
+export const saveTable = async (
+  tag: string,
+  props: Partial<Table> = {},
+  players?: ReadonlyArray<Player>,
+  lands?: ReadonlyArray<{ emoji: Emoji, color: Color, points: number }>,
+  watching?: ReadonlyArray<Watcher>
+) => {
+  const propColumns = Object.keys(props);
+  const propValues = propColumns.map(column => {
+    if (column === 'gameStart' || column === 'turnStart') {
+      return date(props[column]!);
+    }
+    return props[column];
+  });
+  const values = [tag as any].concat(propValues)
+    .concat(players ? [JSON.stringify(players)] : [])
+    .concat(lands ? [JSON.stringify(lands)] : [])
+    .concat(watching ? [JSON.stringify(watching)] : []);
+
+  const extra = (players ? ['players'] : [])
+    .concat(lands ? ['lands'] : [])
+    .concat(watching ? ['watching'] : []);
+  const columns = propColumns.concat(extra);
+
+  const query = `
 UPDATE tables
-SET (players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start)
-  = ($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+SET (${columns.map(column => decamelize(column)).join(', ')})
+  = (${columns.map((_, i) => `$${i + 2}`).join(', ')})
 WHERE tag = $1
-RETURNING *`,
-    [table.tag,
-      JSON.stringify(table.players),
-      JSON.stringify(table.lands),
-      JSON.stringify(table.watching),
-      table.playerStartCount, table.status, table.turnIndex, table.turnActivity, table.turnCount, table.roundCount,
-      new (Date as any)(table.gameStart * 1000),
-      new (Date as any)(table.turnStart * 1000),
-    ]
-  );
+RETURNING *`;
+  if (values.some(value => value === undefined)) {
+    logger.error('undefined db', columns, values.map(v => `${v}`));
+    throw new Error('got undefined db value, use null');
+  }
+  const result = await client.query(query, values);
   return camelize(result.rows.pop());
 };
 

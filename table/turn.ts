@@ -1,9 +1,11 @@
 import * as R from 'ramda';
 import * as maps from '../maps';
 import endGame from './endGame';
-import elimination from './elimination';
 import { serializePlayer } from './serialize';
 import { rand } from '../rand';
+import logger from '../logger';
+import { UserId, Table, Land, User, Player, Watcher, CommandResult, CommandType, IllegalMoveError } from '../types';
+import { updateLand } from '../helpers';
 
 import {
   STATUS_PAUSED,
@@ -16,86 +18,79 @@ import {
   ELIMINATION_REASON_SURRENDER,
   OUT_TURN_COUNT_ELIMINATION,
 } from '../constants';
-import { Table, Player, Land } from '../types';
-import { update, save } from './get';
+import { now } from '../timestamp';
 
-const turn = async (table: Table): Promise<Table> => {
-  let newTable = table;
+const turn = (type: CommandType, table: Table, sitPlayerOut = false): CommandResult => {
+  const inPlayers = sitPlayerOut
+    ? R.adjust(player => ({ ...player, out: true }), table.turnIndex, table.players)
+    : table.players;
 
-  const currentPlayer = table.players[table.turnIndex];
-  if (currentPlayer) { // not just removed
-    newTable = giveDice(table)(currentPlayer);
-  }
+  const currentPlayer = inPlayers[table.turnIndex];
+  const [lands, players] = currentPlayer
+    ? giveDice(table, table.lands.slice() as Land[], inPlayers as Player[])(currentPlayer) // not just removed
+    : [table.lands, table.players];
 
-  const nextIndex = (i => i + 1 < table.players.length ? i + 1 : 0)(table.turnIndex);
-  newTable = update(newTable, {
+  const nextIndex = (i => i + 1 < players.length ? i + 1 : 0)(table.turnIndex);
+  const props = {
     turnIndex: nextIndex,
-    turnStart: Math.floor(Date.now() / 1000),
+    turnStart: now(),
     turnActivity: false,
-    turnCount: newTable.turnCount + 1,
-    roundCount: newTable.turnIndex === 0
-      ? newTable.roundCount + 1
-      : newTable.roundCount,
-  });
+    turnCount: table.turnCount + 1,
+    roundCount: table.turnIndex === 0
+      ? table.roundCount + 1
+      : table.roundCount,
+  };
 
-  const newPlayer = newTable.players[newTable.turnIndex];
-  /*if (newPlayer.flag === table.players.length) {
-    elimination(table, newPlayer, ELIMINATION_REASON_SURRENDER, {
-      flag: newPlayer.flag,
-    });
-    table.players = table.players.filter(R.complement(R.equals(newPlayer)));
-    table.lands = table.lands.map(land => {
-      if (land.color === newPlayer.color) {
-        land.color = COLOR_NEUTRAL;
-      }
-      return land;
-    });
-    if (table.players.length === 1) {
-      table = endGame(table);
-    } else {
-      return module.exports(table);
+  const newPlayer = players[props.turnIndex];
+
+  if (!newPlayer.out) {
+    // normal turn over
+    return { type, table: props, lands, players };
+  }
+
+  if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
+    const eliminations = [{ player: newPlayer, position: players.length, reason: ELIMINATION_REASON_OUT, source: {
+      turns: newPlayer.outTurns,
+    }}];
+    const [players_, lands_] = removePlayer(players, lands)(newPlayer);
+    if (players_.length === players.length) {
+      throw new Error(`could not remove player ${newPlayer.id}`);
     }
+    logger.debug('sat out:', newPlayer, players_.length);
+    props.turnIndex = (i => i + 1 < players_.length ? i + 1 : 0)(props.turnIndex);
 
-  } else*/
-  if (newPlayer.out) {
-    if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
-      await elimination(newTable, newPlayer, ELIMINATION_REASON_OUT, {
-        turns: newPlayer.outTurns,
-      });
-      newTable = removePlayer(newTable)(newPlayer);
+    const result = { type, table: props, lands: lands_, players: players_, eliminations };
 
-      if (newTable.players.length === 1) {
-        // okthxbye
-        return await endGame(newTable);
-      }
+    if (players_.length === 1) {
+      // okthxbye
+      return endGame(table, result);
     } else {
-      newTable = update(table, newTable, newTable.players.map(player => {
-        if (player === newPlayer) {
-          return { ...player, outTurns: player.outTurns + 1 };
-        }
-        return player;
-      }));
-    }
-    if (!newTable.players.every(R.prop('out'))) {
-      return await turn(newTable);
+      return result;
     }
   }
-  return await save(table, newTable);
+
+  return {
+    type,
+    table: props,
+    lands: lands,
+    players: players.map(player => {
+      if (player === newPlayer) {
+        return { ...player, outTurns: player.outTurns + 1 };
+      }
+      return player;
+    }),
+  };
 };
 
-const giveDice = (table: Table) => (player: Player): Table => {
-  let out = !table.turnActivity && !player.out
-    ? true
-    : player.out;
+const giveDice = (table: Table, lands: ReadonlyArray<Land>, players: ReadonlyArray<Player>) => (player: Player): [ReadonlyArray<Land>, ReadonlyArray<Player>] => {
 
-  const playerLands = table.lands.filter(land => land.color === player.color);
+  const playerLands = lands.filter(land => land.color === player.color);
   const newDies =
-    maps.countConnectedLands(table)(player.color)
+    maps.countConnectedLands({ lands, adjacency: table.adjacency })(player.color)
     + player.reserveDice;
 
   let reserveDice = 0;
 
-  let lands: Land[] = [...table.lands];
   R.range(0, newDies).forEach(i => {
     const targets = playerLands.filter(land => land.points < table.stackSize);
     if (targets.length === 0) {
@@ -103,28 +98,20 @@ const giveDice = (table: Table) => (player: Player): Table => {
     } else {
       let index = rand(0, targets.length - 1);
       const target = targets[index];
-      lands = [...lands.slice(0, index), { ...target, points: target.points + 1 }, ...lands.slice(index + 1)];
+      lands = updateLand(lands, target, { points: target.points + 1 });
     }
   });
-  if (lands.length !== table.lands.length) {
-    throw new Error('giveDice error');
-  }
-  return update(
-    table,
-    {},
-    table.players.map(p => p === player
-      ? { ...player, out, reserveDice }
-      : p), 
-    lands);
+  // TODO
+  return [lands, players.map(p => p === player
+      ? { ...player, reserveDice }
+      : p)];
 };
 
-const removePlayer = (table: Table) => (player: Player): Table => {
-  return update(
-    table,
-    {},
-    table.players.filter(R.complement(R.equals(player))),
-    table.lands.map(R.when(R.propEq('color', player.color), land => Object.assign(land, { color: COLOR_NEUTRAL })))
-  );
+const removePlayer = (players: ReadonlyArray<Player>, lands: ReadonlyArray<Land>) => (player: Player): [ReadonlyArray<Player>, ReadonlyArray<Land>] => {
+  return [
+    players.filter(R.complement(R.equals(player))),
+    lands.map(R.when(R.propEq('color', player.color), land => Object.assign(land, { color: COLOR_NEUTRAL })))
+  ];
 };
 
 export default turn;

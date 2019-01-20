@@ -1,6 +1,8 @@
-export const STATUS_PAUSED = 'PAUSED';
-export const STATUS_PLAYING = 'PLAYING';
-export const STATUS_FINISHED = 'FINISHED';
+import { TableStatus, Color, EliminationReason } from './types';
+
+export const STATUS_PAUSED: TableStatus = 'PAUSED';
+export const STATUS_PLAYING: TableStatus = 'PLAYING';
+export const STATUS_FINISHED: TableStatus = 'FINISHED';
 
 export const TURN_SECONDS = 10;
 export const ROLL_SECONDS = 1.0;
@@ -32,11 +34,11 @@ export const COLORS = [
   COLOR_BLACK,
 ];
 
-export const ELIMINATION_REASON_DIE = '☠';
-export const ELIMINATION_REASON_OUT = '💤';
-export const ELIMINATION_REASON_WIN = '🏆';
-export const ELIMINATION_REASON_SURRENDER = '🏳';
+export const ELIMINATION_REASON_DIE: EliminationReason = '☠';
+export const ELIMINATION_REASON_OUT: EliminationReason = '💤';
+export const ELIMINATION_REASON_WIN: EliminationReason = '🏆';
+export const ELIMINATION_REASON_SURRENDER: EliminationReason = '🏳';
 
 export const MAX_NAME_LENGTH = 20;
 
-export const OUT_TURN_COUNT_ELIMINATION = 5;
+export const OUT_TURN_COUNT_ELIMINATION = 2;

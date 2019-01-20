@@ -2,6 +2,7 @@
   "compilerOptions": {
     "noImplicitAny": false,
     "strictNullChecks": true,
+    "alwaysStrict": true,
     "lib": ["es2018"],
     "types": ["node"],
     "resolveJsonModule": true
