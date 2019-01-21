@@ -1,7 +1,7 @@
 export type UserId = number
-export type Network = 'google' | 'password' | 'telegram';
-export type Emoji = string;
-export type Timestamp = number;
+export type Network = 'google' | 'password' | 'telegram'
+export type Emoji = string
+export type Timestamp = number
 
 export enum Color {
   Neutral = -1,
@@ -16,70 +16,73 @@ export enum Color {
   Black = 9,
 }
 
-export type Table = {
-  readonly name: string;
-  readonly tag: string;
-  readonly mapName: string;
-  readonly adjacency: Adjacency;
-  readonly stackSize: number;
-  readonly noFlagRounds: number;
-  readonly playerSlots: number;
-  readonly startSlots: number;
-  readonly points: number;
+export type TableProps = {
+  readonly playerStartCount: number
+  readonly status: TableStatus
+  readonly gameStart: Timestamp
+  readonly turnIndex: number
+  readonly turnStart: Timestamp
+  readonly turnActivity: boolean
+  readonly turnCount: number
+  readonly roundCount: number
+  readonly attack: Attack | null
+}
 
-  readonly playerStartCount: number;
-  readonly players: ReadonlyArray<Player>;
-  readonly status: TableStatus;
-  readonly gameStart: Timestamp;
-  readonly turnIndex: number;
-  readonly turnStart: Timestamp;
-  readonly turnActivity: boolean;
+export type Table = TableProps & {
+  readonly name: string
+  readonly tag: string
+  readonly mapName: string
+  readonly adjacency: Adjacency
+  readonly stackSize: number
+  readonly noFlagRounds: number
+  readonly playerSlots: number
+  readonly startSlots: number
+  readonly points: number
+
+  readonly players: ReadonlyArray<Player>
   readonly lands: ReadonlyArray<Land>
-  readonly turnCount: number;
-  readonly roundCount: number;
-  readonly watching: ReadonlyArray<Watcher>;
-  readonly attack: Attack | null;
+  readonly watching: ReadonlyArray<Watcher>
 }
 
 export type Land = {
-  readonly emoji: Emoji;
-  readonly cells: ReadonlyArray<{ x: number, y: number, z: number }>;
-  readonly color: Color;
-  readonly points: number;
-};
-
-export type Attack = {
-  start: Timestamp;
-  from: Emoji;
-  to: Emoji;
-  clientId: string;
+  readonly emoji: Emoji
+  readonly cells: ReadonlyArray<{ x: number, y: number, z: number }>
+  readonly color: Color
+  readonly points: number
 }
 
-export type TableStatus = 'PAUSED' | 'PLAYING' | 'FINISHED';
+export type Attack = {
+  start: Timestamp
+  from: Emoji
+  to: Emoji
+  clientId: string
+}
+
+export type TableStatus = 'PAUSED' | 'PLAYING' | 'FINISHED'
 
 
 export type Adjacency = {
-  readonly matrix: ReadonlyArray<ReadonlyArray<boolean>>;
-  indexes: Readonly<{ [index: string]: number }>;
-};
+  readonly matrix: ReadonlyArray<ReadonlyArray<boolean>>
+  indexes: Readonly<{ [index: string]: number }>
+}
 
 export type UserLike = {
-  readonly id: UserId;
-  readonly name: string;
-  readonly clientId: any;
-  readonly picture: string;
-};
+  readonly id: UserId
+  readonly name: string
+  readonly clientId: any
+  readonly picture: string
+}
 
 export type Player = UserLike & {
-  readonly color: Color;
-  readonly reserveDice: number;
-  readonly out: boolean;
-  readonly outTurns: number;
-  readonly points: number;
-  readonly level: number;
-  readonly position: number;
-  readonly score: number;
-  readonly flag: any;
+  readonly color: Color
+  readonly reserveDice: number
+  readonly out: boolean
+  readonly outTurns: number
+  readonly points: number
+  readonly level: number
+  readonly position: number
+  readonly score: number
+  readonly flag: any
 }
 
 export type User = UserLike & {
@@ -94,14 +97,14 @@ export type Elimination = {
   source: { turns: number } | { player: Player, points: number },
 }
 
-export type EliminationReason = '☠' | '💤' | '🏆' | '🏳' ;
+export type EliminationReason = '☠' | '💤' | '🏆' | '🏳' 
 
 export class IllegalMoveError extends Error {
-  user?: User;
-  emojiFrom?: Emoji;
-  emojiTo?: Emoji;
-  fromLand?: Land;
-  toLand?: Land;
+  user?: User
+  emojiFrom?: Emoji
+  emojiTo?: Emoji
+  fromLand?: Land
+  toLand?: Land
 
   constructor(message: string, user: User, emojiFrom?: Emoji, emojiTo?: Emoji, fromLand?: Land, toLand?: Land) {
     super(message);
@@ -129,14 +132,15 @@ export type CommandType
   | 'TickTurnOver'
   | 'TickTurnOut'
   | 'TickTurnAllOut'
-  | 'TickStart';
+  | 'TickStart'
+  | 'CleanWatchers'
 
 export type CommandResult = {
   readonly type: CommandType,
-  readonly table?: Partial<Table>,
+  readonly table?: Partial<TableProps>,
   readonly lands?: ReadonlyArray<Land>,
   readonly players?: ReadonlyArray<Player>,
   readonly watchers?: ReadonlyArray<Watcher>,
   readonly eliminations?: ReadonlyArray<Elimination>,
-};
+}
 

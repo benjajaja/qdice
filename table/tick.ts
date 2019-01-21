@@ -72,23 +72,32 @@ const tick = async (tableTag: string) => {
     }
   }
 
+  if (result === undefined) {
+    result = cleanWatchers(table);
+  }
+
   await processComandResult(table, result);
+};
 
-  //const [ stillWatching, stoppedWatching ] = table.watching.reduce(([yes, no], watcher) => {
-    //if (havePassed(30, watcher.lastBeat)) {
-      //return [R.append(watcher, yes), no];
-    //} else {
-      //return [yes, R.append(watcher, no)];
-    //}
-  //}, [[], []]);
+const cleanWatchers = (table: Table): CommandResult | undefined => {
 
-  //if (stoppedWatching.length > 0) {
-    //publish.event({
-      //type: 'watching',
-      //table: table.name,
-      //watching: stillWatching.map(R.prop('name')),
-    //});
-  //}
+  const [ stillWatching, stoppedWatching ] = table.watching.reduce(([yes, no], watcher) => {
+    if (!havePassed(30, watcher.lastBeat)) {
+      return [R.append(watcher, yes), no];
+    } else {
+      return [yes, R.append(watcher, no)];
+    }
+  }, [[], []]);
 
+  if (stoppedWatching.length > 0) {
+    stoppedWatching.forEach(user => publish.exit(table, user.name));
+    logger.debug('stopped', stoppedWatching.map(R.prop('name')));
+    logger.debug('still', stillWatching.map(R.prop('name')));
+    return {
+      type: 'CleanWatchers',
+      watchers: stillWatching,
+    };
+  }
+  return undefined;
 };
 
