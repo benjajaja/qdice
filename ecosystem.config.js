@@ -1,5 +1,3 @@
-const tableConfig = require('./tables.config');
-
 const env_production = {
   NODE_ENV: 'production',
   GOOGLE_OAUTH_SECRET: 'e8Nkmj9X05_hSrrREcRuDCFj',
@@ -33,22 +31,6 @@ const env_local = {
   PICTURE_URL_PREFIX: '/pictures/',
 };
 
-const tableEnv = env => tag => Object.assign({
-  TABLE: tag,
-}, env);
-
-const tableApp = ({ tag }) => ({
-  name: 'nodice-' + tag.toLowerCase(),
-  script: 'table.js',
-  env: tableEnv(env_local)(tag),
-  env_production: tableEnv(env_production)(tag),
-  source_map_support: false,
-  wait_ready: true,
-  restart_delay: 1000,
-  vizion: false,
-  max_restarts: 5,
-});
-
 module.exports = {
   /**
    * Application configuration section
@@ -59,7 +41,7 @@ module.exports = {
     // First application
     {
       name: 'main',
-      script: 'main.js',
+      script: 'server.js',
       env: env_local,
       env_production: env_production,
       source_map_support: false,

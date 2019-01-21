@@ -1,5 +1,3 @@
-import * as dotenv from 'dotenv';
-
 import logger from './logger';
 import * as db from './db';
 import * as table from './table';
@@ -15,8 +13,6 @@ import * as globalServer from './global';
 import { leaderboard } from './leaderboard';
 import * as publish from './table/publish';
 import * as user from './user';
-
-dotenv.config();
 
 const server = restify.createServer();
 server.pre(restify.pre.userAgentConnection());
