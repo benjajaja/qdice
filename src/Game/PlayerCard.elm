@@ -20,67 +20,79 @@ import Types exposing (Model, Msg(..))
 import Board.Colors
 
 
-view : Model -> Int -> Player -> Html.Html Types.Msg
-view model index player =
-    playerContainer player
-        (index == model.game.turnIndex)
-        [ playerImageProgress model index player
-        , Html.div
-            [ class "edPlayerChip__name"
-            , style <|
-                [ ( "background-color", Board.Colors.baseCssRgb player.color )
-                , ( "color"
-                  , Color.Accessibility.maximumContrast (Board.Colors.base player.color)
-                        [ Color.rgb 0 0 0, Color.rgb 30 30 30, Color.rgb 255 255 255 ]
-                        |> Maybe.withDefault (Color.rgb 0 0 0)
-                        |> Color.Convert.colorToCssRgb
-                  )
+view : Bool -> Model -> Int -> Player -> Html.Html Types.Msg
+view isSmall model index player =
+    let
+        basicItems =
+            [ playerImageProgress model index player
+            , Html.div
+                [ class "edPlayerChip__name"
+                , style <|
+                    [ ( "background-color", Board.Colors.baseCssRgb player.color )
+                    , ( "color"
+                      , Color.Accessibility.maximumContrast (Board.Colors.base player.color)
+                            [ Color.rgb 0 0 0, Color.rgb 30 30 30, Color.rgb 255 255 255 ]
+                            |> Maybe.withDefault (Color.rgb 0 0 0)
+                            |> Color.Convert.colorToCssRgb
+                      )
+                    ]
                 ]
+                [ Html.text player.name ]
             ]
-            [ Html.text player.name ]
-        , Html.div [ class "edPlayerChip__gameStats" ]
-            [ Html.div [ class "edPlayerChip__gameStats__item" ]
-                [ Html.text <| "✪ " ++ toString player.points ]
-            , Html.div [ class "edPlayerChip__gameStats__item--strong" ]
-                [ Html.text <|
-                    (if player.gameStats.position == 2 then
-                        "Pole"
-                     else
-                        ordinal player.gameStats.position
-                    )
-                ]
-            , Html.div [ class "edPlayerChip__gameStats__item" ]
-                [ case player.flag of
-                    Nothing ->
-                        Html.text ""
 
-                    Just pos ->
-                        Html.text <| "⚑ " ++ ordinal pos
-                ]
-            , Html.div [ class "edPlayerChip__gameStats__item" ]
-                [ Html.text <| "⬢ " ++ toString player.gameStats.totalLands ]
-            , Html.div [ class "edPlayerChip__gameStats__item" ]
-                [ Html.text <|
-                    ("⚂ "
-                        ++ toString player.gameStats.currentDice
-                        ++ (if player.reserveDice > 0 then
-                                " + " ++ toString player.reserveDice
-                            else
-                                ""
-                           )
-                    )
-                ]
-            , Html.div [ class "edPlayerChip__gameStats__item" ]
-                [ Html.text <|
-                    (if player.gameStats.score >= 0 then
-                        "✪+"
-                     else
-                        "✪"
-                    )
-                        ++ toString player.gameStats.score
-                ]
-            ]
-        ]
+        allItems =
+            if isSmall then
+                basicItems
+            else
+                List.append
+                    basicItems
+                    [ Html.div [ class "edPlayerChip__gameStats" ]
+                        [ Html.div [ class "edPlayerChip__gameStats__item" ]
+                            [ Html.text <| "✪ " ++ toString player.points ]
+                        , Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+                            [ Html.text <|
+                                (if player.gameStats.position == 2 then
+                                    "Pole"
+                                 else
+                                    ordinal player.gameStats.position
+                                )
+                            ]
+                        , Html.div [ class "edPlayerChip__gameStats__item" ]
+                            [ case player.flag of
+                                Nothing ->
+                                    Html.text ""
+
+                                Just pos ->
+                                    Html.text <| "⚑ " ++ ordinal pos
+                            ]
+                        , Html.div [ class "edPlayerChip__gameStats__item" ]
+                            [ Html.text <| "⬢ " ++ toString player.gameStats.totalLands ]
+                        , Html.div [ class "edPlayerChip__gameStats__item" ]
+                            [ Html.text <|
+                                ("⚂ "
+                                    ++ toString player.gameStats.currentDice
+                                    ++ (if player.reserveDice > 0 then
+                                            " + " ++ toString player.reserveDice
+                                        else
+                                            ""
+                                       )
+                                )
+                            ]
+                        , Html.div [ class "edPlayerChip__gameStats__item" ]
+                            [ Html.text <|
+                                (if player.gameStats.score >= 0 then
+                                    "✪+"
+                                 else
+                                    "✪"
+                                )
+                                    ++ toString player.gameStats.score
+                            ]
+                        ]
+                    ]
+    in
+        playerContainer player
+            (index == model.game.turnIndex)
+            allItems
 
 
 playerContainer player hasTurn =

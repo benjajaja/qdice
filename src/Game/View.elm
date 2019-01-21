@@ -31,15 +31,16 @@ view model =
                 |> Html.map BoardMsg
     in
         div [ class "edGame" ]
-            [ header model
-            , div [ class "edMainScreen" ]
+            --[ header model
+            [ div [ class "edMainScreen" ]
                 [ div [ class "edGameBoardWrapper" ]
                     [ tableInfo model
                     , board
                     , sitInModal model
+                    , boardFooter model
                     ]
                 , div [ class "edGame__meta" ]
-                    [ div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view model) model.game.players
+                    [ div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view False model) model.game.players
                     , gameChat model
                     ]
                 , div [ class "edGame__meta2" ]
@@ -57,10 +58,21 @@ header model =
         [ div [ class "edGameHeader__content" ]
             [ seatButton model
             , text <| model.game.table
-            , flagCheckbox model
+              --, flagCheckbox model
             , endTurnButton model
             ]
         , div [ class "edGameHeader__decoration" ] []
+        ]
+
+
+boardFooter : Model -> Html.Html Types.Msg
+boardFooter model =
+    div [ class "edGameBoardFooter" ]
+        [ div [ class "edGameBoardFooter__content" ]
+            [ seatButton model
+            , div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view True model) model.game.players
+            , endTurnButton model
+            ]
         ]
 
 

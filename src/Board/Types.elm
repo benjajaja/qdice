@@ -74,7 +74,7 @@ getLayout map =
             toString widthScale
 
         sHeight =
-            cellHeight * 0.75 * (toFloat mapHeight + 1 / 3) + padding |> toString
+            cellHeight * (toFloat mapHeight) * 0.6 |> toString
     in
         ( Layout ( cellWidth / sqrt (3), cellWidth * heightScale / 2 ) padding
         , sWidth

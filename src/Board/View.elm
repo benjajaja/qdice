@@ -48,10 +48,11 @@ board map pathCache animations selected hovered =
     in
         Html.div [ class "edBoard" ]
             [ Svg.svg
-                [ width "100%"
-                , height "100%"
-                , viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
-                , preserveAspectRatio "none"
+                --[ width "100%"
+                --, height "100%"
+                [ viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
+                  --[ viewBox ("0 0 100 100")
+                , preserveAspectRatio "xMidYMin meet"
                 , class "edBoard--svg"
                 ]
                 (List.concat
