@@ -14,7 +14,6 @@ export const hasTurn = ({ turnIndex, players }: { turnIndex: number, players: Re
 const scoreStep = 10;
 export const positionScore = (multiplier: number) => (gameSize: number) => (position: number): number => {
   const invPos = gameSize - position + 1;
-  logger.debug('invPos', invPos);
   const factor = ((invPos * (invPos / gameSize)) - (gameSize / 2)) * 2;
   const baseScore = Math.round(factor * multiplier / scoreStep / gameSize);
   const score = baseScore * scoreStep;
@@ -37,7 +36,7 @@ export const groupedPlayerPositions = (table: Table): (player: Player) => number
   const reversed = R.reverse(sorted);
 
   const positions = reversed.reduce((dict, [id, landCount], i) => {
-    dict[id] = i;
+    dict[id] = i + 1;
     return dict;
   }, {} as { [userId: number]: number });
   

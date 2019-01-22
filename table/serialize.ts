@@ -33,7 +33,6 @@ export const serializeTable = (table: Table) => {
 export const serializePlayer = (table: Table) => {
   const derived = computePlayerDerived(table);
   return (player: Player) => {
-    logger.debug('serializePlayer', derived(player));
     return Object.assign({}, R.pick([
       'id', 'name', 'picture', 'color', 'reserveDice', 'out', 'outTurns', 'points', 'level', 'score', 'flag',
     ])(player), { derived: derived(player) });

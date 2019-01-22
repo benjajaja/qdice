@@ -27,7 +27,7 @@ const turn = (type: CommandType, table: Table, sitPlayerOut = false): CommandRes
 
   const currentPlayer = inPlayers[table.turnIndex];
   const [lands, players] = currentPlayer
-    ? giveDice(table, table.lands.slice() as Land[], inPlayers as Player[])(currentPlayer) // not just removed
+    ? giveDice(table, table.lands, inPlayers)(currentPlayer) // not just removed
     : [table.lands, table.players];
 
   const nextIndex = (i => i + 1 < players.length ? i + 1 : 0)(table.turnIndex);
@@ -84,15 +84,14 @@ const turn = (type: CommandType, table: Table, sitPlayerOut = false): CommandRes
 
 const giveDice = (table: Table, lands: ReadonlyArray<Land>, players: ReadonlyArray<Player>) => (player: Player): [ReadonlyArray<Land>, ReadonlyArray<Player>] => {
 
-  const playerLands = lands.filter(land => land.color === player.color);
-  const newDies =
-    maps.countConnectedLands({ lands, adjacency: table.adjacency })(player.color)
-    + player.reserveDice;
+  const connectLandCount = maps.countConnectedLands({ lands, adjacency: table.adjacency })(player.color);
+  const newDies = connectLandCount + player.reserveDice;
 
   let reserveDice = 0;
 
+  let filledLands = lands;
   R.range(0, newDies).forEach(i => {
-    const targets = playerLands.filter(land => land.points < table.stackSize);
+    const targets = lands.filter(land => land.color === player.color && land.points < table.stackSize);
     if (targets.length === 0) {
       reserveDice += 1;
     } else {
@@ -101,7 +100,6 @@ const giveDice = (table: Table, lands: ReadonlyArray<Land>, players: ReadonlyArr
       lands = updateLand(lands, target, { points: target.points + 1 });
     }
   });
-  // TODO
   return [lands, players.map(p => p === player
       ? { ...player, reserveDice }
       : p)];
