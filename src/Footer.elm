@@ -1,24 +1,23 @@
 module Footer exposing (footer)
 
+import Backend.Types exposing (ConnectionStatus(..))
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
-import Material.Footer as Footer
 import Material.Icon as Icon
-import Material.Options
 import Material.Menu as Menu
-import Types exposing (Model, Msg(..), User(..), Route(..), StaticPage(..))
-import Backend.Types exposing (ConnectionStatus(..))
+import Material.Options
+import Types exposing (Model, Msg(..), Route(..), StaticPage(..), User(..))
 
 
 footer : Model -> Html.Html Msg
 footer model =
-    Footer.mini []
-        { left = Footer.left [] [ statusMessage model.backend.status ]
-        , right = Footer.right [] []
-        }
+    div []
+        [ div [] [ statusMessage model.backend.status ]
+        , div [] []
+        ]
 
 
-statusMessage : ConnectionStatus -> Footer.Content Types.Msg
+statusMessage : ConnectionStatus -> Html Types.Msg
 statusMessage status =
     let
         message =
@@ -29,7 +28,7 @@ statusMessage status =
                             "Reconnecting..."
 
                         count ->
-                            "Reconnecting... (" ++ (toString attempts) ++ " retries)"
+                            "Reconnecting... (" ++ String.fromInt attempts ++ " retries)"
 
                 Connecting ->
                     "Connecting..."
@@ -41,7 +40,7 @@ statusMessage status =
                     "Table..."
 
                 _ ->
-                    toString status
+                    Debug.toString status
 
         icon =
             case status of
@@ -63,8 +62,7 @@ statusMessage status =
                 Online ->
                     "network_wifi"
     in
-        Footer.html <|
-            Html.div [ Html.Attributes.class "edGameStatus" ]
-                [ Html.div [] [ Icon.i icon ]
-                , Html.div [] [ Html.text message ]
-                ]
+        Html.div [ Html.Attributes.class "edGameStatus" ]
+            [ Html.div [] [ Icon.view [] icon ]
+            , Html.div [] [ Html.text message ]
+            ]

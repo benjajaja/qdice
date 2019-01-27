@@ -1,11 +1,10 @@
-module LeaderBoard.View exposing (..)
+module LeaderBoard.View exposing (view)
 
 import Html exposing (..)
+import Html.Attributes exposing (align)
 import Material
-import Material.Options as Options
 import Material.Icon as Icon
-import Material.Footer as Footer
-import Material.Table as Table
+import Material.Options as Options
 import Types exposing (..)
 
 
@@ -13,21 +12,21 @@ view : Model -> Html Msg
 view model =
     div []
         [ div [] [ Html.text <| "Leaderboard for " ++ model.staticPage.leaderBoard.month ]
-        , Table.table []
-            [ Table.thead []
-                [ Table.tr []
-                    [ Table.th [] [ text "Rank" ]
-                    , Table.th [ Table.numeric ] [ text "Name" ]
-                    , Table.th [ Table.numeric ] [ text "Points" ]
+        , table []
+            [ thead []
+                [ tr []
+                    [ th [] [ text "Rank" ]
+                    , th [ align "right" ] [ text "Name" ]
+                    , th [ align "right" ] [ text "Points" ]
                     ]
                 ]
-            , Table.tbody [] <|
+            , tbody [] <|
                 List.map
                     (\profile ->
-                        Table.tr []
-                            [ Table.td [] [ text <| toString profile.rank ]
-                            , Table.td [ Table.numeric ] [ text profile.name ]
-                            , Table.td [ Table.numeric ] [ text <| toString profile.points ]
+                        tr []
+                            [ td [] [ text <| String.fromInt profile.rank ]
+                            , td [ align "right" ] [ text profile.name ]
+                            , td [ align "right" ] [ text <| String.fromInt profile.points ]
                             ]
                     )
                     model.staticPage.leaderBoard.top

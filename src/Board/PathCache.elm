@@ -1,21 +1,21 @@
-module Board.PathCache exposing (..)
+module Board.PathCache exposing (addPointToString, addToDict, createPathCache, landPointsString, pointToString, toKey)
 
-import Dict
 import Board.Types exposing (..)
+import Dict
 import Land
 
 
 createPathCache : Land.Map -> (Land.Layout -> Land.Land -> String)
 createPathCache map =
     let
-        ( layout, _, _ ) =
+        ( dictLayout, _, _ ) =
             getLayout map
 
         dict : Dict.Dict String String
         dict =
-            addToDict Dict.empty layout map.lands
+            addToDict Dict.empty dictLayout map.lands
     in
-        (\layout ->
+        \layout ->
             \land ->
                 case Dict.get (toKey layout land) dict of
                     Just path ->
@@ -23,7 +23,6 @@ createPathCache map =
 
                     Nothing ->
                         Land.landPath layout land.cells |> landPointsString |> Debug.log "pathCache miss"
-        )
 
 
 addToDict dict layout list =
@@ -37,8 +36,15 @@ addToDict dict layout list =
 
 toKey : Land.Layout -> Land.Land -> String
 toKey layout land =
-    (toString layout)
-        ++ (List.foldl (++) "" <| List.map Land.cellToKey land.cells)
+    let
+        layoutKey =
+            String.fromFloat (Tuple.first layout.size)
+                ++ ","
+                ++ String.fromFloat (Tuple.second layout.size)
+                ++ ","
+                ++ String.fromFloat layout.padding
+    in
+        layoutKey ++ (List.foldl (++) "" <| List.map Land.cellToKey land.cells)
 
 
 landPointsString : List Land.Point -> String
@@ -48,9 +54,9 @@ landPointsString path =
 
 addPointToString : Land.Point -> String -> String
 addPointToString point path =
-    path ++ (pointToString point) ++ " "
+    path ++ pointToString point ++ " "
 
 
 pointToString : Land.Point -> String
 pointToString ( x, y ) =
-    (x |> toString) ++ "," ++ (y |> toString)
+    (x |> String.fromFloat) ++ "," ++ (y |> String.fromFloat)

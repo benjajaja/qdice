@@ -32,6 +32,7 @@ body{background:#edfcff}
   </head>
   <body>
     <div id="loading-indicator">Loading...<div id="loading-spinner"></div></div>
+    <div id="edice"></div>
     <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
     <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>" charset="utf-8"></script>
     <% } %>

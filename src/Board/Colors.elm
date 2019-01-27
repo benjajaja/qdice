@@ -1,8 +1,8 @@
-module Board.Colors exposing (..)
+module Board.Colors exposing (base, baseCssRgb, cssRgb, highlight, hover)
 
 import Color
 import Color.Convert exposing (colorToCssRgb)
-import Color.Manipulate exposing (lighten, darken)
+import Color.Manipulate exposing (darken, lighten)
 import Land exposing (Color)
 
 

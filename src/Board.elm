@@ -1,11 +1,11 @@
-module Board exposing (..)
+module Board exposing (LandUpdate, Model, Msg, animations, init, update, updateAnimations, view)
 
+import Animation
+import Board.State
+import Board.Types
+import Board.View
 import Dict
 import Html.Lazy
-import Animation
-import Board.Types
-import Board.State
-import Board.View
 
 
 type alias Msg =

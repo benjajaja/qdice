@@ -1,8 +1,8 @@
-module State exposing (..)
+module State exposing (joinTable)
 
-import Types exposing (Model, Msg(..))
-import Tables
 import Backend
+import Tables
+import Types exposing (Model, Msg(..))
 
 
 joinTable : Types.User -> Tables.Table -> Cmd Msg

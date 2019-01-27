@@ -1,13 +1,13 @@
-module Backend.Decoding exposing (..)
+module Backend.Decoding exposing (accknowledgeDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, rollDecoder, singleRollDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, tokenDecoder, userDecoder)
 
-import Types exposing (LoggedUser, Profile)
-import Tables exposing (Table)
-import Game.Types exposing (TableStatus, Player, PlayerGameStats)
 import Board.Types
-import LeaderBoard.Types exposing (LeaderBoardModel)
+import Game.Types exposing (Player, PlayerGameStats, TableStatus)
+import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, int, list, map, map2, map3, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
-import Json.Decode exposing (int, string, float, bool, list, Decoder, map, map2, map3, index, succeed, fail, field, nullable, andThen)
-import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
+import LeaderBoard.Types exposing (LeaderBoardModel)
+import Tables exposing (Table)
+import Types exposing (LoggedUser, Profile)
 
 
 tokenDecoder : Decoder String
@@ -17,7 +17,7 @@ tokenDecoder =
 
 userDecoder : Decoder LoggedUser
 userDecoder =
-    decode LoggedUser
+    succeed LoggedUser
         |> required "id" string
         |> required "name" string
         |> required "email" (nullable string)
@@ -28,26 +28,29 @@ userDecoder =
 
 meDecoder : Decoder ( LoggedUser, String )
 meDecoder =
-    map2 (,) (index 0 userDecoder) (index 1 tokenDecoder)
+    map2 (\a b -> ( a, b )) (index 0 userDecoder) (index 1 tokenDecoder)
 
 
 tableNameDecoder : Decoder Table
-tableNameDecoder = string
-    -- map decodeTable string
-    --     |> andThen
-    --         (\t ->
-    --             case t of
-    --                 Just table ->
-    --                     succeed table
+tableNameDecoder =
+    string
 
-    --                 Nothing ->
-    --                     fail "unknown table"
-    --         )
+
+
+-- map decodeTable string
+--     |> andThen
+--         (\t ->
+--             case t of
+--                 Just table ->
+--                     succeed table
+--                 Nothing ->
+--                     fail "unknown table"
+--         )
 
 
 tableDecoder : Decoder TableStatus
 tableDecoder =
-    decode TableStatus
+    succeed TableStatus
         |> required "players" (list playersDecoder)
         |> required "mapName" mapNameDecoder
         |> required "playerSlots" int
@@ -63,7 +66,7 @@ tableDecoder =
 
 playersDecoder : Decoder Player
 playersDecoder =
-    decode Player
+    succeed Player
         |> required "id" string
         |> required "name" string
         |> required "color" colorDecoder
@@ -78,7 +81,7 @@ playersDecoder =
 
 playerGameStatsDecoder : Decoder PlayerGameStats
 playerGameStatsDecoder =
-    decode PlayerGameStats
+    succeed PlayerGameStats
         |> required "totalLands" int
         |> required "connectedLands" int
         |> required "currentDice" int
@@ -123,28 +126,28 @@ accknowledgeDecoder =
 
 rollDecoder : Decoder Game.Types.Roll
 rollDecoder =
-    decode Game.Types.Roll
+    succeed Game.Types.Roll
         |> required "from" singleRollDecoder
         |> required "to" singleRollDecoder
 
 
 singleRollDecoder : Decoder Game.Types.RollPart
 singleRollDecoder =
-    decode Game.Types.RollPart
+    succeed Game.Types.RollPart
         |> required "emoji" string
         |> required "roll" (list int)
 
 
 moveDecoder : Decoder Game.Types.Move
 moveDecoder =
-    decode Game.Types.Move
+    succeed Game.Types.Move
         |> required "from" string
         |> required "to" string
 
 
 eliminationDecoder : Decoder Game.Types.Elimination
 eliminationDecoder =
-    decode Game.Types.Elimination
+    succeed Game.Types.Elimination
         |> required "player" playersDecoder
         |> required "position" int
         |> required "score" int
@@ -178,15 +181,16 @@ eliminationReasonDecoder =
 
 globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo )
 globalDecoder =
-    map2 (,) (field "settings" globalSettingsDecoder) (field "tables" (list tableInfoDecoder))
+    map2 (\a b -> ( a, b )) (field "settings" globalSettingsDecoder) (field "tables" (list tableInfoDecoder))
 
 
 globalSettingsDecoder : Decoder Types.GlobalSettings
 globalSettingsDecoder =
-    decode Types.GlobalSettings
+    succeed Types.GlobalSettings
         |> required "gameCountdownSeconds" int
         |> required "maxNameLength" int
         |> required "turnSeconds" int
+
 
 
 -- tableTagDecoder : Decoder Table
@@ -197,11 +201,11 @@ globalSettingsDecoder =
 --             case decodeTable string of
 --                 Just table ->
 --                     Json.Decode.succeed table
-
 --                 Nothing ->
 --                     Json.Decode.fail <| "cannot decode table name: " ++ string
 --     in
 --         string |> Json.Decode.andThen convert
+
 
 mapNameDecoder : Decoder Tables.Map
 mapNameDecoder =
@@ -216,9 +220,10 @@ mapNameDecoder =
                         fail "unknown map"
             )
 
+
 tableInfoDecoder : Decoder Game.Types.TableInfo
 tableInfoDecoder =
-    decode Game.Types.TableInfo
+    succeed Game.Types.TableInfo
         |> required "name" string
         |> required "mapName" mapNameDecoder
         |> required "playerSlots" int
@@ -232,7 +237,7 @@ tableInfoDecoder =
 
 profileDecoder : Decoder Profile
 profileDecoder =
-    decode Profile
+    succeed Profile
         |> required "id" string
         |> required "name" string
         |> required "rank" int
@@ -243,6 +248,6 @@ profileDecoder =
 
 leaderBoardDecoder : Decoder ( String, List Profile )
 leaderBoardDecoder =
-    map2 (,)
+    map2 (\a b -> ( a, b ))
         (field "month" string)
         (field "top" (list profileDecoder))

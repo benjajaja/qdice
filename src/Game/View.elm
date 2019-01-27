@@ -1,26 +1,24 @@
 module Game.View exposing (view)
 
-import Game.Types exposing (PlayerAction(..), TableInfo)
-import Game.State exposing (findUserPlayer)
+import Backend.Types exposing (ConnectionStatus(..))
+import Board
 import Game.Chat
 import Game.Footer exposing (footer)
 import Game.PlayerCard as PlayerCard
+import Game.State exposing (findUserPlayer)
+import Game.Types exposing (PlayerAction(..), TableInfo)
 import Html exposing (..)
 import Html.Attributes exposing (class, style, type_)
 import Html.Events
 import Material
-import Material.Options as Options
 import Material.Button as Button
 import Material.Icon as Icon
-import Material.Footer as Footer
 import Material.List as Lists
-import Material.Toggles as Toggles
-import Types exposing (Model, Msg(..))
-import Tables exposing (Table)
-import Board
-import Backend.Types exposing (ConnectionStatus(..))
-import Time exposing (inMilliseconds)
+import Material.Options as Options
 import Ordinal exposing (ordinal)
+import Tables exposing (Table)
+import Time exposing (posixToMillis)
+import Types exposing (Model, Msg(..))
 
 
 view : Model -> Html.Html Types.Msg
@@ -58,7 +56,6 @@ header model =
         [ div [ class "edGameHeader__content" ]
             [ seatButton model
             , text <| model.game.table
-              --, flagCheckbox model
             , endTurnButton model
             ]
         , div [ class "edGameHeader__decoration" ] []
@@ -87,21 +84,16 @@ seatButton model =
                 _ ->
                     False
 
-        player =
-            findUserPlayer model.user model.game.players
-
         ( label, onClick ) =
-            case player of
+            case findUserPlayer model.user model.game.players of
                 Just player ->
-                    (if model.game.status == Game.Types.Playing then
-                        (if player.out then
+                    if model.game.status == Game.Types.Playing then
+                        if player.out then
                             ( "Sit in", Options.onClick <| GameCmd SitIn )
-                         else
+                        else
                             ( "Sit out", Options.onClick <| GameCmd SitOut )
-                        )
-                     else
+                    else
                         ( "Leave", Options.onClick <| GameCmd Leave )
-                    )
 
                 Nothing ->
                     case model.user of
@@ -110,17 +102,23 @@ seatButton model =
 
                         Types.Logged user ->
                             ( "Join", Options.onClick <| GameCmd Join )
+
+        disabled =
+            if not canPlay then
+                Button.disabled
+            else
+                Options.nop
     in
-        Button.render
+        Button.view
             Types.Mdl
-            [ 1 ]
-            model.mdl
+            "button-game"
+            model.mdc
             (onClick
                 :: [ Button.raised
-                   , Button.colored
+                     --, Button.colored
                    , Button.ripple
                    , Options.cs "edGameHeader__button"
-                   , Options.disabled <| not canPlay
+                   , disabled
                    ]
             )
             [ text label ]
@@ -128,15 +126,17 @@ seatButton model =
 
 endTurnButton : Model -> Html.Html Types.Msg
 endTurnButton model =
-    Button.render
+    Button.view
         Types.Mdl
-        [ 1 ]
-        model.mdl
-        [ Button.colored
-        , Button.ripple
+        "button-end-turn"
+        model.mdc
+        [ Button.ripple
         , Options.cs "edGameHeader__button"
         , Options.onClick <| GameCmd EndTurn
-        , Options.disabled <| not model.game.hasTurn
+        , if not model.game.hasTurn then
+            Button.disabled
+          else
+            Options.nop
         ]
         [ text "End turn" ]
 
@@ -144,48 +144,46 @@ endTurnButton model =
 gameLogOverlay : Model -> Html.Html Types.Msg
 gameLogOverlay model =
     Game.Chat.gameBox
-        model.mdl
+        model.mdc
         model.game.gameLog
     <|
         "gameLog-"
-            ++ (toString model.game.table)
+            ++ model.game.table
 
 
 gameChat : Model -> Html.Html Types.Msg
 gameChat model =
     div [ class "chatboxContainer" ]
         [ Game.Chat.chatBox
-            (not model.isTelegram)
             model.game.chatInput
             (List.map .color model.game.players)
-            model.mdl
+            model.mdc
             model.game.chatLog
           <|
             "chatLog-"
-                ++ (toString model.game.table)
+                ++ model.game.table
         ]
 
 
 userCard : Types.User -> Html.Html Types.Msg
-userCard user =
-    case user of
+userCard user_ =
+    case user_ of
         Types.Logged user ->
             div [ class "edGame__user", Html.Events.onClick <| NavigateTo <| Types.ProfileRoute user.id ] <|
                 [ div
                     [ class "edPlayerChip__picture"
-                    , style [ ( "width", "70px" ), ( "height", "70px" ) ]
+                    , style "width" "70px"
+                    , style "height" "70px"
                     ]
                     [ div
                         [ class "edPlayerChip__picture__image"
-                        , style
-                            [ ( "background-image", ("url(" ++ user.picture ++ ")") )
-                            , ( "background-size", "cover" )
-                            ]
+                        , style "background-image" ("url(" ++ user.picture ++ ")")
+                        , style "background-size" "cover"
                         ]
                         []
                     ]
                 , div [] [ text <| user.name ]
-                , div [] [ text <| "✪ " ++ toString user.points ]
+                , div [] [ text <| "✪ " ++ String.fromInt user.points ]
                 ]
 
         Types.Anonymous ->
@@ -195,62 +193,24 @@ userCard user =
 sitInModal : Model -> Html.Html Types.Msg
 sitInModal model =
     div
-        [ style <|
-            if model.game.isPlayerOut then
-                []
-            else
-                [ ( "display", "none" ) ]
+        [ if model.game.isPlayerOut then
+            style "" ""
+          else
+            style "display" "none"
         , class "edGame__SitInModal"
         , Html.Events.onClick <| GameCmd SitIn
         ]
-        [ Button.render
+        [ Button.view
             Types.Mdl
-            [ 0 ]
-            model.mdl
+            "button-sit-in"
+            model.mdc
             [ Button.raised
-            , Button.colored
             , Button.ripple
             , Options.cs ""
             , Options.onClick <| GameCmd SitIn
             ]
             [ text "Sit in!" ]
         ]
-
-
-flagCheckbox : Model -> Html Types.Msg
-flagCheckbox model =
-    div [ class "edGameFlag" ] <|
-        case model.game.player of
-            Nothing ->
-                []
-
-            Just player ->
-                [ Toggles.checkbox Mdl
-                    []
-                    model.mdl
-                    [ Options.onToggle <| GameCmd Flag
-                    , Options.disabled <| (not model.game.canFlag)
-                    , Toggles.ripple
-                    , Toggles.value <|
-                        case player.flag of
-                            Nothing ->
-                                False
-
-                            Just _ ->
-                                True
-                    ]
-                    [ text <|
-                        "Flag "
-                            ++ (ordinal <|
-                                    case player.flag of
-                                        Nothing ->
-                                            player.gameStats.position
-
-                                        Just position ->
-                                            position
-                               )
-                    ]
-                ]
 
 
 tableInfo : Model -> Html Types.Msg
@@ -267,24 +227,23 @@ tableInfo model =
                 [ text ", "
                 , span [ class "edGameStatus__chip--strong" ]
                     [ text <|
-                        (if model.game.playerSlots == 0 then
+                        if model.game.playerSlots == 0 then
                             "∅"
-                         else
-                            toString model.game.playerSlots
-                        )
+                        else
+                            String.fromInt model.game.playerSlots
                     ]
                 , text " player game is "
                 , span [ class "edGameStatus__chip--strong" ]
-                    [ text <| toString model.game.status ]
+                    [ text <| Debug.toString model.game.status ]
                 ]
                 (case model.game.gameStart of
                     Nothing ->
-                        [ text <| " round " ++ toString model.game.roundCount ]
+                        [ text <| " round " ++ String.fromInt model.game.roundCount ]
 
                     Just timestamp ->
                         [ text " starting in "
                         , span [ class "edGameStatus__chip--strong" ]
-                            [ text <| (toString (round <| (toFloat timestamp) - (inMilliseconds model.time / 1000))) ++ "s" ]
+                            [ text <| String.fromInt (round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) ++ "s" ]
                         ]
                 )
         ]

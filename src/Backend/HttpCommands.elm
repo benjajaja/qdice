@@ -1,14 +1,14 @@
-module Backend.HttpCommands exposing (..)
+module Backend.HttpCommands exposing (authenticate, findBestTable, leaderBoard, loadGlobalSettings, loadMe)
 
-import Http
-import Land exposing (Color(..))
-import Game.Types exposing (Player, PlayerAction(..))
-import Backend.Types exposing (..)
-import Types exposing (Msg(..))
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
+import Backend.Types exposing (..)
+import Game.Types exposing (Player, PlayerAction(..))
+import Http
+import Land exposing (Color(..))
 import Snackbar exposing (toastCmd)
+import Types exposing (Msg(..))
 
 
 findBestTable : Model -> Cmd Msg
@@ -17,7 +17,7 @@ findBestTable model =
         Http.request
             { method = "GET"
             , headers = []
-            , url = (model.baseUrl ++ "/findtable")
+            , url = model.baseUrl ++ "/findtable"
             , body = Http.emptyBody
             , expect =
                 Http.expectJson <| tableNameDecoder
@@ -28,7 +28,7 @@ findBestTable model =
 
 loadGlobalSettings : Model -> Cmd Msg
 loadGlobalSettings model =
-    Http.send (GetGlobalSettings) <|
+    Http.send GetGlobalSettings <|
         Http.get (model.baseUrl ++ "/global") <|
             globalDecoder
 
@@ -42,7 +42,7 @@ authenticate model code doJoin =
             <|
                 tokenDecoder
     in
-        Http.send (GetToken doJoin) request
+    Http.send (GetToken doJoin) request
 
 
 loadMe : Model -> Cmd Msg
@@ -57,7 +57,7 @@ loadMe model =
 
                     Nothing ->
                         []
-            , url = (model.baseUrl ++ "/me")
+            , url = model.baseUrl ++ "/me"
             , body = Http.emptyBody
             , expect =
                 Http.expectJson <| meDecoder
@@ -68,6 +68,6 @@ loadMe model =
 
 leaderBoard : Model -> Cmd Msg
 leaderBoard model =
-    Http.send (GetLeaderBoard) <|
+    Http.send GetLeaderBoard <|
         Http.get (model.baseUrl ++ "/leaderboard") <|
             leaderBoardDecoder

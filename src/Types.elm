@@ -1,30 +1,27 @@
-module Types exposing (..)
+module Types exposing (GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), Mdl, MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, getUsername)
 
-import Navigation exposing (Location)
-import Http
-import Time
-import Material
-import Snackbar.Types
-import OAuth
 import Animation
-import Game.Types exposing (TableStatus, PlayerAction, GameStatus, TableInfo)
-import Editor.Types
-import MyProfile.Types
 import Backend.Types
 import Board exposing (Msg)
+import Game.Types exposing (GameStatus, PlayerAction, TableInfo, TableStatus)
+import Http
+import Url exposing (Url)
+import Material
+import MyProfile.Types
+import OAuth
 import Tables exposing (Table)
-import Static.Types
+import Time
+import Browser
+import Browser.Navigation exposing (Key)
 
 
 type Msg
     = NavigateTo Route
-    | OnLocationChange Location
-    | Tick Time.Time
+    | OnLocationChange Url
+    | OnUrlRequest Browser.UrlRequest
+    | Tick Time.Posix
     | Mdl (Material.Msg Msg)
-    | DrawerNavigateTo Route
-    | Snackbar Snackbar.Types.Msg
     | Animate Animation.Msg
-    | EditorMsg Editor.Types.Msg
     | MyProfileMsg MyProfile.Types.Msg
     | ErrorToast String
       -- oauth
@@ -41,7 +38,6 @@ type Msg
     | SetLoginName String
     | UpdateUser LoggedUser String
     | FindBestTable (Result Http.Error Table)
-    | StaticPageMsg Static.Types.Msg
       -- game
     | BoardMsg Board.Msg
     | InputChat String
@@ -58,7 +54,7 @@ type Msg
     | AllClientsMsg Backend.Types.AllClientsMessage
     | TableMsg Table Backend.Types.TableMessage
     | UnknownTopicMessage String String String
-    | SetLastHeartbeat Time.Time
+    | SetLastHeartbeat Time.Posix
 
 
 type StaticPage
@@ -69,7 +65,6 @@ type StaticPage
 type Route
     = HomeRoute
     | GameRoute Table
-    | EditorRoute
     | StaticPageRoute StaticPage
     | NotFoundRoute
     | MyProfileRoute
@@ -80,17 +75,15 @@ type Route
 
 type alias Model =
     { route : Route
-    , mdl :
-        Material.Model
+    , key : Key
+    , mdc : Material.Model Msg
     , oauth : MyOAuthModel
     , game : Game.Types.Model
-    , editor : Editor.Types.Model
     , myProfile : MyProfile.Types.Model
     , backend : Backend.Types.Model
     , user : User
     , tableList : List TableInfo
-    , time : Time.Time
-    , snackbar : Snackbar.Types.Model
+    , time : Time.Posix
     , isTelegram : Bool
     , loginName : String
     , showLoginDialog : LoginDialogStatus
@@ -104,6 +97,10 @@ type alias Model =
             }
         }
     }
+
+
+type alias Mdl =
+    Material.Model Msg
 
 
 type User
@@ -123,9 +120,10 @@ type alias LoggedUser =
 
 type alias MyOAuthModel =
     { clientId : String
-    , redirectUri : String
+    , redirectUri : Url
     , error : Maybe String
     , token : Maybe OAuth.Token
+    , state : String
     }
 
 

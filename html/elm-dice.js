@@ -21,17 +21,21 @@ if (window.navigator.standalone === true) {
 }
 
 var ga = function(){};
+
 setTimeout(function() {
-  var Elm = require('../src/App');
+  var Elm = require('../src/App').Elm;
 
   var isTelegram = (typeof TelegramWebviewProxy === 'object');
-  var app = Elm.Edice.fullscreen({
-    isTelegram: isTelegram,
+  var app = Elm.Edice.init({
+    node: document.getElementById('edice'),
+    flags: {
+      isTelegram: isTelegram,
+    },
   });
 
 
   app.ports.started.subscribe(function(msg) {
-    document.getElementById('loading-indicator').remove();
+    //document.getElementById('loading-indicator').remove();
     window.onerror = function(messageOrEvent, source, lineno, colno, error) {
       ga('send', 'exception', { exDescription: error.toString() });
       window.alert(messageOrEvent.toString());
@@ -61,13 +65,13 @@ setTimeout(function() {
     }
   });
 
-  app.ports.selectAll.subscribe(function(id) {
-    var selection = window.getSelection();
-    var range = document.createRange();
-    range.selectNodeContents(document.getElementById(id));
-    selection.removeAllRanges();
-    selection.addRange(range);
-  });
+  //app.ports.selectAll.subscribe(function(id) {
+    //var selection = window.getSelection();
+    //var range = document.createRange();
+    //range.selectNodeContents(document.getElementById(id));
+    //selection.removeAllRanges();
+    //selection.addRange(range);
+  //});
 
   var scrollObservers = [];
   app.ports.scrollElement.subscribe(function(id) {
@@ -100,12 +104,12 @@ setTimeout(function() {
     }
   });
 
-  app.ports.consoleDebug.subscribe(function(string) {
-    var lines = string.split('\n');
-    console.groupCollapsed(lines.shift());
-    console.debug(lines.join('\n'));
-    console.groupEnd();
-  });
+  //app.ports.consoleDebug.subscribe(function(string) {
+    //var lines = string.split('\n');
+    //console.groupCollapsed(lines.shift());
+    //console.debug(lines.join('\n'));
+    //console.groupEnd();
+  //});
 
   app.ports.playSound.subscribe(require('./sounds'));
   app.ports.setFavicon.subscribe(require('./favicon'));

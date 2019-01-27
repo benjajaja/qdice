@@ -1,18 +1,17 @@
 module Board.View exposing (view)
 
-import String
-import Dict
-import Board.Types exposing (..)
+import Animation
 import Board.Colors
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
-import Svg.Events exposing (..)
+import Board.Types exposing (..)
+import Dict
 import Html
 import Html.Attributes
 import Html.Lazy
-import Animation
-import Board.Types exposing (Msg, Model, PathCache)
-import Land exposing (Land, Map, Point, Layout, cellCenter, landCenter)
+import Land exposing (Land, Layout, Map, Point, cellCenter, landCenter)
+import String
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
+import Svg.Events exposing (..)
 
 
 view : Model -> Html.Html Msg
@@ -65,7 +64,7 @@ board map pathCache animations selected hovered =
                                 ]
                             , Svg.radialGradient [ id "selectedGradient" ]
                                 [ Svg.stop [ offset "0.8", stopColor "gold" ] []
-                                , Svg.stop [ offset "0.9", stopColor ("rgba(0,0,0,0)") ] []
+                                , Svg.stop [ offset "0.9", stopColor "rgba(0,0,0,0)" ] []
                                 ]
                             ]
                       , Svg.defs []
@@ -116,7 +115,7 @@ polygonAttrs layout pathCache selected hovered land =
     [ fill <| landColor selected hovered land.color
     , stroke "black"
     , strokeLinejoin "round"
-    , strokeWidth (1 |> toString)
+    , strokeWidth "1"
     , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
     , points <| pathCache layout land
     , class "edLand"
@@ -172,8 +171,8 @@ landDie getAnimation ( cx, cy ) points index =
                         []
 
                     Nothing ->
-                        [ y <| toString <| cy - yOffset - (toFloat (index % 4) * 1.2) ]
-                , [ x <| toString <| cx - xOffset
+                        [ y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2) ]
+                , [ x <| String.fromFloat <| cx - xOffset
                   , textAnchor "middle"
                   , alignmentBaseline "central"
                   , class "edBoard--dies"
@@ -197,12 +196,12 @@ landText layout land =
                     g
                         [ transform <|
                             "translate("
-                                ++ (toString <| cx - 1.75)
+                                ++ (String.fromFloat <| cx - 1.75)
                                 ++ ","
-                                ++ (toString <| cy + 0.5)
+                                ++ (String.fromFloat <| cy + 0.5)
                                 ++ ")"
-                          --x <| toString cx
-                          --, y <| toString cy
+                          --x <| String.fromFloat cx
+                          --, y <| String.fromFloat cy
                         ]
                         [ Svg.text_
                             [ textAnchor "middle"

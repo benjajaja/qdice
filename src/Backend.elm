@@ -1,15 +1,16 @@
-port module Backend exposing (..)
+port module Backend exposing (addSubscribed, baseUrl, connect, decodeDirection, decodeMessage, decodeSubscribed, decodeTopic, hasDuplexSubscribed, hasSubscribedTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, onToken, setStatus, subscribe, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribe, unsubscribeGameTable, updateConnected, updateSubscribed)
 
-import String
-import Navigation exposing (Location)
-import Backend.Types exposing (..)
 import Backend.MessageCodification exposing (..)
 import Backend.MqttCommands exposing (..)
-import Types exposing (Msg(..))
-import Tables exposing (Table)
+import Backend.Types exposing (..)
 import Game.Types exposing (Player, PlayerAction(..), RollLog)
-import Land exposing (Color(..))
 import Helpers exposing (find)
+import Land exposing (Color(..))
+import Url exposing (Url, Protocol(..))
+import String
+import Tables exposing (Table)
+import Types exposing (Msg(..))
+import Time exposing (millisToPosix)
 
 
 port onToken : (String -> msg) -> Sub msg
@@ -50,15 +51,24 @@ connect =
     mqttConnect ""
 
 
-baseUrl : Location -> String
+baseUrl : Url -> String
 baseUrl location =
-    if "localhost" == location.hostname || "lvh.me" == location.hostname then
+    if "localhost" == location.host || "lvh.me" == location.host then
         "http://localhost:5001"
     else
-        location.protocol ++ "//" ++ "api.qdice.wtf"
+        let
+            protocol =
+                case location.protocol of
+                    Https ->
+                        "https"
+
+                    Http ->
+                        "http"
+        in
+            protocol ++ "//" ++ "api.qdice.wtf"
 
 
-init : Location -> Table -> Bool -> ( Model, Cmd Msg )
+init : Url -> Table -> Bool -> ( Model, Cmd Msg )
 init location table isTelegram =
     ( { baseUrl = baseUrl location
       , jwt = Nothing
@@ -70,7 +80,7 @@ init location table isTelegram =
                 2000
             else
                 1000
-      , lastHeartbeat = 0
+      , lastHeartbeat = millisToPosix 0
       }
     , connect
     )
@@ -82,17 +92,21 @@ updateConnected model clientId =
         backend =
             model.backend
     in
-        setStatus SubscribingGeneral ({ model | backend = { backend | clientId = Just clientId } })
-            ! [ subscribe <| Client clientId
-              , subscribe AllClients
-              ]
+        ( setStatus SubscribingGeneral { model | backend = { backend | clientId = Just clientId } }
+        , Cmd.batch
+            [ subscribe <| Client clientId
+            , subscribe AllClients
+            ]
+        )
 
 
 updateSubscribed : Types.Model -> Topic -> ( Types.Model, Cmd Msg )
 updateSubscribed model topic =
     case model.backend.clientId of
         Nothing ->
-            model ! []
+            ( model
+            , Cmd.none
+            )
 
         Just clientId ->
             let
@@ -120,17 +134,23 @@ updateSubscribed model topic =
                                     _ =
                                         Debug.log "subscribed to another table"
                                 in
-                                    model_ ! []
+                                    ( model_
+                                    , Cmd.none
+                                    )
                             else if hasSubscribedTable subscribed table then
-                                setStatus Online model_
-                                    ! [ --publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
-                                        enter model.backend model_.game.table
-                                      ]
+                                ( setStatus Online model_
+                                , --publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
+                                  enter model.backend model_.game.table
+                                )
                             else
-                                model_ ! []
+                                ( model_
+                                , Cmd.none
+                                )
 
                         _ ->
-                            model_ ! []
+                            ( model_
+                            , Cmd.none
+                            )
 
 
 subscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
@@ -142,10 +162,12 @@ subscribeGameTable model table =
             else
                 table
     in
-        setStatus SubscribingTable model
-            ! [ subscribe <| Tables model.game.table ClientDirection
-              , subscribe <| Tables model.game.table Broadcast
-              ]
+        ( setStatus SubscribingTable model
+        , Cmd.batch
+            [ subscribe <| Tables model.game.table ClientDirection
+            , subscribe <| Tables model.game.table Broadcast
+            ]
+        )
 
 
 unsubscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
@@ -166,12 +188,14 @@ unsubscribeGameTable model table =
                 )
                 backend.subscribed
     in
-        { model | backend = { backend | subscribed = subscribed } }
-            ! [ --publish <| TableMsg table <| Backend.Types.Leave <| Types.getUsername model
-                exit model.backend table
-              , unsubscribe <| Tables table ClientDirection
-              , unsubscribe <| Tables table Broadcast
-              ]
+        ( { model | backend = { backend | subscribed = subscribed } }
+        , Cmd.batch
+            [ --publish <| TableMsg table <| Backend.Types.Leave <| Types.getUsername model
+              exit model.backend table
+            , unsubscribe <| Tables table ClientDirection
+            , unsubscribe <| Tables table Broadcast
+            ]
+        )
 
 
 addSubscribed : Types.Model -> Topic -> Types.Model
@@ -204,8 +228,8 @@ decodeSubscribed clientId stringTopic =
         Nothing ->
             UnknownTopicMessage "no client id yet" stringTopic "-"
 
-        Just clientId ->
-            case decodeTopic clientId stringTopic of
+        Just clientId_ ->
+            case decodeTopic clientId_ stringTopic of
                 Just topic ->
                     Subscribed topic
 
@@ -219,8 +243,8 @@ decodeMessage clientId table ( stringTopic, message ) =
         Nothing ->
             UnknownTopicMessage "no client id yet" stringTopic "-"
 
-        Just clientId ->
-            case decodeTopic clientId stringTopic of
+        Just clientId_ ->
+            case decodeTopic clientId_ stringTopic of
                 Just topic ->
                     case decodeTopicMessage table topic message of
                         Ok msg ->
@@ -261,13 +285,13 @@ decodeTopic clientId string =
                         Nothing ->
                             Nothing
 
-                        Just direction ->
-                            case decodeDirection direction of
+                        Just direction1 ->
+                            case decodeDirection direction1 of
                                 Nothing ->
                                     Nothing
 
-                                Just direction ->
-                                    Just <| Tables table direction
+                                Just direction2 ->
+                                    Just <| Tables table direction2
     else
         case string of
             "clients" ->
@@ -309,7 +333,7 @@ setStatus status model =
 hasDuplexSubscribed : List Topic -> List Topic -> Topic -> Bool
 hasDuplexSubscribed topics subscribed topic =
     List.member topic topics
-        && List.all (flip List.member <| subscribed) topics
+        && List.all ((\b a -> List.member a b) <| subscribed) topics
 
 
 hasSubscribedTable : List Topic -> Table -> Bool

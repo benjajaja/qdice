@@ -1,8 +1,8 @@
-module Board.Types exposing (..)
+module Board.Types exposing (Animations, BoardMove(..), LandUpdate, Model, Msg(..), PathCache, getLandDieKey, getLayout)
 
-import Dict
-import Land exposing (Map, Land, Layout)
 import Animation exposing (px)
+import Dict
+import Land exposing (Land, Layout, Map)
 
 
 type Msg
@@ -30,7 +30,7 @@ type alias Animations =
 
 getLandDieKey : Land -> Int -> String
 getLandDieKey land die =
-    land.emoji ++ "_" ++ (toString die)
+    land.emoji ++ "_" ++ String.fromInt die
 
 
 type BoardMove
@@ -65,18 +65,18 @@ getLayout map =
             0
 
         cellWidth =
-            (toFloat widthScale - padding) / (((toFloat mapWidth) + 0.5))
+            (toFloat widthScale - padding) / (toFloat mapWidth + 0.5)
 
         cellHeight =
             cellWidth * heightScale
 
         sWidth =
-            toString widthScale
+            String.fromInt widthScale
 
         sHeight =
-            cellHeight * (toFloat mapHeight) * 0.6 |> toString
+            cellHeight * toFloat mapHeight * 0.6 |> String.fromFloat
     in
-        ( Layout ( cellWidth / sqrt (3), cellWidth * heightScale / 2 ) padding
+        ( Layout ( cellWidth / sqrt 3, cellWidth * heightScale / 2 ) padding
         , sWidth
         , sHeight
         )

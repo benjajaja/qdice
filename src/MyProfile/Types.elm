@@ -1,11 +1,10 @@
-module MyProfile.Types exposing (..)
+module MyProfile.Types exposing (Model, Msg(..))
 
 import Material
 
 
 type Msg
-    = Mdl (Material.Msg Msg)
-    | ChangeName String
+    = ChangeName String
     | Save
 
 

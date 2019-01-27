@@ -1,45 +1,43 @@
-port module Edice exposing (..)
+port module Edice exposing (auth, started, subscriptions)
 
-import Task
-import Maybe
-import Navigation exposing (Location)
-import Routing exposing (parseLocation, navigateTo, replaceNavigateTo)
-import Html
-import Html.Lazy
-import Html.Attributes
-import Time
-import Http
-import Material
-import Material.Layout as Layout
-import Material.Icon as Icon
-import Material.Options
-import Material.Footer as Footer
-import Material.Menu as Menu
 import Animation
-import Types exposing (..)
-import Game.Types exposing (PlayerAction(..))
-import Game.State
-import Game.View
-import Game.Chat
+import Backend
+import Backend.HttpCommands exposing (authenticate, findBestTable, loadGlobalSettings, loadMe)
+import Backend.MqttCommands exposing (gameCommand)
+import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
 import Board.Types
-import Static.View
-import Editor.Editor
-import MyProfile.MyProfile
-import Backend
-import Backend.HttpCommands exposing (authenticate, loadMe, loadGlobalSettings, findBestTable)
-import Backend.MqttCommands exposing (gameCommand)
-import Backend.Types exposing (TableMessage(..), TopicDirection(..), ConnectionStatus(..))
-import Tables exposing (Table, Map(..))
-import MyOauth
-import Snackbar exposing (toast)
 import Footer exposing (footer)
-import Drawer exposing (drawer)
-import LoginDialog exposing (loginDialog, login)
+import GA exposing (ga)
+import Game.Chat
+import Game.State
+import Game.Types exposing (PlayerAction(..))
+import Game.View
 import Helpers exposing (pipeUpdates)
+import Html
+import Html.Attributes
+import Html.Lazy
+import Http
 import LeaderBoard.State
 import LeaderBoard.View
-import GA exposing (ga)
+import LoginDialog exposing (login, loginDialog)
+import Material
+import Material.Icon as Icon
+import Material.Menu as Menu
+import Material.Options
+import Maybe
+import MyOauth
+import MyProfile.MyProfile
+import Routing exposing (parseLocation, navigateTo, replaceNavigateTo)
+import Snackbar exposing (toast)
+import Static.View
+import Tables exposing (Map(..), Table)
+import Task
+import Time
+import Types exposing (..)
+import Browser
+import Browser.Navigation exposing (Key)
+import Url exposing (Url)
 
 
 type alias Flags =
@@ -49,16 +47,18 @@ type alias Flags =
 
 main : Program Flags Model Msg
 main =
-    Navigation.programWithFlags OnLocationChange
+    Browser.application
         { init = init
         , view = view
         , update = updateWrapper
         , subscriptions = subscriptions
+        , onUrlRequest = OnUrlRequest
+        , onUrlChange = OnLocationChange
         }
 
 
-init : Flags -> Location -> ( Model, Cmd Msg )
-init flags location =
+init : Flags -> Url -> Key -> ( Model, Cmd Msg )
+init flags location key =
     let
         route =
             Routing.parseLocation location
@@ -69,26 +69,23 @@ init flags location =
         ( game, gameCmd ) =
             Game.State.init Nothing table Nothing
 
-        ( editor, editorCmd ) =
-            Editor.Editor.init
-
         ( backend, backendCmd ) =
             Backend.init location table flags.isTelegram
 
         ( oauth, oauthCmds ) =
-            MyOauth.init location
+            MyOauth.init key location
 
         ( backend_, routeCmds ) =
             case route of
                 TokenRoute token ->
                     let
-                        backend_ =
+                        loadBackend =
                             { backend | jwt = Just token }
                     in
-                        ( backend_
+                        ( loadBackend
                         , [ auth [ token ]
-                          , loadMe backend_
-                          , navigateTo <| GameRoute ""
+                          , loadMe loadBackend
+                          , navigateTo key <| GameRoute ""
                           ]
                         )
 
@@ -103,18 +100,18 @@ init flags location =
                       ]
                     )
 
+        model : Model
         model =
             { route = route
-            , mdl = Material.model
+            , key = key
+            , mdc = Material.defaultModel
             , oauth = oauth
             , game = game
-            , editor = editor
             , myProfile = { name = Nothing }
             , backend = backend_
             , user = Types.Anonymous
             , tableList = []
-            , time = 0
-            , snackbar = Snackbar.init
+            , time = Time.millisToPosix 0
             , isTelegram = flags.isTelegram
             , loginName = ""
             , showLoginDialog = LoginHide
@@ -140,7 +137,6 @@ init flags location =
                     [ routeCmds
                     , [ gameCmd ]
                     , [ started "peekaboo"
-                      , Cmd.map EditorMsg editorCmd
                       , backendCmd
                       ]
                     , oauthCmds
@@ -164,20 +160,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Nop ->
-            model ! []
+            ( model
+            , Cmd.none
+            )
 
-        EditorMsg msg ->
-            let
-                ( editor, editorCmd ) =
-                    Editor.Editor.update msg model.editor
-            in
-                ( { model | editor = editor }, Cmd.map EditorMsg editorCmd )
-
-        MyProfileMsg msg ->
-            MyProfile.MyProfile.update model msg
-
-        StaticPageMsg msg ->
-            Static.View.update model msg
+        MyProfileMsg myProfileMsg ->
+            MyProfile.MyProfile.update model myProfileMsg
 
         GetGlobalSettings res ->
             case res of
@@ -193,7 +181,9 @@ update msg model =
                         game =
                             Game.State.updateGameInfo model.game tables
                     in
-                    { model | settings = settings, tableList = tables, game = game } ! []
+                        ( { model | settings = settings, tableList = tables, game = game }
+                        , Cmd.none
+                        )
 
         GetToken doJoin res ->
             case res of
@@ -218,15 +208,16 @@ update msg model =
                         model_ =
                             { model | backend = backend_ }
                     in
-                        model_
-                            ! [ auth [ token ]
-                              , loadMe backend_
-                              , (if doJoin then
-                                    gameCommand model_.backend model_.game.table Game.Types.Join
-                                 else
-                                    Cmd.none
-                                )
-                              ]
+                        ( model_
+                        , Cmd.batch
+                            [ auth [ token ]
+                            , loadMe backend_
+                            , if doJoin then
+                                gameCommand model_.backend model_.game.table Game.Types.Join
+                              else
+                                Cmd.none
+                            ]
+                        )
 
         GetProfile res ->
             case res of
@@ -245,9 +236,9 @@ update msg model =
                         backend_ =
                             { backend | jwt = Just token }
                     in
-                        { model | user = Logged profile, backend = backend_ }
-                            ! [ ga [ "send", "event", "auth", "GetProfile" ]
-                              ]
+                        ( { model | user = Logged profile, backend = backend_ }
+                        , ga [ "send", "event", "auth", "GetProfile" ]
+                        )
 
         GetLeaderBoard res ->
             LeaderBoard.State.setLeaderBoard model res
@@ -260,10 +251,12 @@ update msg model =
                 backend_ =
                     { backend | jwt = Just token }
             in
-                { model | user = Logged profile, backend = backend_ } ! []
+                ( { model | user = Logged profile, backend = backend_ }
+                , Cmd.none
+                )
 
         Authorize doJoin ->
-            MyOauth.authorize model doJoin
+            ( model, MyOauth.authorize model.oauth doJoin )
 
         LoadToken token ->
             let
@@ -273,14 +266,17 @@ update msg model =
                 backend_ =
                     { backend | jwt = Just token }
             in
-                { model | backend = backend_ }
-                    ! [ loadMe backend_, ga [ "send", "event", "auth", "LoadToken" ] ]
+                ( { model | backend = backend_ }
+                , Cmd.batch [ loadMe backend_, ga [ "send", "event", "auth", "LoadToken" ] ]
+                )
 
         Authenticate code doJoin ->
-            model
-                ! [ authenticate model.backend code doJoin
-                  , ga [ "send", "event", "auth", "Authenticate" ]
-                  ]
+            ( model
+            , Cmd.batch
+                [ authenticate model.backend code doJoin
+                , ga [ "send", "event", "auth", "Authenticate" ]
+                ]
+            )
 
         Logout ->
             let
@@ -293,27 +289,28 @@ update msg model =
                 player =
                     Game.State.findUserPlayer model.user model.game.players
             in
-                { model | user = Anonymous, backend = backend_ }
-                    ! [ auth []
-                      , (case player of
-                            Just _ ->
-                                gameCommand model.backend model.game.table Game.Types.Leave
+                ( { model | user = Anonymous, backend = backend_ }
+                , Cmd.batch
+                    [ auth []
+                    , case player of
+                        Just _ ->
+                            gameCommand model.backend model.game.table Game.Types.Leave
 
-                            Nothing ->
-                                Cmd.none
-                        )
-                      , ga [ "send", "event", "auth", "Logout" ]
-                      ]
+                        Nothing ->
+                            Cmd.none
+                    , ga [ "send", "event", "auth", "Logout" ]
+                    ]
+                )
 
         SetLoginName text ->
-            { model | loginName = text } ! []
+            ( { model | loginName = text }
+            , Cmd.none
+            )
 
         ShowLogin show ->
-            { model | showLoginDialog = Debug.log "login" show }
-                ! if model.mdl.layout.isDrawerOpen then
-                    msgsToCmds [ Layout.toggleDrawer Mdl ]
-                  else
-                    []
+            ( { model | showLoginDialog = Debug.log "login" show }
+            , Cmd.none
+            )
 
         Login name ->
             login model name
@@ -326,21 +323,23 @@ update msg model =
                             Debug.log "error" err
                     in
                         --toast model "Could not find a good table for you"
-                        ( model, replaceNavigateTo <| GameRoute "" )
+                        ( model, replaceNavigateTo model.key <| GameRoute "" )
 
                 Ok table ->
                     ( model
                     , if model.route /= GameRoute table then
-                        replaceNavigateTo <| GameRoute table
+                        replaceNavigateTo model.key <| GameRoute table
                       else
                         Cmd.none
                     )
 
         NavigateTo route ->
-            model ! [ navigateTo route ]
+            ( model
+            , navigateTo model.key route
+            )
 
-        DrawerNavigateTo route ->
-            model ! msgsToCmds [ Layout.toggleDrawer Mdl, NavigateTo route ]
+        OnUrlRequest urlRequest ->
+            ( model, Cmd.none )
 
         OnLocationChange location ->
             let
@@ -354,7 +353,9 @@ update msg model =
                     Routing.routeEnterCmd model_ newRoute
             in
                 if newRoute == model.route then
-                    model ! []
+                    ( model
+                    , Cmd.none
+                    )
                 else
                     ( model_, cmd )
                         |> (case newRoute of
@@ -364,27 +365,21 @@ update msg model =
                                 _ ->
                                     identity
                            )
-                        |> case model.route of
-                            GameRoute table ->
-                                pipeUpdates Backend.unsubscribeGameTable table
+                        |> (case model.route of
+                                GameRoute table ->
+                                    pipeUpdates Backend.unsubscribeGameTable table
 
-                            _ ->
-                                identity
+                                _ ->
+                                    identity
+                           )
 
-        Mdl msg ->
-            Material.update Mdl msg model
-
-        Snackbar snackbarMsg ->
-            let
-                ( snackbar_, cmd ) =
-                    Snackbar.update snackbarMsg model.snackbar
-            in
-                { model | snackbar = snackbar_ } ! [ Cmd.map Snackbar cmd ]
+        Mdl mdlMsg ->
+            Material.update Mdl mdlMsg model
 
         ErrorToast message ->
             toast model <| Debug.log "error" message
 
-        Animate msg ->
+        Animate animateMsg ->
             let
                 game =
                     model.game
@@ -395,7 +390,7 @@ update msg model =
                 ( { model
                     | game =
                         { game
-                            | board = Board.updateAnimations board (Animation.update msg)
+                            | board = Board.updateAnimations board (Animation.update animateMsg)
                         }
                   }
                 , Cmd.none
@@ -423,7 +418,9 @@ update msg model =
                         Game.State.hoverLand model_ land
 
                     _ ->
-                        model_ ! [ Cmd.map BoardMsg newBoardMsg ]
+                        ( model_
+                        , Cmd.map BoardMsg newBoardMsg
+                        )
 
         InputChat text ->
             let
@@ -433,7 +430,9 @@ update msg model =
                 game_ =
                     { game | chatInput = text }
             in
-                { model | game = game_ } ! []
+                ( { model | game = game_ }
+                , Cmd.none
+                )
 
         SendChat string ->
             let
@@ -444,29 +443,40 @@ update msg model =
                     { game | chatInput = "" }
             in
                 if string /= "" then
-                    { model | game = game_ }
-                        ! [ gameCommand model.backend model.game.table <| Game.Types.Chat string ]
+                    ( { model | game = game_ }
+                    , gameCommand model.backend model.game.table <| Game.Types.Chat string
+                    )
                 else
                     ( model, Cmd.none )
 
         GameCmd playerAction ->
-            model ! [ gameCommand model.backend model.game.table playerAction ]
+            ( model
+            , gameCommand model.backend model.game.table playerAction
+            )
 
         UnknownTopicMessage error topic message ->
             let
                 _ =
                     Debug.log ("Error in message: \"" ++ error ++ "\"") topic
             in
-                model ! []
+                ( model
+                , Cmd.none
+                )
 
         StatusConnect _ ->
-            (Backend.setStatus Connecting model) ! []
+            ( Backend.setStatus Connecting model
+            , Cmd.none
+            )
 
         StatusReconnect attemptCount ->
-            (Backend.setStatus (Reconnecting attemptCount) model) ! []
+            ( Backend.setStatus (Reconnecting attemptCount) model
+            , Cmd.none
+            )
 
         StatusOffline _ ->
-            (Backend.setStatus Offline model) ! []
+            ( Backend.setStatus Offline model
+            , Cmd.none
+            )
 
         Connected clientId ->
             Backend.updateConnected model clientId
@@ -474,11 +484,13 @@ update msg model =
         Subscribed topic ->
             Backend.updateSubscribed model topic
 
-        ClientMsg msg ->
-            model ! []
+        ClientMsg _ ->
+            ( model
+            , Cmd.none
+            )
 
-        AllClientsMsg msg ->
-            case msg of
+        AllClientsMsg allClientsMsg ->
+            case allClientsMsg of
                 Backend.Types.TablesInfo tables ->
                     let
                         game =
@@ -487,10 +499,12 @@ update msg model =
                         game_ =
                             Game.State.updateGameInfo model.game tables
                     in
-                        { model | tableList = tables, game = game_ } ! []
+                        ( { model | tableList = tables, game = game_ }
+                        , Cmd.none
+                        )
 
-        TableMsg table msg ->
-            Game.State.updateTable model table msg
+        TableMsg table tableMsg ->
+            Game.State.updateTable model table tableMsg
 
         Tick newTime ->
             let
@@ -499,7 +513,7 @@ update msg model =
                         GameRoute table ->
                             case model.backend.clientId of
                                 Just c ->
-                                    if Time.inSeconds newTime - Time.inSeconds model.backend.lastHeartbeat > 30 then
+                                    if Time.posixToMillis newTime - Time.posixToMillis model.backend.lastHeartbeat > 30 then
                                         gameCommand model.backend model.game.table Heartbeat
                                     else
                                         Cmd.none
@@ -535,80 +549,25 @@ currentTable route =
             Nothing
 
 
-type alias Mdl =
-    Material.Model
-
-
 lazyList : (a -> List (Html.Html Msg)) -> a -> List (Html.Html Msg)
-lazyList view =
-    Html.Lazy.lazy (\model -> Html.div [] (view model)) >> (\html -> [ html ])
+lazyList v =
+    Html.Lazy.lazy (\model -> Html.div [] (v model)) >> (\html -> [ html ])
 
 
-view : Model -> Html.Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    Layout.render Mdl
-        model.mdl
-        [ Layout.scrolling
-          --, Layout.fixedHeader
-        ]
-        { header =
-            []
-            --(if not model.isTelegram then
-            --(lazyList header) model
-            --else
-            --[]
-            --)
-        , drawer =
-            (if not model.isTelegram then
-                (lazyList drawer) model.user
-             else
-                []
-            )
-        , tabs = ( [], [] )
-        , main =
+    { title = "Qdice.wtf"
+    , body =
+        [ Html.div []
             [ loginDialog model
             , Html.div [ Html.Attributes.class "Main" ]
                 [ mainView model
                 ]
             , footer model
-            , Snackbar.view model.snackbar |> Html.map Snackbar
-            ]
-        }
-
-
-header : Model -> List (Html.Html Msg)
-header model =
-    [ Layout.row
-        [ Material.Options.cs "header" ]
-        [ Layout.title [] [ Html.text "¡Qué Dice!" ]
-        , Layout.spacer
-        , Layout.navigation []
-            [ case model.user of
-                Logged user ->
-                    Html.text user.name
-
-                Anonymous ->
-                    Html.text ""
-            , Menu.render Mdl
-                [ 0 ]
-                model.mdl
-                [ Menu.bottomRight, Menu.ripple ]
-              <|
-                case model.user of
-                    Logged user ->
-                        [ Menu.item
-                            [ Menu.onSelect Logout ]
-                            [ Html.text "Sign out" ]
-                        ]
-
-                    Anonymous ->
-                        [ Menu.item
-                            [ Menu.onSelect <| Authorize False ]
-                            [ Html.text "Sign in" ]
-                        ]
+              --, Snackbar.view model.snackbar |> Html.map Snackbar
             ]
         ]
-    ]
+    }
 
 
 mainView : Model -> Html.Html Msg
@@ -625,10 +584,6 @@ mainView model =
             viewWrapper
                 [ Static.View.view model page
                 ]
-
-        EditorRoute ->
-            viewWrapper
-                [ Editor.Editor.view model ]
 
         NotFoundRoute ->
             viewWrapper
@@ -668,8 +623,6 @@ mainViewSubscriptions model =
         GameRoute _ ->
             Animation.subscription Animate <| Board.animations model.game.board
 
-        -- EditorRoute ->
-        --     Editor.Editor.subscriptions model.editor |> Sub.map EditorMsg
         _ ->
             Sub.none
 
@@ -679,8 +632,7 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
-        , Time.every (250) Tick
-        , Menu.subs Mdl model.mdl
+        , Time.every 250 Tick
         ]
 
 

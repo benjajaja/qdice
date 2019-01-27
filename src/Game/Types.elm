@@ -1,6 +1,6 @@
-module Game.Types exposing (..)
+module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableStatus, User, makePlayer)
 
-import Board exposing (Msg, LandUpdate)
+import Board exposing (LandUpdate, Msg)
 import Land exposing (Color, Emoji)
 import Tables exposing (Table)
 

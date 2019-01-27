@@ -1,19 +1,19 @@
-module Routing exposing (..)
+module Routing exposing (matchers, navigateTo, replaceNavigateTo, routeEnterCmd, routeToString, staticPageMatcher, tableMatcher, parseLocation)
 
-import Http
-import Navigation exposing (Location)
-import UrlParser exposing (..)
-import Types exposing (..)
-import Tables exposing (Table)
 import Backend.HttpCommands exposing (findBestTable, leaderBoard)
+import Http
+import Tables exposing (Table)
+import Types exposing (..)
+import Url exposing (Url)
+import Url.Parser exposing (..)
+import Browser.Navigation exposing (Key)
 
 
 matchers : Parser (Route -> a) a
 matchers =
     oneOf
-        [ map (HomeRoute) top
+        [ map HomeRoute top
         , map StaticPageRoute (s "static" </> staticPageMatcher)
-        , map EditorRoute (s "editor")
         , map MyProfileRoute (s "me")
         , map TokenRoute (s "token" </> string)
         , map ProfileRoute (s "profile" </> string)
@@ -24,49 +24,49 @@ matchers =
 
 staticPageMatcher : Parser (StaticPage -> a) a
 staticPageMatcher =
-    UrlParser.custom "STATIC_PAGE" <|
+    custom "STATIC_PAGE" <|
         \segment ->
             case segment of
                 "help" ->
-                    Ok Help
+                    Just Help
 
                 "about" ->
-                    Ok About
+                    Just About
 
                 _ ->
-                    Err segment
+                    Nothing
 
 
 tableMatcher : Parser (Route -> a) a
 tableMatcher =
-    UrlParser.custom "GAME" <|
+    custom "GAME" <|
         \segment ->
-            case Http.decodeUri segment of
-                Just table ->
-                    Ok (GameRoute table)
-
-                Nothing ->
-                    Err <| "No such table: " ++ segment
+            Just <| GameRoute segment
 
 
-parseLocation : Location -> Route
-parseLocation location =
-    case parseHash matchers location of
-        Just route ->
-            route
 
-        Nothing ->
-            NotFoundRoute
-
-
-navigateTo : Route -> Cmd Msg
-navigateTo route =
-    Navigation.newUrl <| routeToString route
+--case Http.decodeUri segment of
+--Just table ->
+--Ok (GameRoute table)
+--Nothing ->
+--Err <| "No such table: " ++ segment
+-- XXXXX
 
 
-replaceNavigateTo : Route -> Cmd Msg
-replaceNavigateTo route =
-    Navigation.modifyUrl <| routeToString route
+parseLocation : Url -> Route
+parseLocation url =
+    parse matchers url
+        |> Maybe.withDefault NotFoundRoute
+
+
+navigateTo : Key -> Route -> Cmd Msg
+navigateTo key route =
+    Browser.Navigation.pushUrl key <| routeToString route
+
+
+replaceNavigateTo : Key -> Route -> Cmd Msg
+replaceNavigateTo key route =
+    Browser.Navigation.replaceUrl key <| routeToString route
 
 
 routeToString : Route -> String
@@ -85,9 +85,6 @@ routeToString route =
 
                 About ->
                     "#static/about"
-
-        EditorRoute ->
-            "#editor"
 
         NotFoundRoute ->
             "#404"
@@ -115,4 +112,4 @@ routeEnterCmd model route =
             findBestTable model.backend
 
         _ ->
-            Debug.log ("enter " ++ toString route) Cmd.none
+            Debug.log ("enter " ++ Debug.toString route) Cmd.none

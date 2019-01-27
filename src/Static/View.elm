@@ -1,34 +1,18 @@
-module Static.View exposing (view, update)
+module Static.View exposing (view)
 
-import Types exposing (..)
 import Html exposing (..)
 import Markdown
-import Material.Tabs as Tabs
-import Material.Options as Options
 import Material.Icon as Icon
-import Static.Types
+import Material.Options as Options
 import Static.Help
+import Types exposing (..)
 
 
 view : Model -> StaticPage -> Html Msg
 view model page =
     case page of
         Help ->
-            Tabs.render Mdl
-                []
-                model.mdl
-                [ Tabs.ripple
-                , Tabs.onSelectTab (Static.Types.SelectTab >> StaticPageMsg)
-                , Tabs.activeTab model.staticPage.help.tab
-                ]
-                [ Tabs.label
-                    [ Options.center ]
-                    [ text "English" ]
-                , Tabs.label
-                    [ Options.center ]
-                    [ text "Español" ]
-                ]
-                [ Static.Help.markdown model.staticPage.help.tab ]
+            Static.Help.markdown
 
         About ->
             Markdown.toHtml [] """
@@ -53,17 +37,3 @@ Created by <ste3ls@gmail.com>.
   * x Login with facebook
   * x Login with github
 """
-
-
-update : Model -> Static.Types.Msg -> ( Model, Cmd Msg )
-update model msg =
-    case msg of
-        Static.Types.SelectTab idx ->
-            let
-                staticPage =
-                    model.staticPage
-
-                help =
-                    staticPage.help
-            in
-                ( { model | staticPage = { staticPage | help = { help | tab = idx } } }, Cmd.none )

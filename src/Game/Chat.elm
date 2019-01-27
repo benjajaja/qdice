@@ -1,27 +1,26 @@
-module Game.Chat exposing (..)
+module Game.Chat exposing (chatBox, chatPlayerTag, eliminationEmoji, eliminationReasonText, gameBox, input, maybeUserChatTag, playerTag, rollLine, toChatError)
 
-import Types exposing (Msg(..))
+import Board.Colors exposing (baseCssRgb)
+import Game.Types exposing (ChatLogEntry(..), Model, PlayerAction(..), RollLog)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http exposing (Error(..))
+import Land exposing (Color)
 import Material
+import Material.Button as Button
 import Material.Card as Card
-import Material.Options as Options exposing (cs, css, id)
-import Material.Textfield as Textfield
 import Material.Elevation
 import Material.Icon as Icon
-import Material.Button as Button
+import Material.Options as Options exposing (cs, css, id)
+import Material.Textfield as Textfield
 import Ordinal exposing (ordinal)
-import Game.Types exposing (PlayerAction(..), ChatLogEntry(..), RollLog, Model)
 import Tables exposing (Table)
-import Land exposing (Color)
-import Board.Colors exposing (baseCssRgb)
-import Ordinal exposing (ordinal)
+import Types exposing (Msg(..))
 
 
-chatBox : Bool -> String -> List Color -> Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
-chatBox hasInput inputValue colors mdl lines id =
+chatBox : String -> List Color -> Material.Model Types.Msg -> List ChatLogEntry -> String -> Html Types.Msg
+chatBox inputValue colors mdl lines id =
     Card.view [ cs "chatbox" ] <|
         Card.media [ cs "chatbox--log", Options.id id ]
             (List.map
@@ -37,12 +36,12 @@ chatBox hasInput inputValue colors mdl lines id =
 
                         LogJoin user ->
                             div [ class "chatbox--line--join" ]
-                                [ Html.text <| (maybeUserChatTag user) ++ " joined"
+                                [ Html.text <| maybeUserChatTag user ++ " joined"
                                 ]
 
                         LogLeave user ->
                             div [ class "chatbox--line--leave" ]
-                                [ Html.text <| (maybeUserChatTag user) ++ " left"
+                                [ Html.text <| maybeUserChatTag user ++ " left"
                                 ]
 
                         _ ->
@@ -50,56 +49,31 @@ chatBox hasInput inputValue colors mdl lines id =
                 )
                 lines
             )
-            :: (if hasInput then
+            :: 
                     [ Card.actions [ cs "chatbox--actions" ]
                         [ Html.form [ onSubmit (SendChat inputValue), class "chatbox--actions-form" ]
                             [ input mdl inputValue
-                            , Button.render
+                            , Button.view
                                 Types.Mdl
-                                [ 0 ]
+                                "button-chat"
                                 mdl
-                                [ Button.primary
-                                , Button.colored
-                                , Button.ripple
-                                , Button.type_ "submit"
+                                --[ Button.primary
+                                --, Button.colored
+                                [ Button.ripple
+                                --, Button.type_ "submit"
                                 , cs "chatbox--actions-button"
                                 ]
-                                [ Icon.i "keyboard_return" ]
+                                [ Icon.view [] "keyboard_return" ]
                             ]
                         ]
                     ]
-                else
-                    [ Card.actions [ cs "chatbox--actions" ] <|
-                        List.map
-                            (\t ->
-                                Button.render
-                                    Types.Mdl
-                                    [ 0 ]
-                                    mdl
-                                    [ Button.primary
-                                    , Button.colored
-                                    , Button.ripple
-                                    , cs "chatbox--actions-predefined"
-                                    , Options.onClick <| SendChat t
-                                    ]
-                                    [ text t ]
-                            )
-                        <|
-                            List.append
-                                [ "OK", "No", "Flag" ]
-                            <|
-                                List.map
-                                    toString
-                                    colors
-                    ]
-               )
 
 
-input : Material.Model -> String -> Html Types.Msg
+input : Material.Model Types.Msg -> String -> Html Types.Msg
 input mdl value =
-    Textfield.render
+    Textfield.view
         Types.Mdl
-        [ 0 ]
+        "input-chat"
         mdl
         [ Options.onInput InputChat
         , Textfield.value value
@@ -110,7 +84,7 @@ input mdl value =
 
 toChatError : Table -> PlayerAction -> Http.Error -> String
 toChatError table action err =
-    (toString action)
+    Debug.toString action
         ++ " failed: "
         ++ (case err of
                 NetworkError ->
@@ -120,7 +94,7 @@ toChatError table action err =
                     "Timed out (network)"
 
                 BadStatus response ->
-                    "Server error " ++ (toString response.status.code) ++ " " ++ response.status.message
+                    "Server error " ++ String.fromInt response.status.code ++ " " ++ response.status.message
 
                 BadPayload error response ->
                     "Client error: " ++ error
@@ -130,21 +104,21 @@ toChatError table action err =
            )
 
 
-gameBox : Material.Model -> List ChatLogEntry -> String -> Html Types.Msg
+gameBox : Material.Model Types.Msg -> List ChatLogEntry -> String -> Html Types.Msg
 gameBox mdl lines id =
     Card.view [ cs "gamelogContainer" ]
         [ Card.media [ cs "gamelog", Options.id id ] <|
-            (List.map
+            List.map
                 (\c ->
                     case c of
                         LogChat _ _ _ ->
-                            Html.text "\x00"
+                            Html.text "\u{0000}"
 
                         LogJoin _ ->
-                            Html.text "\x01"
+                            Html.text "\u{0001}"
 
                         LogLeave _ ->
-                            Html.text "\x02"
+                            Html.text "\u{0002}"
 
                         LogError error ->
                             div [ class "chatbox--line--error" ]
@@ -166,14 +140,14 @@ gameBox mdl lines id =
                                 , playerTag user color
                                 , Html.strong []
                                     [ Html.text <|
-                                        (if position == 1 then
+                                        if position == 1 then
                                             " won the game!"
-                                         else
-                                            " finished " ++ (ordinal position)
-                                        )
+
+                                        else
+                                            " finished " ++ ordinal position
                                     ]
-                                , Html.text <| " with " ++ (toString score) ++ " ✪"
-                                , Html.text <| " " ++ (eliminationReasonText reason)
+                                , Html.text <| " with " ++ String.fromInt score ++ " ✪"
+                                , Html.text <| " " ++ eliminationReasonText reason
                                 ]
 
                         LogBegin table ->
@@ -182,7 +156,6 @@ gameBox mdl lines id =
                                 , Html.strong [] [ Html.text <| table ]
                                 ]
                 )
-            )
             <|
                 List.reverse <|
                     lines
@@ -191,13 +164,12 @@ gameBox mdl lines id =
 
 maybeUserChatTag : Maybe Game.Types.User -> String
 maybeUserChatTag user =
-    (case user of
-        Just user ->
-            user
+    case user of
+        Just u ->
+            u
 
         Nothing ->
             "🕵️ Anonymous"
-    )
 
 
 chatPlayerTag : Maybe Game.Types.User -> Color -> Html Types.Msg
@@ -213,8 +185,8 @@ chatPlayerTag user color =
 playerTag : Game.Types.User -> Color -> Html Types.Msg
 playerTag name color =
     Html.span
-        [ class <| "chatbox__tag__player chatbox__tag__player--" ++ (toString color)
-        , style [ ( "color", baseCssRgb color ) ]
+        [ class <| "chatbox__tag__player chatbox__tag__player--" ++ Debug.toString color
+        , style "color" (baseCssRgb color)
         ]
         [ Html.text <| name ]
 
@@ -227,30 +199,32 @@ rollLine roll =
                 roll.attacker
                     ++ (if roll.success then
                             " won over "
+
                         else
                             " lost against "
                        )
                     ++ roll.defender
                     ++ " "
-                    ++ (toString roll.attackRoll)
+                    ++ String.fromInt roll.attackRoll
                     ++ (if roll.success then
                             " → "
+
                         else
                             " ↩ "
                        )
-                    ++ (toString roll.defendRoll)
+                    ++ String.fromInt roll.defendRoll
                     ++ " ("
-                    ++ (toString <| roll.attackDiceCount * 6)
+                    ++ (String.fromInt <| roll.attackDiceCount * 6)
                     ++ "/"
-                    ++ (toString <| roll.defendDiceCount * 6)
+                    ++ (String.fromInt <| roll.defendDiceCount * 6)
                     ++ ")"
                     ++ ": "
-                    ++ (roll.attackDiesEmojis)
+                    ++ roll.attackDiesEmojis
                     ++ " → "
-                    ++ (roll.defendDiesEmojis)
+                    ++ roll.defendDiesEmojis
             ]
     in
-        div [ class "chatbox--line--roll" ] text
+    div [ class "chatbox--line--roll" ] text
 
 
 eliminationEmoji reason =
@@ -272,13 +246,13 @@ eliminationEmoji reason =
 eliminationReasonText reason =
     case reason of
         Game.Types.ReasonDeath player points ->
-            "(Killed by " ++ (player.name) ++ " for " ++ (toString points) ++ "✪)"
+            "(Killed by " ++ player.name ++ " for " ++ String.fromInt points ++ "✪)"
 
         Game.Types.ReasonOut turns ->
-            "(Out for " ++ (toString turns) ++ " turns)"
+            "(Out for " ++ String.fromInt turns ++ " turns)"
 
         Game.Types.ReasonWin turns ->
-            "(Last standing player after " ++ (toString turns) ++ " turns)"
+            "(Last standing player after " ++ String.fromInt turns ++ " turns)"
 
         Game.Types.ReasonFlag position ->
-            "(Flagged for " ++ (ordinal position) ++ ")"
+            "(Flagged for " ++ ordinal position ++ ")"

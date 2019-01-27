@@ -1,16 +1,16 @@
-module LoginDialog exposing (loginDialog, login)
+module LoginDialog exposing (login, loginDialog)
 
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Keyed
-import Html.Events exposing (onSubmit)
-import Http
-import Material.Textfield as Textfield
-import Material.Button as Button
-import Material.Options as Options
-import Types exposing (..)
 import Backend.Decoding exposing (tokenDecoder)
 import Backend.Encoding exposing (profileEncoder)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onSubmit)
+import Html.Keyed
+import Http
+import Material.Button as Button
+import Material.Options as Options
+import Material.Textfield as Textfield
+import Types exposing (..)
 
 
 loginDialog : Model -> Html Msg
@@ -34,9 +34,9 @@ body model =
             [ class "edLoginDialog__social" ]
             [ div []
                 [ text "One-click sign-in:" ]
-            , Button.render Mdl
-                [ 12 ]
-                model.mdl
+            , Button.view Mdl
+                "button-login-social"
+                model.mdc
                 [ Options.onClick <|
                     Authorize <|
                         case model.showLoginDialog of
@@ -46,7 +46,7 @@ body model =
                             _ ->
                                 False
                 , Button.raised
-                , Button.colored
+                  --, Button.colored
                 , Button.ripple
                 , Options.cs "edLoginSocial edLoginSocial--google"
                 ]
@@ -58,29 +58,29 @@ body model =
             [ div []
                 [ text "... or just play for now:" ]
             , Html.form [ onSubmit <| Login model.loginName ]
-                [ Textfield.render Mdl
-                    [ 13 ]
-                    model.mdl
+                [ Textfield.view Mdl
+                    "input-login-name"
+                    model.mdc
                     [ Textfield.label "Name"
-                    , Textfield.floatingLabel
-                    , Textfield.text_
+                      --, Textfield.floatingLabel
+                    , Textfield.type_ "text"
                     , Textfield.value model.loginName
                     , Options.onInput SetLoginName
                     , Options.cs "edLoginDialog__name"
-                    , Textfield.maxlength model.settings.maxNameLength
+                      --, Textfield.maxlength model.settings.maxNameLength
                     ]
                     []
                 ]
             ]
         , div [ class "edLoginDialog__buttons" ]
-            [ Button.render Mdl
-                [ 11 ]
-                model.mdl
+            [ Button.view Mdl
+                "button-login-close"
+                model.mdc
                 [ Options.onClick <| ShowLogin LoginHide ]
                 [ text "Close" ]
-            , Button.render Mdl
-                [ 10 ]
-                model.mdl
+            , Button.view Mdl
+                "button-login"
+                model.mdc
                 (List.append
                     (if model.loginName == "" then
                         [ Button.disabled ]
@@ -109,16 +109,16 @@ login model name =
         request =
             Http.request
                 { method = "POST"
-                , url = (model.backend.baseUrl ++ "/register")
+                , url = model.backend.baseUrl ++ "/register"
                 , headers = []
                 , body =
-                    (Http.jsonBody <| profileEncoder profile)
+                    Http.jsonBody <| profileEncoder profile
                 , expect =
                     Http.expectJson <| tokenDecoder
                 , timeout = Nothing
                 , withCredentials = False
                 }
     in
-        { model | showLoginDialog = LoginHide }
-            ! [ Http.send (Types.GetToken True) request
-              ]
+        ( { model | showLoginDialog = LoginHide }
+        , Http.send (Types.GetToken True) request
+        )

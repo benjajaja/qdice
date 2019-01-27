@@ -1,15 +1,15 @@
-port module Backend.MqttCommands exposing (..)
+port module Backend.MqttCommands exposing (attack, enter, exit, gameCommand, leave, mqttPublish, publish)
 
-import Task
-import Time
-import Land exposing (Color(..))
-import Tables exposing (Table)
-import Game.Types exposing (Player, PlayerAction(..))
-import Backend.Types exposing (Model, ClientId, Topic(..), TopicDirection(..))
-import Types exposing (Msg(..))
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
+import Backend.Types exposing (ClientId, Model, Topic(..), TopicDirection(..))
+import Game.Types exposing (Player, PlayerAction(..))
+import Land exposing (Color(..))
 import Snackbar exposing (toastCmd)
+import Tables exposing (Table)
+import Task
+import Time
+import Types exposing (Msg(..))
 
 
 port mqttPublish : ( String, String ) -> Cmd msg
@@ -18,11 +18,11 @@ port mqttPublish : ( String, String ) -> Cmd msg
 publish : Maybe String -> Maybe ClientId -> Table -> PlayerAction -> Cmd Msg
 publish jwt clientId table action =
     case clientId of
-        Just clientId ->
+        Just clientId_ ->
             Cmd.batch
                 [ ( encodeTopic <|
                         Tables table ServerDirection
-                  , encodePlayerAction jwt clientId action
+                  , encodePlayerAction jwt clientId_ action
                   )
                     |> mqttPublish
                 , Task.perform SetLastHeartbeat Time.now

@@ -1,4 +1,4 @@
-port module GA exposing (..)
+port module GA exposing (ga)
 
 
 port ga : List String -> Cmd msg

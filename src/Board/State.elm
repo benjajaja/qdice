@@ -1,10 +1,11 @@
 port module Board.State exposing (init, update, updateLands)
 
-import Dict
 import Animation exposing (px)
-import Board.Types exposing (..)
 import Board.PathCache exposing (createPathCache)
+import Board.Types exposing (..)
+import Dict
 import Land
+import Time exposing (millisToPosix)
 
 
 init : Land.Map -> Model
@@ -16,25 +17,35 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         HoverLand land ->
-            model ! []
+            ( model
+            , Cmd.none
+            )
 
         UnHoverLand land ->
             case model.hovered of
                 Just l ->
                     if l == land then
-                        { model | hovered = Nothing } ! []
+                        ( { model | hovered = Nothing }
+                        , Cmd.none
+                        )
                     else
-                        model ! []
+                        ( model
+                        , Cmd.none
+                        )
 
                 Nothing ->
-                    model ! []
+                    ( model
+                    , Cmd.none
+                    )
 
         ClickLand land ->
-            model ! []
+            ( model
+            , Cmd.none
+            )
 
 
 updateLands : Model -> List LandUpdate -> Maybe BoardMove -> Model
-updateLands model update move =
+updateLands model updates mMove =
     let
         map =
             model.map
@@ -43,7 +54,7 @@ updateLands model update move =
             getLayout map
 
         landUpdates =
-            List.map (updateLand layout update) map.lands
+            List.map (updateLand layout updates) map.lands
 
         map_ =
             { map
@@ -51,12 +62,7 @@ updateLands model update move =
             }
 
         move_ =
-            case move of
-                Just move ->
-                    move
-
-                Nothing ->
-                    model.move
+            Maybe.withDefault model.move mMove
 
         animations =
             List.foldl
@@ -64,8 +70,8 @@ updateLands model update move =
                     \dict ->
                         List.foldl
                             (\( index, animation ) ->
-                                \dict ->
-                                    Dict.insert (getLandDieKey land index) animation dict
+                                \dict_ ->
+                                    Dict.insert (getLandDieKey land index) animation dict_
                             )
                             dict
                             diceAnimations
@@ -79,22 +85,21 @@ updateLands model update move =
 updateLand : Land.Layout -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, Animation.State ) )
 updateLand layout updates land =
     let
-        update =
+        landUpdate =
             List.filter (\l -> l.emoji == land.emoji) updates
     in
-        case List.head update of
-            Just update ->
+        case List.head landUpdate of
+            Just firstUpdate ->
                 ( { land
-                    | color = update.color
-                    , points = update.points
+                    | color = firstUpdate.color
+                    , points = firstUpdate.points
                   }
-                , if update.color == land.color && update.points > land.points then
+                , if firstUpdate.color == land.color && firstUpdate.points > land.points then
                     let
                         ( cx, cy ) =
-                            (Land.landCenter
+                            Land.landCenter
                                 layout
                                 land.cells
-                            )
                     in
                         List.map
                             (\index ->
@@ -106,28 +111,28 @@ updateLand layout updates land =
                                             2
 
                                     y =
-                                        cy - yOffset - (toFloat (index % 4) * 1.2)
+                                        cy - yOffset - (toFloat (modBy 4 index) * 1.2)
                                 in
                                     ( index
                                     , Animation.interrupt
-                                        [ Animation.wait (10 * index)
+                                        [ Animation.wait <| millisToPosix <| 10 * index
                                         , Animation.toWith
                                             (Animation.easing
                                                 { duration = 100
-                                                , ease = (\x -> x ^ 2)
+                                                , ease = \x -> x ^ 2
                                                 }
                                             )
                                             [ Animation.y <| y ]
                                         ]
                                       <|
                                         Animation.style
-                                            [ Animation.y <| y - 10 * index ]
+                                            [ Animation.y <| y - (toFloat <| 10 * index) ]
                                     )
                             )
                         <|
                             List.range
                                 land.points
-                                update.points
+                                firstUpdate.points
                   else
                     []
                 )

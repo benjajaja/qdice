@@ -1,43 +1,40 @@
-module MyProfile.MyProfile exposing (view, update)
+module MyProfile.MyProfile exposing (update, view)
 
+import Backend.Decoding exposing (tokenDecoder)
+import Backend.Encoding exposing (profileEncoder)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Http
 import Material
-import Material.Textfield as Textfield
 import Material.Button as Button
 import Material.Options as Options
-import Types
+import Material.Textfield as Textfield
 import MyProfile.Types exposing (..)
-import Backend.Decoding exposing (tokenDecoder)
-import Backend.Encoding exposing (profileEncoder)
 import Snackbar exposing (toastCmd)
+import Types
 
 
 view : Types.Model -> Types.LoggedUser -> Html.Html Types.Msg
 view model user =
     div [ class "edMyProfile" ]
-        [ (Textfield.render Mdl
-            [ 0 ]
-            model.mdl
+        [ Textfield.view Types.Mdl
+            "input-my-name"
+            model.mdc
             [ Textfield.label "Player name"
-            , Textfield.floatingLabel
-            , Textfield.text_
+            , Textfield.type_ "text"
             , Textfield.value <| Maybe.withDefault user.name model.myProfile.name
-            , Options.onInput ChangeName
+            , Options.onInput <| Types.MyProfileMsg << ChangeName
             ]
             []
-          )
-        , Button.render Mdl
-            [ 0 ]
-            model.mdl
+        , Button.view Types.Mdl
+            "button-change-my-name"
+            model.mdc
             [ Button.raised
             , Button.ripple
-            , Options.onClick Save
+            , Options.onClick <| Types.MyProfileMsg Save
             ]
             [ text "Save" ]
         ]
-        |> Html.map Types.MyProfileMsg
 
 
 update : Types.Model -> Msg -> ( Types.Model, Cmd Types.Msg )
@@ -51,12 +48,16 @@ update model msg =
                 p_ =
                     { p | name = Just value }
             in
-                { model | myProfile = p_ } ! []
+                ( { model | myProfile = p_ }
+                , Cmd.none
+                )
 
         Save ->
             case model.backend.jwt of
                 Nothing ->
-                    model ! [ toastCmd "Missing JWT" ]
+                    ( model
+                    , toastCmd "Missing JWT"
+                    )
 
                 Just jwt ->
                     case model.user of
@@ -69,23 +70,18 @@ update model msg =
                                     Http.request
                                         { method = "PUT"
                                         , headers = [ Http.header "authorization" ("Bearer " ++ jwt) ]
-                                        , url = (model.backend.baseUrl ++ "/profile")
+                                        , url = model.backend.baseUrl ++ "/profile"
                                         , body =
-                                            (Http.jsonBody <| profileEncoder profile)
+                                            Http.jsonBody <| profileEncoder profile
                                         , expect =
                                             Http.expectJson <| tokenDecoder
                                         , timeout = Nothing
                                         , withCredentials = False
                                         }
                             in
-                                model ! [ Http.send (Types.GetToken False) request ]
+                                ( model
+                                , Http.send (Types.GetToken False) request
+                                )
 
                         Types.Anonymous ->
-                            Debug.crash "cannot modify anonymous user"
-
-        Mdl msg ->
-            let
-                ( m, cmd ) =
-                    Material.update MyProfile.Types.Mdl msg model
-            in
-                m ! [ Cmd.map Types.MyProfileMsg cmd ]
+                            Debug.todo "cannot modify anonymous user"

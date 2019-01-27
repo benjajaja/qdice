@@ -1,12 +1,12 @@
-module Maps exposing (load, toCharList, consoleLogMap, emojisToMap, symbols)
+module Maps exposing (consoleLogMap, emojisToMap, load, symbols, toCharList)
 
 import Dict
-import String
+import Helpers exposing (..)
 import Land exposing (Cells)
 import Maps.Sources exposing (mapSourceString)
 import Regex
-import Helpers exposing (..)
-import Tables exposing (Table, Map)
+import String
+import Tables exposing (Map, Table)
 
 
 type alias MapSource =
@@ -29,7 +29,8 @@ type alias Line =
 
 emojiRegex : Regex.Regex
 emojiRegex =
-    Regex.regex "〿|ｯ|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]"
+    Regex.fromString "〿|ｯ|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]"
+    |> Maybe.withDefault Regex.never
 
 
 consoleLogMap : Land.Map -> Cmd msg
@@ -40,16 +41,19 @@ consoleLogMap map =
 load : Map -> Land.Map
 load map =
     emojisToMap <| mapSourceString map
-    -- , consoleDebug <|
-    --     "Emoji map"
-    --         ++ (String.join (String.fromChar '\n') <|
-    --                 List.map (\l -> String.join "" <| List.map Tuple.second l) <|
-    --                     (mapSourceString map
-    --                         |> String.lines
-    --                         |> List.indexedMap charRow
-    --                     )
-    --            )
-    -- )
+
+
+
+-- , consoleDebug <|
+--     "Emoji map"
+--         ++ (String.join (String.fromChar '\n') <|
+--                 List.map (\l -> String.join "" <| List.map Tuple.second l) <|
+--                     (mapSourceString map
+--                         |> String.lines
+--                         |> List.indexedMap charRow
+--                     )
+--            )
+-- )
 
 
 emojisToMap : String -> Land.Map
@@ -64,7 +68,7 @@ emojisToMap raw =
         widths : List Int
         widths =
             List.map
-                ((List.map (\l -> Tuple.first l |> Tuple.first)) >> List.maximum)
+                (List.map (\l -> Tuple.first l |> Tuple.first) >> List.maximum)
                 lines
                 |> List.map (Maybe.withDefault 0)
 
@@ -77,14 +81,14 @@ emojisToMap raw =
                 |> List.foldr dedupeEmojis []
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)
     in
-        Land.Map lands width (List.length lines)
+    Land.Map lands width (List.length lines)
 
 
 charRow : Int -> String -> Line
 charRow row string =
-    Regex.find Regex.All emojiRegex string
+    Regex.find emojiRegex string
         |> List.map .match
-        |> List.indexedMap (\col -> \c -> ( ( col + (row % 2), row ), c ))
+        |> List.indexedMap (\col -> \c -> ( ( col + (modBy 2 row), row ), c ))
 
 
 foldLines : List Line -> List EmojiLand
@@ -96,8 +100,9 @@ foldChars : ( ( Int, Int ), String ) -> List EmojiLand -> List EmojiLand
 foldChars ( ( row, col ), char ) accum =
     if char == Land.emptyEmoji then
         accum
+
     else
-        (EmojiLand [ Land.offsetToHex ( row, col ) ] char) :: accum
+        EmojiLand [ Land.offsetToHex ( row, col ) ] char :: accum
 
 
 isEmptyEmoji : ( a, String ) -> Bool
@@ -125,7 +130,7 @@ findEmojiLand emoji list =
             Just ( one, rest )
 
         ( head :: tail, rest ) ->
-            Debug.crash "bad deduping"
+            Debug.todo "bad deduping"
 
         _ ->
             Nothing
@@ -138,19 +143,19 @@ toCharList map =
             List.filter (\l -> l.color /= Land.Editor) map.lands
                 |> List.reverse
     in
-        case lands of
-            [] ->
-                [ [] ]
+    case lands of
+        [] ->
+            [ [] ]
 
-            hd :: _ ->
-                List.map
-                    (\row ->
-                        List.map (\col -> Land.at lands ( col, row )) (List.range 1 map.width)
-                            |> List.map (Maybe.map .emoji >> Maybe.withDefault "\x3000")
-                            |> offsetCharRow row
-                            |> trimRight
-                    )
-                    (List.range 1 map.height)
+        hd :: _ ->
+            List.map
+                (\row ->
+                    List.map (\col -> Land.at lands ( col, row )) (List.range 1 map.width)
+                        |> List.map (Maybe.map .emoji >> Maybe.withDefault "\u{3000}")
+                        |> offsetCharRow row
+                        |> trimRight
+                )
+                (List.range 1 map.height)
 
 
 toEmojiString : List (List String) -> String
@@ -161,7 +166,7 @@ toEmojiString charList =
 
 offsetCharRow : Int -> List String -> List String
 offsetCharRow row line =
-    case row % 2 of
+    case modBy 2 row of
         0 ->
             "ｯ" :: line
 
@@ -177,6 +182,7 @@ trimRight line =
                 \a ->
                     if Tuple.second a || c /= Land.emptyEmoji then
                         ( c :: Tuple.first a, True )
+
                     else
                         ( Tuple.first a, False )
             )
@@ -186,7 +192,7 @@ trimRight line =
 
 symbolDict : Dict.Dict Int Char
 symbolDict =
-    List.indexedMap (,)
+    List.indexedMap (\a b -> ( a, b ))
         [ '🍋'
         , '👻'
         , '🔥'
@@ -195,7 +201,7 @@ symbolDict =
         , '🐸'
         , '😺'
         , '🐵'
-        , '\x1F951'
+        , '\u{1F951}'
         , '💎'
         , '⌛'
         , '🎩'

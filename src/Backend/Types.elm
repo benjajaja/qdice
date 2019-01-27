@@ -1,7 +1,7 @@
-module Backend.Types exposing (..)
+module Backend.Types exposing (AllClientsMessage(..), ClientId, ClientMessage(..), ConnectionStatus(..), Model, TableMessage(..), Topic(..), TopicDirection(..))
 
-import Tables exposing (Table)
 import Game.Types
+import Tables exposing (Table)
 import Time
 
 
@@ -11,8 +11,8 @@ type alias Model =
     , clientId : Maybe ClientId
     , subscribed : List Topic
     , status : ConnectionStatus
-    , findTableTimeout : Time.Time
-    , lastHeartbeat : Time.Time
+    , findTableTimeout : Float
+    , lastHeartbeat : Time.Posix
     }
 
 

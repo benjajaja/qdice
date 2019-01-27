@@ -1,6 +1,9 @@
-module Tables exposing (Table, Map(..), decodeMap)
+module Tables exposing (Map(..), Table, decodeMap)
 
-type alias Table = String
+
+type alias Table =
+    String
+
 
 type Map
     = Null
@@ -9,6 +12,7 @@ type Map
     | Serrano
     | DeLucía
     | Sabicas
+
 
 
 --tableList : List Table
@@ -38,27 +42,21 @@ decodeMap name =
             Nothing
 
 
+
 -- encodeMap : Map -> String
 -- encodeMap map =
 --     case map of
 --         Null ->
 --             "Null"
-
 --         Melchor ->
 --             "Melchor"
-
 --         Miño ->
 --             "Miño"
-
 --         Serrano ->
 --             "Serrano"
-
 --         Avocado ->
 --             "Avocado"
-
 --         DeLucía ->
 --             "DeLucía"
-
 --         Sabicas ->
 --             "Sabicas"
-

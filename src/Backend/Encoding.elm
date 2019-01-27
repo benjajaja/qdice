@@ -1,9 +1,9 @@
-module Backend.Encoding exposing (..)
+module Backend.Encoding exposing (actionPayload, actionToString, encodeJwt, encodePlayerAction, playerEncoder, profileEncoder)
 
-import Game.Types exposing (TableStatus, Player, PlayerAction(..))
+import Game.Types exposing (Player, PlayerAction(..), TableStatus)
+import Json.Encode exposing (Value, encode, list, null, object, string)
 import Land exposing (Color, playerColor)
 import Types exposing (..)
-import Json.Encode exposing (object, string, list, null, Value, encode)
 
 
 playerEncoder : Player -> Value
@@ -43,8 +43,8 @@ encodePlayerAction jwt clientId action =
                 [ [ ( "type", string <| actionToString action ) ]
                 , [ ( "client", string clientId ) ]
                 , case jwt of
-                    Just jwt ->
-                        [ ( "token", string jwt ) ]
+                    Just jwt_ ->
+                        [ ( "token", string jwt_ ) ]
 
                     Nothing ->
                         []
@@ -69,14 +69,14 @@ actionToString action =
             "Chat"
 
         _ ->
-            toString action
+            Debug.toString action
 
 
 actionPayload : PlayerAction -> Maybe Value
 actionPayload action =
     case action of
         Attack from to ->
-            Just <| list [ string from, string to ]
+            Just <| list string [ from, to ]
 
         Chat text ->
             Just <| string text

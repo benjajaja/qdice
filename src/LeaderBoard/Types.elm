@@ -1,4 +1,4 @@
-module LeaderBoard.Types exposing (..)
+module LeaderBoard.Types exposing (LeaderBoardModel)
 
 import Types exposing (Profile)
 

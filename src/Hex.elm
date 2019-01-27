@@ -1,7 +1,7 @@
-module Hex exposing (Point, borderLeftCorner, center, cellCubicCoords)
+module Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
 
-import Hexagons.Hex as HH exposing (Hex, Direction, (===))
-import Hexagons.Layout as HL exposing (Point, Layout)
+import Hexagons.Hex as HH exposing (eq, Direction, Hex)
+import Hexagons.Layout as HL exposing (Layout, Point)
 
 
 type alias Point =
@@ -35,7 +35,7 @@ precision division number =
         k =
             toFloat <| 10 ^ division
     in
-        ((toFloat << round) (number * k)) / k
+        (toFloat << round) (number * k) / k
 
 
 {-| Calculate corner offset from a center of the Hex
@@ -46,7 +46,7 @@ hexCornerOffset ( w, h ) startAngle side =
         angle =
             sideAngle startAngle side
     in
-        ( w * (cos angle), h * (sin angle) )
+        ( w * cos angle, h * sin angle )
 
 
 sideAngle : Float -> Direction -> Float

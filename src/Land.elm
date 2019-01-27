@@ -1,13 +1,13 @@
-module Land exposing (..)
+module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, emptyMap, firstFreeBorder, firstFreeBorder_, fullCellMap, hasCell, hasFreeBorder, indexAt, isBorderOnSide, isBorderOnSideCube, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landColor, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, randomPlayerColor, rightSide, setColor, setNeutral)
 
-import Maybe exposing (..)
-import List exposing (..)
-import Random
 import Animation
-import Hexagons.Hex as HH exposing (Hex, Direction, (===))
-import Hexagons.Layout as HL exposing (offsetToHex, orientationLayoutPointy, Layout)
-import Hex exposing (Point, borderLeftCorner, center, cellCubicCoords)
 import Helpers exposing (find, findIndex)
+import Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
+import Hexagons.Hex as HH exposing (eq, Direction, Hex)
+import Hexagons.Layout as HL exposing (Layout, offsetToHex, orientationLayoutPointy)
+import List exposing (..)
+import Maybe exposing (..)
+import Random
 
 
 type alias Cells =
@@ -65,21 +65,25 @@ type Color
 cellToKey : Hex -> String
 cellToKey cell =
     case cell of
-        HH.IntCubeHex coords ->
-            toString coords
+        HH.IntCubeHex (a, b, c) ->
+            String.join ","
+              [ String.fromInt a
+              , String.fromInt b
+              , String.fromInt c
+              ]
 
         _ ->
-            toString cell
+            Debug.todo "cellToKey not IntCubeHex"
 
 
 emptyEmoji : String
 emptyEmoji =
-    "\x3000"
+    "\u{3000}"
 
 
 landPath : Layout -> Cells -> List Point
 landPath layout cells =
-    landBorders cells |> List.map (uncurry <| borderLeftCorner <| myLayout layout)
+    landBorders cells |> List.map ((\f ( a, b ) -> f a b) <| borderLeftCorner <| myLayout layout)
 
 
 myLayout : Layout -> HL.Layout
@@ -109,9 +113,9 @@ centerPoint layout cells =
         ly =
             List.map (center (myLayout layout) >> Tuple.second) cells
     in
-        ( ((List.sum lx)) / toFloat (List.length lx)
-        , ((List.sum ly)) / toFloat (List.length ly)
-        )
+    ( List.sum lx / toFloat (List.length lx)
+    , List.sum ly / toFloat (List.length ly)
+    )
 
 
 cellCenter : Layout -> Hex -> Point
@@ -145,9 +149,11 @@ fullCellMap w h color =
         w
         h
 
+
 emptyMap : Map
 emptyMap =
     Map [] 30 20
+
 
 isBordering : Land -> Land -> Bool
 isBordering a b =
@@ -161,16 +167,20 @@ isCellOnLandBorder land hex =
 
 areNeighbours : Hex -> Hex -> Bool
 areNeighbours a b =
-    List.any ((flip (isBorderOnSide a)) b) allSides
+    let
+        applied = isBorderOnSide a
+        flipped = (\c -> \d -> isBorderOnSide a d c)
+    in
+    List.any (flipped b) allSides
 
 
 offsetToHex : ( Int, Int ) -> Hex
 offsetToHex ( col, row ) =
     let
         x =
-            col - (round ((toFloat (row + ((abs row) % 2))) / 2))
+            col - round (toFloat (row + (modBy 2 (abs row))) / 2)
     in
-        HH.intFactory ( x, row )
+    HH.intFactory ( x, row )
 
 
 landColor : Map -> Land -> Color -> Map
@@ -183,6 +193,7 @@ landColor map land color =
                         | color =
                             if land == l then
                                 color
+
                             else
                                 l.color
                     }
@@ -205,10 +216,10 @@ at lands coord =
             offsetToHex coord
 
         cb : Hex -> Land -> Bool
-        cb hex land =
-            any (\h -> h === hex) land.cells
+        cb aHex land =
+            any (\h -> eq h aHex) land.cells
     in
-        find (cb hex) lands
+    find (cb hex) lands
 
 
 indexAt : List Land -> ( Int, Int ) -> Int
@@ -218,10 +229,10 @@ indexAt lands coord =
             offsetToHex coord
 
         cb : Hex -> Land -> Bool
-        cb hex land =
-            any (\h -> h === hex) land.cells
+        cb aHex land =
+            any (\h -> eq h aHex) land.cells
     in
-        findIndex (cb hex) lands
+    findIndex (cb hex) lands
 
 
 {-| concat all cells in map to a single neutral land
@@ -233,12 +244,12 @@ concat map =
         hexes =
             List.map (\l -> l.cells) map.lands |> List.concat
     in
-        case hexes of
-            [] ->
-                Land [] Neutral emptyEmoji 0
+    case hexes of
+        [] ->
+            Land [] Neutral emptyEmoji 0
 
-            _ ->
-                Land hexes Neutral emptyEmoji 0
+        _ ->
+            Land hexes Neutral emptyEmoji 0
 
 
 {-| set one color to neutral
@@ -251,11 +262,11 @@ setNeutral map color =
                 (\l ->
                     { l
                         | color =
-                            (if l.color == color then
+                            if l.color == color then
                                 Neutral
-                             else
+
+                            else
                                 l.color
-                            )
                     }
                 )
                 map.lands
@@ -264,7 +275,8 @@ setNeutral map color =
 
 playerColor : Int -> Color
 playerColor i =
-    case i of
+    if i == -1 then Neutral
+    else case i of
         1 ->
             Red
 
@@ -295,9 +307,6 @@ playerColor i =
         0 ->
             Editor
 
-        (-1) ->
-            Neutral
-
         _ ->
             Neutral
 
@@ -315,6 +324,7 @@ setColor map land color =
                 (\l ->
                     if l == land then
                         { land | color = color }
+
                     else
                         l
                 )
@@ -346,7 +356,7 @@ landBorders cells =
         _ ->
             case firstFreeBorder cells of
                 Nothing ->
-                    Debug.crash "Set of cells must have some outer borders"
+                    Debug.todo "Set of cells must have some outer borders"
 
                 Just ( coord, side ) ->
                     nextBorders cells coord ( coord, side ) side [ ( coord, side ) ]
@@ -367,22 +377,24 @@ nextBorders_ cells coord origin side accum fuse =
         current =
             ( coord, side )
     in
-        if (Tuple.first origin === coord) && Tuple.second origin == side && List.length accum > 1 then
-            (current :: accum)
-        else if fuse == 0 then
-            let
-                _ =
-                    Debug.log "Recursion exhausted"
-                        ( coord, side, origin, accum |> List.take 32, cells )
-            in
-                Debug.crash "Recursion exhausted"
-        else
-            case cellOnBorder coord side cells of
-                Just c ->
-                    nextBorders_ cells c origin (rightSide (oppositeSide side)) (accum) (fuse - 1)
+    if (eq coord <| Tuple.first origin) && Tuple.second origin == side && List.length accum > 1 then
+        current :: accum
 
-                Nothing ->
-                    nextBorders_ cells coord origin (rightSide side) (current :: accum) (fuse - 1)
+    else if fuse == 0 then
+        let
+            _ =
+                Debug.log "Recursion exhausted" cells
+                    --[ coord, side, origin, accum |> List.take 32, cells ]
+        in
+        Debug.todo "Recursion exhausted"
+
+    else
+        case cellOnBorder coord side cells of
+            Just c ->
+                nextBorders_ cells c origin (rightSide (oppositeSide side)) accum (fuse - 1)
+
+            Nothing ->
+                nextBorders_ cells coord origin (rightSide side) (current :: accum) (fuse - 1)
 
 
 rightSide : Direction -> Direction
@@ -436,7 +448,7 @@ oppositeSide =
 
 hasCell : Cells -> Hex -> Bool
 hasCell cells coord =
-    any (\c -> c === coord) cells
+    any (eq coord) cells
 
 
 firstFreeBorder : Cells -> Maybe Border
@@ -468,6 +480,7 @@ hasFreeBorder cells coord sides =
         hd :: tl ->
             if cellOnBorder coord hd cells |> isNothing then
                 Just hd
+
             else
                 hasFreeBorder cells coord tl
 
@@ -478,7 +491,7 @@ isNothing a =
         Nothing ->
             True
 
-        Just a ->
+        Just _ ->
             False
 
 
@@ -495,17 +508,20 @@ cellOnBorder coord side cells =
 
                 Just tl ->
                     if isBorderOnSide coord side hd then
-                        Just (hd)
+                        Just hd
+
                     else if length cells == 1 then
                         Nothing
+
                     else
                         cellOnBorder coord side tl
 
 
 isBorderOnSide : Hex -> Direction -> Hex -> Bool
 isBorderOnSide coord side other =
-    if coord === other then
+    if eq coord other then
         False
+
     else
         isBorderOnSideCube coord side other
 
@@ -522,35 +538,39 @@ isBorderOnSideCube coord side other =
             HL.hexToOffset other
 
         even =
-            y % 2 == 0
+            modBy 2 y == 0
     in
-        case side of
-            HH.W ->
-                y_ == y && x_ == x - 1
+    case side of
+        HH.W ->
+            y_ == y && x_ == x - 1
 
-            HH.E ->
-                y_ == y && x_ == x + 1
+        HH.E ->
+            y_ == y && x_ == x + 1
 
-            HH.NW ->
-                if even then
-                    x_ == x - 1 && y_ == y - 1
-                else
-                    x_ == x && y_ == y - 1
+        HH.NW ->
+            if even then
+                x_ == x - 1 && y_ == y - 1
 
-            HH.NE ->
-                if even then
-                    x_ == x && y_ == y - 1
-                else
-                    x_ == x + 1 && y_ == y - 1
+            else
+                x_ == x && y_ == y - 1
 
-            HH.SW ->
-                if even then
-                    x_ == x - 1 && y_ == y + 1
-                else
-                    x_ == x && y_ == y + 1
+        HH.NE ->
+            if even then
+                x_ == x && y_ == y - 1
 
-            HH.SE ->
-                if even then
-                    x_ == x && y_ == y + 1
-                else
-                    x_ == x + 1 && y_ == y + 1
+            else
+                x_ == x + 1 && y_ == y - 1
+
+        HH.SW ->
+            if even then
+                x_ == x - 1 && y_ == y + 1
+
+            else
+                x_ == x && y_ == y + 1
+
+        HH.SE ->
+            if even then
+                x_ == x && y_ == y + 1
+
+            else
+                x_ == x + 1 && y_ == y + 1

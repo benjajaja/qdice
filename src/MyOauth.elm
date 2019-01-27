@@ -1,13 +1,14 @@
-module MyOauth exposing (..)
+module MyOauth exposing (authorizationEndpoint, authorize, init, profileEndpoint)
 
-import Http
-import Task
-import Navigation
-import Json.Decode as Json
-import OAuth
-import OAuth.AuthorizationCode
-import Types exposing (MyOAuthModel, Msg(..), LoggedUser)
 import Game.Types
+import Http
+import Json.Decode as Json
+import Browser.Navigation
+import Url exposing (Url)
+import OAuth
+import OAuth.AuthorizationCode exposing (AuthorizationResult(..))
+import Task
+import Types exposing (LoggedUser, Msg(..), MyOAuthModel)
 
 
 profileEndpoint : String
@@ -15,26 +16,32 @@ profileEndpoint =
     "https://www.googleapis.com/oauth2/v1/userinfo"
 
 
-authorizationEndpoint : String
+authorizationEndpoint : Url
 authorizationEndpoint =
-    "https://accounts.google.com/o/oauth2/v2/auth"
+    case Url.fromString "https://accounts.google.com/o/oauth2/v2/auth" of
+        Just u ->
+            u
+
+        Nothing ->
+            Debug.todo "bad auth url"
 
 
-init : Navigation.Location -> ( MyOAuthModel, List (Cmd Msg) )
-init location =
+init : Browser.Navigation.Key -> Url -> ( MyOAuthModel, List (Cmd Msg) )
+init key url =
     let
         oauth =
             { clientId = "1000163928607-54qf4s6gf7ukjoevlkfpdetepm59176n.apps.googleusercontent.com"
-            , redirectUri = location.origin ++ location.pathname
+            , redirectUri = { url | query = Nothing, fragment = Nothing }
             , error = Nothing
             , token = Nothing
+            , state = ""
             }
     in
-        case OAuth.AuthorizationCode.parse location of
-            Err (OAuth.Empty) ->
+        case OAuth.AuthorizationCode.parseCode url of
+            Empty ->
                 ( oauth, [] )
 
-            Ok { code, state } ->
+            Success { code, state } ->
                 let
                     doJoin =
                         case Maybe.withDefault "" state of
@@ -45,35 +52,36 @@ init location =
                                 False
                 in
                     ( oauth
-                    , [ Navigation.modifyUrl oauth.redirectUri
+                    , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri
                       , Task.perform (always <| Authenticate code doJoin) (Task.succeed ())
                         --Task.perform (always <| Types.GameCmd Game.Types.Join) (Task.succeed ())
                       ]
                     )
 
-            Err (OAuth.OAuthErr err) ->
-                ( { oauth | error = Just <| OAuth.showErrCode err.error }
-                , [ Navigation.modifyUrl oauth.redirectUri ]
+            Error { error, errorDescription, errorUri, state } ->
+                ( { oauth | error = Just <| Maybe.withDefault "Unknown" errorDescription }
+                , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri ]
                 )
 
-            Err _ ->
-                ( { oauth | error = Just "parsing error" }, [] )
 
-
+authorize : MyOAuthModel -> Bool -> Cmd Msg
 authorize model doJoin =
-    model
-        ! [ OAuth.AuthorizationCode.authorize
-                { clientId = model.oauth.clientId
-                , redirectUri = model.oauth.redirectUri
-                , responseType = OAuth.Code
-                , scope = [ "email", "profile" ]
-                , state =
-                    case doJoin of
-                        True ->
-                            Just "join"
+    let
+        authorization : OAuth.AuthorizationCode.Authorization
+        authorization =
+            { clientId = model.clientId
+            , url = authorizationEndpoint
+            , redirectUri = model.redirectUri
+            , scope = [ "email", "profile" ]
+            , state =
+                case doJoin of
+                    True ->
+                        Just "join"
 
-                        False ->
-                            Nothing
-                , url = authorizationEndpoint
-                }
-          ]
+                    False ->
+                        Nothing
+            }
+    in
+        Browser.Navigation.load <|
+            Url.toString <|
+                OAuth.AuthorizationCode.makeAuthUrl authorization

@@ -1,23 +1,23 @@
 module Game.PlayerCard exposing (view)
 
+import Board.Colors
+import Color
+import Color.Accessibility
+import Color.Convert
+import Color.Interpolate
+import Color.Manipulate
+import Game.Types exposing (Player)
 import Html
 import Html.Attributes exposing (class, style)
+import Material
+import Material.Chip as Chip
+import Material.Elevation as Elevation
+import Material.Options as Options
+import Ordinal exposing (ordinal)
 import Svg
 import Svg.Attributes
-import Time exposing (inMilliseconds)
-import Ordinal exposing (ordinal)
-import Material
-import Material.Options as Options
-import Material.Elevation as Elevation
-import Material.Chip as Chip
-import Color
-import Color.Convert
-import Color.Manipulate
-import Color.Interpolate
-import Color.Accessibility
-import Game.Types exposing (Player)
+import Time exposing (posixToMillis)
 import Types exposing (Model, Msg(..))
-import Board.Colors
 
 
 view : Bool -> Model -> Int -> Player -> Html.Html Types.Msg
@@ -27,15 +27,13 @@ view isSmall model index player =
             [ playerImageProgress model index player
             , Html.div
                 [ class "edPlayerChip__name"
-                , style <|
-                    [ ( "background-color", Board.Colors.baseCssRgb player.color )
-                    , ( "color"
-                      , Color.Accessibility.maximumContrast (Board.Colors.base player.color)
-                            [ Color.rgb 0 0 0, Color.rgb 30 30 30, Color.rgb 255 255 255 ]
-                            |> Maybe.withDefault (Color.rgb 0 0 0)
-                            |> Color.Convert.colorToCssRgb
-                      )
-                    ]
+                , style "background-color" <| Board.Colors.baseCssRgb player.color
+                , style "color" <|
+                    (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
+                        [ Color.rgb 0 0 0, Color.rgb 30 30 30, Color.rgb 255 255 255 ]
+                        |> Maybe.withDefault (Color.rgb 0 0 0)
+                        |> Color.Convert.colorToCssRgb
+                    )
                 ]
                 [ Html.text player.name ]
             ]
@@ -48,14 +46,13 @@ view isSmall model index player =
                     basicItems
                     [ Html.div [ class "edPlayerChip__gameStats" ]
                         [ Html.div [ class "edPlayerChip__gameStats__item" ]
-                            [ Html.text <| "✪ " ++ toString player.points ]
+                            [ Html.text <| "✪ " ++ String.fromInt player.points ]
                         , Html.div [ class "edPlayerChip__gameStats__item--strong" ]
                             [ Html.text <|
-                                (if player.gameStats.position == 2 then
+                                if player.gameStats.position == 2 then
                                     "Pole"
-                                 else
+                                else
                                     ordinal player.gameStats.position
-                                )
                             ]
                         , Html.div [ class "edPlayerChip__gameStats__item" ]
                             [ case player.flag of
@@ -66,13 +63,13 @@ view isSmall model index player =
                                     Html.text <| "⚑ " ++ ordinal pos
                             ]
                         , Html.div [ class "edPlayerChip__gameStats__item" ]
-                            [ Html.text <| "⬢ " ++ toString player.gameStats.totalLands ]
+                            [ Html.text <| "⬢ " ++ String.fromInt player.gameStats.totalLands ]
                         , Html.div [ class "edPlayerChip__gameStats__item" ]
                             [ Html.text <|
                                 ("⚂ "
-                                    ++ toString player.gameStats.currentDice
+                                    ++ String.fromInt player.gameStats.currentDice
                                     ++ (if player.reserveDice > 0 then
-                                            " + " ++ toString player.reserveDice
+                                            " + " ++ String.fromInt player.reserveDice
                                         else
                                             ""
                                        )
@@ -85,7 +82,7 @@ view isSmall model index player =
                                  else
                                     "✪"
                                 )
-                                    ++ toString player.gameStats.score
+                                    ++ String.fromInt player.gameStats.score
                             ]
                         ]
                     ]
@@ -96,7 +93,7 @@ view isSmall model index player =
 
 
 playerContainer player hasTurn =
-    Options.div
+    Options.styled Html.div
         [ Options.cs <|
             String.join " " <|
                 List.concat
@@ -111,26 +108,23 @@ playerContainer player hasTurn =
                         []
                     ]
         , if hasTurn then
-            Elevation.e6
+            Elevation.z6
           else
-            Elevation.e2
+            Elevation.z2
         ]
 
 
 playerImageProgress model index player =
     Html.div [ class "edPlayerChip__picture" ]
         [ playerCircleProgress <|
-            (if index == model.game.turnIndex then
+            if index == model.game.turnIndex then
                 1.0 - turnProgress model
-             else
+            else
                 0.0
-            )
         , Html.div
             [ class "edPlayerChip__picture__image"
-            , style
-                [ ( "background-image", ("url(" ++ player.picture ++ ")") )
-                , ( "background-size", "cover" )
-                ]
+            , style "background-image" ("url(" ++ player.picture ++ ")")
+            , style "background-size" "cover"
             ]
             []
         ]
@@ -139,13 +133,13 @@ playerImageProgress model index player =
 playerCircleProgress progress =
     let
         x =
-            toString <| cos (2 * pi * progress)
+            String.fromFloat <| cos (2 * pi * progress)
 
         y =
-            toString <| sin (2 * pi * progress)
+            String.fromFloat <| sin (2 * pi * progress)
 
         progressStep =
-            toString <|
+            String.fromInt <|
                 floor (progress * 100 / 20)
                     * 20
     in
@@ -216,7 +210,7 @@ turnProgress model =
             toFloat model.settings.turnSeconds
 
         timestamp =
-            inMilliseconds model.time / 1000
+            (posixToMillis model.time |> toFloat) / 1000
 
         turnStart =
             toFloat model.game.turnStart

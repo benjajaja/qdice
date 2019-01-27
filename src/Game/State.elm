@@ -1,27 +1,28 @@
-port module Game.State exposing (..)
+port module Game.State exposing (changeTable, clickLand, findUserPlayer, hoverLand, init, scrollElement, showRoll, tableMap, updateChatLog, updateGameInfo, updateTable, updateTableStatus)
 
-import Task
-import Dom.Scroll exposing (..)
-import Game.Types exposing (..)
-import Types exposing (Model, Msg(..), User(Anonymous))
+import Backend
+import Backend.MqttCommands exposing (attack, gameCommand)
+import Backend.Types exposing (Topic(..))
 import Board
 import Board.State
 import Board.Types
-import Maps exposing (load)
+import Browser.Dom exposing (..)
+import Game.Types exposing (..)
+import Helpers exposing (find, indexOf, pipeUpdates, playSound)
 import Land exposing (Color)
-import Tables exposing (Table, Map)
-import Backend
-import Backend.Types exposing (Topic(..))
-import Backend.MqttCommands exposing (gameCommand, attack)
-import Helpers exposing (indexOf, playSound, pipeUpdates, find)
+import Maps exposing (load)
+import Tables exposing (Map, Table)
+import Task
+import Types exposing (Model, Msg(..), User(..))
 
 
 init : Maybe Types.Model -> Table -> Maybe Map -> ( Game.Types.Model, Cmd Types.Msg )
-init model table tableMap =
+init model table tableMap_ =
     let
-        map = Maybe.map Maps.load tableMap
-            |> Maybe.withDefault Land.emptyMap
-        
+        map =
+            Maybe.map Maps.load tableMap_
+                |> Maybe.withDefault Land.emptyMap
+
         board =
             Board.init map
 
@@ -47,8 +48,8 @@ init model table tableMap =
           }
             |> (\m ->
                     case model of
-                        Just model ->
-                            updateGameInfo m model.tableList
+                        Just model_ ->
+                            updateGameInfo m model_.tableList
 
                         Nothing ->
                             m
@@ -63,7 +64,9 @@ changeTable model table =
         previousTable =
             model.game.table
 
-        map = tableMap table model
+        map =
+            tableMap table model
+
         ( game, cmd ) =
             init (Just model) table map
 
@@ -73,12 +76,19 @@ changeTable model table =
         ( model_, cmd )
             |> pipeUpdates Backend.subscribeGameTable table
 
+
 tableMap : Table -> Types.Model -> Maybe Map
 tableMap table model =
-    case List.filter (\t -> t.table == table) model.tableList
-            |> List.head of
-        Just tableInfo -> Just tableInfo.mapName
-        Nothing -> Nothing
+    case
+        List.filter (\t -> t.table == table) model.tableList
+            |> List.head
+    of
+        Just tableInfo ->
+            Just tableInfo.mapName
+
+        Nothing ->
+            Nothing
+
 
 findUserPlayer : Types.User -> List Player -> Maybe Player
 findUserPlayer user players =
@@ -86,8 +96,8 @@ findUserPlayer user players =
         Types.Anonymous ->
             Nothing
 
-        Types.Logged user ->
-            List.head <| List.filter (\p -> p.id == user.id) players
+        Types.Logged user_ ->
+            List.head <| List.filter (\p -> p.id == user_.id) players
 
 
 updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
@@ -112,15 +122,15 @@ updateTableStatus model status =
                 Nothing ->
                     False
 
-                Just player ->
-                    indexOf player status.players == status.turnIndex
+                Just turnPlayer ->
+                    indexOf turnPlayer status.players == status.turnIndex
 
         hasGainedTurn =
             case player of
                 Nothing ->
                     False
 
-                Just player ->
+                Just _ ->
                     hasTurn && not game.hasTurn
 
         hasLostTurn =
@@ -128,7 +138,7 @@ updateTableStatus model status =
                 Nothing ->
                     False
 
-                Just player ->
+                Just _ ->
                     not hasTurn && game.hasTurn
 
         isOut =
@@ -136,8 +146,8 @@ updateTableStatus model status =
                 Nothing ->
                     False
 
-                Just player ->
-                    player.out
+                Just outPlayer ->
+                    outPlayer.out
 
         move =
             if hasLostTurn then
@@ -145,10 +155,12 @@ updateTableStatus model status =
             else
                 Nothing
 
-        oldBoard = if model.game.board.map == Land.emptyMap
-        then Board.init <| Maps.load status.mapName
-        else model.game.board
-        
+        oldBoard =
+            if model.game.board.map == Land.emptyMap then
+                Board.init <| Maps.load status.mapName
+            else
+                model.game.board
+
         board_ =
             Board.State.updateLands oldBoard status.lands move
 
@@ -176,16 +188,17 @@ updateTableStatus model status =
                 Nothing ->
                     False
 
-                Just player ->
+                Just canFlagPlayer ->
                     status.canFlag
-                        && player.gameStats.position
+                        && canFlagPlayer.gameStats.position
                         > 1
-                        && case player.flag of
-                            Just f ->
-                                False
+                        && (case canFlagPlayer.flag of
+                                Just f ->
+                                    False
 
-                            Nothing ->
-                                True
+                                Nothing ->
+                                    True
+                           )
 
         game_ =
             { game
@@ -206,48 +219,46 @@ updateTableStatus model status =
             { model | game = game_ }
                 |> (\m ->
                         case hasChangedTurn of
-                            Just player ->
-                                updateChatLog m <| LogTurn player.name player.color
+                            Just changedTurnPlayer ->
+                                updateChatLog m <| LogTurn changedTurnPlayer.name changedTurnPlayer.color
 
                             Nothing ->
                                 ( m, Cmd.none )
                    )
     in
-        model_
-            ! [ (if hasStarted then
-                    Cmd.batch <|
-                        Helpers.playSound "start"
-                            :: (if hasTurn then
-                                    [ Helpers.setFavicon "alert" ]
-                                else
-                                    []
-                               )
-                 else
-                    Cmd.none
-                )
-              , (if hasFinished then
-                    Cmd.batch
-                        [ Helpers.playSound "finish"
-                        , Helpers.setFavicon ""
-                        ]
-                 else
-                    Cmd.none
-                )
-              , (if hasGainedTurn then
-                    Cmd.batch
-                        [ Helpers.playSound "turn"
-                        , Helpers.setFavicon "alert"
-                        ]
-                 else
-                    Cmd.none
-                )
-              , (if hasLostTurn then
-                    Helpers.setFavicon ""
-                 else
-                    Cmd.none
-                )
-              , turnChangeCmd
-              ]
+        ( model_
+        , Cmd.batch
+            [ if hasStarted then
+                Cmd.batch <|
+                    Helpers.playSound "start"
+                        :: (if hasTurn then
+                                [ Helpers.setFavicon "alert" ]
+                            else
+                                []
+                           )
+              else
+                Cmd.none
+            , if hasFinished then
+                Cmd.batch
+                    [ Helpers.playSound "finish"
+                    , Helpers.setFavicon ""
+                    ]
+              else
+                Cmd.none
+            , if hasGainedTurn then
+                Cmd.batch
+                    [ Helpers.playSound "turn"
+                    , Helpers.setFavicon "alert"
+                    ]
+              else
+                Cmd.none
+            , if hasLostTurn then
+                Helpers.setFavicon ""
+              else
+                Cmd.none
+            , turnChangeCmd
+            ]
+        )
 
 
 updateGameInfo : Game.Types.Model -> List Game.Types.TableInfo -> Game.Types.Model
@@ -344,7 +355,9 @@ clickLand model land =
                 game_ =
                     { game | board = board_ }
             in
-                { model | game = game_ } ! [ cmd ]
+                ( { model | game = game_ }
+                , cmd
+                )
 
 
 hoverLand : Types.Model -> Land.Land -> ( Types.Model, Cmd Types.Msg )
@@ -394,7 +407,9 @@ hoverLand model land =
                 board =
                     game.board
             in
-                { model | game = { game | board = { board | hovered = hovered } } } ! []
+                ( { model | game = { game | board = { board | hovered = hovered } } }
+                , Cmd.none
+                )
 
 
 updateTable : Types.Model -> Table -> Backend.Types.TableMessage -> ( Types.Model, Cmd Types.Msg )
@@ -450,21 +465,15 @@ updateTable model table msg =
                         game.board
 
                     findLand =
-                        (\emoji -> find (.emoji >> (==) emoji))
-
-                    fromLand =
-                        findLand move.from board.map.lands
-
-                    toLand =
-                        findLand move.to board.map.lands
+                        \emoji -> find (.emoji >> (==) emoji)
 
                     newMove =
-                        case fromLand of
+                        case findLand move.from board.map.lands of
                             Nothing ->
                                 Nothing
 
                             Just fromLand ->
-                                case toLand of
+                                case findLand move.to board.map.lands of
                                     Nothing ->
                                         Nothing
 
@@ -475,23 +484,26 @@ updateTable model table msg =
                         Nothing ->
                             ( model, Cmd.none )
 
-                        Just move ->
-                            { model
+                        Just move_ ->
+                            ( { model
                                 | game =
                                     { game
                                         | board =
                                             { board
-                                                | move = move
+                                                | move = move_
                                             }
                                     }
-                            }
-                                ! []
+                              }
+                            , Cmd.none
+                            )
 
             Backend.Types.Elimination elimination ->
                 updateChatLog model <|
                     Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
     else
-        model ! []
+        ( model
+        , Cmd.none
+        )
 
 
 updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
@@ -508,16 +520,16 @@ updateChatLog model entry =
     in
         case entry of
             LogJoin _ ->
-                ( addToChatLog, scrollElement <| "chatLog-" ++ (toString model.game.table) )
+                ( addToChatLog, scrollElement <| "chatLog-" ++ model.game.table )
 
             LogLeave _ ->
-                ( addToChatLog, scrollElement <| "chatLog-" ++ (toString model.game.table) )
+                ( addToChatLog, scrollElement <| "chatLog-" ++ model.game.table )
 
             LogChat _ _ _ ->
-                ( addToChatLog, scrollElement <| "chatLog-" ++ (toString model.game.table) )
+                ( addToChatLog, scrollElement <| "chatLog-" ++ model.game.table )
 
             _ ->
-                ( addToGameLog, scrollElement <| "gameLog-" ++ (toString model.game.table) )
+                ( addToGameLog, scrollElement <| "gameLog-" ++ model.game.table )
 
 
 port scrollElement : String -> Cmd msg

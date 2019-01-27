@@ -1,16 +1,21 @@
-module Backend.MessageCodification exposing (..)
+module Backend.MessageCodification exposing (ChatMessage, decodeClientMessage, decodeTableMessage, decodeTopicMessage, encodeDirection, encodeTopic)
 
-import Types exposing (Msg(..))
+import Backend.Decoding exposing (..)
 import Backend.Types exposing (..)
-import Tables exposing (Table)
 import Game.Types
 import Json.Decode as Dec exposing (..)
-import Backend.Decoding exposing (..)
 import Land exposing (Emoji)
+import Tables exposing (Table)
+import Types exposing (Msg(..))
 
 
 type alias ChatMessage =
     { username : String, message : String }
+
+
+errorToString : Error -> Result String a
+errorToString err =
+    Err <| Debug.toString err
 
 
 {-| Maybe Table because it might be a table message for this client only
@@ -37,7 +42,7 @@ decodeTopicMessage userTable topic message =
         AllClients ->
             case decodeString (field "type" Dec.string) message of
                 Err err ->
-                    Err err
+                    errorToString err
 
                 Ok mtype ->
                     case mtype of
@@ -47,7 +52,7 @@ decodeTopicMessage userTable topic message =
                                     Ok <| AllClientsMsg <| TablesInfo tables
 
                                 Err err ->
-                                    Err err
+                                    errorToString err
 
                         _ ->
                             Err <| "unknown global message type \"" ++ mtype ++ "\""
@@ -60,7 +65,7 @@ decodeTableMessage : Table -> String -> Result String Msg
 decodeTableMessage table message =
     case decodeString (field "type" Dec.string) message of
         Err err ->
-            Err err
+            errorToString err
 
         Ok mtype ->
             case mtype of
@@ -68,7 +73,7 @@ decodeTableMessage table message =
                     case
                         decodeString
                             (field "payload"
-                                (map2 (,)
+                                (map2 (\a b -> ( a, b ))
                                     (field "user" (Dec.nullable Dec.string))
                                     (field "message" Dec.string)
                                 )
@@ -76,10 +81,10 @@ decodeTableMessage table message =
                             message
                     of
                         Ok chat ->
-                            Ok (TableMsg table <| uncurry Chat <| chat)
+                            Ok (TableMsg table <| (\( a, b ) -> Chat a b) <| chat)
 
                         Err err ->
-                            Err err
+                            errorToString err
 
                 "enter" ->
                     case decodeString (field "payload" Dec.string) message of
@@ -103,7 +108,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Update update
 
                         Err err ->
-                            Err err
+                            errorToString err
 
                 "roll" ->
                     case decodeString (field "payload" rollDecoder) message of
@@ -111,7 +116,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Roll roll
 
                         Err err ->
-                            Err err
+                            errorToString err
 
                 "move" ->
                     case decodeString (field "payload" moveDecoder) message of
@@ -119,7 +124,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Move move
 
                         Err err ->
-                            Err err
+                            errorToString err
 
                 "elimination" ->
                     case decodeString (field "payload" eliminationDecoder) message of
@@ -127,7 +132,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Elimination elimination
 
                         Err err ->
-                            Err err
+                            errorToString err
 
                 "error" ->
                     case decodeString (field "payload" Dec.string) message of
@@ -145,7 +150,7 @@ decodeClientMessage : String -> Result String Msg
 decodeClientMessage message =
     case decodeString (field "type" Dec.string) message of
         Err err ->
-            Err err
+            errorToString err
 
         Ok mtype ->
             case mtype of
@@ -155,7 +160,7 @@ decodeClientMessage message =
                             Ok <| UpdateUser user token
 
                         Err err ->
-                            Err err
+                            errorToString err
 
                 "error" ->
                     case decodeString (field "payload" Dec.string) message of
@@ -163,7 +168,7 @@ decodeClientMessage message =
                             Ok <| ErrorToast <| "Server error: " ++ error
 
                         Err err ->
-                            Ok <| ErrorToast <| "💣 Server-client error: " ++ err
+                            Ok <| ErrorToast <| "💣 Server-client error: " ++ Debug.toString err
 
                 _ ->
                     Err <| "unkown client message type: " ++ mtype
@@ -179,7 +184,7 @@ encodeTopic topic =
             "clients/" ++ id
 
         Tables table direction ->
-            "tables/" ++ table ++ "/" ++ (encodeDirection direction)
+            "tables/" ++ table ++ "/" ++ encodeDirection direction
 
 
 encodeDirection : TopicDirection -> String
