@@ -5,6 +5,11 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
+function logEnv(env) {
+  console.log('Parse webpack.config.js env.production: ' + env);
+  return env;
+}
+
 module.exports = env => ({
   entry: [
     './html/elm-dice.js',
@@ -97,10 +102,35 @@ module.exports = env => ({
       template: 'html/index.html',
       inject: false,
     }),
-  ].concat(env && env.production
+  ].concat(env && logEnv(env.production)
     ? new webpack.optimize.UglifyJsPlugin({
-        compress: { warnings: false }
-      })
+        include: 'elm',
+        compress: { 
+          warnings: false,
+          pure_funcs: [
+              'F2',
+              'F3',
+              'F4',
+              'F5',
+              'F6',
+              'F7',
+              'F8',
+              'F9',
+              'A2',
+              'A3',
+              'A4',
+              'A5',
+              'A6',
+              'A7',
+              'A8',
+              'A9'
+          ],
+          pure_getters: true,
+          keep_fargs: false,
+          unsafe_comps: true,
+          unsafe: true
+      }
+    })
     : []),
 
   devServer: {
