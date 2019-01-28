@@ -71,9 +71,17 @@ cellToKey cell =
               , String.fromInt b
               , String.fromInt c
               ]
-
-        _ ->
-            Debug.todo "cellToKey not IntCubeHex"
+        HH.FloatCubeHex (a, b, c) ->
+            String.join ","
+              [ String.fromFloat a
+              , String.fromFloat b
+              , String.fromFloat c
+              ]
+        HH.AxialHex (a, b) ->
+            String.join ","
+              [ String.fromInt a
+              , String.fromInt b
+              ]
 
 
 emptyEmoji : String
@@ -356,7 +364,8 @@ landBorders cells =
         _ ->
             case firstFreeBorder cells of
                 Nothing ->
-                    Debug.todo "Set of cells must have some outer borders"
+                    --Debug.todo "Set of cells must have some outer borders"
+                    []
 
                 Just ( coord, side ) ->
                     nextBorders cells coord ( coord, side ) side [ ( coord, side ) ]
@@ -380,13 +389,8 @@ nextBorders_ cells coord origin side accum fuse =
     if (eq coord <| Tuple.first origin) && Tuple.second origin == side && List.length accum > 1 then
         current :: accum
 
-    else if fuse == 0 then
-        let
-            _ =
-                Debug.log "Recursion exhausted" cells
-                    --[ coord, side, origin, accum |> List.take 32, cells ]
-        in
-        Debug.todo "Recursion exhausted"
+    --else if fuse == 0 then
+        --Debug.todo "Recursion exhausted"
 
     else
         case cellOnBorder coord side cells of

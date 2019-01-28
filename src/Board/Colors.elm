@@ -1,4 +1,4 @@
-module Board.Colors exposing (base, baseCssRgb, cssRgb, highlight, hover)
+module Board.Colors exposing (base, baseCssRgb, cssRgb, highlight, hover, colorName)
 
 import Color
 import Color.Convert exposing (colorToCssRgb)
@@ -64,3 +64,43 @@ cssRgb =
 baseCssRgb : Color -> String
 baseCssRgb =
     base >> cssRgb
+
+
+colorName : Color -> String
+colorName color =
+    case color of
+        Land.Neutral ->
+            "neutral"
+
+        Land.Black ->
+            "black"
+
+        Land.Red ->
+            "red"
+
+        Land.Green ->
+            "green"
+
+        Land.Blue ->
+            "blue"
+
+        Land.Yellow ->
+            "yellow"
+
+        Land.Magenta ->
+            "magenta"
+
+        Land.Cyan ->
+            "cyan"
+
+        Land.Orange ->
+            "orange"
+
+        Land.Beige ->
+            "beige"
+
+        Land.Editor ->
+            "editor"
+
+        Land.EditorSelected ->
+            "editor-selected"

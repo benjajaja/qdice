@@ -1,4 +1,4 @@
-module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableStatus, User, makePlayer)
+module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableStatus, User, makePlayer, statusToString, actionToString)
 
 import Board exposing (LandUpdate, Msg)
 import Land exposing (Color, Emoji)
@@ -182,3 +182,53 @@ makePlayer name =
     , reserveDice = 0
     , flag = Nothing
     }
+
+
+statusToString : GameStatus -> String
+statusToString status =
+    case status of
+        Paused ->
+            "paused"
+
+        Playing ->
+            "playing"
+
+        Finished ->
+            "finished"
+
+
+actionToString : PlayerAction -> String
+actionToString action =
+    case action of
+        Attack _ _ ->
+            "Attack"
+
+        Enter ->
+            "Enter"
+
+        Exit ->
+            "Exit"
+
+        Join ->
+            "Join"
+
+        Leave ->
+            "Leave"
+
+        Chat _ ->
+            "Chat"
+
+        SitOut ->
+            "SitOut"
+
+        SitIn ->
+            "SitIn"
+
+        EndTurn ->
+            "EndTurn"
+
+        Flag ->
+            "Flag"
+
+        Heartbeat ->
+            "Heartbeat"

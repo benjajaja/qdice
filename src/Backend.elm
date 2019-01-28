@@ -4,7 +4,7 @@ import Backend.MessageCodification exposing (..)
 import Backend.MqttCommands exposing (..)
 import Backend.Types exposing (..)
 import Game.Types exposing (Player, PlayerAction(..), RollLog)
-import Helpers exposing (find)
+import Helpers exposing (find, consoleDebug)
 import Land exposing (Color(..))
 import Url exposing (Url, Protocol(..))
 import String
@@ -130,13 +130,9 @@ updateSubscribed model topic =
                     case topic of
                         Tables table direction ->
                             if table /= model_.game.table then
-                                let
-                                    _ =
-                                        Debug.log "subscribed to another table"
-                                in
-                                    ( model_
-                                    , Cmd.none
-                                    )
+                                ( model_
+                                , consoleDebug "subscribed to another table"
+                                )
                             else if hasSubscribedTable subscribed table then
                                 ( setStatus Online model_
                                 , --publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
@@ -156,17 +152,19 @@ updateSubscribed model topic =
 subscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
 subscribeGameTable model table =
     let
-        _ =
+        debugSubs =
             if hasSubscribedTable model.backend.subscribed table then
-                Debug.log "already subscribed, subscribing again" model.game.table
+                [ consoleDebug <| "already subscribed, subscribing again: " ++ model.game.table ]
             else
-                table
+                []
     in
         ( setStatus SubscribingTable model
-        , Cmd.batch
-            [ subscribe <| Tables model.game.table ClientDirection
-            , subscribe <| Tables model.game.table Broadcast
-            ]
+        , Cmd.batch <|
+            List.append
+                debugSubs
+                [ subscribe <| Tables model.game.table ClientDirection
+                , subscribe <| Tables model.game.table Broadcast
+                ]
         )
 
 
@@ -251,11 +249,7 @@ decodeMessage clientId table ( stringTopic, message ) =
                             msg
 
                         Err err ->
-                            let
-                                _ =
-                                    Debug.log "unknown message" <| UnknownTopicMessage err stringTopic message
-                            in
-                                ErrorToast "Failed to parse an update"
+                            ErrorToast "Failed to parse an update" <| err ++ "/" ++ stringTopic ++ "/" ++ message
 
                 Nothing ->
                     UnknownTopicMessage "unrecognized topic" stringTopic message
@@ -298,11 +292,11 @@ decodeTopic clientId string =
                 Just AllClients
 
             _ ->
-                let
-                    _ =
-                        Debug.log "Cannot decode topic" string
-                in
-                    Nothing
+                --let
+                --_ =
+                --Debug.log "Cannot decode topic" string
+                --in
+                Nothing
 
 
 decodeDirection : String -> Maybe TopicDirection

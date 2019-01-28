@@ -4,7 +4,7 @@ import Game.Types
 import Http
 import Json.Decode as Json
 import Browser.Navigation
-import Url exposing (Url)
+import Url exposing (Url, Protocol(..))
 import OAuth
 import OAuth.AuthorizationCode exposing (AuthorizationResult(..))
 import Task
@@ -18,12 +18,13 @@ profileEndpoint =
 
 authorizationEndpoint : Url
 authorizationEndpoint =
-    case Url.fromString "https://accounts.google.com/o/oauth2/v2/auth" of
-        Just u ->
-            u
-
-        Nothing ->
-            Debug.todo "bad auth url"
+    { protocol = Https
+    , host = "accounts.google.com"
+    , port_ = Nothing
+    , path = "/o/oauth2/v2/auth"
+    , query = Nothing
+    , fragment = Nothing
+    }
 
 
 init : Browser.Navigation.Key -> Url -> ( MyOAuthModel, List (Cmd Msg) )

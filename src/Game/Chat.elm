@@ -1,12 +1,13 @@
 module Game.Chat exposing (chatBox, chatPlayerTag, eliminationEmoji, eliminationReasonText, gameBox, input, maybeUserChatTag, playerTag, rollLine, toChatError)
 
 import Board.Colors exposing (baseCssRgb)
-import Game.Types exposing (ChatLogEntry(..), Model, PlayerAction(..), RollLog)
+import Game.Types exposing (ChatLogEntry(..), Model, PlayerAction(..), RollLog, actionToString)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http exposing (Error(..))
 import Land exposing (Color)
+import Board.Colors exposing (colorName)
 import Material
 import Material.Button as Button
 import Material.Card as Card
@@ -84,7 +85,7 @@ input mdl value =
 
 toChatError : Table -> PlayerAction -> Http.Error -> String
 toChatError table action err =
-    Debug.toString action
+    actionToString action
         ++ " failed: "
         ++ (case err of
                 NetworkError ->
@@ -185,7 +186,7 @@ chatPlayerTag user color =
 playerTag : Game.Types.User -> Color -> Html Types.Msg
 playerTag name color =
     Html.span
-        [ class <| "chatbox__tag__player chatbox__tag__player--" ++ Debug.toString color
+        [ class <| "chatbox__tag__player chatbox__tag__player--" ++ colorName color
         , style "color" (baseCssRgb color)
         ]
         [ Html.text <| name ]

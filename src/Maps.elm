@@ -44,17 +44,6 @@ load map =
 
 
 
--- , consoleDebug <|
---     "Emoji map"
---         ++ (String.join (String.fromChar '\n') <|
---                 List.map (\l -> String.join "" <| List.map Tuple.second l) <|
---                     (mapSourceString map
---                         |> String.lines
---                         |> List.indexedMap charRow
---                     )
---            )
--- )
-
 
 emojisToMap : String -> Land.Map
 emojisToMap raw =
@@ -130,7 +119,8 @@ findEmojiLand emoji list =
             Just ( one, rest )
 
         ( head :: tail, rest ) ->
-            Debug.todo "bad deduping"
+            --Debug.todo "bad deduping"
+            Nothing
 
         _ ->
             Nothing

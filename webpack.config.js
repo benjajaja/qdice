@@ -42,7 +42,12 @@ module.exports = env => ({
       {
         test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/],
-        use: [ 'elm-webpack-loader' ],
+        use: {
+          loader: 'elm-webpack-loader',
+          options: {
+            optimize: true,
+          },
+        },
       },
       {
         test: /\.css$/,

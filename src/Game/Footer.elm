@@ -1,6 +1,6 @@
 module Game.Footer exposing (footer)
 
-import Game.Types exposing (TableInfo)
+import Game.Types exposing (TableInfo, statusToString)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
@@ -53,7 +53,7 @@ tableOfTables model =
                                         ++ " playing"
                                 ]
                             , td [] [ text <| String.fromInt table.watchCount ]
-                            , td [] [ text <| Debug.toString table.status ]
+                            , td [] [ text <| statusToString table.status ]
                             , td [] [ text <| String.fromInt table.landCount ]
                             , td [] [ text <| String.fromInt table.stackSize ]
                               --, td [] [ Icon.i "chevron_right" ]

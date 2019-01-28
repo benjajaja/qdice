@@ -6,7 +6,7 @@ import Game.Chat
 import Game.Footer exposing (footer)
 import Game.PlayerCard as PlayerCard
 import Game.State exposing (findUserPlayer)
-import Game.Types exposing (PlayerAction(..), TableInfo)
+import Game.Types exposing (PlayerAction(..), TableInfo, statusToString)
 import Html exposing (..)
 import Html.Attributes exposing (class, style, type_)
 import Html.Events
@@ -234,7 +234,7 @@ tableInfo model =
                     ]
                 , text " player game is "
                 , span [ class "edGameStatus__chip--strong" ]
-                    [ text <| Debug.toString model.game.status ]
+                    [ text <| statusToString model.game.status ]
                 ]
                 (case model.game.gameStart of
                     Nothing ->

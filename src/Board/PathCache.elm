@@ -22,7 +22,7 @@ createPathCache map =
                         path
 
                     Nothing ->
-                        Land.landPath layout land.cells |> landPointsString |> Debug.log "pathCache miss"
+                        Land.landPath layout land.cells |> landPointsString
 
 
 addToDict dict layout list =

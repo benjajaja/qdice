@@ -13,7 +13,7 @@ import Game.Chat
 import Game.State
 import Game.Types exposing (PlayerAction(..))
 import Game.View
-import Helpers exposing (pipeUpdates)
+import Helpers exposing (pipeUpdates, httpErrorToString)
 import Html
 import Html.Attributes
 import Html.Lazy
@@ -170,11 +170,7 @@ update msg model =
         GetGlobalSettings res ->
             case res of
                 Err err ->
-                    let
-                        _ =
-                            Debug.log "gloal settings error" err
-                    in
-                        toast model <| "Could not load global configuration!"
+                    toast model "Could not load global configuration!" <| httpErrorToString err
 
                 Ok ( settings, tables ) ->
                     let
@@ -195,7 +191,7 @@ update msg model =
                         oauth_ =
                             { oauth | error = Just "unable to fetch user profile ¯\\_(ツ)_/¯" }
                     in
-                        toast { model | oauth = oauth_ } <| "Could not load profile"
+                        toast { model | oauth = oauth_ } "Could not load profile" <| httpErrorToString err
 
                 Ok token ->
                     let
@@ -222,11 +218,7 @@ update msg model =
         GetProfile res ->
             case res of
                 Err err ->
-                    let
-                        _ =
-                            Debug.log "error" err
-                    in
-                        toast model "Could not sign in, please retry"
+                    toast model "Could not sign in, please retry" <| httpErrorToString err
 
                 Ok ( profile, token ) ->
                     let
@@ -308,7 +300,7 @@ update msg model =
             )
 
         ShowLogin show ->
-            ( { model | showLoginDialog = Debug.log "login" show }
+            ( { model | showLoginDialog = show }
             , Cmd.none
             )
 
@@ -319,11 +311,10 @@ update msg model =
             case res of
                 Err err ->
                     let
-                        _ =
-                            Debug.log "error" err
+                        ( model_, cmd ) =
+                            toast model "Could not find a good table for you" <| httpErrorToString err
                     in
-                        --toast model "Could not find a good table for you"
-                        ( model, replaceNavigateTo model.key <| GameRoute "" )
+                        ( model_, Cmd.batch [ cmd, replaceNavigateTo model.key <| GameRoute "" ] )
 
                 Ok table ->
                     ( model
@@ -376,9 +367,10 @@ update msg model =
         Mdl mdlMsg ->
             Material.update Mdl mdlMsg model
 
-        ErrorToast message ->
-            toast model <| Debug.log "error" message
+        ErrorToast message debugMessage ->
+            ( model, Cmd.none )
 
+        --toast message debugMessage
         Animate animateMsg ->
             let
                 game =
@@ -455,13 +447,7 @@ update msg model =
             )
 
         UnknownTopicMessage error topic message ->
-            let
-                _ =
-                    Debug.log ("Error in message: \"" ++ error ++ "\"") topic
-            in
-                ( model
-                , Cmd.none
-                )
+            toast model "I/O Error" <| "UnknownTopicMessage \"" ++ error ++ "\" in topic " ++ topic
 
         StatusConnect _ ->
             ( Backend.setStatus Connecting model

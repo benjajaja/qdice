@@ -13,11 +13,6 @@ type alias ChatMessage =
     { username : String, message : String }
 
 
-errorToString : Error -> Result String a
-errorToString err =
-    Err <| Debug.toString err
-
-
 {-| Maybe Table because it might be a table message for this client only
 -}
 decodeTopicMessage : Maybe Table -> Topic -> String -> Result String Msg
@@ -42,7 +37,7 @@ decodeTopicMessage userTable topic message =
         AllClients ->
             case decodeString (field "type" Dec.string) message of
                 Err err ->
-                    errorToString err
+                    Err <| errorToString err
 
                 Ok mtype ->
                     case mtype of
@@ -52,7 +47,7 @@ decodeTopicMessage userTable topic message =
                                     Ok <| AllClientsMsg <| TablesInfo tables
 
                                 Err err ->
-                                    errorToString err
+                                    Err <| errorToString err
 
                         _ ->
                             Err <| "unknown global message type \"" ++ mtype ++ "\""
@@ -65,7 +60,7 @@ decodeTableMessage : Table -> String -> Result String Msg
 decodeTableMessage table message =
     case decodeString (field "type" Dec.string) message of
         Err err ->
-            errorToString err
+            Err <| errorToString err
 
         Ok mtype ->
             case mtype of
@@ -84,7 +79,7 @@ decodeTableMessage table message =
                             Ok (TableMsg table <| (\( a, b ) -> Chat a b) <| chat)
 
                         Err err ->
-                            errorToString err
+                            Err <| errorToString err
 
                 "enter" ->
                     case decodeString (field "payload" Dec.string) message of
@@ -108,7 +103,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Update update
 
                         Err err ->
-                            errorToString err
+                            Err <| errorToString err
 
                 "roll" ->
                     case decodeString (field "payload" rollDecoder) message of
@@ -116,7 +111,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Roll roll
 
                         Err err ->
-                            errorToString err
+                            Err <| errorToString err
 
                 "move" ->
                     case decodeString (field "payload" moveDecoder) message of
@@ -124,7 +119,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Move move
 
                         Err err ->
-                            errorToString err
+                            Err <| errorToString err
 
                 "elimination" ->
                     case decodeString (field "payload" eliminationDecoder) message of
@@ -132,7 +127,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Elimination elimination
 
                         Err err ->
-                            errorToString err
+                            Err <| errorToString err
 
                 "error" ->
                     case decodeString (field "payload" Dec.string) message of
@@ -150,7 +145,7 @@ decodeClientMessage : String -> Result String Msg
 decodeClientMessage message =
     case decodeString (field "type" Dec.string) message of
         Err err ->
-            errorToString err
+            Err <| errorToString err
 
         Ok mtype ->
             case mtype of
@@ -160,15 +155,15 @@ decodeClientMessage message =
                             Ok <| UpdateUser user token
 
                         Err err ->
-                            errorToString err
+                            Err <| errorToString err
 
                 "error" ->
                     case decodeString (field "payload" Dec.string) message of
                         Ok error ->
-                            Ok <| ErrorToast <| "Server error: " ++ error
+                            Ok <| ErrorToast "Server message error" error
 
                         Err err ->
-                            Ok <| ErrorToast <| "💣 Server-client error: " ++ Debug.toString err
+                            Ok <| ErrorToast "💣 Server-client error" <| errorToString err
 
                 _ ->
                     Err <| "unkown client message type: " ++ mtype

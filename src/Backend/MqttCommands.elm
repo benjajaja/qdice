@@ -19,17 +19,22 @@ publish : Maybe String -> Maybe ClientId -> Table -> PlayerAction -> Cmd Msg
 publish jwt clientId table action =
     case clientId of
         Just clientId_ ->
-            Cmd.batch
-                [ ( encodeTopic <|
-                        Tables table ServerDirection
-                  , encodePlayerAction jwt clientId_ action
-                  )
-                    |> mqttPublish
-                , Task.perform SetLastHeartbeat Time.now
-                ]
+            case encodePlayerAction jwt clientId_ action of
+                Ok playerAction ->
+                    Cmd.batch
+                        [ ( encodeTopic <|
+                                Tables table ServerDirection
+                          , playerAction
+                          )
+                            |> mqttPublish
+                        , Task.perform SetLastHeartbeat Time.now
+                        ]
+
+                Err err ->
+                    toastCmd ("Command error: " ++ err) err
 
         Nothing ->
-            toastCmd "Command error: not connected"
+            toastCmd "Command error: not connected" "attempted publish without clientId"
 
 
 gameCommand : Model -> Table -> PlayerAction -> Cmd Msg

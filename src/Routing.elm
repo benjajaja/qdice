@@ -112,4 +112,4 @@ routeEnterCmd model route =
             findBestTable model.backend
 
         _ ->
-            Debug.log ("enter " ++ Debug.toString route) Cmd.none
+            Cmd.none

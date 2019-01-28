@@ -1,4 +1,4 @@
-module Backend.Encoding exposing (actionPayload, actionToString, encodeJwt, encodePlayerAction, playerEncoder, profileEncoder)
+module Backend.Encoding exposing (actionPayload, encodeJwt, playerEncoder, profileEncoder, encodePlayerAction)
 
 import Game.Types exposing (Player, PlayerAction(..), TableStatus)
 import Json.Encode exposing (Value, encode, list, null, object, string)
@@ -35,41 +35,47 @@ encodeJwt =
     string >> encode 2
 
 
-encodePlayerAction : Maybe String -> String -> PlayerAction -> String
+encodePlayerAction : Maybe String -> String -> PlayerAction -> Result String String
 encodePlayerAction jwt clientId action =
-    encode 2 <|
-        object <|
-            List.concat
-                [ [ ( "type", string <| actionToString action ) ]
-                , [ ( "client", string clientId ) ]
-                , case jwt of
-                    Just jwt_ ->
-                        [ ( "token", string jwt_ ) ]
+    case actionToString action of
+        Nothing ->
+            Err "Unknown action"
 
-                    Nothing ->
-                        []
-                , case actionPayload action of
-                    Just payload ->
-                        [ ( "payload", payload ) ]
+        Just playerAction ->
+            Ok <|
+                encode 2 <|
+                    object <|
+                        List.concat
+                            [ [ ( "type", string playerAction ) ]
+                            , [ ( "client", string clientId ) ]
+                            , case jwt of
+                                Just jwt_ ->
+                                    [ ( "token", string jwt_ ) ]
 
-                    Nothing ->
-                        []
-                ]
+                                Nothing ->
+                                    []
+                            , case actionPayload action of
+                                Just payload ->
+                                    [ ( "payload", payload ) ]
+
+                                Nothing ->
+                                    []
+                            ]
 
 
 {-| Actions without parameters just use toString, otherwise do mapping
 -}
-actionToString : PlayerAction -> String
+actionToString : PlayerAction -> Maybe String
 actionToString action =
     case action of
         Attack a b ->
-            "Attack"
+            Just "Attack"
 
         Chat _ ->
-            "Chat"
+            Just "Chat"
 
         _ ->
-            Debug.toString action
+            Nothing
 
 
 actionPayload : PlayerAction -> Maybe Value

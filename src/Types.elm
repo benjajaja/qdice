@@ -23,7 +23,7 @@ type Msg
     | Mdl (Material.Msg Msg)
     | Animate Animation.Msg
     | MyProfileMsg MyProfile.Types.Msg
-    | ErrorToast String
+    | ErrorToast String String
       -- oauth
     | Nop
     | GetGlobalSettings (Result Http.Error ( GlobalSettings, List TableInfo ))

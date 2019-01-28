@@ -10,7 +10,7 @@ import Material.Button as Button
 import Material.Options as Options
 import Material.Textfield as Textfield
 import MyProfile.Types exposing (..)
-import Snackbar exposing (toastCmd)
+import Snackbar exposing (toast)
 import Types
 
 
@@ -55,9 +55,7 @@ update model msg =
         Save ->
             case model.backend.jwt of
                 Nothing ->
-                    ( model
-                    , toastCmd "Missing JWT"
-                    )
+                    toast model "Missing JWT" "jwt is Nothing, cannot update profile"
 
                 Just jwt ->
                     case model.user of
@@ -84,4 +82,4 @@ update model msg =
                                 )
 
                         Types.Anonymous ->
-                            Debug.todo "cannot modify anonymous user"
+                            toast model "cannot modify anonymous user" "UI allowed to modify anonymous user!"

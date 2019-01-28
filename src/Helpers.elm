@@ -1,4 +1,6 @@
-port module Helpers exposing (consoleDebug, find, findIndex, findIndex_, indexOf, pipeUpdates, playSound, setFavicon)
+port module Helpers exposing (consoleDebug, find, findIndex, findIndex_, indexOf, pipeUpdates, playSound, setFavicon, httpErrorToString)
+
+import Http
 
 
 port consoleDebug : String -> Cmd msg
@@ -24,7 +26,6 @@ findIndex_ lst f offset =
         x :: xs ->
             if f x then
                 offset
-
             else
                 findIndex_ xs f (offset + 1)
 
@@ -45,4 +46,17 @@ pipeUpdates updater arg ( model, cmd ) =
         ( model_, cmd_ ) =
             updater model arg
     in
-    ( model_, Cmd.batch [ cmd, cmd_ ] )
+        ( model_, Cmd.batch [ cmd, cmd_ ] )
+
+
+httpErrorToString : Http.Error -> String
+httpErrorToString err =
+    case err of
+        Http.NetworkError ->
+            "No connection"
+
+        Http.BadStatus statusCode ->
+            "Server/Client Error"
+
+        _ ->
+            "HTTP Error"

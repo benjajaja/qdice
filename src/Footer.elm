@@ -39,8 +39,11 @@ statusMessage status =
                 SubscribingTable ->
                     "Table..."
 
-                _ ->
-                    Debug.toString status
+                Offline ->
+                    "Offline"
+
+                Online ->
+                    "Online"
 
         icon =
             case status of
