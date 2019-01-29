@@ -11,7 +11,7 @@ import Types exposing (Model, Msg(..), Route(..), StaticPage(..), User(..))
 
 footer : Model -> Html.Html Msg
 footer model =
-    div []
+    div [ class "edFooter" ]
         [ div [] [ statusMessage model.backend.status ]
         , div [] []
         ]

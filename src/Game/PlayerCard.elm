@@ -30,8 +30,8 @@ view isSmall model index player =
                 , style "background-color" <| Board.Colors.baseCssRgb player.color
                 , style "color" <|
                     (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
-                        [ Color.rgb 0 0 0, Color.rgb 30 30 30, Color.rgb 255 255 255 ]
-                        |> Maybe.withDefault (Color.rgb 0 0 0)
+                        [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
+                        |> Maybe.withDefault (Color.rgb255 0 0 0)
                         |> Color.Convert.colorToCssRgb
                     )
                 ]
@@ -170,15 +170,15 @@ playerCircleProgress progress =
 
 
 baseProgressColor =
-    Color.rgb 0 135 189
+    Color.rgb255 0 135 189
 
 
 midProgressColor =
-    Color.rgb 255 211 0
+    Color.rgb255 255 211 0
 
 
 endProgressColor =
-    Color.rgb 196 2 51
+    Color.rgb255 196 2 51
 
 
 progressColor : Float -> String

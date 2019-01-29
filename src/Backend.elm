@@ -215,6 +215,7 @@ subscriptions model =
         , mqttOnReconnect StatusReconnect
         , mqttOnConnected Connected
         , mqttOnSubscribed <| decodeSubscribed model.backend.clientId
+          --, mqttOnUnSubscribed <| decodeSubscribed model.backend.clientId
         , mqttOnMessage <| decodeMessage model.backend.clientId <| Just model.game.table
         , onToken LoadToken
         ]

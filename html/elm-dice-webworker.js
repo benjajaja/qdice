@@ -81,7 +81,7 @@ self.addEventListener('message', function(event){
     case 'unsubscribe':
       client.unsubscribe(action.payload, function(err, granted) {
         if (err) throw err;
-        postMessage({ type: 'mqttOnUnSubscribed', payload: action.payload});
+        //postMessage({ type: 'mqttOnUnSubscribed', payload: action.payload});
       });
       break;
     case 'publish':

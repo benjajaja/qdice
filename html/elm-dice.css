@@ -1,7 +1,9 @@
 /*@import "https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext";*/
 @import url('https://fonts.googleapis.com/css?family=Rubik');
 @import "https://fonts.googleapis.com/icon?family=Material+Icons";
-@import "./css/material.min.css";
+/*@import "./css/material.min.css";*/
+@import "./css/normalize.min.css";
+@import "../elm-mdc/material-components-web.css";
 @import "./css/material-theme.css";
 
 
@@ -11,15 +13,11 @@ html {
 body {
   font-family: 'Rubik', sans-serif;
   background-color: #edfcff;
-}
-
-
-.mdl-layout__content {
+  margin: 0;
+  min-width: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-}
-.mdl-mini-footer {
-  flex: 0 0 auto;
 }
 .Main {
   background-color: #edfcff;
@@ -87,8 +85,9 @@ body.navigator-standalone textarea {
 .edBoard {
 }
 .edBoard--svg {
+  min-height: 0;
   font-size: 33%;
-  overflow: visible;
+  overflow: visible !important;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 .edBoard--svg g {
@@ -441,7 +440,7 @@ body.navigator-standalone textarea {
 }
 .edLoginDialog {
   position: fixed;
-  top: 64px;
+  top: 0;
   right: 0;
   left: 0;
   z-index: 999;
@@ -518,10 +517,7 @@ body.navigator-standalone textarea {
   .Main {
     height: 100%;
   }
-  .Main + .mdl-mini-footer {
-    display: none;
-  }
-  .mdl-layout__drawer-button {
+  .edFooter {
     display: none;
   }
   .edGame {
@@ -540,8 +536,6 @@ body.navigator-standalone textarea {
     height: 0;
   }
   .edBoard--svg {
-    /*flex-grow: 2;*/
-    min-height: 0;
   }
   .edGame__meta, .edGame__meta2, .edTables {
     display: none !important;
@@ -568,7 +562,7 @@ body.navigator-standalone textarea {
     background: transparent;
     box-shadow: none;
     margin: 0;
-    max-width: 25%;
+    max-width: 50%;
   }
   .edGameBoardFooter .edPlayerChip__picture {
     width: 35px;

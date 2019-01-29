@@ -11,7 +11,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>¡Qué Dice!</title>
+    <title>Qdice.wtf</title>
     <link rel="manifest" href="manifest.json">
     <!-- favicon-crap -->
     <link rel="apple-touch-icon" sizes="180x180" href="/favicons-2/apple-touch-icon.png?v=1">
@@ -32,7 +32,6 @@ body{background:#edfcff}
   </head>
   <body>
     <div id="loading-indicator">Loading...<div id="loading-spinner"></div></div>
-    <div id="edice"></div>
     <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
     <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>" charset="utf-8"></script>
     <% } %>

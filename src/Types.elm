@@ -37,7 +37,6 @@ type Msg
     | Login String
     | SetLoginName String
     | UpdateUser LoggedUser String
-    | FindBestTable (Result Http.Error Table)
       -- game
     | BoardMsg Board.Msg
     | InputChat String

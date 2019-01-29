@@ -1,6 +1,6 @@
 module Routing exposing (matchers, navigateTo, replaceNavigateTo, routeEnterCmd, routeToString, staticPageMatcher, tableMatcher, parseLocation)
 
-import Backend.HttpCommands exposing (findBestTable, leaderBoard)
+import Backend.HttpCommands exposing (leaderBoard)
 import Http
 import Tables exposing (Table)
 import Types exposing (..)
@@ -73,33 +73,33 @@ routeToString : Route -> String
 routeToString route =
     case route of
         HomeRoute ->
-            "#"
+            ""
 
         GameRoute table ->
-            "#" ++ table
+            table
 
         StaticPageRoute page ->
             case page of
                 Help ->
-                    "#static/help"
+                    "static/help"
 
                 About ->
-                    "#static/about"
+                    "static/about"
 
         NotFoundRoute ->
-            "#404"
+            "404"
 
         MyProfileRoute ->
-            "#me"
+            "me"
 
         TokenRoute token ->
-            "#token/" ++ token
+            "token/" ++ token
 
         ProfileRoute id ->
-            "#profile/" ++ id
+            "profile/" ++ id
 
         LeaderBoardRoute ->
-            "#leaderboard"
+            "leaderboard"
 
 
 routeEnterCmd : Model -> Route -> Cmd Msg
@@ -107,9 +107,6 @@ routeEnterCmd model route =
     case route of
         LeaderBoardRoute ->
             leaderBoard model.backend
-
-        HomeRoute ->
-            findBestTable model.backend
 
         _ ->
             Cmd.none

@@ -1,4 +1,4 @@
-module Backend.HttpCommands exposing (authenticate, findBestTable, leaderBoard, loadGlobalSettings, loadMe)
+module Backend.HttpCommands exposing (authenticate, leaderBoard, loadGlobalSettings, loadMe)
 
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -9,21 +9,6 @@ import Http
 import Land exposing (Color(..))
 import Snackbar exposing (toastCmd)
 import Types exposing (Msg(..))
-
-
-findBestTable : Model -> Cmd Msg
-findBestTable model =
-    Http.send FindBestTable <|
-        Http.request
-            { method = "GET"
-            , headers = []
-            , url = model.baseUrl ++ "/findtable"
-            , body = Http.emptyBody
-            , expect =
-                Http.expectJson <| tableNameDecoder
-            , timeout = Just model.findTableTimeout
-            , withCredentials = False
-            }
 
 
 loadGlobalSettings : Model -> Cmd Msg
@@ -42,7 +27,7 @@ authenticate model code doJoin =
             <|
                 tokenDecoder
     in
-    Http.send (GetToken doJoin) request
+        Http.send (GetToken doJoin) request
 
 
 loadMe : Model -> Cmd Msg

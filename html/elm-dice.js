@@ -27,7 +27,7 @@ setTimeout(function() {
 
   var isTelegram = (typeof TelegramWebviewProxy === 'object');
   var app = Elm.Edice.init({
-    node: document.getElementById('edice'),
+    node: document.body,
     flags: {
       isTelegram: isTelegram,
     },
@@ -122,6 +122,9 @@ setTimeout(function() {
     worker.postMessage({type: 'connect', url: location.href});
     worker.addEventListener('message', function(event) {
       var action = event.data;
+      if (!app.ports[action.type]) {
+        console.log('no port', action);
+      }
       app.ports[action.type].send(action.payload);
     });
     app.ports.mqttSubscribe.subscribe(function(args) {

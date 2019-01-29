@@ -2,7 +2,7 @@ port module Edice exposing (auth, started, subscriptions)
 
 import Animation
 import Backend
-import Backend.HttpCommands exposing (authenticate, findBestTable, loadGlobalSettings, loadMe)
+import Backend.HttpCommands exposing (authenticate, loadGlobalSettings, loadMe)
 import Backend.MqttCommands exposing (gameCommand)
 import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
@@ -13,7 +13,7 @@ import Game.Chat
 import Game.State
 import Game.Types exposing (PlayerAction(..))
 import Game.View
-import Helpers exposing (pipeUpdates, httpErrorToString)
+import Helpers exposing (pipeUpdates, httpErrorToString, consoleDebug)
 import Html
 import Html.Attributes
 import Html.Lazy
@@ -25,6 +25,7 @@ import Material
 import Material.Icon as Icon
 import Material.Menu as Menu
 import Material.Options
+import Material.Snackbar as MSnackbar
 import Maybe
 import MyOauth
 import MyProfile.MyProfile
@@ -91,13 +92,7 @@ init flags location key =
 
                 _ ->
                     ( backend
-                    , [ case route of
-                            HomeRoute ->
-                                findBestTable backend
-
-                            _ ->
-                                Cmd.none
-                      ]
+                    , [ Cmd.none ]
                     )
 
         model : Model
@@ -174,12 +169,24 @@ update msg model =
 
                 Ok ( settings, tables ) ->
                     let
-                        game =
-                            Game.State.updateGameInfo model.game tables
+                        model_ =
+                            { model | settings = settings, tableList = tables }
                     in
-                        ( { model | settings = settings, tableList = tables, game = game }
-                        , Cmd.none
-                        )
+                        case model.route of
+                            GameRoute table ->
+                                Game.State.changeTable model_ table
+
+                            _ ->
+                                case List.head tables of
+                                    Just bestTable ->
+                                        ( model_
+                                        , replaceNavigateTo model.key <| GameRoute bestTable.table
+                                        )
+
+                                    Nothing ->
+                                        ( model
+                                        , Cmd.none
+                                        )
 
         GetToken doJoin res ->
             case res of
@@ -307,23 +314,6 @@ update msg model =
         Login name ->
             login model name
 
-        FindBestTable res ->
-            case res of
-                Err err ->
-                    let
-                        ( model_, cmd ) =
-                            toast model "Could not find a good table for you" <| httpErrorToString err
-                    in
-                        ( model_, Cmd.batch [ cmd, replaceNavigateTo model.key <| GameRoute "" ] )
-
-                Ok table ->
-                    ( model
-                    , if model.route /= GameRoute table then
-                        replaceNavigateTo model.key <| GameRoute table
-                      else
-                        Cmd.none
-                    )
-
         NavigateTo route ->
             ( model
             , navigateTo model.key route
@@ -368,9 +358,24 @@ update msg model =
             Material.update Mdl mdlMsg model
 
         ErrorToast message debugMessage ->
-            ( model, Cmd.none )
+            let
+                _ =
+                    Debug.log message debugMessage
 
-        --toast message debugMessage
+                contents =
+                    MSnackbar.toast Nothing message
+
+                ( mdc, effects ) =
+                    MSnackbar.add Mdl "my-snackbar" contents model.mdc
+
+                cmds =
+                    Cmd.batch
+                        [ effects
+                        , consoleDebug debugMessage
+                        ]
+            in
+                ( { model | mdc = mdc }, cmds )
+
         Animate animateMsg ->
             let
                 game =
@@ -544,14 +549,17 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "Qdice.wtf"
     , body =
-        [ Html.div []
-            [ loginDialog model
-            , Html.div [ Html.Attributes.class "Main" ]
-                [ mainView model
-                ]
-            , footer model
-              --, Snackbar.view model.snackbar |> Html.map Snackbar
+        [ loginDialog model
+        , Html.div [ Html.Attributes.class "Main" ]
+            [ mainView model
             ]
+        , footer model
+        , MSnackbar.view
+            Mdl
+            "snackbar"
+            model.mdc
+            []
+            []
         ]
     }
 

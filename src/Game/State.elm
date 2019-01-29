@@ -65,7 +65,7 @@ changeTable model table =
             model.game.table
 
         map =
-            tableMap table model
+            tableMap table model.tableList
 
         ( game, cmd ) =
             init (Just model) table map
@@ -77,10 +77,10 @@ changeTable model table =
             |> pipeUpdates Backend.subscribeGameTable table
 
 
-tableMap : Table -> Types.Model -> Maybe Map
-tableMap table model =
+tableMap : Table -> List Game.Types.TableInfo -> Maybe Map
+tableMap table tableList =
     case
-        List.filter (\t -> t.table == table) model.tableList
+        List.filter (\t -> t.table == table) tableList
             |> List.head
     of
         Just tableInfo ->
