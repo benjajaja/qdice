@@ -8,13 +8,8 @@ import Game.PlayerCard as PlayerCard
 import Game.State exposing (findUserPlayer)
 import Game.Types exposing (PlayerAction(..), TableInfo, statusToString)
 import Html exposing (..)
-import Html.Attributes exposing (class, style, type_)
-import Html.Events
-import Material
-import Material.Button as Button
-import Material.Icon as Icon
-import Material.List as Lists
-import Material.Options as Options
+import Html.Attributes exposing (class, style, type_, disabled)
+import Html.Events exposing (onClick)
 import Ordinal exposing (ordinal)
 import Tables exposing (Table)
 import Time exposing (posixToMillis)
@@ -84,65 +79,38 @@ seatButton model =
                 _ ->
                     False
 
-        ( label, icon, onClick ) =
+        ( label, msg ) =
             case findUserPlayer model.user model.game.players of
                 Just player ->
                     if model.game.status == Game.Types.Playing then
                         if player.out then
-                            ( "Sit in", "play_arrow", Options.onClick <| GameCmd SitIn )
+                            ( "Sit in", onClick <| GameCmd SitIn )
                         else if model.game.hasTurn then
-                            ( "End turn", "fast_forward", Options.onClick <| GameCmd EndTurn )
+                            ( "End turn", onClick <| GameCmd EndTurn )
                         else
-                            ( "Sit out", "skip_next", Options.onClick <| GameCmd SitOut )
+                            ( "Sit out", onClick <| GameCmd SitOut )
                     else
-                        ( "Leave", "stop", Options.onClick <| GameCmd Leave )
+                        ( "Leave", onClick <| GameCmd Leave )
 
                 Nothing ->
                     case model.user of
                         Types.Anonymous ->
-                            ( "Join", "play_arrow", Options.onClick <| ShowLogin Types.LoginShowJoin )
+                            ( "Join", onClick <| ShowLogin Types.LoginShowJoin )
 
                         Types.Logged user ->
-                            ( "Join", "play_arrow", Options.onClick <| GameCmd Join )
-
-        disabled =
-            if not canPlay then
-                Button.disabled
-            else
-                Options.nop
+                            ( "Join", onClick <| GameCmd Join )
     in
-        Button.view
-            Types.Mdl
-            "button-game"
-            model.mdc
-            (onClick
-                :: [ Button.ripple
-                   , Options.cs "edGameHeader__button"
-                   , disabled
-                   ]
-            )
-            [ Icon.view [] icon
-            , text label
-            ]
+        button [ class "edGameHeader__button", msg, disabled <| not canPlay ] [ text label ]
 
 
 endTurnButton : Model -> Html.Html Types.Msg
 endTurnButton model =
-    Button.view
-        Types.Mdl
-        "button-end-turn"
-        model.mdc
-        [ Button.ripple
-        , Options.cs "edGameHeader__button"
-        , Options.onClick <| GameCmd EndTurn
-        , if not model.game.hasTurn then
-            Button.disabled
-          else
-            Options.nop
+    button
+        [ class "edGameHeader__button"
+        , onClick <| GameCmd EndTurn
+        , disabled <| not model.game.hasTurn
         ]
-        [ Icon.view [] "fast_forward"
-        , text "End turn"
-        ]
+        [ text "End turn" ]
 
 
 gameLogOverlay : Model -> Html.Html Types.Msg
@@ -204,14 +172,8 @@ sitInModal model =
         , class "edGame__SitInModal"
         , Html.Events.onClick <| GameCmd SitIn
         ]
-        [ Button.view
-            Types.Mdl
-            "button-sit-in"
-            model.mdc
-            [ Button.raised
-            , Button.ripple
-            , Options.cs ""
-            , Options.onClick <| GameCmd SitIn
+        [ button
+            [ onClick <| GameCmd SitIn
             ]
             [ text "Sit in!" ]
         ]
