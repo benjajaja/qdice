@@ -55,7 +55,10 @@ export const findtable = (req, res, next) => {
 
 const getTablesStatus = async () => {
   let tables = await getStatuses();
-  return tables.map(table =>
+  return R.sortWith([
+    R.descend(R.prop('playerCount')),
+    R.ascend(R.prop('name')),
+  ])(tables.map(table =>
     Object.assign(R.pick([
       'name',
       'tag',
@@ -69,7 +72,7 @@ const getTablesStatus = async () => {
       playerCount: table.players.length,
       watchCount: table.watching.length,
     })
-  );
+  )) as any[];
 };
 
 export const onMessage = async (topic, message) => {

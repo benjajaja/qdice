@@ -102,7 +102,7 @@ db.connect().then(() => {
 
   });
   //table.start('España', client);
-  //table.start('Arabia', client);
+  table.start('Arabia', client);
   table.start('Melchor', client);
 
   client.on('message', globalServer.onMessage);
