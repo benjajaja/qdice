@@ -111,32 +111,24 @@ setTimeout(function() {
     //console.groupEnd();
   //});
 
-  app.ports.playSound.subscribe(require('./sounds'));
+  var sounds = require('./sounds');
+  app.ports.playSound.subscribe(sounds.play);
   app.ports.setFavicon.subscribe(require('./favicon'));
 
 
   app.ports.mqttConnect.subscribe(function() {
-    var Worker = require('worker-loader!./elm-dice-webworker.js');
-    var worker = new Worker();
+    var mqtt = require('./elm-dice-mqtt.js');
 
-    worker.postMessage({type: 'connect', url: location.href});
-    worker.addEventListener('message', function(event) {
-      var action = event.data;
+    mqtt.onmessage = function(action) {
       if (!app.ports[action.type]) {
         console.log('no port', action);
       }
       app.ports[action.type].send(action.payload);
-    });
-    app.ports.mqttSubscribe.subscribe(function(args) {
-      worker.postMessage({type: 'subscribe', payload: args});
-    });
-    app.ports.mqttUnsubscribe.subscribe(function(args) {
-      worker.postMessage({type: 'unsubscribe', payload: args});
-    });
-    app.ports.mqttPublish.subscribe(function(args) {
-      worker.postMessage({type: 'publish', payload: args});
-      logPublish(args);
-    });
+    };
+    mqtt.connect(location.href);
+    app.ports.mqttSubscribe.subscribe(mqtt.subscribe);
+    app.ports.mqttUnsubscribe.subscribe(mqtt.unsubscribe);
+    app.ports.mqttPublish.subscribe(mqtt.publish);
   });
 
 

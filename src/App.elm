@@ -359,9 +359,6 @@ update msg model =
 
         ErrorToast message debugMessage ->
             let
-                _ =
-                    Debug.log message debugMessage
-
                 contents =
                     MSnackbar.toast Nothing message
 

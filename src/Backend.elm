@@ -65,7 +65,7 @@ baseUrl location =
                     Http ->
                         "http"
         in
-            protocol ++ "//" ++ "api.qdice.wtf"
+            protocol ++ "://" ++ "api.qdice.wtf"
 
 
 init : Url -> Table -> Bool -> ( Model, Cmd Msg )

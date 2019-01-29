@@ -50,7 +50,7 @@ module.exports = env => ({
         use: {
           loader: 'elm-webpack-loader',
           options: {
-            optimize: false,
+            optimize: env && env.production,
           },
         },
       },

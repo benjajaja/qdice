@@ -79,7 +79,7 @@ setTimeout(function() {
   bufferLoader.load();
 }, 1);
 
-module.exports = function(sound) {
+module.exports.play = function(sound) {
   if (!sounds[sound]) {
     console.error('sound not loaded:', sound);
     return;
