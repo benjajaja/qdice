@@ -88,7 +88,7 @@ export type Player = UserLike & {
 export type User = UserLike & {
 }
 
-export type Watcher = { clientId: any, name: string | null, lastBeat: number }
+export type Watcher = { clientId: any, id: UserId | null, name: string | null, lastBeat: number }
 
 export type Elimination = {
   player: Player,

@@ -16,12 +16,21 @@ import {
 import logger from '../logger';
 
 export const heartbeat = (user: User, table: Table, clientId: string): CommandResult => {
-  const existing = R.find(R.propEq('clientId', clientId), table.watching);
+  const finder = user && user.id
+    ? R.propEq('id', user.id)
+    : R.propEq('clientId', clientId);
+
+  const existing = R.find(finder, table.watching);
   const watching: ReadonlyArray<Watcher> = existing
-    ? table.watching.map(watcher => watcher.clientId === clientId
+    ? table.watching.map(watcher => finder(watcher)
       ? Object.assign({}, watcher, { lastBeat: now() })
       : watcher)
-    : table.watching.concat([{ clientId, name: user ? user.name : null, lastBeat: now() }]);
+    : table.watching.concat([{
+      clientId,
+      id: user && user.id ? user.id : null,
+      name: user ? user.name : null,
+      lastBeat: now()
+    }]);
 
   return { type: 'Heartbeat', watchers: watching };
 };
@@ -33,7 +42,12 @@ export const enter = (user: User, table: Table, clientId: string): CommandResult
     publish.enter(table, user ? user.name : null);
     return {
       type: 'Enter',
-      watchers: R.append({ clientId, name: user ? user.name : null, lastBeat: now() }, table.watching)
+      watchers: R.append({
+        clientId,
+        id: user && user.id ? user.id : null,
+        name: user ? user.name : null,
+        lastBeat: now()
+      }, table.watching)
     };
   }
   return;
