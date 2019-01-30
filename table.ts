@@ -124,7 +124,9 @@ export const processComandResult = async (table: Table, result: CommandResult | 
       await processEliminations(newTable, eliminations);
     }
 
-    publish.tableStatus(newTable);
+    if (type !== 'Heartbeat') {
+      publish.tableStatus(newTable);
+    }
   }
 };
 

@@ -23,16 +23,12 @@ export const heartbeat = (user: User, table: Table, clientId: string): CommandRe
       : watcher)
     : table.watching.concat([{ clientId, name: user ? user.name : null, lastBeat: now() }]);
 
-  publish.event({
-    type: 'watching',
-    table: table.name,
-    watching: watching.map(R.prop('name')),
-  });
   return { type: 'Heartbeat', watchers: watching };
 };
 
 export const enter = (user: User, table: Table, clientId: string): CommandResult | undefined => {
   const existing = R.find(R.propEq('clientId', clientId), table.watching);
+  publish.tableStatus(table, clientId);
   if (!existing) {
     publish.enter(table, user ? user.name : null);
     return {
@@ -102,13 +98,6 @@ export const join = (user, table: Table, clientId): CommandResult => {
   } else {
     if (players.length >= 2 &&
       players.length >= table.startSlots) {
-      if (gameStart === 0) {
-        publish.event({
-          type: 'countdown',
-          table: table.name,
-          players: players.map(R.prop('name')),
-        });
-      }
       gameStart = addSeconds(GAME_START_COUNTDOWN);
     }
   }

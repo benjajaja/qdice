@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { UserId, Table, Player, Land, Watcher } from '../types';
 import * as maps from '../maps';
 import * as db from '../db';
@@ -69,7 +70,17 @@ export const getTable = async (tableTag: string): Promise<Table> => {
     dbTable = await db.createTable(dbTableData);
   }
   const table = loadLands(dbTable);
+
   return table;
+  const players = table.players.length
+    ? R.range(0, 10).map(i => {
+      return table.players[i] || Object.assign({}, R.last(table.players), {
+        color: i + 1,
+        name: 'fake' + i,
+      });
+      })
+    : [];
+  return Object.assign({}, table, { players });
 };
 
 export const save = async (
