@@ -141,8 +141,8 @@ const processEliminations = async (table: Table, eliminations: ReadonlyArray<Eli
       ...source,
     });
 
-    console.log('ELIMINATION-------------');
-    console.log(position, player.name);
+    logger.debug('ELIMINATION-------------');
+    logger.debug(position, player.name);
     try {
       const user = await db.addScore(player.id, score);
       publish.userUpdate(player.clientId)(user);

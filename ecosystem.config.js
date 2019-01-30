@@ -49,6 +49,7 @@ module.exports = {
       restart_delay: 1000,
       vizion: false,
       max_restarts: 5,
+      log_type: '',
     },
     //{
       //name: 'telegram',

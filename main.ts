@@ -1,4 +1,6 @@
 import logger from './logger';
+logger.info('Qdice server started');
+
 import * as db from './db';
 import * as table from './table';
 
