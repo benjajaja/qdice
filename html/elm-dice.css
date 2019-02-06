@@ -1,6 +1,7 @@
 /*@import "https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext";*/
 @import url('https://fonts.googleapis.com/css?family=Rubik');
-@import "https://fonts.googleapis.com/icon?family=Material+Icons";
+/*@import "https://fonts.googleapis.com/icon?family=Material+Icons";*/
+@import "./iconfont/material-icons.css";
 /*@import "./css/material.min.css";*/
 @import "./css/normalize.min.css";
 @import "../elm-mdc/material-components-web.css";

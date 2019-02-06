@@ -32,7 +32,7 @@ module.exports = env => ({
   module: {
     rules: [
       {
-        test: /\.(woff2|png|xml|ico|svg|json)$/,
+        test: /\.(woff|eot|woff2|ttf|png|xml|ico|svg|json)$/,
         exclude: /node_modules/,
         use: [
           {
@@ -97,6 +97,7 @@ module.exports = env => ({
       { from: 'html/cache-polyfill.js' },
       { from: 'html/sounds', to: 'sounds'},
       { from: 'html/assets', to: 'assets'},
+      { from: 'html/iconfont', to: 'iconfont'},
     ]),
     new HtmlWebpackPlugin({
       template: 'html/index.html',
