@@ -99,6 +99,7 @@ module.exports = env => ({
       { from: 'html/assets', to: 'assets'},
       { from: 'html/iconfont', to: 'iconfont'},
       { from: 'html/fonts', to: 'fonts'},
+      { from: 'html/robots.txt', to: 'robots.txt'},
     ]),
     new HtmlWebpackPlugin({
       template: 'html/index.html',
