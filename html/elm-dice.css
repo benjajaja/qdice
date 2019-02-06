@@ -1,11 +1,40 @@
+/* rubik-regular - latin */
+@font-face {
+  font-family: 'Rubik';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Rubik'), local('Rubik-Regular'),
+       url('./fonts/rubik-v7-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('./fonts/rubik-v7-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* rubik-italic - latin */
+@font-face {
+  font-family: 'Rubik';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Rubik Italic'), local('Rubik-Italic'),
+       url('./fonts/rubik-v7-latin-italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('./fonts/rubik-v7-latin-italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+/* rubik-500 - latin */
+@font-face {
+  font-family: 'Rubik';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Rubik Medium'), local('Rubik-Medium'),
+       url('./fonts/rubik-v7-latin-500.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('./fonts/rubik-v7-latin-500.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
 /*@import "https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext";*/
-@import url('https://fonts.googleapis.com/css?family=Rubik');
+/*@import url('https://fonts.googleapis.com/css?family=Rubik');*/
 /*@import "https://fonts.googleapis.com/icon?family=Material+Icons";*/
 @import "./iconfont/material-icons.css";
 /*@import "./css/material.min.css";*/
 @import "./css/normalize.min.css";
 @import "../elm-mdc/material-components-web.css";
 @import "./css/material-theme.css";
+
 
 
 html {
