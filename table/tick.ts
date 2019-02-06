@@ -1,10 +1,9 @@
 import * as R from 'ramda';
-import * as pmx from 'pmx';
+import * as io from '@pm2/io';
 import { getTable, save } from './get';
 import { Table, Player, CommandResult } from '../types';
 import { processComandResult } from '../table';
 import { havePassed } from '../timestamp';
-const probe = pmx.probe();
 
 import {
   STATUS_PAUSED,
@@ -19,10 +18,8 @@ import startGame from './start';
 import { rollResult } from './attack';
 import logger from '../logger';
 
-let globalTablesUpdate = null;
-
-const updateCounter = probe.counter({
-  name : 'Global mqtt updates'
+const gamesStarted = io.counter({
+  name: 'Games started',
 });
 
 const intervalIds: {[tableTag: string]: any} = {};
@@ -69,6 +66,7 @@ const tick = async (tableTag: string) => {
         && table.gameStart !== 0
         && havePassed(0, table.gameStart)) {
       result = startGame(table);
+      gamesStarted.inc();
     }
   }
 
@@ -91,8 +89,8 @@ const cleanWatchers = (table: Table): CommandResult | undefined => {
 
   if (stoppedWatching.length > 0) {
     stoppedWatching.forEach(user => publish.exit(table, user.name));
-    logger.debug('stopped', stoppedWatching.map(R.prop('name')));
-    logger.debug('still', stillWatching.map(R.prop('name')));
+    //logger.debug('stopped', stoppedWatching.map(R.prop('name')));
+    //logger.debug('still', stillWatching.map(R.prop('name')));
     return {
       type: 'CleanWatchers',
       watchers: stillWatching,

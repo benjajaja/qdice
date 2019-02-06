@@ -1,6 +1,13 @@
 import logger from './logger';
 logger.info('Qdice server started');
 
+import * as io from '@pm2/io';
+io.init({
+  metrics: {
+    network: true,
+  },
+});
+
 import * as db from './db';
 import * as table from './table';
 

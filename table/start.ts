@@ -1,17 +1,12 @@
 import * as R from 'ramda';
 import { Table, Player, Land, CommandResult } from '../types';
 import { now } from '../timestamp';
-const probe = require('pmx').probe();
 import * as publish from './publish';
 import { rand } from '../rand';
 import logger from '../logger';
 import {
   STATUS_PLAYING,
 } from '../constants';
-
-const startCounter = probe.counter({
-  name : 'Games started',
-});
 
 const randomPoints = stackSize => {
   const r = Math.random();

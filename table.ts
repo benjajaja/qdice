@@ -2,6 +2,7 @@ import { promisify } from 'util';
 import * as R from 'ramda';
 import * as mqtt from 'mqtt';
 import * as jwt from 'jsonwebtoken';
+import * as io from '@pm2/io';
 
 import { UserId, Table, CommandResult, Elimination, IllegalMoveError } from './types';
 import * as db from './db';
@@ -27,6 +28,11 @@ import { save } from './table/get';
 
 const verifyJwt = promisify(jwt.verify);
 
+const commandCounter = io.counter({
+  name: 'Realtime commands count',
+  id: 'app/realtime/commands'
+});
+
 export const start = async (tableTag: string, client: mqtt.MqttClient) => {
 
   publish.tableStatus(await getTable(tableTag));
@@ -44,6 +50,7 @@ export const start = async (tableTag: string, client: mqtt.MqttClient) => {
       return;
     }
 
+    commandCounter.inc();
     const { type, clientId, token, payload } = parsedMessage;
     try {
       const user = await (token
@@ -54,6 +61,8 @@ export const start = async (tableTag: string, client: mqtt.MqttClient) => {
 
       const result = command(user, clientId, table, type, payload);
       await processComandResult(table, result);
+      commandCounter.dec();
+      
 
     } catch (e) {
       publish.clientError(clientId, e);
