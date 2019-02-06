@@ -1,4 +1,4 @@
-port module Game.State exposing (changeTable, clickLand, findUserPlayer, hoverLand, init, scrollElement, showRoll, tableMap, updateChatLog, updateGameInfo, updateTable, updateTableStatus)
+port module Game.State exposing (changeTable, clickLand, findUserPlayer, hoverLand, init, scrollElement, showRoll, tableMap, updateGameInfo, updateTable, updateTableStatus)
 
 import Backend
 import Backend.MqttCommands exposing (attack, gameCommand)
@@ -16,7 +16,7 @@ import Task
 import Types exposing (Model, Msg(..), User(..))
 
 
-init : Maybe Types.Model -> Table -> Maybe Map -> ( Game.Types.Model, Cmd Types.Msg )
+init : Maybe Types.Model -> Maybe Table -> Maybe Map -> ( Game.Types.Model, Cmd Types.Msg )
 init model table tableMap_ =
     let
         map =
@@ -41,7 +41,13 @@ init model table tableMap_ =
           , turnStart = -1
           , chatInput = ""
           , chatLog = []
-          , gameLog = [ LogBegin table ]
+          , gameLog =
+                case table of
+                    Just aTable ->
+                        [ LogBegin aTable ]
+
+                    Nothing ->
+                        []
           , isPlayerOut = False
           , roundCount = 0
           , canFlag = False
@@ -68,7 +74,7 @@ changeTable model table =
             tableMap table model.tableList
 
         ( game, cmd ) =
-            init (Just model) table map
+            init (Just model) (Just table) map
 
         model_ =
             { model | game = game }
@@ -263,18 +269,23 @@ updateTableStatus model status =
 
 updateGameInfo : Game.Types.Model -> List Game.Types.TableInfo -> Game.Types.Model
 updateGameInfo model tableList =
-    let
-        currentTableInfo =
-            tableList
-                |> List.filter (\t -> t.table == model.table)
-                |> List.head
-    in
-        case currentTableInfo of
-            Just tableInfo ->
-                { model | playerSlots = tableInfo.playerSlots }
+    case model.table of
+        Nothing ->
+            model
 
-            Nothing ->
-                model
+        Just table ->
+            let
+                currentTableInfo =
+                    tableList
+                        |> List.filter (\t -> t.table == table)
+                        |> List.head
+            in
+                case currentTableInfo of
+                    Just tableInfo ->
+                        { model | playerSlots = tableInfo.playerSlots }
+
+                    Nothing ->
+                        model
 
 
 showRoll : Types.Model -> Roll -> ( Types.Model, Cmd Msg )
@@ -334,11 +345,17 @@ clickLand model land =
                                     ( model.game.board.move, Cmd.none )
                                 else
                                     -- is bordering, different land and color: attack
-                                    let
-                                        gameCmd =
-                                            attack model.backend model.game.table from.emoji land.emoji
-                                    in
-                                        ( Board.Types.FromTo from land, Cmd.batch [ playSound "diceroll", gameCmd ] )
+                                    case model.game.table of
+                                        Just table ->
+                                            let
+                                                gameCmd =
+                                                    attack model.backend table from.emoji land.emoji
+                                            in
+                                                ( Board.Types.FromTo from land, Cmd.batch [ playSound "diceroll", gameCmd ] )
+
+                                        Nothing ->
+                                            -- no table!
+                                            ( model.game.board.move, Cmd.none )
 
                             Board.Types.FromTo from to ->
                                 ( model.game.board.move, Cmd.none )
@@ -414,122 +431,132 @@ hoverLand model land =
 
 updateTable : Types.Model -> Table -> Backend.Types.TableMessage -> ( Types.Model, Cmd Types.Msg )
 updateTable model table msg =
-    if table == model.game.table then
-        case msg of
-            Backend.Types.Error error ->
-                updateChatLog model <| LogError error
+    case model.game.table of
+        Just gameTable ->
+            if table == gameTable then
+                case msg of
+                    Backend.Types.Error error ->
+                        updateChatLog model <| LogError error
 
-            Backend.Types.Join user ->
-                updateChatLog model <| LogJoin user
+                    Backend.Types.Join user ->
+                        updateChatLog model <| LogJoin user
 
-            Backend.Types.Leave user ->
-                updateChatLog model <| LogLeave user
+                    Backend.Types.Leave user ->
+                        updateChatLog model <| LogLeave user
 
-            Backend.Types.Chat user text ->
-                let
-                    color =
-                        case user of
-                            Nothing ->
-                                Land.Black
+                    Backend.Types.Chat user text ->
+                        let
+                            color =
+                                case user of
+                                    Nothing ->
+                                        Land.Black
 
-                            Just name ->
-                                model.game.players
-                                    |> List.filter (\p -> p.name == name)
-                                    |> List.head
-                                    |> Maybe.map .color
-                                    |> Maybe.withDefault Land.Black
-                in
-                    updateChatLog model <| LogChat user color text
+                                    Just name ->
+                                        model.game.players
+                                            |> List.filter (\p -> p.name == name)
+                                            |> List.head
+                                            |> Maybe.map .color
+                                            |> Maybe.withDefault Land.Black
+                        in
+                            updateChatLog model <| LogChat user color text
 
-            Backend.Types.Update status ->
-                updateTableStatus model status
+                    Backend.Types.Update status ->
+                        updateTableStatus model status
 
-            Backend.Types.Roll roll ->
-                let
-                    ( firstModel, chatCmd ) =
-                        updateChatLog model <|
-                            Game.Types.LogRoll <|
-                                Backend.toRollLog model roll
+                    Backend.Types.Roll roll ->
+                        let
+                            ( firstModel, chatCmd ) =
+                                updateChatLog model <|
+                                    Game.Types.LogRoll <|
+                                        Backend.toRollLog model roll
 
-                    ( secondModel, gameCmd ) =
-                        showRoll firstModel roll
-                in
-                    ( secondModel, Cmd.batch [ gameCmd, chatCmd ] )
+                            ( secondModel, gameCmd ) =
+                                showRoll firstModel roll
+                        in
+                            ( secondModel, Cmd.batch [ gameCmd, chatCmd ] )
 
-            Backend.Types.Move move ->
-                let
-                    game =
-                        model.game
+                    Backend.Types.Move move ->
+                        let
+                            game =
+                                model.game
 
-                    board =
-                        game.board
+                            board =
+                                game.board
 
-                    findLand =
-                        \emoji -> find (.emoji >> (==) emoji)
+                            findLand =
+                                \emoji -> find (.emoji >> (==) emoji)
 
-                    newMove =
-                        case findLand move.from board.map.lands of
-                            Nothing ->
-                                Nothing
-
-                            Just fromLand ->
-                                case findLand move.to board.map.lands of
+                            newMove =
+                                case findLand move.from board.map.lands of
                                     Nothing ->
                                         Nothing
 
-                                    Just toLand ->
-                                        Just <| Board.Types.FromTo fromLand toLand
-                in
-                    case newMove of
-                        Nothing ->
-                            ( model, Cmd.none )
+                                    Just fromLand ->
+                                        case findLand move.to board.map.lands of
+                                            Nothing ->
+                                                Nothing
 
-                        Just move_ ->
-                            ( { model
-                                | game =
-                                    { game
-                                        | board =
-                                            { board
-                                                | move = move_
+                                            Just toLand ->
+                                                Just <| Board.Types.FromTo fromLand toLand
+                        in
+                            case newMove of
+                                Nothing ->
+                                    ( model, Cmd.none )
+
+                                Just move_ ->
+                                    ( { model
+                                        | game =
+                                            { game
+                                                | board =
+                                                    { board
+                                                        | move = move_
+                                                    }
                                             }
-                                    }
-                              }
-                            , Cmd.none
-                            )
+                                      }
+                                    , Cmd.none
+                                    )
 
-            Backend.Types.Elimination elimination ->
-                updateChatLog model <|
-                    Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
-    else
-        ( model
-        , Cmd.none
-        )
+                    Backend.Types.Elimination elimination ->
+                        updateChatLog model <|
+                            Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
+            else
+                ( model
+                , Cmd.none
+                )
+
+        Nothing ->
+            ( model, Cmd.none )
 
 
 updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
 updateChatLog model entry =
-    let
-        game =
-            model.game
+    case model.game.table of
+        Nothing ->
+            ( model, Cmd.none )
 
-        addToChatLog =
-            { model | game = { game | chatLog = List.append game.chatLog [ entry ] } }
+        Just table ->
+            case entry of
+                LogJoin _ ->
+                    updateChat model model.game table entry
 
-        addToGameLog =
-            { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }
-    in
-        case entry of
-            LogJoin _ ->
-                ( addToChatLog, scrollElement <| "chatLog-" ++ model.game.table )
+                LogLeave _ ->
+                    updateChat model model.game table entry
 
-            LogLeave _ ->
-                ( addToChatLog, scrollElement <| "chatLog-" ++ model.game.table )
+                LogChat _ _ _ ->
+                    updateChat model model.game table entry
 
-            LogChat _ _ _ ->
-                ( addToChatLog, scrollElement <| "chatLog-" ++ model.game.table )
+                _ ->
+                    updateLog model model.game table entry
 
-            _ ->
-                ( addToGameLog, scrollElement <| "gameLog-" ++ model.game.table )
+
+updateChat : Types.Model -> Game.Types.Model -> Table -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
+updateChat model game table entry =
+    ( { model | game = { game | chatLog = List.append game.chatLog [ entry ] } }, scrollElement <| "chatLog-" ++ table )
+
+
+updateLog : Types.Model -> Game.Types.Model -> Table -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
+updateLog model game table entry =
+    ( { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }, scrollElement <| "gameLog-" ++ table )
 
 
 port scrollElement : String -> Cmd msg

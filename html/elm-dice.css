@@ -112,23 +112,11 @@ body.navigator-standalone textarea {
   flex-direction: column;
 }
 .edGameHeader {
-  box-shadow: 0 -10px 10px black;
-  color: #fff;
 }
 .edGameHeader__content {
-  height: 38px;
-  padding-top: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-left: 48px;
-  background: #ff3c58;
-}
-.edGameHeader__decoration {
-  height: 10px;
-  background: url('board_header.svg');
-  background-repeat: repeat-x;
-  background-position: left bottom;
 }
 .edGameHeader__tableStatus {
 }
@@ -188,29 +176,45 @@ body.navigator-standalone textarea {
   flex-direction: row;
   justify-content: flex-start;
   flex-wrap: wrap;
+  flex-grow: 2;
 }
 .edPlayerChip {
-  width: 70px;
-  margin-right: 4px;
-  margin-bottom: 5px;
   background: #fff;
   transition: transform 0.25s ease;
+  display: flex;
+  align-items: stretch;
+  flex: 1 1;
+  width: auto;
+  background: transparent;
+  box-shadow: none;
+  margin: 4px;
+}
+.edPlayerChip__info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #ffffff;
+  flex: 1 1;
 }
 .edPlayerChip__progress {
   height: 2px;
   background-color: darkred;
 }
 .edPlayerChip__picture {
-  /*max-width: 70px;*/
-  /*max-height: 70px;*/
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
   position: relative;
+  background: #ffffff;
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
 }
 .edPlayerChip__picture__image {
   position: absolute;
-  top: 5px;
-  left: 5px;
-  bottom: 5px;
-  right: 5px;
+  top: 3px;
+  left: 3px;
+  bottom: 3px;
+  right: 3px;
   border: none;
   border-radius: 50%;
   white-space: nowrap;
@@ -224,12 +228,14 @@ body.navigator-standalone textarea {
   justify-content: center;
 }
 .edPlayerChip__name {
-  width: 100%;
-  height: 20px;
-  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: auto;
+  flex-shrink: 1000;
+  height: auto;
+  padding: 0 2px;
+  font-size: 0.85rem;
 }
 
 .edPlayerChip__name:hover {
@@ -240,11 +246,15 @@ body.navigator-standalone textarea {
 }
 .edPlayerChip__gameStats {
   display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: no-wrap;
   align-items: flex-start;
   padding: 0 4px;
+  font-size: 0.55rem;
+  background: #ffffff;
+}
+.edPlayerChip__gameStats > * {
+  margin-right: 4px;
 }
 .edPlayerChip_clock {
 }
@@ -262,6 +272,17 @@ body.navigator-standalone textarea {
 .edPlayerChip--turn {
   transform: translateY(-10px);
 }
+
+.edGameHeader .edPlayerChip {
+  max-width: 25%;
+}
+
+.edGameBoardFooter .edPlayerChip {
+  max-width: 30%;
+}
+
+
+
 
 
 .edGameList {
@@ -445,6 +466,7 @@ body.navigator-standalone textarea {
   width: 100%;
   background: #fff;
   margin-bottom: 5px;
+  font-size: 0.75rem;
 }
 .edGameTable th {
   text-align: left;
@@ -579,37 +601,14 @@ body.navigator-standalone textarea {
     /*flex-grow: 2;*/
   /*}*/
 
-  .edGameBoardFooter .edPlayerChips {
-    flex-grow: 2;
-  }
-  .edGameBoardFooter .edPlayerChip {
-    display: flex;
-    align-items: center;
-    width: auto;
-    background: transparent;
-    box-shadow: none;
-    margin: 0;
-    max-width: 50%;
-  }
-  .edGameBoardFooter .edPlayerChip__picture {
-    width: 35px;
-    height: 35px;
-  }
-  .edGameBoardFooter .edPlayerChip .edPlayerChip__name {
-    width: auto;
-    flex-shrink: 1000;
-    margin-bottom: 0;
-    height: auto;
-    padding: 0 2px;
-  }
 }
-@media screen and (min-width: 851px) {
-  .edGameBoardFooter .edPlayerChips {
-    display: none;
-  }
-}
-@media screen and (orientation: portrait) {
-  .edGameBoardFooter .edPlayerChips {
-    display: none;
-  }
-}
+/*@media screen and (min-width: 851px) {*/
+  /*.edGameBoardFooter .edPlayerChips {*/
+    /*display: none;*/
+  /*}*/
+/*}*/
+/*@media screen and (orientation: portrait) {*/
+  /*.edGameBoardFooter .edPlayerChips {*/
+    /*display: none;*/
+  /*}*/
+/*}*/

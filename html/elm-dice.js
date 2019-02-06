@@ -43,11 +43,11 @@ setTimeout(function() {
     };
     window.dialogPolyfill = require('dialog-polyfill');
 
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== 'lvh.me') {
-      ga = require('ga-lite');
-      ga('create', 'UA-111861514-1', 'auto');
-      ga('send', 'pageview');
-    }
+    //if (window.location.hostname !== 'localhost' && window.location.hostname !== 'lvh.me') {
+      //ga = require('ga-lite');
+      //ga('create', 'UA-111861514-1', 'auto');
+      //ga('send', 'pageview');
+    //}
   });
 
 
@@ -121,9 +121,10 @@ setTimeout(function() {
 
     mqtt.onmessage = function(action) {
       if (!app.ports[action.type]) {
-        console.log('no port', action);
+        console.error('no port', action);
+      } else {
+        app.ports[action.type].send(action.payload);
       }
-      app.ports[action.type].send(action.payload);
     };
     mqtt.connect(location.href);
     app.ports.mqttSubscribe.subscribe(mqtt.subscribe);

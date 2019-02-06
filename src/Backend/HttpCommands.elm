@@ -9,6 +9,7 @@ import Http
 import Land exposing (Color(..))
 import Snackbar exposing (toastCmd)
 import Types exposing (Msg(..))
+import Tables exposing (Table)
 
 
 loadGlobalSettings : Model -> Cmd Msg
@@ -18,8 +19,8 @@ loadGlobalSettings model =
             globalDecoder
 
 
-authenticate : Model -> String -> Bool -> Cmd Msg
-authenticate model code doJoin =
+authenticate : Model -> String -> Maybe Table -> Cmd Msg
+authenticate model code table =
     let
         request =
             Http.post (model.baseUrl ++ "/login")
@@ -27,7 +28,7 @@ authenticate model code doJoin =
             <|
                 tokenDecoder
     in
-        Http.send (GetToken doJoin) request
+        Http.send (GetToken table) request
 
 
 loadMe : Model -> Cmd Msg

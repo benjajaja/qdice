@@ -27,9 +27,9 @@ type Msg
       -- oauth
     | Nop
     | GetGlobalSettings (Result Http.Error ( GlobalSettings, List TableInfo ))
-    | Authorize Bool
-    | Authenticate String Bool
-    | GetToken Bool (Result Http.Error String)
+    | Authorize AuthState
+    | Authenticate String AuthState
+    | GetToken AuthState (Result Http.Error String)
     | GetProfile (Result Http.Error ( LoggedUser, String ))
     | GetLeaderBoard (Result Http.Error ( String, List Profile ))
     | Logout
@@ -54,6 +54,10 @@ type Msg
     | TableMsg Table Backend.Types.TableMessage
     | UnknownTopicMessage String String String
     | SetLastHeartbeat Time.Posix
+
+
+type alias AuthState =
+    Maybe Table
 
 
 type StaticPage

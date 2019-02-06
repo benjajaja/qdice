@@ -82,7 +82,8 @@ var postMessage = function(message) {
 module.exports.subscribe = function(payload) {
   client.subscribe(payload, function(err, granted) {
     if (err) throw err;
-    postMessage({ type: 'mqttOnSubscribed', payload: granted.shift().topic});
+    postMessage({ type: 'mqttOnSubscribed', payload: granted[0].topic});
+    //console.log('sub', granted[0].topic);
   });
 };
 

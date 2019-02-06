@@ -26,7 +26,7 @@ type PlayerAction
 
 
 type alias Model =
-    { table : Table
+    { table : Maybe Table
     , board : Board.Model
     , players : List Player
     , player : Maybe Player

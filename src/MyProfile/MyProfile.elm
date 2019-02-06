@@ -78,7 +78,7 @@ update model msg =
                                         }
                             in
                                 ( model
-                                , Http.send (Types.GetToken False) request
+                                , Http.send (Types.GetToken Nothing) request
                                 )
 
                         Types.Anonymous ->

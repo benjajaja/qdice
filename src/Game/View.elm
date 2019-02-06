@@ -28,13 +28,13 @@ view model =
             [ div [ class "edMainScreen" ]
                 [ div [ class "edGameBoardWrapper" ]
                     [ tableInfo model
+                    , header model
                     , board
                     , sitInModal model
                     , boardFooter model
                     ]
                 , div [ class "edGame__meta" ]
-                    [ div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view False model) model.game.players
-                    , gameChat model
+                    [ gameChat model
                     ]
                 , div [ class "edGame__meta2" ]
                     [ gameLogOverlay model
@@ -49,11 +49,11 @@ header : Model -> Html.Html Types.Msg
 header model =
     div [ class "edGameHeader" ]
         [ div [ class "edGameHeader__content" ]
-            [ text <| model.game.table
-              --, endTurnButton model
-            , seatButton model
+            [ div [ class "edPlayerChips" ] <|
+                List.indexedMap (PlayerCard.view model) <|
+                    List.take 3 <|
+                        model.game.players
             ]
-        , div [ class "edGameHeader__decoration" ] []
         ]
 
 
@@ -61,8 +61,11 @@ boardFooter : Model -> Html.Html Types.Msg
 boardFooter model =
     div [ class "edGameBoardFooter" ]
         [ div [ class "edGameBoardFooter__content" ]
-            [ div [ class "edPlayerChips" ] <| List.indexedMap (PlayerCard.view True model) model.game.players
-              --, endTurnButton model
+            [ div [ class "edPlayerChips" ] <|
+                List.indexedMap (PlayerCard.view model) <|
+                    List.take 3 <|
+                        List.drop 3 <|
+                            model.game.players
             , seatButton model
             ]
         ]
@@ -120,7 +123,7 @@ gameLogOverlay model =
         model.game.gameLog
     <|
         "gameLog-"
-            ++ model.game.table
+            ++ (Maybe.withDefault "NOTABLE" model.game.table)
 
 
 gameChat : Model -> Html.Html Types.Msg
@@ -133,7 +136,7 @@ gameChat model =
             model.game.chatLog
           <|
             "chatLog-"
-                ++ model.game.table
+                ++ (Maybe.withDefault "NOTABLE" model.game.table)
         ]
 
 
@@ -181,35 +184,40 @@ sitInModal model =
 
 tableInfo : Model -> Html Types.Msg
 tableInfo model =
-    div [ class "edGameStatus" ]
-        [ span [ class "edGameStatus__chip" ]
-            [ text "Table "
-            , span [ class "edGameStatus__chip--strong" ]
-                [ text <| model.game.table
-                ]
-            ]
-        , span [ class "edGameStatus__chip" ] <|
-            List.append
-                [ text ", "
-                , span [ class "edGameStatus__chip--strong" ]
-                    [ text <|
-                        if model.game.playerSlots == 0 then
-                            "∅"
-                        else
-                            String.fromInt model.game.playerSlots
-                    ]
-                , text " player game is "
-                , span [ class "edGameStatus__chip--strong" ]
-                    [ text <| statusToString model.game.status ]
-                ]
-                (case model.game.gameStart of
-                    Nothing ->
-                        [ text <| " round " ++ String.fromInt model.game.roundCount ]
-
-                    Just timestamp ->
-                        [ text " starting in "
-                        , span [ class "edGameStatus__chip--strong" ]
-                            [ text <| String.fromInt (round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) ++ "s" ]
+    div [ class "edGameStatus" ] <|
+        case model.game.table of
+            Just table ->
+                [ span [ class "edGameStatus__chip" ]
+                    [ text "Table "
+                    , span [ class "edGameStatus__chip--strong" ]
+                        [ text <| table
                         ]
-                )
-        ]
+                    ]
+                , span [ class "edGameStatus__chip" ] <|
+                    List.append
+                        [ text ", "
+                        , span [ class "edGameStatus__chip--strong" ]
+                            [ text <|
+                                if model.game.playerSlots == 0 then
+                                    "∅"
+                                else
+                                    String.fromInt model.game.playerSlots
+                            ]
+                        , text " player game is "
+                        , span [ class "edGameStatus__chip--strong" ]
+                            [ text <| statusToString model.game.status ]
+                        ]
+                        (case model.game.gameStart of
+                            Nothing ->
+                                [ text <| " round " ++ String.fromInt model.game.roundCount ]
+
+                            Just timestamp ->
+                                [ text " starting in "
+                                , span [ class "edGameStatus__chip--strong" ]
+                                    [ text <| String.fromInt (round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) ++ "s" ]
+                                ]
+                        )
+                ]
+
+            Nothing ->
+                []

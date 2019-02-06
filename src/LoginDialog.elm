@@ -41,10 +41,10 @@ body model =
                     Authorize <|
                         case model.showLoginDialog of
                             LoginShowJoin ->
-                                True
+                                model.game.table
 
                             _ ->
-                                False
+                                Nothing
                 , Button.raised
                   --, Button.colored
                 , Button.ripple
@@ -120,5 +120,5 @@ login model name =
                 }
     in
         ( { model | showLoginDialog = LoginHide }
-        , Http.send (Types.GetToken True) request
+        , Http.send (Types.GetToken model.game.table) request
         )

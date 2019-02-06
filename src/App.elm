@@ -65,13 +65,13 @@ init flags location key =
             Routing.parseLocation location
 
         table =
-            Maybe.withDefault "" <| currentTable route
+            currentTable route
 
         ( game, gameCmd ) =
             Game.State.init Nothing table Nothing
 
         ( backend, backendCmd ) =
-            Backend.init location table flags.isTelegram
+            Backend.init location flags.isTelegram
 
         ( oauth, oauthCmds ) =
             MyOauth.init key location
@@ -188,7 +188,7 @@ update msg model =
                                         , Cmd.none
                                         )
 
-        GetToken doJoin res ->
+        GetToken table res ->
             case res of
                 Err err ->
                     let
@@ -215,10 +215,7 @@ update msg model =
                         , Cmd.batch
                             [ auth [ token ]
                             , loadMe backend_
-                            , if doJoin then
-                                gameCommand model_.backend model_.game.table Game.Types.Join
-                              else
-                                Cmd.none
+                            , gameCommand model_.backend model.game.table Game.Types.Join
                             ]
                         )
 
@@ -254,8 +251,8 @@ update msg model =
                 , Cmd.none
                 )
 
-        Authorize doJoin ->
-            ( model, MyOauth.authorize model.oauth doJoin )
+        Authorize table ->
+            ( model, MyOauth.authorize model.oauth table )
 
         LoadToken token ->
             let
@@ -269,10 +266,10 @@ update msg model =
                 , Cmd.batch [ loadMe backend_, ga [ "send", "event", "auth", "LoadToken" ] ]
                 )
 
-        Authenticate code doJoin ->
+        Authenticate code table ->
             ( model
             , Cmd.batch
-                [ authenticate model.backend code doJoin
+                [ authenticate model.backend code table
                 , ga [ "send", "event", "auth", "Authenticate" ]
                 ]
             )

@@ -7,7 +7,7 @@ import Color.Convert
 import Color.Interpolate
 import Color.Manipulate
 import Game.Types exposing (Player)
-import Html
+import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Material
 import Material.Chip as Chip
@@ -20,12 +20,13 @@ import Time exposing (posixToMillis)
 import Types exposing (Model, Msg(..))
 
 
-view : Bool -> Model -> Int -> Player -> Html.Html Types.Msg
-view isSmall model index player =
-    let
-        basicItems =
-            [ playerImageProgress model index player
-            , Html.div
+view : Model -> Int -> Player -> Html.Html Types.Msg
+view model index player =
+    playerContainer player
+        (index == model.game.turnIndex)
+        [ playerImageProgress model index player
+        , div [ class "edPlayerChip__info" ]
+            [ div
                 [ class "edPlayerChip__name"
                 , style "background-color" <| Board.Colors.baseCssRgb player.color
                 , style "color" <|
@@ -35,66 +36,51 @@ view isSmall model index player =
                         |> Color.Convert.colorToCssRgb
                     )
                 ]
-                [ Html.text player.name ]
-            ]
-
-        allItems =
-            if isSmall then
-                basicItems
-            else
-                List.append
-                    basicItems
-                    [ Html.div [ class "edPlayerChip__gameStats" ]
-                        [ Html.div [ class "edPlayerChip__gameStats__item" ]
-                            [ Html.text <| "✪ " ++ String.fromInt player.points ]
-                        , Html.div [ class "edPlayerChip__gameStats__item--strong" ]
-                            [ Html.text <|
-                                if player.gameStats.position == 2 then
-                                    "Pole"
-                                else
-                                    ordinal player.gameStats.position
-                            ]
-                        , Html.div [ class "edPlayerChip__gameStats__item" ]
-                            [ case player.flag of
-                                Nothing ->
-                                    Html.text ""
-
-                                Just pos ->
-                                    Html.text <| "⚑ " ++ ordinal pos
-                            ]
-                        , Html.div [ class "edPlayerChip__gameStats__item" ]
-                            [ Html.text <| "⬢ " ++ String.fromInt player.gameStats.totalLands ]
-                        , Html.div [ class "edPlayerChip__gameStats__item" ]
-                            [ Html.text <|
-                                ("⚂ "
-                                    ++ String.fromInt player.gameStats.currentDice
-                                    ++ (if player.reserveDice > 0 then
-                                            " + " ++ String.fromInt player.reserveDice
-                                        else
-                                            ""
-                                       )
-                                )
-                            ]
-                        , Html.div [ class "edPlayerChip__gameStats__item" ]
-                            [ Html.text <|
-                                (if player.gameStats.score >= 0 then
-                                    "✪+"
-                                 else
-                                    "✪"
-                                )
-                                    ++ String.fromInt player.gameStats.score
-                            ]
-                        ]
+                [ text player.name ]
+            , div [ class "edPlayerChip__gameStats" ]
+                [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+                    [ Html.text <|
+                        if player.gameStats.position == 2 then
+                            "Pole"
+                        else
+                            ordinal player.gameStats.position
                     ]
-    in
-        playerContainer player
-            (index == model.game.turnIndex)
-            allItems
+                , Html.div [ class "edPlayerChip__gameStats__item" ]
+                    [ Html.text <| "⬢ " ++ String.fromInt player.gameStats.totalLands ]
+                , Html.div [ class "edPlayerChip__gameStats__item" ]
+                    [ Html.text <|
+                        ("⚂ "
+                            ++ String.fromInt player.gameStats.currentDice
+                            ++ (if player.reserveDice > 0 then
+                                    " + " ++ String.fromInt player.reserveDice
+                                else
+                                    ""
+                               )
+                        )
+                    ]
+                ]
+            ]
+        ]
+
+
+
+--[ Html.div [ class "edPlayerChip__gameStats__item" ]
+--[ Html.text <| "✪ " ++ String.fromInt player.points ]
+--, Html.div [ class "edPlayerChip__gameStats__item" ]
+--[ Html.text <|
+--(if player.gameStats.score >= 0 then
+--"✪+"
+--else
+--"✪"
+--)
+--++ String.fromInt player.gameStats.score
+--]
+--]
 
 
 playerContainer player hasTurn =
-    Options.styled Html.div
-        [ Options.cs <|
+    div
+        [ class <|
             String.join " " <|
                 List.concat
                     [ [ "edPlayerChip" ]
@@ -107,10 +93,10 @@ playerContainer player hasTurn =
                       else
                         []
                     ]
-        , if hasTurn then
-            Elevation.z6
-          else
-            Elevation.z2
+          --, if hasTurn then
+          --Elevation.z6
+          --else
+          --Elevation.z2
         ]
 
 

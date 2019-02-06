@@ -43,21 +43,12 @@ init key url =
                 ( oauth, [] )
 
             Success { code, state } ->
-                let
-                    doJoin =
-                        case Maybe.withDefault "" state of
-                            "join" ->
-                                True
-
-                            _ ->
-                                False
-                in
-                    ( oauth
-                    , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri
-                      , Task.perform (always <| Authenticate code doJoin) (Task.succeed ())
-                        --Task.perform (always <| Types.GameCmd Game.Types.Join) (Task.succeed ())
-                      ]
-                    )
+                ( oauth
+                , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri
+                  , Task.perform (always <| Authenticate code state) (Task.succeed ())
+                    --Task.perform (always <| Types.GameCmd Game.Types.Join) (Task.succeed ())
+                  ]
+                )
 
             Error { error, errorDescription, errorUri, state } ->
                 ( { oauth | error = Just <| Maybe.withDefault "Unknown" errorDescription }
@@ -65,8 +56,8 @@ init key url =
                 )
 
 
-authorize : MyOAuthModel -> Bool -> Cmd Msg
-authorize model doJoin =
+authorize : MyOAuthModel -> Maybe String -> Cmd Msg
+authorize model state =
     let
         authorization : OAuth.AuthorizationCode.Authorization
         authorization =
@@ -74,13 +65,7 @@ authorize model doJoin =
             , url = authorizationEndpoint
             , redirectUri = model.redirectUri
             , scope = [ "email", "profile" ]
-            , state =
-                case doJoin of
-                    True ->
-                        Just "join"
-
-                    False ->
-                        Nothing
+            , state = state
             }
     in
         Browser.Navigation.load <|

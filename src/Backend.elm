@@ -68,8 +68,8 @@ baseUrl location =
             protocol ++ "://" ++ "api.qdice.wtf"
 
 
-init : Url -> Table -> Bool -> ( Model, Cmd Msg )
-init location table isTelegram =
+init : Url -> Bool -> ( Model, Cmd Msg )
+init location isTelegram =
     ( { baseUrl = baseUrl location
       , jwt = Nothing
       , clientId = Nothing
@@ -125,23 +125,35 @@ updateSubscribed model topic =
                         topic
             in
                 if hasSubscribedGeneral then
-                    subscribeGameTable model_ model_.game.table
+                    case model_.game.table of
+                        Just table ->
+                            subscribeGameTable model_ table
+
+                        Nothing ->
+                            ( model_, Cmd.none )
                 else
                     case topic of
                         Tables table direction ->
-                            if table /= model_.game.table then
-                                ( model_
-                                , consoleDebug "subscribed to another table"
-                                )
-                            else if hasSubscribedTable subscribed table then
-                                ( setStatus Online model_
-                                , --publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
-                                  enter model.backend model_.game.table
-                                )
-                            else
-                                ( model_
-                                , Cmd.none
-                                )
+                            case model_.game.table of
+                                Nothing ->
+                                    ( model_
+                                    , consoleDebug "subscribed to table but not in table"
+                                    )
+
+                                Just gameTable ->
+                                    if table /= gameTable then
+                                        ( model_
+                                        , consoleDebug "subscribed to another table"
+                                        )
+                                    else if hasSubscribedTable subscribed table then
+                                        ( setStatus Online model_
+                                        , --publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
+                                          enter model_.backend gameTable
+                                        )
+                                    else
+                                        ( model_
+                                        , Cmd.none
+                                        )
 
                         _ ->
                             ( model_
@@ -151,20 +163,14 @@ updateSubscribed model topic =
 
 subscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
 subscribeGameTable model table =
-    let
-        debugSubs =
-            if hasSubscribedTable model.backend.subscribed table then
-                [ consoleDebug <| "already subscribed, subscribing again: " ++ model.game.table ]
-            else
-                []
-    in
+    if hasSubscribedTable model.backend.subscribed table then
+        ( model, consoleDebug "ignoring already subbed" )
+    else
         ( setStatus SubscribingTable model
         , Cmd.batch <|
-            List.append
-                debugSubs
-                [ subscribe <| Tables model.game.table ClientDirection
-                , subscribe <| Tables model.game.table Broadcast
-                ]
+            [ subscribe <| Tables table ClientDirection
+            , subscribe <| Tables table Broadcast
+            ]
         )
 
 
@@ -216,7 +222,7 @@ subscriptions model =
         , mqttOnConnected Connected
         , mqttOnSubscribed <| decodeSubscribed model.backend.clientId
           --, mqttOnUnSubscribed <| decodeSubscribed model.backend.clientId
-        , mqttOnMessage <| decodeMessage model.backend.clientId <| Just model.game.table
+        , mqttOnMessage <| decodeMessage model.backend.clientId <| model.game.table
         , onToken LoadToken
         ]
 

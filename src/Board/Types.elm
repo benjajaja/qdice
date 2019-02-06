@@ -74,7 +74,7 @@ getLayout map =
             String.fromInt widthScale
 
         sHeight =
-            cellHeight * toFloat mapHeight * 0.6 |> String.fromFloat
+            cellHeight * toFloat mapHeight * 0.75 |> String.fromFloat
     in
         ( Layout ( cellWidth / sqrt 3, cellWidth * heightScale / 2 ) padding
         , sWidth

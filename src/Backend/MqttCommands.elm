@@ -37,9 +37,14 @@ publish jwt clientId table action =
             toastCmd "Command error: not connected" "attempted publish without clientId"
 
 
-gameCommand : Model -> Table -> PlayerAction -> Cmd Msg
+gameCommand : Model -> Maybe Table -> PlayerAction -> Cmd Msg
 gameCommand model table playerAction =
-    publish model.jwt model.clientId table playerAction
+    case table of
+        Just t ->
+            publish model.jwt model.clientId t playerAction
+
+        Nothing ->
+            Cmd.none
 
 
 enter : Model -> Table -> Cmd Msg
