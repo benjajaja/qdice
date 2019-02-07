@@ -1,6 +1,6 @@
 {
-  "short_name": "¡Qué Dice!",
-  "name": "¡Qué Dice! - dice game",
+  "short_name": "Qdice",
+  "name": "Qdice.wtf",
   "start-url": "/?homescreen=1",
   "icons": [
       {
@@ -14,8 +14,8 @@
           "type": "image/png"
       }
   ],
-  "theme_color": "#edfcff",
-  "background_color": "#edfcff",
+  "theme_color": "#38d6ff",
+  "background_color": "#38d6ff",
   "display": "fullscreen",
   "orientation": "landscape-primary"
 }

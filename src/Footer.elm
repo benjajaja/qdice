@@ -8,7 +8,6 @@ import Material.Menu as Menu
 import Material.Options
 import Types exposing (Model, Msg(..), Route(..), StaticPage(..), User(..))
 
-
 footer : Model -> Html.Html Msg
 footer model =
     div [ class "edFooter" ]

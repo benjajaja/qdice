@@ -22,9 +22,6 @@ import LeaderBoard.State
 import LeaderBoard.View
 import LoginDialog exposing (login, loginDialog)
 import Material
-import Material.Icon as Icon
-import Material.Menu as Menu
-import Material.Options
 import Material.Snackbar as MSnackbar
 import Maybe
 import MyOauth
