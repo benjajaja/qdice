@@ -2,9 +2,6 @@ module LeaderBoard.View exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (align)
-import Material
-import Material.Icon as Icon
-import Material.Options as Options
 import Types exposing (..)
 
 

@@ -4,12 +4,9 @@ import Backend.Decoding exposing (tokenDecoder)
 import Backend.Encoding exposing (profileEncoder)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onSubmit)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Html.Keyed
 import Http
-import Material.Button as Button
-import Material.Options as Options
-import Material.Textfield as Textfield
 import Types exposing (..)
 
 
@@ -34,10 +31,8 @@ body model =
             [ class "edLoginDialog__social" ]
             [ div []
                 [ text "One-click sign-in:" ]
-            , Button.view Mdl
-                "button-login-social"
-                model.mdc
-                [ Options.onClick <|
+            , button
+                [ onClick <|
                     Authorize <|
                         case model.showLoginDialog of
                             LoginShowJoin ->
@@ -45,10 +40,7 @@ body model =
 
                             _ ->
                                 Nothing
-                , Button.raised
-                  --, Button.colored
-                , Button.ripple
-                , Options.cs "edLoginSocial edLoginSocial--google"
+                , class "edLoginSocial edLoginSocial--google"
                 ]
                 [ img [ src "assets/social_icons/google.svg" ] []
                 , text "Sign in with Google"
@@ -58,36 +50,30 @@ body model =
             [ div []
                 [ text "... or just play for now:" ]
             , Html.form [ onSubmit <| Login model.loginName ]
-                [ Textfield.view Mdl
-                    "input-login-name"
-                    model.mdc
-                    [ Textfield.label "Name"
-                      --, Textfield.floatingLabel
-                    , Textfield.type_ "text"
-                    , Textfield.value model.loginName
-                    , Options.onInput SetLoginName
-                    , Options.cs "edLoginDialog__name"
-                      --, Textfield.maxlength model.settings.maxNameLength
+                [ label []
+                    [ text "Name"
+                    , input
+                        [ type_ "text"
+                        , value model.loginName
+                        , onInput SetLoginName
+                        , class "edLoginDialog__name"
+                        ]
+                        []
                     ]
-                    []
                 ]
             ]
         , div [ class "edLoginDialog__buttons" ]
-            [ Button.view Mdl
-                "button-login-close"
-                model.mdc
-                [ Options.onClick <| ShowLogin LoginHide ]
+            [ button
+                [ onClick <| ShowLogin LoginHide ]
                 [ text "Close" ]
-            , Button.view Mdl
-                "button-login"
-                model.mdc
+            , button
                 (List.append
                     (if model.loginName == "" then
-                        [ Button.disabled ]
+                        [ disabled True ]
                      else
                         []
                     )
-                    [ Options.onClick <| Login model.loginName ]
+                    [ onClick <| Login model.loginName ]
                 )
                 [ text "Play" ]
             ]

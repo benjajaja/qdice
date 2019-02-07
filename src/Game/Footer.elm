@@ -4,12 +4,6 @@ import Game.Types exposing (TableInfo, statusToString)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
-import Material
-import Material.Button as Button
-import Material.Elevation as Elevation
-import Material.Icon as Icon
-import Material.List as Lists
-import Material.Options as Options
 import Types exposing (Model, Msg(..))
 
 
@@ -56,7 +50,6 @@ tableOfTables model =
                             , td [] [ text <| statusToString table.status ]
                             , td [] [ text <| String.fromInt table.landCount ]
                             , td [] [ text <| String.fromInt table.stackSize ]
-                              --, td [] [ Icon.i "chevron_right" ]
                             ]
                 )
                 model.tableList

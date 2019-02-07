@@ -3,10 +3,9 @@ module Footer exposing (footer)
 import Backend.Types exposing (ConnectionStatus(..))
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
-import Material.Icon as Icon
-import Material.Menu as Menu
-import Material.Options
+import Icon
 import Types exposing (Model, Msg(..), Route(..), StaticPage(..), User(..))
+
 
 footer : Model -> Html.Html Msg
 footer model =
@@ -65,6 +64,6 @@ statusMessage status =
                     "network_wifi"
     in
         Html.div [ Html.Attributes.class "edGameStatus" ]
-            [ Html.div [] [ Icon.view [] icon ]
+            [ Html.div [] [ Icon.icon icon ]
             , Html.div [] [ Html.text message ]
             ]

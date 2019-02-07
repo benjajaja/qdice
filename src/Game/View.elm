@@ -119,7 +119,6 @@ endTurnButton model =
 gameLogOverlay : Model -> Html.Html Types.Msg
 gameLogOverlay model =
     Game.Chat.gameBox
-        model.mdc
         model.game.gameLog
     <|
         "gameLog-"
@@ -132,7 +131,6 @@ gameChat model =
         [ Game.Chat.chatBox
             model.game.chatInput
             (List.map .color model.game.players)
-            model.mdc
             model.game.chatLog
           <|
             "chatLog-"

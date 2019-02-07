@@ -9,10 +9,6 @@ import Color.Manipulate
 import Game.Types exposing (Player)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
-import Material
-import Material.Chip as Chip
-import Material.Elevation as Elevation
-import Material.Options as Options
 import Ordinal exposing (ordinal)
 import Svg
 import Svg.Attributes

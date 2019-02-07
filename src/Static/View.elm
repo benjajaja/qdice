@@ -2,8 +2,6 @@ module Static.View exposing (view)
 
 import Html exposing (..)
 import Markdown
-import Material.Icon as Icon
-import Material.Options as Options
 import Static.Help
 import Types exposing (..)
 

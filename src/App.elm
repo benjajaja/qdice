@@ -21,8 +21,6 @@ import Http
 import LeaderBoard.State
 import LeaderBoard.View
 import LoginDialog exposing (login, loginDialog)
-import Material
-import Material.Snackbar as MSnackbar
 import Maybe
 import MyOauth
 import MyProfile.MyProfile
@@ -96,7 +94,6 @@ init flags location key =
         model =
             { route = route
             , key = key
-            , mdc = Material.defaultModel
             , oauth = oauth
             , game = game
             , myProfile = { name = Nothing }
@@ -348,24 +345,12 @@ update msg model =
                                     identity
                            )
 
-        Mdl mdlMsg ->
-            Material.update Mdl mdlMsg model
-
         ErrorToast message debugMessage ->
             let
-                contents =
-                    MSnackbar.toast Nothing message
-
-                ( mdc, effects ) =
-                    MSnackbar.add Mdl "my-snackbar" contents model.mdc
-
                 cmds =
-                    Cmd.batch
-                        [ effects
-                        , consoleDebug debugMessage
-                        ]
+                    Cmd.batch [ consoleDebug debugMessage ]
             in
-                ( { model | mdc = mdc }, cmds )
+                ( model, cmds )
 
         Animate animateMsg ->
             let
@@ -545,12 +530,6 @@ view model =
             [ mainView model
             ]
         , footer model
-        , MSnackbar.view
-            Mdl
-            "snackbar"
-            model.mdc
-            []
-            []
         ]
     }
 

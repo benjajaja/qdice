@@ -8,22 +8,16 @@ import Html.Events exposing (..)
 import Http exposing (Error(..))
 import Land exposing (Color)
 import Board.Colors exposing (colorName)
-import Material
-import Material.Button as Button
-import Material.Card as Card
-import Material.Elevation
-import Material.Icon as Icon
-import Material.Options as Options exposing (cs, css, id)
-import Material.Textfield as Textfield
+import Icon
 import Ordinal exposing (ordinal)
 import Tables exposing (Table)
 import Types exposing (Msg(..))
 
 
-chatBox : String -> List Color -> Material.Model Types.Msg -> List ChatLogEntry -> String -> Html Types.Msg
-chatBox inputValue colors mdl lines id =
-    Card.view [ cs "chatbox" ] <|
-        Card.media [ cs "chatbox--log", Options.id id ]
+chatBox : String -> List Color -> List ChatLogEntry -> String -> Html Types.Msg
+chatBox inputValue colors lines id_ =
+    div [ class "chatbox" ] <|
+        div [ class "chatbox--log", id id_ ]
             (List.map
                 (\c ->
                     case c of
@@ -51,34 +45,25 @@ chatBox inputValue colors mdl lines id =
                 lines
             )
             :: 
-                    [ Card.actions [ cs "chatbox--actions" ]
+                    [ div [ class "chatbox--actions" ]
                         [ Html.form [ onSubmit (SendChat inputValue), class "chatbox--actions-form" ]
-                            [ input mdl inputValue
-                            , Button.view
-                                Types.Mdl
-                                "button-chat"
-                                mdl
-                                --[ Button.primary
-                                --, Button.colored
-                                [ Button.ripple
-                                --, Button.type_ "submit"
-                                , cs "chatbox--actions-button"
+                            [ input inputValue
+                            , button
+                                [ type_ "submit"
+                                , class "chatbox--actions-button"
                                 ]
-                                [ Icon.view [] "keyboard_return" ]
+                                [ Icon.icon "keyboard_return" ]
                             ]
                         ]
                     ]
 
 
-input : Material.Model Types.Msg -> String -> Html Types.Msg
-input mdl value =
-    Textfield.view
-        Types.Mdl
-        "input-chat"
-        mdl
-        [ Options.onInput InputChat
-        , Textfield.value value
-        , cs "chatbox--actions-input"
+input : String -> Html Types.Msg
+input value_ =
+    textarea
+        [ onInput InputChat
+        , value value_
+        , class "chatbox--actions-input"
         ]
         []
 
@@ -105,10 +90,10 @@ toChatError table action err =
            )
 
 
-gameBox : Material.Model Types.Msg -> List ChatLogEntry -> String -> Html Types.Msg
-gameBox mdl lines id =
-    Card.view [ cs "gamelogContainer" ]
-        [ Card.media [ cs "gamelog", Options.id id ] <|
+gameBox : List ChatLogEntry -> String -> Html Types.Msg
+gameBox lines id_ =
+    div [ class "gamelogContainer" ]
+        [ div [ class "gamelog", id id_ ] <|
             List.map
                 (\c ->
                     case c of

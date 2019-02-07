@@ -1,4 +1,4 @@
-module Types exposing (GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), Mdl, MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, getUsername)
 
 import Animation
 import Backend.Types
@@ -6,7 +6,6 @@ import Board exposing (Msg)
 import Game.Types exposing (GameStatus, PlayerAction, TableInfo, TableStatus)
 import Http
 import Url exposing (Url)
-import Material
 import MyProfile.Types
 import OAuth
 import Tables exposing (Table)
@@ -20,7 +19,6 @@ type Msg
     | OnLocationChange Url
     | OnUrlRequest Browser.UrlRequest
     | Tick Time.Posix
-    | Mdl (Material.Msg Msg)
     | Animate Animation.Msg
     | MyProfileMsg MyProfile.Types.Msg
     | ErrorToast String String
@@ -79,7 +77,6 @@ type Route
 type alias Model =
     { route : Route
     , key : Key
-    , mdc : Material.Model Msg
     , oauth : MyOAuthModel
     , game : Game.Types.Model
     , myProfile : MyProfile.Types.Model
@@ -100,10 +97,6 @@ type alias Model =
             }
         }
     }
-
-
-type alias Mdl =
-    Material.Model Msg
 
 
 type User
