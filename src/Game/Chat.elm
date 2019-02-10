@@ -60,7 +60,7 @@ chatBox inputValue colors lines id_ =
 
 input : String -> Html Types.Msg
 input value_ =
-    textarea
+    Html.input
         [ onInput InputChat
         , value value_
         , class "chatbox--actions-input"

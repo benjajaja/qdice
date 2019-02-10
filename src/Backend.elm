@@ -11,6 +11,7 @@ import String
 import Tables exposing (Table)
 import Types exposing (Msg(..))
 import Time exposing (millisToPosix)
+import Task
 
 
 port onToken : (String -> msg) -> Sub msg
@@ -147,8 +148,8 @@ updateSubscribed model topic =
                                         )
                                     else if hasSubscribedTable subscribed table then
                                         ( setStatus Online model_
-                                        , --publish <| TableMsg table <| Backend.Types.Join <| Types.getUsername model_
-                                          enter model_.backend gameTable
+                                        , Task.succeed (EnterGame table)
+                                            |> Task.perform identity
                                         )
                                     else
                                         ( model_
@@ -221,7 +222,7 @@ subscriptions model =
         , mqttOnReconnect StatusReconnect
         , mqttOnConnected Connected
         , mqttOnSubscribed <| decodeSubscribed model.backend.clientId
-          --, mqttOnUnSubscribed <| decodeSubscribed model.backend.clientId
+        , mqttOnUnSubscribed <| decodeSubscribed model.backend.clientId
         , mqttOnMessage <| decodeMessage model.backend.clientId <| model.game.table
         , onToken LoadToken
         ]

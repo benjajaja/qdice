@@ -20,18 +20,19 @@ A dice game, written in [Elm](https://elm-lang.org). A simplified Risk, inspired
 
 Created by <ste3ls@gmail.com>.
 
-#### Roadmap:
-  * ✓ Leaderboard
-  * ✓ Show who's turn it is better
-  * ✓ Supermodal when you are out/away
-  * ✓ Flags
-  * ✓ Simple keyboard inside telegram
-  * x Attack animation
-  * x Heartbeat, remove player in game queue if not beating
-  * x Profile page
-  * x Save all board moves/events
-  * x Replay a game
-  * x Fix triple "X joined" message
-  * x Login with facebook
-  * x Login with github
+#### Roadmap 2019:
+  * ✓ Cleaner UI
+  * ✓ Landscape fullscreen mode in mobile
+  * ✓ Stateless server, recovers on errors
+  * ? Heartbeat, remove player in game queue if not beating
+  * ✓ Fix error toast
+  * ✗ Fix Account page, logout button
+  * ✗ Fullscreen tooltip
+  * ✗ Update table list
+  * ✗ Show "who's turn it is" better
+  * ✗ Attack animation
+  * ✗ Profile page
+  * ✗ Replay a game
+  * ✗ Login with facebook
+  * ✗ Login with github
 """

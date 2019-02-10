@@ -37,8 +37,7 @@ view model =
                     [ gameChat model
                     ]
                 , div [ class "edGame__meta2" ]
-                    [ gameLogOverlay model
-                    , userCard model.user
+                    [ gameLog model
                     ]
                 , Game.Footer.footer model
                 ]
@@ -51,7 +50,7 @@ header model =
         [ div [ class "edGameHeader__content" ]
             [ div [ class "edPlayerChips" ] <|
                 List.indexedMap (PlayerCard.view model) <|
-                    List.take 3 <|
+                    List.take 4 <|
                         model.game.players
             ]
         ]
@@ -63,8 +62,8 @@ boardFooter model =
         [ div [ class "edGameBoardFooter__content" ]
             [ div [ class "edPlayerChips" ] <|
                 List.indexedMap (PlayerCard.view model) <|
-                    List.take 3 <|
-                        List.drop 3 <|
+                    List.take 4 <|
+                        List.drop 4 <|
                             model.game.players
             , seatButton model
             ]
@@ -103,21 +102,11 @@ seatButton model =
                         Types.Logged user ->
                             ( "Join", onClick <| GameCmd Join )
     in
-        button [ class "edGameHeader__button", msg, disabled <| not canPlay ] [ text label ]
+        button [ class "edButton edGameHeader__button", msg, disabled <| not canPlay ] [ text label ]
 
 
-endTurnButton : Model -> Html.Html Types.Msg
-endTurnButton model =
-    button
-        [ class "edGameHeader__button"
-        , onClick <| GameCmd EndTurn
-        , disabled <| not model.game.hasTurn
-        ]
-        [ text "End turn" ]
-
-
-gameLogOverlay : Model -> Html.Html Types.Msg
-gameLogOverlay model =
+gameLog : Model -> Html.Html Types.Msg
+gameLog model =
     Game.Chat.gameBox
         model.game.gameLog
     <|

@@ -1,17 +1,22 @@
-module Snackbar exposing (toast, toastCmd)
+port module Snackbar exposing (toastError, toastMessage)
 
 import Task
-import Types
+import Types exposing (Msg)
 import Helpers exposing (consoleDebug)
+import Json.Encode as E
 
 
-toast : Types.Model -> String -> String -> ( Types.Model, Cmd Types.Msg )
-toast model message debug =
-    ( model, toastCmd message debug )
+toastError : String -> String -> Cmd Msg
+toastError message debug =
+    Cmd.batch
+        [ toast <| E.object [ ( "text", E.string message ) ]
+        , consoleDebug debug
+        ]
 
 
-toastCmd : String -> String -> Cmd Types.Msg
-toastCmd message debug =
-    Types.ErrorToast message debug
-        |> Task.succeed
-        |> Task.perform identity
+toastMessage : String -> Int -> Cmd Msg
+toastMessage message duration =
+    toast <| E.object [ ( "text", E.string message ), ( "duration", E.int duration ) ]
+
+
+port toast : E.Value -> Cmd msg

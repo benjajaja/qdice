@@ -1,4 +1,4 @@
-module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableStatus, User, makePlayer, statusToString, actionToString)
+module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableStatus, User, makePlayer, statusToString, statusToIcon, actionToString)
 
 import Board exposing (LandUpdate, Msg)
 import Land exposing (Color, Emoji)
@@ -195,6 +195,19 @@ statusToString status =
 
         Finished ->
             "finished"
+
+
+statusToIcon : GameStatus -> String
+statusToIcon status =
+    case status of
+        Paused ->
+            "done"
+
+        Playing ->
+            "schedule"
+
+        Finished ->
+            "done"
 
 
 actionToString : PlayerAction -> String

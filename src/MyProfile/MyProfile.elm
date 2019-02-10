@@ -7,7 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 import MyProfile.Types exposing (..)
-import Snackbar exposing (toast)
+import Snackbar exposing (toastError)
 import Types
 
 
@@ -48,7 +48,7 @@ update model msg =
         Save ->
             case model.backend.jwt of
                 Nothing ->
-                    toast model "Missing JWT" "jwt is Nothing, cannot update profile"
+                    ( model, toastError "Missing JWT" "jwt is Nothing, cannot update profile" )
 
                 Just jwt ->
                     case model.user of
@@ -75,4 +75,4 @@ update model msg =
                                 )
 
                         Types.Anonymous ->
-                            toast model "cannot modify anonymous user" "UI allowed to modify anonymous user!"
+                            ( model, toastError "cannot modify anonymous user" "UI allowed to modify anonymous user!" )

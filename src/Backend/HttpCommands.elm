@@ -7,7 +7,6 @@ import Backend.Types exposing (..)
 import Game.Types exposing (Player, PlayerAction(..))
 import Http
 import Land exposing (Color(..))
-import Snackbar exposing (toastCmd)
 import Types exposing (Msg(..))
 import Tables exposing (Table)
 

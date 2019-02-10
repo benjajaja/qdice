@@ -1,10 +1,10 @@
-module Routing exposing (matchers, navigateTo, replaceNavigateTo, routeEnterCmd, routeToString, staticPageMatcher, tableMatcher, parseLocation)
+module Routing exposing (matchers, navigateTo, replaceNavigateTo, routeEnterCmd, routeToString, staticPageMatcher, tableMatcher, parseLocation, goToBestTable)
 
 import Backend.HttpCommands exposing (leaderBoard)
 import Http
 import Tables exposing (Table)
 import Types exposing (..)
-import Url exposing (Url)
+import Url exposing (Url, percentDecode)
 import Url.Parser exposing (..)
 import Browser.Navigation exposing (Key)
 
@@ -41,7 +41,7 @@ tableMatcher : Parser (Route -> a) a
 tableMatcher =
     custom "GAME" <|
         \segment ->
-            Just <| GameRoute segment
+            percentDecode segment |> Maybe.map GameRoute
 
 
 
@@ -108,5 +108,18 @@ routeEnterCmd model route =
         LeaderBoardRoute ->
             leaderBoard model.backend
 
+        HomeRoute ->
+            goToBestTable model
+
         _ ->
+            Cmd.none
+
+
+goToBestTable : Model -> Cmd Msg
+goToBestTable model =
+    case List.head model.tableList of
+        Just bestTable ->
+            replaceNavigateTo model.key <| GameRoute bestTable.table
+
+        Nothing ->
             Cmd.none

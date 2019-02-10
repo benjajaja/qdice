@@ -104,12 +104,20 @@ setTimeout(function() {
     }
   });
 
-  //app.ports.consoleDebug.subscribe(function(string) {
-    //var lines = string.split('\n');
-    //console.groupCollapsed(lines.shift());
-    //console.debug(lines.join('\n'));
-    //console.groupEnd();
-  //});
+  app.ports.consoleDebug.subscribe(function(string) {
+    var lines = string.split('\n');
+    console.groupCollapsed(lines.shift());
+    console.debug(lines.join('\n'));
+    console.groupEnd();
+  });
+
+  var snackbar = require('node-snackbar/dist/snackbar.min.js');
+  app.ports.toast.subscribe(function(options) {
+    snackbar.show(Object.assign(options, {
+      pos: 'bottom-center',
+      actionTextColor: '#38d6ff',
+    }));
+  });
 
   var sounds = require('./sounds');
   app.ports.playSound.subscribe(sounds.play);

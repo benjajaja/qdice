@@ -16,8 +16,8 @@ import Task
 import Types exposing (Model, Msg(..), User(..))
 
 
-init : Maybe Types.Model -> Maybe Table -> Maybe Map -> ( Game.Types.Model, Cmd Types.Msg )
-init model table tableMap_ =
+init : Maybe Table -> Maybe Map -> Game.Types.Model
+init table tableMap_ =
     let
         map =
             Maybe.map Maps.load tableMap_
@@ -29,39 +29,29 @@ init model table tableMap_ =
         players =
             []
     in
-        ( { table = table
-          , board = board
-          , players = players
-          , player = Nothing
-          , status = Paused
-          , gameStart = Nothing
-          , playerSlots = 0
-          , turnIndex = -1
-          , hasTurn = False
-          , turnStart = -1
-          , chatInput = ""
-          , chatLog = []
-          , gameLog =
-                case table of
-                    Just aTable ->
-                        [ LogBegin aTable ]
+        { table = table
+        , board = board
+        , players = players
+        , player = Nothing
+        , status = Paused
+        , gameStart = Nothing
+        , playerSlots = 0
+        , turnIndex = -1
+        , hasTurn = False
+        , turnStart = -1
+        , chatInput = ""
+        , chatLog = []
+        , gameLog =
+            case table of
+                Just aTable ->
+                    [ LogBegin aTable ]
 
-                    Nothing ->
-                        []
-          , isPlayerOut = False
-          , roundCount = 0
-          , canFlag = False
-          }
-            |> (\m ->
-                    case model of
-                        Just model_ ->
-                            updateGameInfo m model_.tableList
-
-                        Nothing ->
-                            m
-               )
-        , Cmd.none
-        )
+                Nothing ->
+                    []
+        , isPlayerOut = False
+        , roundCount = 0
+        , canFlag = False
+        }
 
 
 changeTable : Types.Model -> Table -> ( Types.Model, Cmd Types.Msg )
@@ -73,13 +63,13 @@ changeTable model table =
         map =
             tableMap table model.tableList
 
-        ( game, cmd ) =
-            init (Just model) (Just table) map
+        game =
+            init (Just table) map
 
         model_ =
             { model | game = game }
     in
-        ( model_, cmd )
+        ( model_, Cmd.none )
             |> pipeUpdates Backend.subscribeGameTable table
 
 

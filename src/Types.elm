@@ -40,6 +40,7 @@ type Msg
     | InputChat String
     | SendChat String
     | GameCmd PlayerAction
+    | EnterGame Table
       -- backend
     | LoadToken String
     | Connected Backend.Types.ClientId

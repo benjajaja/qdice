@@ -25,7 +25,7 @@ import Maybe
 import MyOauth
 import MyProfile.MyProfile
 import Routing exposing (parseLocation, navigateTo, replaceNavigateTo)
-import Snackbar exposing (toast)
+import Snackbar exposing (toastError, toastMessage)
 import Static.View
 import Tables exposing (Map(..), Table)
 import Task
@@ -62,8 +62,8 @@ init flags location key =
         table =
             currentTable route
 
-        ( game, gameCmd ) =
-            Game.State.init Nothing table Nothing
+        game =
+            Game.State.init table Nothing
 
         ( backend, backendCmd ) =
             Backend.init location flags.isTelegram
@@ -124,7 +124,6 @@ init flags location key =
             Cmd.batch <|
                 List.concat
                     [ routeCmds
-                    , [ gameCmd ]
                     , [ started "peekaboo"
                       , backendCmd
                       ]
@@ -159,7 +158,7 @@ update msg model =
         GetGlobalSettings res ->
             case res of
                 Err err ->
-                    toast model "Could not load global configuration!" <| httpErrorToString err
+                    ( model, toastError "Could not load global configuration!" <| httpErrorToString err )
 
                 Ok ( settings, tables ) ->
                     let
@@ -168,19 +167,15 @@ update msg model =
                     in
                         case model.route of
                             GameRoute table ->
-                                Game.State.changeTable model_ table
+                                case model.backend.status of
+                                    Online ->
+                                        Game.State.changeTable model_ table
+
+                                    _ ->
+                                        ( model_, Cmd.none )
 
                             _ ->
-                                case List.head tables of
-                                    Just bestTable ->
-                                        ( model_
-                                        , replaceNavigateTo model.key <| GameRoute bestTable.table
-                                        )
-
-                                    Nothing ->
-                                        ( model
-                                        , Cmd.none
-                                        )
+                                ( model_, Routing.goToBestTable model_ )
 
         GetToken table res ->
             case res of
@@ -192,7 +187,9 @@ update msg model =
                         oauth_ =
                             { oauth | error = Just "unable to fetch user profile ¯\\_(ツ)_/¯" }
                     in
-                        toast { model | oauth = oauth_ } "Could not load profile" <| httpErrorToString err
+                        ( { model | oauth = oauth_ }
+                        , toastError "Could not load profile" <| httpErrorToString err
+                        )
 
                 Ok token ->
                     let
@@ -216,7 +213,9 @@ update msg model =
         GetProfile res ->
             case res of
                 Err err ->
-                    toast model "Could not sign in, please retry" <| httpErrorToString err
+                    ( model
+                    , toastError "Could not sign in, please retry" <| httpErrorToString err
+                    )
 
                 Ok ( profile, token ) ->
                     let
@@ -311,46 +310,20 @@ update msg model =
             )
 
         OnUrlRequest urlRequest ->
-            ( model, Cmd.none )
+            case urlRequest of
+                Browser.Internal location ->
+                    ( model, Browser.Navigation.pushUrl model.key <| Url.toString location )
+
+                Browser.External urlString ->
+                    ( model, Browser.Navigation.load urlString )
 
         OnLocationChange location ->
-            let
-                newRoute =
-                    parseLocation location
-
-                model_ =
-                    { model | route = newRoute }
-
-                cmd =
-                    Routing.routeEnterCmd model_ newRoute
-            in
-                if newRoute == model.route then
-                    ( model
-                    , Cmd.none
-                    )
-                else
-                    ( model_, cmd )
-                        |> (case newRoute of
-                                GameRoute table ->
-                                    pipeUpdates Game.State.changeTable table
-
-                                _ ->
-                                    identity
-                           )
-                        |> (case model.route of
-                                GameRoute table ->
-                                    pipeUpdates Backend.unsubscribeGameTable table
-
-                                _ ->
-                                    identity
-                           )
+            onLocationChange model location
 
         ErrorToast message debugMessage ->
-            let
-                cmds =
-                    Cmd.batch [ consoleDebug debugMessage ]
-            in
-                ( model, cmds )
+            ( model
+            , toastError message debugMessage
+            )
 
         Animate animateMsg ->
             let
@@ -427,8 +400,35 @@ update msg model =
             , gameCommand model.backend model.game.table playerAction
             )
 
+        EnterGame table ->
+            -- now the player is really in a game/table
+            let
+                enter =
+                    Backend.MqttCommands.enter model.backend table
+
+                totalPlayers =
+                    List.sum <| List.map .playerCount <| model.tableList
+
+                cmds =
+                    Cmd.batch <|
+                        [ enter
+                        , (if totalPlayers == 0 then
+                            toastMessage
+                                ("Share the page URL with a friend to play!")
+                                0
+                           else
+                            Cmd.none
+                          )
+                        ]
+            in
+                ( model
+                , cmds
+                )
+
         UnknownTopicMessage error topic message ->
-            toast model "I/O Error" <| "UnknownTopicMessage \"" ++ error ++ "\" in topic " ++ topic
+            ( model
+            , toastError "I/O Error" <| "UnknownTopicMessage \"" ++ error ++ "\" in topic " ++ topic
+            )
 
         StatusConnect _ ->
             ( Backend.setStatus Connecting model
@@ -589,6 +589,40 @@ mainViewSubscriptions model =
 
         _ ->
             Sub.none
+
+
+onLocationChange : Model -> Url -> ( Model, Cmd Msg )
+onLocationChange model location =
+    let
+        newRoute =
+            parseLocation location
+
+        model_ =
+            { model | route = newRoute }
+
+        cmd =
+            Routing.routeEnterCmd model_ newRoute
+    in
+        if newRoute == model.route then
+            ( model
+            , Cmd.none
+            )
+        else
+            ( model_, cmd )
+                |> (case newRoute of
+                        GameRoute table ->
+                            pipeUpdates Game.State.changeTable table
+
+                        _ ->
+                            identity
+                   )
+                |> (case model.route of
+                        GameRoute table ->
+                            pipeUpdates Backend.unsubscribeGameTable table
+
+                        _ ->
+                            identity
+                   )
 
 
 subscriptions : Model -> Sub Msg

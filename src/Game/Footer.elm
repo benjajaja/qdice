@@ -1,10 +1,11 @@
 module Game.Footer exposing (footer)
 
-import Game.Types exposing (TableInfo, statusToString)
+import Game.Types exposing (TableInfo, statusToIcon)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Types exposing (Model, Msg(..))
+import Icon
 
 
 --import Tables exposing (Table, tableList)
@@ -21,7 +22,7 @@ tableOfTables model =
         [ thead []
             [ tr []
                 [ th [] [ text "Table" ]
-                , th [] [ text "Level" ]
+                  --, th [] [ text "Level" ]
                 , th [] [ text "Players" ]
                 , th [] [ text "Watching" ]
                 , th [] [ text "Status" ]
@@ -38,16 +39,16 @@ tableOfTables model =
                             [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                             ]
                             [ td [] [ text <| table.table ]
-                            , td [] [ text <| String.fromInt table.points ]
+                              --, td [] [ text <| String.fromInt table.points ]
                             , td []
                                 [ text <|
                                     String.fromInt table.playerCount
                                         ++ " / "
                                         ++ String.fromInt table.playerSlots
-                                        ++ " playing"
                                 ]
                             , td [] [ text <| String.fromInt table.watchCount ]
-                            , td [] [ text <| statusToString table.status ]
+                            , td []
+                                [ Icon.icon <| statusToIcon table.status ]
                             , td [] [ text <| String.fromInt table.landCount ]
                             , td [] [ text <| String.fromInt table.stackSize ]
                             ]

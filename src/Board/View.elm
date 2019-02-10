@@ -16,7 +16,7 @@ import Svg.Events exposing (..)
 
 view : Model -> Html.Html Msg
 view model =
-    board
+    lazyBoard
         model.map
         model.pathCache
         model.animations
@@ -31,6 +31,11 @@ view model =
                 [ from, to ]
         )
         model.hovered
+
+
+lazyBoard : Land.Map -> PathCache -> Animations -> List Land -> Maybe Land -> Svg Msg
+lazyBoard map pathCache animations selected hovered =
+    Html.Lazy.lazy5 board map pathCache animations selected hovered
 
 
 board : Land.Map -> PathCache -> Animations -> List Land -> Maybe Land -> Svg Msg

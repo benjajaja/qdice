@@ -5,7 +5,7 @@ import Backend.MessageCodification exposing (..)
 import Backend.Types exposing (ClientId, Model, Topic(..), TopicDirection(..))
 import Game.Types exposing (Player, PlayerAction(..))
 import Land exposing (Color(..))
-import Snackbar exposing (toastCmd)
+import Snackbar exposing (toastError)
 import Tables exposing (Table)
 import Task
 import Time
@@ -31,10 +31,10 @@ publish jwt clientId table action =
                         ]
 
                 Err err ->
-                    toastCmd ("Command error: " ++ err) err
+                    toastError ("Command error: " ++ err) err
 
         Nothing ->
-            toastCmd "Command error: not connected" "attempted publish without clientId"
+            toastError "Command error: not connected" "attempted publish without clientId"
 
 
 gameCommand : Model -> Maybe Table -> PlayerAction -> Cmd Msg

@@ -2,7 +2,7 @@ module Footer exposing (footer)
 
 import Backend.Types exposing (ConnectionStatus(..))
 import Html exposing (..)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, style, href)
 import Icon
 import Types exposing (Model, Msg(..), Route(..), StaticPage(..), User(..))
 
@@ -10,8 +10,22 @@ import Types exposing (Model, Msg(..), Route(..), StaticPage(..), User(..))
 footer : Model -> Html.Html Msg
 footer model =
     div [ class "edFooter" ]
-        [ div [] [ statusMessage model.backend.status ]
-        , div [] []
+        [ div [ class "edFooter--box" ] [ statusMessage model.backend.status ]
+        , div [ class "edFooter--box edFooter--box__links" ]
+            [ link "/" "Home" "home"
+            , link "/me" "Account" "account_circle"
+            , link "/leaderboard" "Leaderboard" "list"
+            , link "/static/help" "Halp" "help"
+            , link "/static/about" "About" "info"
+            ]
+        ]
+
+
+link : String -> String -> String -> Html Types.Msg
+link path label iconName =
+    a [ href path ]
+        [ i [ class "material-icons" ] [ text iconName ]
+        , text label
         ]
 
 

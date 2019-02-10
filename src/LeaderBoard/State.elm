@@ -1,7 +1,7 @@
 module LeaderBoard.State exposing (setLeaderBoard)
 
 import Http
-import Snackbar exposing (toast)
+import Snackbar exposing (toastError)
 import Types exposing (Model, Msg, Profile)
 import Helpers exposing (httpErrorToString)
 
@@ -10,7 +10,7 @@ setLeaderBoard : Model -> Result Http.Error ( String, List Profile ) -> ( Model,
 setLeaderBoard model res =
     case res of
         Err err ->
-            toast model "Could not load leaderboard" <| httpErrorToString err
+            ( model, toastError "Could not load leaderboard" <| httpErrorToString err )
 
         Ok ( month, top ) ->
             let

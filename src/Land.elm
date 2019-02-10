@@ -160,7 +160,7 @@ fullCellMap w h color =
 
 emptyMap : Map
 emptyMap =
-    Map [] 30 20
+    Map [] 40 40
 
 
 isBordering : Land -> Land -> Bool

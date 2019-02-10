@@ -64,6 +64,8 @@ emojisToMap raw =
         width =
             List.maximum widths |> Maybe.withDefault 0
 
+        height = List.length lines
+
         lands =
             List.map (List.filter isEmptyEmoji) lines
                 |> foldLines
@@ -71,6 +73,7 @@ emojisToMap raw =
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)
     in
     Land.Map lands width (List.length lines)
+    --(max width height) (max width height)
 
 
 charRow : Int -> String -> Line
