@@ -83,6 +83,7 @@ export type Player = UserLike & {
   readonly position: number
   readonly score: number
   readonly flag: any
+  readonly lastBeat: Timestamp
 }
 
 export type User = UserLike & {
@@ -134,6 +135,7 @@ export type CommandType
   | 'TickTurnAllOut'
   | 'TickStart'
   | 'CleanWatchers'
+  | 'CleanPlayers'
 
 export type CommandResult = {
   readonly type: CommandType,

@@ -79,6 +79,7 @@ const makePlayer = (user, clientId, playerCount): Player => ({
   position: 0,
   score: 0,
   flag: null,
+  lastBeat: now(),
 });
   
 export const join = (user, table: Table, clientId): CommandResult => {
@@ -123,7 +124,7 @@ export const join = (user, table: Table, clientId): CommandResult => {
   };
 };
 
-export const leave = (user: User, table: Table, clientId): CommandResult => {
+export const leave = (user: User, table: Table): CommandResult => {
   if (table.status === STATUS_PLAYING) {
     throw new IllegalMoveError('leave while STATUS_PLAYING', user);
   }

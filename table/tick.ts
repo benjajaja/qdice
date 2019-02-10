@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import * as io from '@pm2/io';
 import { getTable, save } from './get';
-import { Table, Player, CommandResult } from '../types';
+import { Table, Player, CommandResult, Timestamp } from '../types';
 import { processComandResult } from '../table';
 import { havePassed } from '../timestamp';
 
@@ -16,6 +16,7 @@ import * as publish from './publish';
 import nextTurn from './turn';
 import startGame from './start';
 import { rollResult } from './attack';
+import { leave } from './commands';
 import logger from '../logger';
 
 const gamesStarted = io.counter({
@@ -67,6 +68,8 @@ const tick = async (tableTag: string) => {
         && havePassed(0, table.gameStart)) {
       result = startGame(table);
       gamesStarted.inc();
+    } else if (table.players.length > 0) {
+      result = cleanPlayers(table);
     }
   }
 
@@ -77,24 +80,32 @@ const tick = async (tableTag: string) => {
   await processComandResult(table, result);
 };
 
-const cleanWatchers = (table: Table): CommandResult | undefined => {
-
-  const [ stillWatching, stoppedWatching ] = table.watching.reduce(([yes, no], watcher) => {
-    if (!havePassed(30, watcher.lastBeat)) {
+const checkWatchers = <T extends {lastBeat: Timestamp}>(watchers: ReadonlyArray<T>, seconds: number): [ReadonlyArray<T>, ReadonlyArray<T>] => {
+  return watchers.reduce(([yes, no], watcher) => {
+    if (!havePassed(seconds, watcher.lastBeat)) {
       return [R.append(watcher, yes), no];
     } else {
       return [yes, R.append(watcher, no)];
     }
-  }, [[], []]);
+  }, [[], []] as any);
+};
 
+const cleanWatchers = (table: Table): CommandResult | undefined => {
+  const [ stillWatching, stoppedWatching ] = checkWatchers(table.watching, 30);
   if (stoppedWatching.length > 0) {
     stoppedWatching.forEach(user => publish.exit(table, user.name));
-    //logger.debug('stopped', stoppedWatching.map(R.prop('name')));
-    //logger.debug('still', stillWatching.map(R.prop('name')));
     return {
       type: 'CleanWatchers',
       watchers: stillWatching,
     };
+  }
+  return undefined;
+};
+
+const cleanPlayers = (table: Table): CommandResult | undefined => {
+  const [ stillWatching, stoppedWatching ] = checkWatchers(table.players, 60 * 5);
+  if (stoppedWatching.length > 0) {
+    return leave(stoppedWatching[0], table);
   }
   return undefined;
 };
