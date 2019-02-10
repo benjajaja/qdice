@@ -12,24 +12,8 @@ import {
 } from './constants';
 import * as publish from './table/publish';
 import { getStatuses } from './table/get';
+import logger from './logger';
 
-//const tablesConfig = require('./tables.config');
-
-//const tables = tablesConfig.tables.map(config => {
-  //const [ lands, adjacency ] = maps.loadMap(config.mapName);
-  //return {
-    //tag: config.tag,
-    //mapName: config.mapName,
-    //name: config.tag,
-    //playerSlots: config.playerSlots,
-    //stackSize: config.stackSize,
-    //points: config.points,
-    //status: STATUS_PAUSED,
-    //landCount: lands.length,
-    //players: [],
-    //watching: [],
-  //};
-//});
 
 export const global = (req, res, next) => {
   getTablesStatus().then(tables => {

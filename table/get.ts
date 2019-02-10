@@ -66,21 +66,27 @@ export const getTable = async (tableTag: string): Promise<Table> => {
   let dbTable = await db.getTable(tableTag);
   if (!dbTable) {
     const tableConfig = config.tables.filter(config => config.tag === tableTag).pop();
-    const dbTableData = loadLands(makeTable(tableConfig));
-    dbTable = await db.createTable(dbTableData);
+    try {
+      logger.debug(tableTag, tableConfig);
+      const dbTableData = loadLands(makeTable(tableConfig));
+      dbTable = await db.createTable(dbTableData);
+    } catch (e) {
+      logger.error(`could not load map ${tableTag}`);
+      throw e;
+    }
   }
   const table = loadLands(dbTable);
 
+  //if (table.tag === 'Arabia') {
+    //const players = R.range(0, 9).map(i => {
+        //return table.players[i] || Object.assign({}, R.last(table.players), {
+          //color: i + 1,
+          //name: 'fake' + i,
+        //});
+        //});
+    //return Object.assign({}, table, { players });
+  //}
   return table;
-  const players = table.players.length
-    ? R.range(0, 10).map(i => {
-      return table.players[i] || Object.assign({}, R.last(table.players), {
-        color: i + 1,
-        name: 'fake' + i,
-      });
-      })
-    : [];
-  return Object.assign({}, table, { players });
 };
 
 export const save = async (

@@ -54,7 +54,11 @@ export const computePlayerDerived = (table: Table) => {
     const lands = table.lands.filter(R.propEq('color', player.color));
     const connectedLands = maps.countConnectedLands(table)(player.color);
     const position = positions(player);
-    const score = player.score + getScore(position);
+    let score = player.score + getScore(position);
+    if (isNaN(score)) {
+      logger.error(`score for ${player.name} isNaN`);
+      score = 0;
+    }
     return {
       connectedLands,
       totalLands: lands.length,

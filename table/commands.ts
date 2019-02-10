@@ -225,13 +225,13 @@ export const sitOut = (user: User, table: Table, clientId): CommandResult => {
     throw new IllegalMoveError('sitOut while not in game', user);
   }
 
-  if (hasTurn({ turnIndex: table.turnIndex, players: table.players })(player)) {
-    return nextTurn('SitOut', table, true);
-  }
+  //if (hasTurn({ turnIndex: table.turnIndex, players: table.players })(player)) {
+    //return nextTurn('SitOut', table, true);
+  //}
 
   return {
     type: 'SitOut',
-    players: adjustPlayer(table.turnIndex, { out: true }, table.players)
+    players: adjustPlayer(table.players.indexOf(player), { out: true }, table.players)
   };
 };
 
