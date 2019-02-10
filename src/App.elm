@@ -480,7 +480,7 @@ update msg model =
                         GameRoute table ->
                             case model.backend.clientId of
                                 Just c ->
-                                    if Time.posixToMillis newTime - Time.posixToMillis model.backend.lastHeartbeat > 30 then
+                                    if Time.posixToMillis newTime - Time.posixToMillis model.backend.lastHeartbeat > 5000 then
                                         gameCommand model.backend model.game.table Heartbeat
                                     else
                                         Cmd.none
