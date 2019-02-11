@@ -65,7 +65,7 @@ server.use(jwt({
 .unless({
   custom: (req: any) => {
     const ok = R.anyPass([
-      (req: any) => req.path() === '/login',
+      (req: any) => req.path().indexOf('/login') === 0,
       (req: any) => req.path() === '/register',
       (req: any) => req.path() === '/global',
       (req: any) => req.path() === '/findtable',
@@ -76,7 +76,7 @@ server.use(jwt({
 }));
 
 
-server.post('/login', user.login);
+server.post('/login/:network', user.login);
 server.get('/me', user.me);
 server.put('/profile', user.profile);
 server.post('/register', user.register);

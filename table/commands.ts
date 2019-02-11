@@ -124,7 +124,7 @@ export const join = (user, table: Table, clientId): CommandResult => {
   };
 };
 
-export const leave = (user: User, table: Table): CommandResult => {
+export const leave = (user: User, table: Table, clientId?): CommandResult => {
   if (table.status === STATUS_PLAYING) {
     throw new IllegalMoveError('leave while STATUS_PLAYING', user);
   }

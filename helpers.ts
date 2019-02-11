@@ -1,12 +1,12 @@
 import * as R from 'ramda';
-import { Table, Land, UserLike, UserId, Player } from './types';
+import { Table, Land, UserId, Player } from './types';
 import logger from './logger';
 
 export const findTable = (tables: Table[]) => (name: string): Table => tables.filter(table => table.name === name).pop()!;
 
 export const findLand = (lands: ReadonlyArray<Land>) => (emoji: string): Land => lands.filter(land => land.emoji === emoji).pop()!;
 
-export const hasTurn = ({ turnIndex, players }: { turnIndex: number, players: ReadonlyArray<Player>}) => (playerLike: UserLike): boolean =>
+export const hasTurn = ({ turnIndex, players }: { turnIndex: number, players: ReadonlyArray<Player>}) => (playerLike: { id: number }): boolean =>
   players.indexOf(
     players.filter(p => p.id === playerLike.id).pop()!
   ) === turnIndex;

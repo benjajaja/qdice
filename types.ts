@@ -1,5 +1,5 @@
 export type UserId = number
-export type Network = 'google' | 'password' | 'telegram'
+export type Network = 'google' | 'password' | 'telegram' | 'reddit'
 export type Emoji = string
 export type Timestamp = number
 
@@ -66,22 +66,22 @@ export type Adjacency = {
   indexes: Readonly<{ [index: string]: number }>
 }
 
-export type User = {
+type UserLike = {
   readonly id: UserId
   readonly name: string
   readonly picture: string
-  readonly email: string
-  readonly networks: ReadonlyArray<string>
-  readonly claimed: boolean
   readonly level: number
   readonly points: number
 }
 
-export type UserLike = User & {
-  readonly clientId: any
+export type User = UserLike & {
+  readonly email: string
+  readonly networks: ReadonlyArray<string>
+  readonly claimed: boolean
 }
 
 export type Player = UserLike & {
+  readonly clientId: any
   readonly color: Color
   readonly reserveDice: number
   readonly out: boolean

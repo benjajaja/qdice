@@ -24,6 +24,7 @@ export const connect = async function db() {
 export const NETWORK_GOOGLE: Network = 'google';
 export const NETWORK_PASSWORD: Network = 'password';
 export const NETWORK_TELEGRAM: Network = 'telegram';
+export const NETWORK_REDDIT: Network = 'reddit';
 
 
 export const getUser = async (id: UserId): Promise<User> => {
@@ -108,7 +109,7 @@ const userProfile = (rows: any[]): User => {
     claimed: rows.some(row => row.network !== NETWORK_PASSWORD
       || row.network_id !== null),
     points: parseInt(rows[0].points, 10),
-    networks: rows.map(row => row.network),
+    networks: rows.map(row => row.network || 'password'),
   };
 };
 
