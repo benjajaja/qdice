@@ -4,7 +4,7 @@ import * as camelize from 'camelize';
 import * as decamelize from 'decamelize';
 
 import logger from './logger';
-import { UserId, Network, Table, Player, Land, Emoji, Color, Watcher } from './types';
+import { UserId, Network, Table, Player, User, Land, Emoji, Color, Watcher } from './types';
 import { date } from './timestamp';
 
 let client: Client;
@@ -26,7 +26,7 @@ export const NETWORK_PASSWORD: Network = 'password';
 export const NETWORK_TELEGRAM: Network = 'telegram';
 
 
-export const getUser = async (id: UserId) => {
+export const getUser = async (id: UserId): Promise<User> => {
   const rows = await getUserRows(id);
   return userProfile(rows);
 };
@@ -65,9 +65,8 @@ export const createUser = async (network: Network, network_id: string | null, na
   return await getUser(user.id);
 };
 
-export const updateUser = async (id: UserId, name: string) => {
-  logger.info('update user', id, name);
-  const res = await client.query('UPDATE users SET name = $1 WHERE id = $2', [name, id]);
+export const updateUser = async (id: UserId, name: string, email: string | null) => {
+  const res = await client.query('UPDATE users SET name = $2, email = $3 WHERE id = $1', [id, name, email]);
   return await getUser(id);
 };
 
@@ -98,16 +97,20 @@ LIMIT $1 OFFSET $2`,
   }));
 };
 
-const userProfile = (rows: any[]) => Object.assign({},
-  R.pick(['id', 'name', 'email', 'picture', 'network', 'level'], rows[0]),
-  {
-    id: rows[0].id.toString(),
+const userProfile = (rows: any[]): User => {
+  const { id, name, email, picture, level } = rows[0];
+  return {
+    id: id.toString(),
+    name,
+    email,
     picture: rows[0].picture || 'assets/empty_profile_picture.svg',
+    level,
     claimed: rows.some(row => row.network !== NETWORK_PASSWORD
       || row.network_id !== null),
     points: parseInt(rows[0].points, 10),
-  }
-);
+    networks: rows.map(row => row.network),
+  };
+};
 
 export const getTable = async (tag: string) => {
   const result = await client.query(`

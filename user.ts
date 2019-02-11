@@ -65,7 +65,7 @@ export const me = function(req, res, next) {
 };
 
 export const profile = function(req, res, next) {
-  db.updateUser(req.user.id, req.body.name)
+  db.updateUser(req.user.id, req.body.name, req.body.email)
   .then(profile => {
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
     res.send(200, token);

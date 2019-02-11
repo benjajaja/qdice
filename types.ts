@@ -66,11 +66,19 @@ export type Adjacency = {
   indexes: Readonly<{ [index: string]: number }>
 }
 
-export type UserLike = {
+export type User = {
   readonly id: UserId
   readonly name: string
-  readonly clientId: any
   readonly picture: string
+  readonly email: string
+  readonly networks: ReadonlyArray<string>
+  readonly claimed: boolean
+  readonly level: number
+  readonly points: number
+}
+
+export type UserLike = User & {
+  readonly clientId: any
 }
 
 export type Player = UserLike & {
@@ -79,14 +87,10 @@ export type Player = UserLike & {
   readonly out: boolean
   readonly outTurns: number
   readonly points: number
-  readonly level: number
   readonly position: number
   readonly score: number
   readonly flag: any
   readonly lastBeat: Timestamp
-}
-
-export type User = UserLike & {
 }
 
 export type Watcher = { clientId: any, id: UserId | null, name: string | null, lastBeat: number }
