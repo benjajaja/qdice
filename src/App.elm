@@ -561,7 +561,7 @@ mainView model =
             viewWrapper
                 [ case model.user of
                     Anonymous ->
-                        Html.text "404"
+                        Html.text "You are not logged in."
 
                     Logged user ->
                         MyProfile.MyProfile.view model.myProfile user

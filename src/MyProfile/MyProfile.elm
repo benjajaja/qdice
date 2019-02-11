@@ -15,7 +15,7 @@ view : MyProfileModel -> LoggedUser -> Html Msg
 view model user =
     div [ class "edMyProfile" ]
         [ h1 [] [ text "My profile" ]
-        , profileForm model user
+        , profileForm model <| Debug.log "user" user
         , h1 [] [ text "Access" ]
         , button [ onClick Logout ] [ text "Logout" ]
         ]
@@ -23,7 +23,7 @@ view model user =
 
 profileForm : MyProfileModel -> LoggedUser -> Html Msg
 profileForm model user =
-    Html.form []
+    Html.form [ onSubmit <| MyProfileMsg Save ]
         [ label [ class "edFormLabel" ]
             [ text "Player name"
             , input
@@ -34,8 +34,7 @@ profileForm model user =
                 []
             ]
         , button
-            [ onClick <| MyProfileMsg Save
-            ]
+            []
             [ text "Save" ]
         ]
 
