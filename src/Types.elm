@@ -20,7 +20,7 @@ type Msg
     | OnUrlRequest Browser.UrlRequest
     | Tick Time.Posix
     | Animate Animation.Msg
-    | MyProfileMsg MyProfile.Types.Msg
+    | MyProfileMsg MyProfile.Types.MyProfileMsg
     | ErrorToast String String
       -- oauth
     | Nop
@@ -80,7 +80,7 @@ type alias Model =
     , key : Key
     , oauth : MyOAuthModel
     , game : Game.Types.Model
-    , myProfile : MyProfile.Types.Model
+    , myProfile : MyProfile.Types.MyProfileModel
     , backend : Backend.Types.Model
     , user : User
     , tableList : List TableInfo

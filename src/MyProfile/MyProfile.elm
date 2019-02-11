@@ -8,29 +8,39 @@ import Html.Events exposing (..)
 import Http
 import MyProfile.Types exposing (..)
 import Snackbar exposing (toastError)
-import Types
+import Types exposing (Model, Msg(..), User(..), LoggedUser)
 
 
-view : Types.Model -> Types.LoggedUser -> Html.Html Types.Msg
+view : MyProfileModel -> LoggedUser -> Html Msg
 view model user =
     div [ class "edMyProfile" ]
-        [ label []
+        [ h1 [] [ text "My profile" ]
+        , profileForm model user
+        , h1 [] [ text "Access" ]
+        , button [ onClick Logout ] [ text "Logout" ]
+        ]
+
+
+profileForm : MyProfileModel -> LoggedUser -> Html Msg
+profileForm model user =
+    Html.form []
+        [ label [ class "edFormLabel" ]
             [ text "Player name"
             , input
                 [ type_ "text"
-                , value <| Maybe.withDefault user.name model.myProfile.name
-                , onInput <| Types.MyProfileMsg << ChangeName
+                , value <| Maybe.withDefault user.name model.name
+                , onInput <| MyProfileMsg << ChangeName
                 ]
                 []
             ]
         , button
-            [ onClick <| Types.MyProfileMsg Save
+            [ onClick <| MyProfileMsg Save
             ]
             [ text "Save" ]
         ]
 
 
-update : Types.Model -> Msg -> ( Types.Model, Cmd Types.Msg )
+update : Model -> MyProfileMsg -> ( Model, Cmd Msg )
 update model msg =
     case msg of
         ChangeName value ->
@@ -52,7 +62,7 @@ update model msg =
 
                 Just jwt ->
                     case model.user of
-                        Types.Logged user ->
+                        Logged user ->
                             let
                                 profile =
                                     { user | name = Maybe.withDefault user.name model.myProfile.name }
@@ -71,8 +81,8 @@ update model msg =
                                         }
                             in
                                 ( model
-                                , Http.send (Types.GetToken Nothing) request
+                                , Http.send (GetToken Nothing) request
                                 )
 
-                        Types.Anonymous ->
+                        Anonymous ->
                             ( model, toastError "cannot modify anonymous user" "UI allowed to modify anonymous user!" )

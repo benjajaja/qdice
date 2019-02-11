@@ -20,19 +20,15 @@ A dice game, written in [Elm](https://elm-lang.org). A simplified Risk, inspired
 
 Created by <ste3ls@gmail.com>.
 
-#### Roadmap 2019:
-  * ✓ Cleaner UI
-  * ✓ Landscape fullscreen mode in mobile
-  * ✓ Stateless server, recovers on errors
-  * ? Heartbeat, remove player in game queue if not beating
-  * ✓ Fix error toast
-  * ✗ Fix Account page, logout button
+#### Priority-High:
+  * ✗ Update table list on local and other game update
+  * ✗ Profile page
+  * ✗ Login with facebook, github, reddit
+  * ✗ Connect an auth method to anonymous account
+
+#### Priority-Low:
   * ✗ Fullscreen tooltip
-  * ✗ Update table list
   * ✗ Show "who's turn it is" better
   * ✗ Attack animation
-  * ✗ Profile page
   * ✗ Replay a game
-  * ✗ Login with facebook
-  * ✗ Login with github
 """

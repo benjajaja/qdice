@@ -50,7 +50,7 @@ chatBox inputValue colors lines id_ =
                             [ input inputValue
                             , button
                                 [ type_ "submit"
-                                , class "chatbox--actions-button"
+                                , class "chatbox--actions-button edButton"
                                 ]
                                 [ Icon.icon "keyboard_return" ]
                             ]

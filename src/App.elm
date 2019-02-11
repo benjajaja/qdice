@@ -174,8 +174,11 @@ update msg model =
                                     _ ->
                                         ( model_, Cmd.none )
 
-                            _ ->
+                            HomeRoute ->
                                 ( model_, Routing.goToBestTable model_ )
+
+                            _ ->
+                                ( model_, Cmd.none )
 
         GetToken table res ->
             case res of
@@ -287,6 +290,7 @@ update msg model =
 
                         Nothing ->
                             Cmd.none
+                    , navigateTo model.key HomeRoute
                     , ga [ "send", "event", "auth", "Logout" ]
                     ]
                 )
@@ -415,7 +419,7 @@ update msg model =
                         , (if totalPlayers == 0 then
                             toastMessage
                                 ("Share the page URL with a friend to play!")
-                                0
+                                20000
                            else
                             Cmd.none
                           )
@@ -560,7 +564,7 @@ mainView model =
                         Html.text "404"
 
                     Logged user ->
-                        MyProfile.MyProfile.view model user
+                        MyProfile.MyProfile.view model.myProfile user
                 ]
 
         TokenRoute token ->

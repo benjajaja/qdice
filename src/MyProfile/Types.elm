@@ -1,11 +1,11 @@
-module MyProfile.Types exposing (Model, Msg(..))
+module MyProfile.Types exposing (MyProfileModel, MyProfileMsg(..))
 
 
-type Msg
+type MyProfileMsg
     = ChangeName String
     | Save
 
 
-type alias Model =
+type alias MyProfileModel =
     { name : Maybe String
     }
