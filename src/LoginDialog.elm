@@ -90,6 +90,8 @@ login model name =
             , picture = ""
             , points = 0
             , level = 0
+            , claimed = False
+            , networks = [ Password ]
             }
 
         request =

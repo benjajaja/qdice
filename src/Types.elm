@@ -1,4 +1,4 @@
-module Types exposing (GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, AuthNetwork(..), getUsername)
 
 import Animation
 import Backend.Types
@@ -112,7 +112,15 @@ type alias LoggedUser =
     , picture : String
     , points : Int
     , level : Int
+    , claimed : Bool
+    , networks : List AuthNetwork
     }
+
+
+type AuthNetwork
+    = Password
+    | Google
+    | Telegram
 
 
 type alias MyOAuthModel =

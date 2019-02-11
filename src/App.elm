@@ -96,7 +96,7 @@ init flags location key =
             , key = key
             , oauth = oauth
             , game = game
-            , myProfile = { name = Nothing }
+            , myProfile = { name = Nothing, email = Nothing }
             , backend = backend_
             , user = Types.Anonymous
             , tableList = []

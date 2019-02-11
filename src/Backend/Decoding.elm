@@ -7,7 +7,7 @@ import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
 import LeaderBoard.Types exposing (LeaderBoardModel)
 import Tables exposing (Table)
-import Types exposing (LoggedUser, Profile)
+import Types exposing (LoggedUser, AuthNetwork(..), Profile)
 
 
 tokenDecoder : Decoder String
@@ -24,6 +24,25 @@ userDecoder =
         |> required "picture" string
         |> required "points" int
         |> required "level" int
+        |> required "claimed" bool
+        |> required "networks" (list authNetworkDecoder)
+
+
+authNetworkDecoder : Decoder AuthNetwork
+authNetworkDecoder =
+    map
+        (\s ->
+            case s of
+                "google" ->
+                    Google
+
+                "telegram" ->
+                    Telegram
+
+                _ ->
+                    Password
+        )
+        string
 
 
 meDecoder : Decoder ( LoggedUser, String )

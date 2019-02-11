@@ -8,15 +8,19 @@ import Html.Events exposing (..)
 import Http
 import MyProfile.Types exposing (..)
 import Snackbar exposing (toastError)
-import Types exposing (Model, Msg(..), User(..), LoggedUser)
+import Types exposing (Model, Msg(..), User(..), LoggedUser, AuthNetwork(..))
 
 
 view : MyProfileModel -> LoggedUser -> Html Msg
 view model user =
     div [ class "edMyProfile" ]
         [ h1 [] [ text "My profile" ]
-        , profileForm model <| Debug.log "user" user
+        , profileForm model user
         , h1 [] [ text "Access" ]
+        , h5 [] [ text "Connected login networks:" ]
+        , div [] <|
+            List.map network user.networks
+        , h5 [] [ text "Log out now:" ]
         , button [ onClick Logout ] [ text "Logout" ]
         ]
 
@@ -33,9 +37,34 @@ profileForm model user =
                 ]
                 []
             ]
+        , label [ class "edFormLabel" ]
+            [ text "Email"
+            , input
+                [ type_ "email"
+                , value <| Maybe.withDefault (Maybe.withDefault "" user.email) model.email
+                , onInput <| MyProfileMsg << ChangeEmail
+                ]
+                []
+            ]
         , button
             []
             [ text "Save" ]
+        ]
+
+
+network : AuthNetwork -> Html Msg
+network nw =
+    div []
+        [ text <|
+            case nw of
+                Password ->
+                    "Password"
+
+                Google ->
+                    "Google"
+
+                Telegram ->
+                    "Telegram"
         ]
 
 
@@ -54,6 +83,18 @@ update model msg =
                 , Cmd.none
                 )
 
+        ChangeEmail value ->
+            let
+                p =
+                    model.myProfile
+
+                p_ =
+                    { p | email = Just value }
+            in
+                ( { model | myProfile = p_ }
+                , Cmd.none
+                )
+
         Save ->
             case model.backend.jwt of
                 Nothing ->
@@ -64,7 +105,16 @@ update model msg =
                         Logged user ->
                             let
                                 profile =
-                                    { user | name = Maybe.withDefault user.name model.myProfile.name }
+                                    { user
+                                        | name = Maybe.withDefault user.name model.myProfile.name
+                                        , email =
+                                            case model.myProfile.email of
+                                                Just email ->
+                                                    Just email
+
+                                                Nothing ->
+                                                    user.email
+                                    }
 
                                 request =
                                     Http.request
