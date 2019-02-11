@@ -545,11 +545,13 @@ button, .edButton {
 .edLoginSocial {
   padding-left: 0;
   width: 100%;
+  justify-content: flex-start;
 }
 .edLoginSocial > img {
   height: 100%;
   float: left;
   margin-right: 5px;
+  background: white;
 }
 .edLoginDialog__buttons {
   display: flex;

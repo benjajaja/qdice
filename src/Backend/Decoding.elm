@@ -1,13 +1,13 @@
-module Backend.Decoding exposing (accknowledgeDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, rollDecoder, singleRollDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, tokenDecoder, userDecoder)
+module Backend.Decoding exposing (accknowledgeDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, rollDecoder, singleRollDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, tokenDecoder, userDecoder, authStateDecoder)
 
 import Board.Types
 import Game.Types exposing (Player, PlayerGameStats, TableStatus)
-import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, int, list, map, map2, map3, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, oneOf, bool, fail, field, float, index, int, list, map, map2, map3, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
 import LeaderBoard.Types exposing (LeaderBoardModel)
 import Tables exposing (Table)
-import Types exposing (LoggedUser, AuthNetwork(..), Profile)
+import Types exposing (LoggedUser, AuthNetwork(..), AuthState, Profile)
 
 
 tokenDecoder : Decoder String
@@ -39,10 +39,20 @@ authNetworkDecoder =
                 "telegram" ->
                     Telegram
 
+                "reddit" ->
+                    Reddit
+
                 _ ->
                     Password
         )
         string
+
+
+authStateDecoder : Decoder AuthState
+authStateDecoder =
+    succeed AuthState
+        |> required "network" authNetworkDecoder
+        |> required "table" (nullable string)
 
 
 meDecoder : Decoder ( LoggedUser, String )

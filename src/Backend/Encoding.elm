@@ -1,4 +1,4 @@
-module Backend.Encoding exposing (actionPayload, encodeJwt, playerEncoder, profileEncoder, encodePlayerAction)
+module Backend.Encoding exposing (actionPayload, encodeJwt, playerEncoder, profileEncoder, encodePlayerAction, authStateEncoder, encodeAuthNetwork)
 
 import Game.Types exposing (Player, PlayerAction(..), TableStatus, actionToString)
 import Json.Encode exposing (Value, encode, list, null, object, string)
@@ -69,3 +69,36 @@ actionPayload action =
 
         _ ->
             Nothing
+
+
+encodeAuthNetwork : AuthNetwork -> String
+encodeAuthNetwork network =
+    case network of
+        Google ->
+            "google"
+
+        Reddit ->
+            "reddit"
+
+        Password ->
+            "password"
+
+        Telegram ->
+            "telegram"
+
+
+authStateEncoder : AuthState -> Value
+authStateEncoder state =
+    object
+        [ ( "network"
+          , string <| encodeAuthNetwork state.network
+          )
+        , ( "table"
+          , case state.table of
+                Just table ->
+                    string table
+
+                Nothing ->
+                    null
+          )
+        ]

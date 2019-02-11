@@ -65,6 +65,9 @@ network nw =
 
                 Telegram ->
                     "Telegram"
+
+                Reddit ->
+                    "Reddit"
         ]
 
 

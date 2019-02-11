@@ -1,38 +1,51 @@
-module MyOauth exposing (authorizationEndpoint, authorize, init, profileEndpoint)
+module MyOauth exposing (authorize, init)
 
 import Game.Types
 import Http
-import Json.Decode as Json
+import Json.Decode exposing (decodeString, errorToString)
+import Json.Encode exposing (encode)
 import Browser.Navigation
 import Url exposing (Url, Protocol(..))
 import OAuth
 import OAuth.AuthorizationCode exposing (AuthorizationResult(..))
 import Task
-import Types exposing (LoggedUser, Msg(..), MyOAuthModel)
+import Types exposing (LoggedUser, Msg(..), MyOAuthModel, AuthNetwork(..), AuthState)
+import Backend.Decoding exposing (authStateDecoder)
+import Backend.Encoding exposing (authStateEncoder)
+import Snackbar exposing (toastError)
 
 
-profileEndpoint : String
-profileEndpoint =
-    "https://www.googleapis.com/oauth2/v1/userinfo"
+authorizationEndpoint : AuthNetwork -> ( Url, String )
+authorizationEndpoint network =
+    case network of
+        Reddit ->
+            ( { protocol = Https
+              , host = "www.reddit.com"
+              , port_ = Nothing
+              , path = "/api/v1/authorize"
+              , query = Nothing
+              , fragment = Nothing
+              }
+            , "FjcCKkabynWNug"
+            )
 
-
-authorizationEndpoint : Url
-authorizationEndpoint =
-    { protocol = Https
-    , host = "accounts.google.com"
-    , port_ = Nothing
-    , path = "/o/oauth2/v2/auth"
-    , query = Nothing
-    , fragment = Nothing
-    }
+        _ ->
+            ( { protocol = Https
+              , host = "accounts.google.com"
+              , port_ = Nothing
+              , path = "/o/oauth2/v2/auth"
+              , query = Nothing
+              , fragment = Nothing
+              }
+            , "1000163928607-54qf4s6gf7ukjoevlkfpdetepm59176n.apps.googleusercontent.com"
+            )
 
 
 init : Browser.Navigation.Key -> Url -> ( MyOAuthModel, List (Cmd Msg) )
 init key url =
     let
         oauth =
-            { clientId = "1000163928607-54qf4s6gf7ukjoevlkfpdetepm59176n.apps.googleusercontent.com"
-            , redirectUri = { url | query = Nothing, fragment = Nothing }
+            { redirectUri = { url | query = Nothing, fragment = Nothing, path = "/" }
             , error = Nothing
             , token = Nothing
             , state = ""
@@ -43,12 +56,25 @@ init key url =
                 ( oauth, [] )
 
             Success { code, state } ->
-                ( oauth
-                , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri
-                  , Task.perform (always <| Authenticate code state) (Task.succeed ())
-                    --Task.perform (always <| Types.GameCmd Game.Types.Join) (Task.succeed ())
-                  ]
-                )
+                case state of
+                    Nothing ->
+                        ( oauth, [ toastError "Logn provider did not comply, try another" "empty state" ] )
+
+                    Just state_ ->
+                        case decodeString authStateDecoder state_ of
+                            Ok authState ->
+                                ( oauth
+                                , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri
+                                  , Task.perform
+                                        (always <| Authenticate code authState)
+                                        (Task.succeed ())
+                                  ]
+                                )
+
+                            Err err ->
+                                ( oauth
+                                , [ toastError "Could not read your login" <| errorToString err ]
+                                )
 
             Error { error, errorDescription, errorUri, state } ->
                 ( { oauth | error = Just <| Maybe.withDefault "Unknown" errorDescription }
@@ -56,16 +82,29 @@ init key url =
                 )
 
 
-authorize : MyOAuthModel -> Maybe String -> Cmd Msg
+authorize : MyOAuthModel -> AuthState -> Cmd Msg
 authorize model state =
     let
+        ( url, clientId ) =
+            authorizationEndpoint state.network
+
+        stateString : String
+        stateString =
+            encode 0 <| authStateEncoder state
+
         authorization : OAuth.AuthorizationCode.Authorization
         authorization =
-            { clientId = model.clientId
-            , url = authorizationEndpoint
+            { clientId = clientId
+            , url = url
             , redirectUri = model.redirectUri
-            , scope = [ "email", "profile" ]
-            , state = state
+            , scope =
+                case state.network of
+                    Reddit ->
+                        [ "identity" ]
+
+                    _ ->
+                        [ "email", "profile" ]
+            , state = Just stateString
             }
     in
         Browser.Navigation.load <|

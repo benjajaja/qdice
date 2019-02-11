@@ -7,7 +7,7 @@ import Backend.Types exposing (..)
 import Game.Types exposing (Player, PlayerAction(..))
 import Http
 import Land exposing (Color(..))
-import Types exposing (Msg(..))
+import Types exposing (Msg(..), AuthState)
 import Tables exposing (Table)
 
 
@@ -18,16 +18,16 @@ loadGlobalSettings model =
             globalDecoder
 
 
-authenticate : Model -> String -> Maybe Table -> Cmd Msg
-authenticate model code table =
+authenticate : Model -> String -> AuthState -> Cmd Msg
+authenticate model code state =
     let
         request =
-            Http.post (model.baseUrl ++ "/login")
+            Http.post (model.baseUrl ++ "/login/" ++ (encodeAuthNetwork state.network))
                 (code |> Http.stringBody "text/plain")
             <|
                 tokenDecoder
     in
-        Http.send (GetToken table) request
+        Http.send (GetToken <| Just state) request
 
 
 loadMe : Model -> Cmd Msg

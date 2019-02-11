@@ -1,4 +1,4 @@
-module Types exposing (GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, AuthNetwork(..), getUsername)
+module Types exposing (GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, AuthNetwork(..), AuthState, getUsername)
 
 import Animation
 import Backend.Types
@@ -27,7 +27,7 @@ type Msg
     | GetGlobalSettings (Result Http.Error ( GlobalSettings, List TableInfo ))
     | Authorize AuthState
     | Authenticate String AuthState
-    | GetToken AuthState (Result Http.Error String)
+    | GetToken (Maybe AuthState) (Result Http.Error String)
     | GetProfile (Result Http.Error ( LoggedUser, String ))
     | GetLeaderBoard (Result Http.Error ( String, List Profile ))
     | Logout
@@ -56,7 +56,9 @@ type Msg
 
 
 type alias AuthState =
-    Maybe Table
+    { network : AuthNetwork
+    , table : Maybe Table
+    }
 
 
 type StaticPage
@@ -120,12 +122,12 @@ type alias LoggedUser =
 type AuthNetwork
     = Password
     | Google
+    | Reddit
     | Telegram
 
 
 type alias MyOAuthModel =
-    { clientId : String
-    , redirectUri : Url
+    { redirectUri : Url
     , error : Maybe String
     , token : Maybe OAuth.Token
     , state : String

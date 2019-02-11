@@ -25,6 +25,7 @@ loginDialog model =
                 ]
 
 
+body : Model -> Html Msg
 body model =
     div []
         [ div
@@ -33,17 +34,37 @@ body model =
                 [ text "One-click sign-in:" ]
             , button
                 [ onClick <|
-                    Authorize <|
-                        case model.showLoginDialog of
-                            LoginShowJoin ->
-                                model.game.table
+                    Authorize
+                        { network = Google
+                        , table =
+                            case model.showLoginDialog of
+                                LoginShowJoin ->
+                                    model.game.table
 
-                            _ ->
-                                Nothing
+                                _ ->
+                                    Nothing
+                        }
                 , class "edLoginSocial edLoginSocial--google"
                 ]
                 [ img [ src "assets/social_icons/google.svg" ] []
                 , text "Sign in with Google"
+                ]
+            , button
+                [ onClick <|
+                    Authorize
+                        { network = Reddit
+                        , table =
+                            case model.showLoginDialog of
+                                LoginShowJoin ->
+                                    model.game.table
+
+                                _ ->
+                                    Nothing
+                        }
+                , class "edLoginSocial edLoginSocial--reddit"
+                ]
+                [ img [ src "assets/social_icons/reddit.svg" ] []
+                , text "Sign in with Reddit"
                 ]
             ]
         , div [ class "edLoginDialog__register" ]
@@ -106,7 +127,10 @@ login model name =
                 , timeout = Nothing
                 , withCredentials = False
                 }
+
+        state =
+            { network = Password, table = model.game.table }
     in
         ( { model | showLoginDialog = LoginHide }
-        , Http.send (Types.GetToken model.game.table) request
+        , Http.send (Types.GetToken <| Just state) request
         )

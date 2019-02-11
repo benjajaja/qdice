@@ -183,16 +183,9 @@ update msg model =
         GetToken table res ->
             case res of
                 Err err ->
-                    let
-                        oauth =
-                            model.oauth
-
-                        oauth_ =
-                            { oauth | error = Just "unable to fetch user profile ¯\\_(ツ)_/¯" }
-                    in
-                        ( { model | oauth = oauth_ }
-                        , toastError "Could not load profile" <| httpErrorToString err
-                        )
+                    ( model
+                    , toastError "Could not load profile" <| httpErrorToString err
+                    )
 
                 Ok token ->
                     let
@@ -247,8 +240,8 @@ update msg model =
                 , Cmd.none
                 )
 
-        Authorize table ->
-            ( model, MyOauth.authorize model.oauth table )
+        Authorize state ->
+            ( model, MyOauth.authorize model.oauth state )
 
         LoadToken token ->
             let
@@ -262,10 +255,10 @@ update msg model =
                 , Cmd.batch [ loadMe backend_, ga [ "send", "event", "auth", "LoadToken" ] ]
                 )
 
-        Authenticate code table ->
+        Authenticate code state ->
             ( model
             , Cmd.batch
-                [ authenticate model.backend code table
+                [ authenticate model.backend code state
                 , ga [ "send", "event", "auth", "Authenticate" ]
                 ]
             )
