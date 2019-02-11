@@ -1,18 +1,18 @@
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
-const Telegram = require('telegraf/telegram');
-const telegram = new Telegram(process.env.BOT_TOKEN);
-const Telegraf = require('telegraf');
-const Extra = require('telegraf/extra');
-const Markup = require('telegraf/markup');
-const jwt = require('jsonwebtoken');
-const ShortUniqueId = require('short-unique-id');
-const R = require('ramda');
-const mqtt = require('mqtt');
-const { rand } = require('./rand');
-const { userProfile } = require('./user');
-const db = require('./db');
+import * as https from 'https';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as Telegram from 'telegraf/telegram';
+import * as telegram from  elegram(process.env.BOT_TOKEN;
+import * as Telegraf from 'telegraf';
+import * as Extra from 'telegraf/extra';
+import * as Markup from 'telegraf/markup';
+import * as jwt from 'jsonwebtoken';
+import * as ShortUniqueId from 'short-unique-id';
+import * as R from 'ramda';
+import * as mqtt from 'mqtt';
+import { rand } from './rand';
+import { userProfile } from './user';
+import * as db from './db';
 
 const uid = new ShortUniqueId();
 
@@ -51,7 +51,7 @@ client.on('message', (topic, message) => {
 });
 
 
-require('./db').connect().then(db => {
+db.connect().then(db => {
   console.log('connected to postgres');
 });
 
