@@ -1,7 +1,7 @@
 module Board.Colors exposing (base, baseCssRgb, cssRgb, highlight, hover, colorName)
 
 import Color
-import Color.Convert exposing (colorToCssRgb)
+import Color.Convert exposing (colorToHex)
 import Color.Manipulate exposing (darken, lighten)
 import Land exposing (Color)
 
@@ -58,7 +58,7 @@ hover =
 
 cssRgb : Color.Color -> String
 cssRgb =
-    colorToCssRgb
+    colorToHex
 
 
 baseCssRgb : Color -> String
