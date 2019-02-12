@@ -39,6 +39,7 @@
 
 
 html {
+  height: 100%;
 }
 body {
   font-family: 'Rubik', sans-serif;
@@ -567,6 +568,7 @@ button, .edButton {
   background: #444;
   color: #efefef;
   display: flex;
+  font-size: 0.65rem;
 }
 .edFooter--box {
   flex: 1 1 50%;
