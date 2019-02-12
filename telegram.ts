@@ -2,7 +2,6 @@ import * as https from 'https';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Telegram from 'telegraf/telegram';
-import * as telegram from  elegram(process.env.BOT_TOKEN;
 import * as Telegraf from 'telegraf';
 import * as Extra from 'telegraf/extra';
 import * as Markup from 'telegraf/markup';
@@ -11,12 +10,14 @@ import * as ShortUniqueId from 'short-unique-id';
 import * as R from 'ramda';
 import * as mqtt from 'mqtt';
 import { rand } from './rand';
-import { userProfile } from './user';
 import * as db from './db';
 
+const telegram = new Telegram(process.env.BOT_TOKEN);
 const uid = new ShortUniqueId();
 
-const officialGroups = process.env.BOT_OFFICIAL_GROUPS.split(',');
+const officialGroups = process.env.BOT_OFFICIAL_GROUPS
+  ? process.env.BOT_OFFICIAL_GROUPS.split(',')
+  : [];
 
 console.log('connecting to mqtt: ' + process.env.MQTT_URL);
 var client = mqtt.connect(process.env.MQTT_URL, {
@@ -26,7 +27,7 @@ var client = mqtt.connect(process.env.MQTT_URL, {
 client.subscribe('events');
 client.on('message', (topic, message) => {
   if (topic === 'events') {
-    const event = JSON.parse(message);
+    const event = JSON.parse(message.toString());
     switch (event.type) {
       case 'join':
         subscribed.forEach(id =>
@@ -40,12 +41,14 @@ client.on('message', (topic, message) => {
         }
         break;
       case 'countdown':
-        //if (officialGroups.length) {
-          //const { table, players } = event;
-          //officialGroups.forEach(id =>
-            //telegram.sendMessage(id, `A game countdown has started in table ${table}, with ${players.join(', ')}`)
-          //);
-        //}
+        console.log('offical', officialGroups);
+        if (officialGroups.length) {
+          const { table, players } = event;
+          officialGroups.forEach(id => {
+            console.log('aviso', id);
+            telegram.sendMessage(id, `A game countdown has started in table ${table}, with ${players.join(', ')}`)
+          });
+        }
     }
   }
 });
@@ -121,7 +124,7 @@ const gameShortName = process.env.BOT_GAME;
 //const gameUrl = 'http://lvh.me:5000';
 const gameUrl = gameShortName === 'QueDiceTest'
   ? 'http://lvh.me:5000'
-  : 'https://quevic.io';
+  : 'https://qdice.wtf';
 
 const markup = Extra.markup(
   Markup.inlineKeyboard([
@@ -172,11 +175,11 @@ bot.gameQuery(ctx => {
 			);
 		});
   })
-  .then(userProfile)
   .then(profile => {
     console.log('got profile', profile);
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
-    return ctx.answerGameQuery(gameUrl + '/#token/' + token);
+    console.log('answer', gameUrl + '/token/' + token);
+    return ctx.answerGameQuery(gameUrl + '/token/' + token);
   })
   .catch(e => {
     console.error('gameQuery error: ' + e, e);
@@ -186,7 +189,7 @@ bot.gameQuery(ctx => {
 
 bot.startPolling();
 
-const subscribed = [ /*208216602*/ ];
+const subscribed = [ /*208216602*/ ] as number[];
 bot.command('notifyme', ctx => {
   const index = subscribed.indexOf(ctx.chat.id);
   if (index === -1) {
@@ -230,7 +233,7 @@ bot.command('score', ctx => {
 
 const downloadAvatar = id => url => {
   const filename = `user_${id}.jpg`;
-  const file = fs.createWriteStream(path.join(process.env.AVATAR_PATH, filename));
+  const file = fs.createWriteStream(path.join(process.env.AVATAR_PATH!, filename));
   https.get(url, response => {
     response.pipe(file);
   });

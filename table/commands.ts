@@ -108,12 +108,23 @@ export const join = (user, table: Table, clientId): CommandResult => {
   let gameStart = table.gameStart;
 
   if (table.players.length === table.playerSlots) {
-    //newTable = await startGame(newTable);
     gameStart = now();
   } else {
     if (players.length >= 2 &&
       players.length >= table.startSlots) {
       gameStart = addSeconds(GAME_START_COUNTDOWN);
+
+      publish.event({
+        type: 'countdown',
+        table: table.name,
+        players: players,
+      });
+    } else {
+      publish.event({
+        type: 'join',
+        table: table.name,
+        player: { name: user.name },
+      });
     }
   }
   return {

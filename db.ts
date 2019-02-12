@@ -98,7 +98,7 @@ LIMIT $1 OFFSET $2`,
   }));
 };
 
-const userProfile = (rows: any[]): User => {
+export const userProfile = (rows: any[]): User => {
   const { id, name, email, picture, level } = rows[0];
   return {
     id: id.toString(),

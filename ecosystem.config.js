@@ -12,8 +12,8 @@ const env_production = {
   BOT_TOKEN: '478186891:AAF8m2BYVGF92p0L1oeCUOquvgF6ajLEvxc',
   BOT_GAME: 'QueDice',
   BOT_OFFICIAL_GROUPS: '-286837303',
-  AVATAR_PATH: '/var/www/quevic.io/pictures',
-  PICTURE_URL_PREFIX: 'https://quevic.io/pictures/',
+  AVATAR_PATH: '/var/www/qdice.wtf/pictures',
+  PICTURE_URL_PREFIX: 'https://qdice.wtf/pictures/',
 };
 const env_local = {
   GOOGLE_OAUTH_SECRET: 'e8Nkmj9X05_hSrrREcRuDCFj',
@@ -51,16 +51,16 @@ module.exports = {
       max_restarts: 5,
       log_type: '',
     },
-    //{
-      //name: 'telegram',
-      //script: 'telegram.js',
-      //env: env_local,
-      //env_production: env_production,
-      //source_map_support: false,
-      //wait_ready: true,
-      //restart_delay: 1000,
-      //vizion: false,
-      //max_restarts: 5,
-    //},
+    {
+      name: 'telegram',
+      script: 'telegram.js',
+      env: env_local,
+      env_production: env_production,
+      source_map_support: false,
+      wait_ready: true,
+      restart_delay: 1000,
+      vizion: false,
+      max_restarts: 5,
+    },
   ]//.concat(tableConfig.tables.map(tableApp)),
 };
