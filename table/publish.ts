@@ -103,7 +103,7 @@ export const elimination = (table, player, position, score, reason) => {
 				console.log(err, 'tables/' + table.name + '/clients elimination', table);
 			}
 
-      module.exports.event({
+      event({
         type: 'elimination',
         table: table.name,
         player,

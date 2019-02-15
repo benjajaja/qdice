@@ -37,7 +37,7 @@ client.on('message', (topic, message) => {
       case 'elimination':
         const { table, player, position, score } = event;
         if (player.telegram) {
-          setScore(player.telegram, score);
+          setScore(player.telegram, player.points);
         }
         break;
       case 'countdown':
