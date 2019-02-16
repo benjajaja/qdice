@@ -105,16 +105,16 @@ export type Elimination = {
 export type EliminationReason = '☠' | '💤' | '🏆' | '🏳' 
 
 export class IllegalMoveError extends Error {
-  user?: User
+  userId?: UserId
   emojiFrom?: Emoji
   emojiTo?: Emoji
   fromLand?: Land
   toLand?: Land
 
-  constructor(message: string, user: User, emojiFrom?: Emoji, emojiTo?: Emoji, fromLand?: Land, toLand?: Land) {
+  constructor(message: string, userId?: UserId, emojiFrom?: Emoji, emojiTo?: Emoji, fromLand?: Land, toLand?: Land) {
     super(message);
     Object.setPrototypeOf(this, IllegalMoveError.prototype);
-    this.user = user;
+    this.userId = userId;
     this.emojiFrom = emojiFrom;
     this.emojiTo = emojiTo;
     this.fromLand = fromLand;

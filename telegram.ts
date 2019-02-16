@@ -46,7 +46,7 @@ client.on('message', (topic, message) => {
           const { table, players } = event;
           officialGroups.forEach(id => {
             console.log('aviso', id);
-            telegram.sendMessage(id, `A game countdown has started in table ${table}, with ${players.join(', ')}`)
+            telegram.sendMessage(id, `A game countdown has started in table ${table}, with ${players.map(p => p.name).join(', ')}`)
           });
         }
     }

@@ -41,8 +41,9 @@ export const rollResult = (table: Table): CommandResult => {
       lands = updateLand(table.lands, toLand, { points: fromLand.points - 1, color: fromLand.color });
       if (loser && R.filter(R.propEq('color', loser.color), lands).length === 0) {
         const turnPlayer = table.players[table.turnIndex];
-        players = table.players.filter(R.complement(R.equals(loser)))
-          .map(player => {
+        const remainingPlayers = table.players.filter(R.complement(R.equals(loser)))
+        turnIndex = remainingPlayers.indexOf(turnPlayer);
+        players = remainingPlayers.map(player => {
             if (player === turnPlayer) {
               return ({ ...player, score: player.score + tablePoints(table) / 2 });
             }
@@ -53,14 +54,13 @@ export const rollResult = (table: Table): CommandResult => {
         });
         eliminations = [{
           player: loser,
-          position: players.length,
+          position: players.length + 1,
           reason: ELIMINATION_REASON_DIE,
           source: {
             player: eliminatedPlayerInfo,
             points: tablePoints(table) / 2,
           },
         }];
-        turnIndex = players.indexOf(turnPlayer);
       }
     }
 

@@ -84,11 +84,11 @@ const makePlayer = (user, clientId, playerCount): Player => ({
   
 export const join = (user, table: Table, clientId): CommandResult => {
   if (table.status === STATUS_PLAYING) {
-    throw new IllegalMoveError('join while STATUS_PLAYING', user);
+    throw new IllegalMoveError('join while STATUS_PLAYING', user.id);
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
-    throw new IllegalMoveError('already joined', user);
+    throw new IllegalMoveError('already joined', user.id);
   }
 
   const players = table.players.concat([makePlayer(user, clientId, table.players.length)]);
@@ -135,13 +135,13 @@ export const join = (user, table: Table, clientId): CommandResult => {
   };
 };
 
-export const leave = (user: User, table: Table, clientId?): CommandResult => {
+export const leave = (user: { id: UserId }, table: Table, clientId?): CommandResult => {
   if (table.status === STATUS_PLAYING) {
-    throw new IllegalMoveError('leave while STATUS_PLAYING', user);
+    throw new IllegalMoveError('leave while STATUS_PLAYING', user.id);
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
-    throw new IllegalMoveError('not joined', user);
+    throw new IllegalMoveError('not joined', user.id);
   }
 
   const players = table.players.filter(p => p !== existing);
@@ -169,10 +169,10 @@ export const leave = (user: User, table: Table, clientId?): CommandResult => {
 
 export const attack = (user, table: Table, clientId, [emojiFrom, emojiTo]): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError('attack while not STATUS_PLAYING', user, emojiFrom, emojiTo);
+    throw new IllegalMoveError('attack while not STATUS_PLAYING', user.id, emojiFrom, emojiTo);
   }
   if (!hasTurn(table)(user)) {
-    throw new IllegalMoveError('attack while not having turn', user, emojiFrom, emojiTo);
+    throw new IllegalMoveError('attack while not having turn', user.id, emojiFrom, emojiTo);
   }
 
   const find = findLand(table.lands);
@@ -180,19 +180,19 @@ export const attack = (user, table: Table, clientId, [emojiFrom, emojiTo]): Comm
   const toLand = find(emojiTo);
   if (!fromLand || !toLand) {
     logger.debug(table.lands.map(l => l.emoji));
-    throw new IllegalMoveError('some land not found in attack', user, emojiFrom, emojiTo, fromLand, toLand);
+    throw new IllegalMoveError('some land not found in attack', user.id, emojiFrom, emojiTo, fromLand, toLand);
   }
   if (fromLand.color === COLOR_NEUTRAL) {
-    throw new IllegalMoveError('attack from neutral', user, emojiFrom, emojiTo, fromLand, toLand);
+    throw new IllegalMoveError('attack from neutral', user.id, emojiFrom, emojiTo, fromLand, toLand);
   }
   if (fromLand.points === 1) {
-    throw new IllegalMoveError('attack from single-die land', user, emojiFrom, emojiTo, fromLand, toLand);
+    throw new IllegalMoveError('attack from single-die land', user.id, emojiFrom, emojiTo, fromLand, toLand);
   }
   if (fromLand.color === toLand.color) {
-    throw new IllegalMoveError('attack same color', user, emojiFrom, emojiTo, fromLand, toLand);
+    throw new IllegalMoveError('attack same color', user.id, emojiFrom, emojiTo, fromLand, toLand);
   }
   if (!isBorder(table.adjacency, emojiFrom, emojiTo)) {
-    throw new IllegalMoveError('attack not border', user, emojiFrom, emojiTo, fromLand, toLand);
+    throw new IllegalMoveError('attack not border', user.id, emojiFrom, emojiTo, fromLand, toLand);
   }
 
   const timestamp = now();
@@ -217,15 +217,15 @@ export const attack = (user, table: Table, clientId, [emojiFrom, emojiTo]): Comm
 
 export const endTurn = (user: User, table: Table, clientId): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError('endTurn while not STATUS_PLAYING', user);
+    throw new IllegalMoveError('endTurn while not STATUS_PLAYING', user.id);
   }
   if (!hasTurn(table)(user)) {
-    throw new IllegalMoveError('endTurn while not having turn', user);
+    throw new IllegalMoveError('endTurn while not having turn', user.id);
   }
 
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
-    throw new IllegalMoveError('endTurn but did not exist in game', user);
+    throw new IllegalMoveError('endTurn but did not exist in game', user.id);
   }
 
   return nextTurn('EndTurn', table);
@@ -233,12 +233,12 @@ export const endTurn = (user: User, table: Table, clientId): CommandResult => {
 
 export const sitOut = (user: User, table: Table, clientId): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError('sitOut while not STATUS_PLAYING', user);
+    throw new IllegalMoveError('sitOut while not STATUS_PLAYING', user.id);
   }
 
   const player = table.players.filter(p => p.id === user.id).pop();
   if (!player) {
-    throw new IllegalMoveError('sitOut while not in game', user);
+    throw new IllegalMoveError('sitOut while not in game', user.id);
   }
 
   //if (hasTurn({ turnIndex: table.turnIndex, players: table.players })(player)) {
@@ -253,11 +253,11 @@ export const sitOut = (user: User, table: Table, clientId): CommandResult => {
 
 export const sitIn = (user, table: Table, clientId): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError('sitIn while not STATUS_PLAYING', user);
+    throw new IllegalMoveError('sitIn while not STATUS_PLAYING', user.id);
   }
   const player = table.players.filter(p => p.id === user.id).pop();
   if (!player) {
-    throw new IllegalMoveError('sitIn while not in game', user);
+    throw new IllegalMoveError('sitIn while not in game', user.id);
   }
 
   const players = table.players.map(p => p === player

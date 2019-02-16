@@ -38,7 +38,10 @@ const start = (table: Table): CommandResult => {
   }));
 
   const shuffledLands = //randomLandOrder(lands, table.players.length);
-    shuffle(lands.slice()).slice(0, table.players.length);
+    shuffle(lands.slice()).slice(0, table.players.length)
+    .map(land => Object.assign({}, land, {
+      points: randomPoints(table.stackSize),
+    }));
 
   const assignedLands = shuffledLands.map((land, index) => {
     const player = table.players[index % table.players.length];
