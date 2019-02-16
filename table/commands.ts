@@ -156,6 +156,10 @@ export const leave = (user: User, table: Table, clientId?): CommandResult => {
 
   const coloredPlayers = players.map((player, index) => Object.assign(player, { color: index + 1 }));
 
+  publish.event({
+    type: 'join',
+    table: table.name,
+  });
   return {
     type: 'Leave',
     table: { gameStart, status },

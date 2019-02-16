@@ -66,9 +66,11 @@ export const rollResult = (table: Table): CommandResult => {
 
     lands = updateLand(lands, fromLand, { points: 1 })
 
-    const props = Object.assign({ turnStart: now(), attack: null }, turnIndex
-      ? { turnIndex }
-      : {});
+    const props = Object.assign({ turnStart: now(), attack: null },
+      turnIndex !== undefined
+        ? { turnIndex }
+      : {}
+    );
     const result: CommandResult = {
       type: 'Roll',
       table: props,

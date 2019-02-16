@@ -88,9 +88,6 @@ export const onMessage = async (topic, message) => {
         }
 
         case 'elimination': {
-          const { player, position, score } = event;
-          const table = findTable(tables)(event.table);
-          //table.players = table.players.filter(p => p.id === event.player.id);
           publish.tables(tables);
           return;
         }

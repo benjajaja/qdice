@@ -149,6 +149,13 @@ const processEliminations = async (table: Table, eliminations: ReadonlyArray<Eli
       type: reason,
       ...source,
     });
+    publish.event({
+      type: 'elimination',
+      table: table.name,
+      player,
+      position,
+      score,
+    });
 
     logger.debug('ELIMINATION-------------');
     logger.debug(position, player.name);
