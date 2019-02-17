@@ -1,9 +1,10 @@
-module Board.Colors exposing (base, baseCssRgb, cssRgb, highlight, hover, colorName)
+module Board.Colors exposing (base, baseCssRgb, cssRgb, highlight, hover, colorName, animationColor)
 
 import Color
 import Color.Convert exposing (colorToHex)
 import Color.Manipulate exposing (darken, lighten)
 import Land exposing (Color)
+import Animation
 
 
 base : Color -> Color.Color
@@ -104,3 +105,16 @@ colorName color =
 
         Land.EditorSelected ->
             "editor-selected"
+
+
+animationColor : Color -> Animation.Color
+animationColor c =
+    let
+        color =
+            base c |> Color.toRgba
+    in
+        { red = round color.red
+        , green = round color.green
+        , blue = round color.blue
+        , alpha = color.alpha
+        }

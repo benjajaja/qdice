@@ -498,9 +498,24 @@ updateTable model table msg =
                                         | game =
                                             { game
                                                 | board =
-                                                    { board
-                                                        | move = move_
-                                                    }
+                                                    Board.State.updateLands
+                                                        board
+                                                        (case move_ of
+                                                            Board.Types.FromTo from to ->
+                                                                [ { color = from.color
+                                                                  , emoji = from.emoji
+                                                                  , points = from.points
+                                                                  }
+                                                                ]
+
+                                                            _ ->
+                                                                []
+                                                        )
+                                                    <|
+                                                        Just move_
+                                                    --{ board
+                                                    --| move = Debug.log "bck move" move_
+                                                    --}
                                             }
                                       }
                                     , Cmd.none

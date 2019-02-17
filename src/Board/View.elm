@@ -62,29 +62,6 @@ board map pathCache animations selected hovered =
                 (List.concat
                     [ List.map landShapeF map.lands
                     , List.map landDiesF map.lands
-                    , [ Svg.defs []
-                            [ Svg.radialGradient [ id "editorGradient" ]
-                                [ Svg.stop [ offset "0.8", stopColor "gold" ] []
-                                , Svg.stop [ offset "0.9", stopColor (landColor False False Land.Neutral) ] []
-                                ]
-                            , Svg.radialGradient [ id "selectedGradient" ]
-                                [ Svg.stop [ offset "0.8", stopColor "gold" ] []
-                                , Svg.stop [ offset "0.9", stopColor "rgba(0,0,0,0)" ] []
-                                ]
-                            ]
-                      , Svg.defs []
-                            [ Svg.filter [ id "dropshadow", filterUnits "userSpaceOnUse", colorInterpolationFilters "sRGB" ]
-                                [ Svg.feComponentTransfer [ Html.Attributes.attribute "in" "SourceAlpha" ]
-                                    [ Svg.feFuncR [ Svg.Attributes.type_ "discrete", tableValues "0" ] []
-                                    , Svg.feFuncG [ Svg.Attributes.type_ "discrete", tableValues "0" ] []
-                                    , Svg.feFuncB [ Svg.Attributes.type_ "discrete", tableValues "0" ] []
-                                    ]
-                                , Svg.feGaussianBlur [ stdDeviation "1" ] []
-                                , Svg.feOffset [ dx "0", dy "0", result "shadow" ] []
-                                , Svg.feComposite [ Html.Attributes.attribute "in" "SourceGraphic", in2 "shadow", operator "over" ] []
-                                ]
-                            ]
-                      ]
                     ]
                 )
             ]
@@ -103,16 +80,16 @@ landElement layout pathCache selected hovered land =
 
                 Nothing ->
                     False
-    in
-        polygon
-            (List.append
+
+        attrs =
+            List.append
                 (polygonAttrs layout pathCache isSelected isHovered land)
                 [ onClick (ClickLand land)
                 , onMouseOver (HoverLand land)
                 , onMouseOut (UnHoverLand land)
                 ]
-            )
-            []
+    in
+        polygon attrs []
 
 
 polygonAttrs : Layout -> PathCache -> Bool -> Bool -> Land.Land -> List (Svg.Attribute Msg)
@@ -129,20 +106,29 @@ polygonAttrs layout pathCache selected hovered land =
 
 landDies : Layout -> Animations -> Land.Land -> Svg Msg
 landDies layout animations land =
-    g [ color <| landColor False False land.color ] <|
-        List.map
-            (landDie
-                (\i -> Dict.get (getLandDieKey land i) animations)
-                (landCenter
-                    layout
-                    land.cells
+    let
+        attrs =
+            case Dict.get ("attack_" ++ land.emoji) animations of
+                Just animation ->
+                    Animation.render animation
+
+                Nothing ->
+                    []
+    in
+        g attrs <|
+            List.map
+                (landDie
+                    (\i -> Dict.get (getLandDieKey land i) animations)
+                    (landCenter
+                        layout
+                        land.cells
+                    )
+                    land.points
                 )
-                land.points
-            )
-        <|
-            List.range
-                0
-                (land.points - 1)
+            <|
+                List.range
+                    0
+                    (land.points - 1)
 
 
 landDie : (Int -> Maybe Animation.State) -> ( Float, Float ) -> Int -> Int -> Svg Msg
