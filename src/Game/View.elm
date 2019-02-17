@@ -35,9 +35,7 @@ view model =
                     ]
                 , div [ class "edGame__meta" ]
                     [ gameChat model
-                    ]
-                , div [ class "edGame__meta2" ]
-                    [ gameLog model
+                    , gameLog model
                     ]
                 , Game.Footer.footer model
                 ]
