@@ -46,6 +46,7 @@ profileForm model user =
                 ]
                 []
             ]
+        , span [] [ text "Your email may be used to recover your access. You will not receive spam. If in the future we add some email features, they will be opt-in." ]
         , button
             []
             [ text "Save" ]

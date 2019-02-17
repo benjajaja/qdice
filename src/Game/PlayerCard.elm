@@ -3,7 +3,6 @@ module Game.PlayerCard exposing (view)
 import Board.Colors
 import Color
 import Color.Accessibility
-import Color.Convert
 import Color.Interpolate
 import Color.Manipulate
 import Game.Types exposing (Player)
@@ -29,7 +28,7 @@ view model index player =
                     (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
                         [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
                         |> Maybe.withDefault (Color.rgb255 0 0 0)
-                        |> Color.Convert.colorToCssRgb
+                        |> Board.Colors.cssRgb
                     )
                 ]
                 [ text player.name ]
@@ -182,7 +181,7 @@ progressColor progress =
             (progress - 0.75)
                 / 0.25
     )
-        |> Color.Convert.colorToCssRgb
+        |> Board.Colors.cssRgb
 
 
 turnProgress : Model -> Float

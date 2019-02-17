@@ -37,6 +37,10 @@ links user =
                 [ i [ class "material-icons" ] [ text "group_work" ]
                 , text "Community"
                 ]
+              --, a [ href "https://t.me/joinchat/DGkiGhEYyjf8bauoWkAGNA", class "edFooter--box__link" ]
+              --[ i [ class "material-icons" ] [ text "chat" ]
+              --, text "Telegram group"
+              --]
             , link "/static/help" "Halp" "help"
             , link "/static/about" "About" "info"
             ]
