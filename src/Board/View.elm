@@ -7,7 +7,7 @@ import Dict
 import Html
 import Html.Attributes
 import Html.Lazy
-import Land exposing (Land, Layout, Map, Point, cellCenter, landCenter)
+import Land exposing (Land, Layout, Map, Point, cellCenter, landCenter, playerColors)
 import String
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -47,6 +47,9 @@ board map pathCache animations selected hovered =
         landShapeF =
             Html.Lazy.lazy <| landElement layout pathCache selected hovered
 
+        massShapeF =
+            Html.Lazy.lazy <| massElement layout pathCache
+
         landDiesF =
             Html.Lazy.lazy <| landDies layout animations
     in
@@ -61,6 +64,7 @@ board map pathCache animations selected hovered =
                 ]
                 (List.concat
                     [ List.map landShapeF map.lands
+                      --, List.map massShapeF <| landMasses map.lands
                     , List.map landDiesF map.lands
                     ]
                 )
@@ -102,6 +106,38 @@ polygonAttrs layout pathCache selected hovered land =
     , points <| pathCache layout land
     , class "edLand"
     ]
+
+
+massElement : Layout -> PathCache -> Land -> Svg Msg
+massElement layout pathCache land =
+    polygon
+        [ fill "transparent"
+        , stroke "black"
+        , strokeLinejoin "round"
+        , strokeWidth "1.5"
+        , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+        , points <| pathCache layout land
+        , class "edLandOutline"
+        ]
+        []
+
+
+landMasses : List Land -> List Land
+landMasses lands =
+    List.foldl
+        (\land ->
+            \masses ->
+                List.map
+                    (\mass ->
+                        if mass.color == land.color then
+                            { mass | cells = (List.append mass.cells land.cells) }
+                        else
+                            mass
+                    )
+                    masses
+        )
+        (List.map (\color -> { cells = [], color = color, emoji = "", points = 0 }) playerColors)
+        lands
 
 
 landDies : Layout -> Animations -> Land.Land -> Svg Msg

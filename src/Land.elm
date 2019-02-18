@@ -1,4 +1,4 @@
-module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, emptyMap, firstFreeBorder, firstFreeBorder_, fullCellMap, hasCell, hasFreeBorder, indexAt, isBorderOnSide, isBorderOnSideCube, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landColor, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, randomPlayerColor, rightSide, setColor, setNeutral)
+module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, emptyMap, firstFreeBorder, firstFreeBorder_, fullCellMap, hasCell, hasFreeBorder, indexAt, isBorderOnSide, isBorderOnSideCube, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landColor, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, randomPlayerColor, rightSide, setColor, setNeutral, playerColors)
 
 import Helpers exposing (find, findIndex)
 import Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
@@ -60,6 +60,18 @@ type Color
     | Editor
     | EditorSelected
 
+playerColors : List Color
+playerColors =
+    [ Red
+    , Green
+    , Blue {- 3 -}
+    , Yellow
+    , Magenta
+    , Cyan
+    , Orange {- 7 -}
+    , Beige {- 8 -}
+    , Black {- 9 -}
+    ]
 
 cellToKey : Hex -> String
 cellToKey cell =
