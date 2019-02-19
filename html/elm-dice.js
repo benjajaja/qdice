@@ -30,6 +30,7 @@ setTimeout(function() {
     node: document.body,
     flags: {
       isTelegram: isTelegram,
+      screenshot: /[?&]screenshot/.test(window.location.search),
     },
   });
 

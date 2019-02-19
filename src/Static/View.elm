@@ -21,15 +21,14 @@ A dice game, written in [Elm](https://elm-lang.org). A simplified Risk, inspired
 Created by <ste3ls@gmail.com>.
 
 #### Priority-High:
-  * ✗ Update table list on local and other game update
+  * ✗ Flag "ready" to start
+  * ✗ Show "who's turn it is" better
   * ✗ Profile page
-  * ✗ Login with twitter, facebook, github
   * ✗ Set password on account, login with password
   * ✗ Connect an auth method to anonymous account
 
 #### Priority-Low:
   * ✗ Fullscreen tooltip
-  * ✗ Show "who's turn it is" better
-  * ✗ Attack animation
   * ✗ Replay a game
+  * ✗ Login with twitter, facebook, github
 """

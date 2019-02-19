@@ -90,6 +90,7 @@ body.navigator-standalone textarea {
 
 
 button, .edButton {
+  font-family: 'Rubik', sans-serif;
   height: 20px;
   line-height: 20px;
   margin: 4px 8px;
@@ -100,7 +101,6 @@ button, .edButton {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   font-size: 0.875rem;
-  line-height: 2.25rem;
   font-weight: 500;
   letter-spacing: 0.08929em;
   text-decoration: none;
@@ -115,7 +115,6 @@ button, .edButton {
   min-width: 64px;
   border: none;
   outline: none;
-  line-height: inherit;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -125,7 +124,39 @@ button, .edButton {
   vertical-align: middle;
 }
 
-
+.edCheckbox {
+  height: 20px;
+  line-height: 20px;
+  margin: 4px 8px;
+  flex: 0 0 auto;
+  background: #101010;
+  color: #efefef;
+  text-transform: uppercase;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.08929em;
+  text-decoration: none;
+  text-transform: uppercase;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  padding: 0 8px 0 8px;
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 64px;
+  border: none;
+  outline: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-appearance: none;
+  overflow: hidden;
+  vertical-align: middle;
+}
 
 
 
@@ -204,7 +235,7 @@ button, .edButton {
 }
 .edGameBoardFooter__content {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
 }
 
@@ -654,12 +685,12 @@ button, .edButton {
   }
   .edGameBoardFooter {
   }
-  .edGameBoardFooter__content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 35px;
-  }
+  /*.edGameBoardFooter__content {*/
+    /*display: flex;*/
+    /*justify-content: space-between;*/
+    /*align-items: center;*/
+    /*height: 35px;*/
+  /*}*/
 }
 
 .edFormLabel {

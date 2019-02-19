@@ -38,6 +38,7 @@ import Url exposing (Url)
 
 type alias Flags =
     { isTelegram : Bool
+    , screenshot : Bool
     }
 
 
@@ -102,6 +103,7 @@ init flags location key =
             , tableList = []
             , time = Time.millisToPosix 0
             , isTelegram = flags.isTelegram
+            , screenshot = flags.screenshot
             , loginName = ""
             , showLoginDialog = LoginHide
             , settings =
@@ -409,7 +411,7 @@ update msg model =
                 cmds =
                     Cmd.batch <|
                         [ enter
-                        , (if totalPlayers == 0 then
+                        , (if not model.screenshot && totalPlayers == 0 then
                             toastMessage
                                 ("Share the page URL with a friend to play!")
                                 20000
@@ -575,7 +577,7 @@ mainView model =
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg
 viewWrapper =
-    Html.div [ Html.Attributes.class "MainBody" ]
+    Html.div [ Html.Attributes.class "edMainScreen" ]
 
 
 mainViewSubscriptions : Model -> Sub Msg

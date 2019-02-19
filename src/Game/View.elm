@@ -3,10 +3,10 @@ module Game.View exposing (view)
 import Backend.Types exposing (ConnectionStatus(..))
 import Board
 import Game.Chat
-import Game.Footer exposing (footer)
+import Game.Footer
 import Game.PlayerCard as PlayerCard
 import Game.State exposing (findUserPlayer)
-import Game.Types exposing (PlayerAction(..), TableInfo, statusToString)
+import Game.Types exposing (PlayerAction(..), TableInfo, Player, statusToString)
 import Html exposing (..)
 import Html.Attributes exposing (class, style, type_, disabled)
 import Html.Events exposing (onClick)
@@ -16,56 +16,66 @@ import Time exposing (posixToMillis)
 import Types exposing (Model, Msg(..))
 
 
-view : Model -> Html.Html Types.Msg
+view : Model -> Html Types.Msg
 view model =
     let
         board =
             Board.view model.game.board
                 |> Html.map BoardMsg
     in
-        div [ class "edGame" ]
-            --[ header model
-            [ div [ class "edMainScreen" ]
-                [ div [ class "edGameBoardWrapper" ]
-                    [ tableInfo model
-                    , header model
-                    , board
-                    , sitInModal model
-                    , boardFooter model
-                    ]
-                , div [ class "edGame__meta" ]
-                    [ gameChat model
-                    , gameLog model
-                    ]
-                , Game.Footer.footer model
+        div [ class "edMainScreen" ]
+            [ div [ class "edGameBoardWrapper" ]
+                [ tableInfo model
+                , header model
+                , board
+                , sitInModal model
+                , boardFooter model
                 ]
+            , div [ class "edGame__meta" ]
+                [ gameChat model
+                , gameLog model
+                ]
+            , Game.Footer.footer model
             ]
 
 
 header : Model -> Html.Html Types.Msg
 header model =
     div [ class "edGameHeader" ]
-        [ div [ class "edGameHeader__content" ]
-            [ div [ class "edPlayerChips" ] <|
-                List.indexedMap (PlayerCard.view model) <|
-                    List.take 4 <|
-                        model.game.players
-            ]
+        [ playerBar 4 model
         ]
 
 
 boardFooter : Model -> Html.Html Types.Msg
 boardFooter model =
-    div [ class "edGameBoardFooter" ]
-        [ div [ class "edGameBoardFooter__content" ]
-            [ div [ class "edPlayerChips" ] <|
-                List.indexedMap (PlayerCard.view model) <|
-                    List.take 4 <|
-                        List.drop 4 <|
-                            model.game.players
-            , seatButton model
-            ]
-        ]
+    let
+        toolbar =
+            if model.screenshot then
+                []
+            else
+                [ div [ class "edGameBoardFooter__content" ]
+                    --[ label [ class "edCheckbox" ]
+                    --[ input
+                    --[ type_ "checkbox" ]
+                    --[]
+                    --, text "Ready"
+                    --]
+                    [ seatButton model
+                    ]
+                ]
+    in
+        div [ class "edGameBoardFooter" ] <|
+            (playerBar 0 model)
+                :: toolbar
+
+
+playerBar : Int -> Model -> Html Msg
+playerBar dropCount model =
+    div [ class "edPlayerChips" ] <|
+        List.indexedMap (PlayerCard.view model) <|
+            List.take 4 <|
+                List.drop dropCount <|
+                    model.game.players
 
 
 seatButton : Model -> Html.Html Types.Msg

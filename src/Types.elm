@@ -88,6 +88,7 @@ type alias Model =
     , tableList : List TableInfo
     , time : Time.Posix
     , isTelegram : Bool
+    , screenshot : Bool
     , loginName : String
     , showLoginDialog : LoginDialogStatus
     , settings : GlobalSettings
