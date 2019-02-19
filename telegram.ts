@@ -8,6 +8,7 @@ import * as Markup from 'telegraf/markup';
 import * as jwt from 'jsonwebtoken';
 import * as ShortUniqueId from 'short-unique-id';
 import * as R from 'ramda';
+import * as puppeteer from 'puppeteer';
 import * as mqtt from 'mqtt';
 import { rand } from './rand';
 import * as db from './db';
@@ -33,6 +34,13 @@ client.on('message', (topic, message) => {
         subscribed.forEach(id =>
           telegram.sendMessage(id, `${event.player.name} joined ${event.table}`)
           .catch(e => console.error(e)));
+        //if (officialGroups.length) {
+          //const { table, players } = event;
+          //officialGroups.forEach(id => {
+            //sendScreenshot(id, table);
+          //});
+        //}
+				
         break;
       case 'elimination':
         const { table, player, position, score } = event;
@@ -47,6 +55,7 @@ client.on('message', (topic, message) => {
           officialGroups.forEach(id => {
             console.log('aviso', id);
             telegram.sendMessage(id, `A game countdown has started in table ${table}, with ${players.map(p => p.name).join(', ')}`)
+            sendScreenshot(id, table);
           });
         }
     }
@@ -240,3 +249,25 @@ const downloadAvatar = id => url => {
   return filename;
 };
 
+bot.command('ss', async ctx => {
+	sendScreenshot(ctx.chat.id, '');
+});
+
+let browserSingleton;
+const newPage = async () => {
+	if (!browserSingleton) {
+		browserSingleton = await puppeteer.launch();
+	}
+	return browserSingleton.newPage();
+};
+
+const sendScreenshot = async (id, table) => {
+	const page = await newPage();
+	await page.setViewport({width: 800, height: 600})
+	await page.goto(`https://qdice.wtf/${table}?screenshot`, { waitUntil: 'networkidle2' });
+	const image = await page.screenshot({});
+
+	telegram.sendPhoto(id, {
+		source: image,
+	});
+};
