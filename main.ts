@@ -20,6 +20,7 @@ import * as mqtt from 'mqtt';
 
 import * as globalServer from './global';
 import { leaderboard } from './leaderboard';
+import { screenshot } from './screenshot';
 import * as publish from './table/publish';
 import * as user from './user';
 
@@ -70,6 +71,7 @@ server.use(jwt({
       (req: any) => req.path() === '/global',
       (req: any) => req.path() === '/findtable',
       (req: any) => req.path() === '/leaderboard',
+      (req: any) => req.path().indexOf('/screenshot') === 0,
     ])(req);
     return ok;
   }
@@ -85,6 +87,17 @@ server.post('/register', user.register);
 server.get('/global', globalServer.global);
 server.get('/findtable', globalServer.findtable);
 server.get('/leaderboard', leaderboard);
+server.get('/screenshot/:table', restify.plugins.throttle({
+	burst: 1,
+	rate: 0.2,
+	ip:true,
+	overrides: {
+		'localhost': {
+			burst: 0,
+			rate: 0    // unlimited
+		}
+	},
+}), screenshot);
 
 db.connect().then(() => {
   logger.info('connected to postgres.');
