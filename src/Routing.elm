@@ -1,12 +1,12 @@
-module Routing exposing (matchers, navigateTo, replaceNavigateTo, routeEnterCmd, routeToString, staticPageMatcher, tableMatcher, parseLocation, goToBestTable)
+module Routing exposing (goToBestTable, matchers, navigateTo, parseLocation, replaceNavigateTo, routeEnterCmd, routeToString, staticPageMatcher, tableMatcher)
 
 import Backend.HttpCommands exposing (leaderBoard)
+import Browser.Navigation exposing (Key)
 import Http
 import Tables exposing (Table)
 import Types exposing (..)
 import Url exposing (Url, percentDecode)
 import Url.Parser exposing (..)
-import Browser.Navigation exposing (Key)
 
 
 matchers : Parser (Route -> a) a
@@ -117,9 +117,13 @@ routeEnterCmd model route =
 
 goToBestTable : Model -> Cmd Msg
 goToBestTable model =
-    case List.head model.tableList of
+    case List.head <| List.filter hasSomePlayers model.tableList of
         Just bestTable ->
             replaceNavigateTo model.key <| GameRoute bestTable.table
 
         Nothing ->
-            Cmd.none
+            replaceNavigateTo model.key <| GameRoute "España"
+
+
+hasSomePlayers table =
+    table.playerCount > 0
