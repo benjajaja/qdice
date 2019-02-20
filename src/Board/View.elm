@@ -53,22 +53,24 @@ board map pathCache animations selected hovered =
         landDiesF =
             Html.Lazy.lazy <| landDies layout animations
     in
-        Html.div [ class "edBoard" ]
-            [ Svg.svg
-                --[ width "100%"
-                --, height "100%"
-                [ viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
-                  --[ viewBox ("0 0 100 100")
-                , preserveAspectRatio "xMidYMin meet"
-                , class "edBoard--svg"
-                ]
-                (List.concat
-                    [ List.map landShapeF map.lands
-                      --, List.map massShapeF <| landMasses map.lands
-                    , List.map landDiesF map.lands
-                    ]
-                )
+    Html.div [ class "edBoard" ]
+        [ Svg.svg
+            --[ width "100%"
+            --, height "100%"
+            [ viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
+
+            --[ viewBox ("0 0 100 100")
+            , preserveAspectRatio "xMidYMin meet"
+            , class "edBoard--svg"
             ]
+            (List.concat
+                [ List.map landShapeF map.lands
+
+                --, List.map massShapeF <| landMasses map.lands
+                , List.map landDiesF map.lands
+                ]
+            )
+        ]
 
 
 landElement : Layout -> PathCache -> List Land.Land -> Maybe Land -> Land.Land -> Svg Msg
@@ -93,7 +95,7 @@ landElement layout pathCache selected hovered land =
                 , onMouseOut (UnHoverLand land)
                 ]
     in
-        polygon attrs []
+    polygon attrs []
 
 
 polygonAttrs : Layout -> PathCache -> Bool -> Bool -> Land.Land -> List (Svg.Attribute Msg)
@@ -130,7 +132,8 @@ landMasses lands =
                 List.map
                     (\mass ->
                         if mass.color == land.color then
-                            { mass | cells = (List.append mass.cells land.cells) }
+                            { mass | cells = List.append mass.cells land.cells }
+
                         else
                             mass
                     )
@@ -151,20 +154,20 @@ landDies layout animations land =
                 Nothing ->
                     []
     in
-        g attrs <|
-            List.map
-                (landDie
-                    (\i -> Dict.get (getLandDieKey land i) animations)
-                    (landCenter
-                        layout
-                        land.cells
-                    )
-                    land.points
+    g attrs <|
+        List.map
+            (landDie
+                (\i -> Dict.get (getLandDieKey land i) animations)
+                (landCenter
+                    layout
+                    land.cells
                 )
-            <|
-                List.range
-                    0
-                    (land.points - 1)
+                land.points
+            )
+        <|
+            List.range
+                0
+                (land.points - 1)
 
 
 landDie : (Int -> Maybe Animation.State) -> ( Float, Float ) -> Int -> Int -> Svg Msg
@@ -173,43 +176,45 @@ landDie getAnimation ( cx, cy ) points index =
         xOffset =
             if index >= 4 then
                 1.0
+
             else
                 2.2
 
         yOffset =
             if index >= 4 then
                 1.1
+
             else
                 2
 
         animation =
             getAnimation index
     in
-        Svg.image
-            (List.concat
-                [ case animation of
-                    Just a ->
-                        Animation.render a
+    Svg.image
+        (List.concat
+            [ case animation of
+                Just a ->
+                    Animation.render a
 
-                    Nothing ->
-                        []
-                , case animation of
-                    Just _ ->
-                        []
+                Nothing ->
+                    []
+            , case animation of
+                Just _ ->
+                    []
 
-                    Nothing ->
-                        [ y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2) ]
-                , [ x <| String.fromFloat <| cx - xOffset
-                  , textAnchor "middle"
-                  , alignmentBaseline "central"
-                  , class "edBoard--dies"
-                  , xlinkHref "die.svg"
-                  , height "3"
-                  , width "3"
-                  ]
-                ]
-            )
-            []
+                Nothing ->
+                    [ y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2) ]
+            , [ x <| String.fromFloat <| cx - xOffset
+              , textAnchor "middle"
+              , alignmentBaseline "central"
+              , class "edBoard--dies"
+              , xlinkHref "die.svg"
+              , height "3"
+              , width "3"
+              ]
+            ]
+        )
+        []
 
 
 landText : Layout -> Land.Land -> Svg Msg
@@ -220,23 +225,24 @@ landText layout land =
                     ( cx, cy ) =
                         c
                 in
-                    g
-                        [ transform <|
-                            "translate("
-                                ++ (String.fromFloat <| cx - 1.75)
-                                ++ ","
-                                ++ (String.fromFloat <| cy + 0.5)
-                                ++ ")"
-                          --x <| String.fromFloat cx
-                          --, y <| String.fromFloat cy
+                g
+                    [ transform <|
+                        "translate("
+                            ++ (String.fromFloat <| cx - 1.75)
+                            ++ ","
+                            ++ (String.fromFloat <| cy + 0.5)
+                            ++ ")"
+
+                    --x <| String.fromFloat cx
+                    --, y <| String.fromFloat cy
+                    ]
+                    [ Svg.text_
+                        [ textAnchor "middle"
+                        , alignmentBaseline "central"
+                        , class "edBoard--emoji"
                         ]
-                        [ Svg.text_
-                            [ textAnchor "middle"
-                            , alignmentBaseline "central"
-                            , class "edBoard--emoji"
-                            ]
-                            [ Html.text land.emoji ]
-                        ]
+                        [ Html.text land.emoji ]
+                    ]
            )
 
 
@@ -250,11 +256,13 @@ landColor selected hovered color =
             Board.Colors.base color
                 |> (if selected then
                         Board.Colors.highlight
+
                     else
                         identity
                    )
                 |> (if hovered then
                         Board.Colors.hover
+
                     else
                         identity
                    )

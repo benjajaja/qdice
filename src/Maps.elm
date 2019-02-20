@@ -30,7 +30,7 @@ type alias Line =
 emojiRegex : Regex.Regex
 emojiRegex =
     Regex.fromString "〿|ｯ|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]"
-    |> Maybe.withDefault Regex.never
+        |> Maybe.withDefault Regex.never
 
 
 consoleLogMap : Land.Map -> Cmd msg
@@ -41,8 +41,6 @@ consoleLogMap map =
 load : Map -> Land.Map
 load map =
     emojisToMap <| mapSourceString map
-
-
 
 
 emojisToMap : String -> Land.Map
@@ -61,26 +59,31 @@ emojisToMap raw =
                 lines
                 |> List.map (Maybe.withDefault 0)
 
-        width =
+        realWidth =
             List.maximum widths |> Maybe.withDefault 0
 
-        height = List.length lines
+        realHeight =
+            List.length lines
 
+        lands : List Land.Land
         lands =
             List.map (List.filter isEmptyEmoji) lines
                 |> foldLines
                 |> List.foldr dedupeEmojis []
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)
     in
-    Land.Map lands width (List.length lines)
-    --(max width height) (max width height)
+    Land.Map lands
+        --realWidth
+        --realHeight
+        (max realWidth realHeight)
+        (max realWidth realHeight)
 
 
 charRow : Int -> String -> Line
 charRow row string =
     Regex.find emojiRegex string
         |> List.map .match
-        |> List.indexedMap (\col -> \c -> ( ( col + (modBy 2 row), row ), c ))
+        |> List.indexedMap (\col -> \c -> ( ( col + modBy 2 row, row ), c ))
 
 
 foldLines : List Line -> List EmojiLand
@@ -89,12 +92,12 @@ foldLines lines =
 
 
 foldChars : ( ( Int, Int ), String ) -> List EmojiLand -> List EmojiLand
-foldChars ( ( row, col ), char ) accum =
+foldChars ( ( col, row ), char ) accum =
     if char == Land.emptyEmoji then
         accum
 
     else
-        EmojiLand [ Land.offsetToHex ( row, col ) ] char :: accum
+        EmojiLand [ Land.offsetToHex ( col, row ) ] char :: accum
 
 
 isEmptyEmoji : ( a, String ) -> Bool
