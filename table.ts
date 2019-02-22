@@ -2,6 +2,7 @@ import { promisify } from 'util';
 import * as R from 'ramda';
 import * as mqtt from 'mqtt';
 import * as jwt from 'jsonwebtoken';
+import * as AsyncLock from 'async-lock';
 
 import { UserId, Table, CommandResult, Elimination, IllegalMoveError } from './types';
 import * as db from './db';
@@ -33,6 +34,7 @@ export const start = async (tableTag: string, client: mqtt.MqttClient) => {
 
   client.subscribe(`tables/${tableTag}/server`);
 
+  const lock = new AsyncLock();
 
   const onMessage = async (topic, message) => {
     if (topic !== `tables/${tableTag}/server`) {
@@ -45,29 +47,34 @@ export const start = async (tableTag: string, client: mqtt.MqttClient) => {
     }
 
     const { type, clientId, token, payload } = parsedMessage;
-    try {
-      const user = await (token
-        ? verifyJwt(token, process.env.JWT_SECRET)
-        : null
-      );
-      const table = await getTable(tableTag);
 
-      const result = command(user, clientId, table, type, payload);
-      await processComandResult(table, result);
+    lock.acquire(tableTag, async done => {
+      try {
+        const user = await (token
+          ? verifyJwt(token, process.env.JWT_SECRET)
+          : null
+        );
+        const table = await getTable(tableTag);
 
-    } catch (e) {
-      publish.clientError(clientId, e);
-      if ((e instanceof IllegalMoveError)) {
-        logger.error(e, 'illegal move caught gracefully');
-      } else {
-        throw e;
+        const result = command(user, clientId, table, type, payload);
+        await processComandResult(table, result);
+
+      } catch (e) {
+        publish.clientError(clientId, e);
+        if ((e instanceof IllegalMoveError)) {
+          logger.error(e, 'illegal move caught gracefully');
+        } else {
+          throw e;
+        }
+      } finally {
+        done();
       }
-    }
+    });
   };
 
   client.on('message', onMessage);
 
-  tick.start(tableTag);
+  tick.start(tableTag, lock);
   return () => {
     client.off('message', onMessage);
     tick.stop(tableTag);

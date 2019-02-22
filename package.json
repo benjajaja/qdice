@@ -26,6 +26,7 @@
     "@types/pg": "^7.4.11",
     "@types/ramda": "^0.25.46",
     "@types/restify": "^7.2.7",
+    "async-lock": "^1.1.4",
     "bluebird": "^3.5.1",
     "camelize": "^1.0.0",
     "decamelize": "^2.0.0",
