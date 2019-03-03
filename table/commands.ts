@@ -174,6 +174,9 @@ export const attack = (user, table: Table, clientId, [emojiFrom, emojiTo]): Comm
   if (!hasTurn(table)(user)) {
     throw new IllegalMoveError('attack while not having turn', user.id, emojiFrom, emojiTo);
   }
+  if (table.attack !== null) {
+    throw new IllegalMoveError('attack while ongoing attack', user.id, emojiFrom, emojiTo);
+  }
 
   const find = findLand(table.lands);
   const fromLand: Land = find(emojiFrom);

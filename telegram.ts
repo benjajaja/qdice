@@ -54,8 +54,8 @@ client.on('message', (topic, message) => {
           const { table, players } = event;
           officialGroups.forEach(id => {
             console.log('aviso', id);
-            telegram.sendMessage(id, `A game countdown has started in table ${table}, with ${players.map(p => p.name).join(', ')}`)
-            sendScreenshot(id, table);
+		  telegram.sendMessage(id, `A game countdown has started in table ${table}, with ${players.map(p => p.name).join(', ')}: https://qdice.wtf/${table}`)
+		  //sendScreenshot(id, table);
           });
         }
     }
@@ -137,7 +137,7 @@ const gameUrl = gameShortName === 'QueDiceTest'
 
 const markup = Extra.markup(
   Markup.inlineKeyboard([
-    Markup.gameButton('🎲 Play now!'),
+    Markup.gameButton('🎲 Play in telegram!'),
     Markup.urlButton('Play in browser', gameUrl)
   ])
 );

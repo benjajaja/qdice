@@ -52,7 +52,7 @@ const loadLands = (table: Table): Table => {
       ? table.lands.map(land => {
           const match = lands.filter(l => l.emoji === land.emoji).pop()
           if (!match) {
-            throw new Error('cannot set cells');
+            throw new Error('cannot set cells: ' + table.mapName);
           }
           return Object.assign({}, match, land);
         })
