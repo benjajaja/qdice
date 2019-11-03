@@ -5,4 +5,5 @@ node_modules
 .env
 Procfile
 yarn-error.log
+data/certbot
 

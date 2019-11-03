@@ -6,6 +6,8 @@ import * as decamelize from 'decamelize';
 import logger from './logger';
 import { UserId, Network, Table, Player, User, Land, Emoji, Color, Watcher } from './types';
 import { date } from './timestamp';
+import {setTimeout} from 'timers';
+import * as sleep from "sleep-promise";
 
 let client: Client;
 
@@ -14,11 +16,31 @@ export const connect = async function db() {
     return client;
   }
 
-  client = new Client();
+  client = new Client({
+    host: process.env.PGHOST,
+    port: parseInt(process.env.PGPORT!, 10),
+  });
 
-  await client.connect();
+  try {
+    logger.debug("pg connect", process.env.PGHOST, process.env.PGPORT);
+    await client.connect();
+  } catch (e) {
+    client = undefined!;
+    throw e;
+  }
 
+  logger.debug("pg connected!");
   return client;
+};
+
+export const retry = async function retry() {
+  try {
+    return await connect();
+  } catch (e) {
+    logger.error("pg connection error", e);
+    await sleep(1000);
+    return await retry();
+  }
 };
 
 export const NETWORK_GOOGLE: Network = 'google';

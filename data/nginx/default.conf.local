@@ -1,0 +1,24 @@
+server {
+    listen 80;
+    server_name localhost qdice.wtf;
+    root /var/www/qdice.wtf/;
+
+    location / {
+        try_files $uri /index.html;
+    }
+    location /api {
+        proxy_pass http://nodice:5001;
+        include /etc/nginx/proxy_params;
+    }
+    location /mqtt {
+        proxy_pass http://emqx:8083;
+        include /etc/nginx/proxy_params;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+    }
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+}
+

@@ -66,28 +66,30 @@ server.use(jwt({
 .unless({
   custom: (req: any) => {
     const ok = R.anyPass([
-      (req: any) => req.path().indexOf('/login') === 0,
-      (req: any) => req.path() === '/register',
-      (req: any) => req.path() === '/global',
-      (req: any) => req.path() === '/findtable',
-      (req: any) => req.path() === '/leaderboard',
-      (req: any) => req.path().indexOf('/screenshot') === 0,
+      (req: any) => req.path().indexOf(`${root}/login`) === 0,
+      (req: any) => req.path() === `${root}/register`,
+      (req: any) => req.path() === `${root}/global`,
+      (req: any) => req.path() === `${root}/findtable`,
+      (req: any) => req.path() === `${root}/leaderboard`,
+      (req: any) => req.path().indexOf(`${root}/screenshot`) === 0,
     ])(req);
     return ok;
   }
 }));
 
 
-server.post('/login/:network', user.login);
-server.get('/me', user.me);
-server.put('/profile', user.profile);
-server.post('/register', user.register);
+const root = '/api';
+
+server.post(`${root}/login/:network`, user.login);
+server.get(`${root}/me`, user.me);
+server.put(`${root}/profile`, user.profile);
+server.post(`${root}/register`, user.register);
 
 
-server.get('/global', globalServer.global);
-server.get('/findtable', globalServer.findtable);
-server.get('/leaderboard', leaderboard);
-server.get('/screenshot/:table', restify.plugins.throttle({
+server.get(`${root}/global`, globalServer.global);
+server.get(`${root}/findtable`, globalServer.findtable);
+server.get(`${root}/leaderboard`, leaderboard);
+server.get(`${root}/screenshot/:table`, restify.plugins.throttle({
 	burst: 1,
 	rate: 0.2,
 	ip:true,
@@ -99,7 +101,7 @@ server.get('/screenshot/:table', restify.plugins.throttle({
 	},
 }), screenshot);
 
-db.connect().then(() => {
+db.retry().then(() => {
   logger.info('connected to postgres.');
 
   server.listen(process.env.PORT || 5001, function() {
@@ -115,6 +117,11 @@ db.connect().then(() => {
 
   client.subscribe('events');
   client.on('error', (err: Error) => logger.error(err));
+  client.on('close', () => logger.error('mqqt close'));
+  client.on('disconnect', () => logger.error('mqqt disconnect'));
+  client.on('offline', () => logger.error('mqqt offline'));
+  client.on('end', () => logger.error('mqqt end'));
+
   client.on('connect', () => {
     logger.info('connected to mqtt.');
     if (process.send) {
