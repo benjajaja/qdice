@@ -54,19 +54,9 @@ connect =
 
 baseUrl : Url -> String
 baseUrl location =
-    if "localhost" == location.host || "lvh.me" == location.host then
-        "http://localhost:5001"
-    else
-        let
-            protocol =
-                case location.protocol of
-                    Https ->
-                        "https"
-
-                    Http ->
-                        "http"
-        in
-            protocol ++ "://" ++ "api.qdice.wtf"
+    case Maybe.withDefault 80 location.port_ of
+        5000 -> "http://localhost:5001/api"
+        _ -> "/api"
 
 
 init : Url -> Bool -> ( Model, Cmd Msg )

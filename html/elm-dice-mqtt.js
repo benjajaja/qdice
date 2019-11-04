@@ -4,7 +4,7 @@ function getMqttConfig() {
   if (self.location.hostname === 'localhost' || self.location.hostname === 'lvh.me') {
     return {
       protocol: 'ws',
-      hostname: 'localhost',
+      hostname: self.location.hostname,
       port: 8083,
       path: 'mqtt',
       username: 'client',
@@ -13,7 +13,6 @@ function getMqttConfig() {
   } else {
     return {
       protocol: 'wss',
-      hostname: 'mqtt.qdice.wtf',
       path: 'mqtt',
     };
   }

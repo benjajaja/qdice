@@ -410,15 +410,7 @@ update msg model =
 
                 cmds =
                     Cmd.batch <|
-                        [ enter
-                        , (if not model.screenshot && totalPlayers == 0 then
-                            toastMessage
-                                ("Share the page URL with a friend to play!")
-                                20000
-                           else
-                            Cmd.none
-                          )
-                        ]
+                        [ enter, Cmd.none ]
             in
                 ( model
                 , cmds
