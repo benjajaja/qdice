@@ -1,4 +1,4 @@
-port module Board.State exposing (init, update, updateLands)
+module Board.State exposing (init, update, updateLands)
 
 import Animation exposing (px)
 import Board.PathCache exposing (createPathCache)

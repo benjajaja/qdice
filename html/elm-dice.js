@@ -23,7 +23,7 @@ if (window.navigator.standalone === true) {
 var ga = function(){};
 
 setTimeout(function() {
-  var Elm = require('../src/App').Elm;
+  var Elm = require('../src/Edice').Elm;
 
   var isTelegram = (typeof TelegramWebviewProxy === 'object');
   var app = Elm.Edice.init({
