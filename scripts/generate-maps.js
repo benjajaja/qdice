@@ -1,5 +1,8 @@
 const fs = require('fs');
 
+if (!fs.existsSync('./src/Maps')) {
+  fs.mkdirSync('./src/Maps');
+}
 const write = fs.createWriteStream('./src/Maps/Sources.elm');
 write.write('module Maps.Sources exposing (mapSourceString)\n');
 write.write('import Tables exposing (Map(..))\n');
