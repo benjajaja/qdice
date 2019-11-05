@@ -1,0 +1,3 @@
+[submodule "edice"]
+	path = edice
+	url = git@bitbucket-prv:easy-rider/edice.git
