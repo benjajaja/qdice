@@ -5,14 +5,9 @@
 version: 2
 jobs:
   build:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:7.10
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
+    machine: true
+    # docker:
+      # - image: circleci/node:7.10
 
     working_directory: ~/repo
 
@@ -34,7 +29,7 @@ jobs:
             curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
             chmod +x ~/docker-compose
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
-      - setup_remote_docker
+      #- setup_remote_docker
 
       - save_cache:
           paths:
@@ -49,5 +44,5 @@ jobs:
 
       - run:
           name: ping
-          command: curl --retry 10 --retry-delay 1 --retry-connrefused -I http://localhost
+          command: curl --retry 10 --retry-delay 1 -I http://localhost
 
