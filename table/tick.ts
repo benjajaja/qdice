@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import * as io from '@pm2/io';
 import { getTable, save } from './get';
 import { Table, Player, CommandResult, Timestamp } from '../types';
 import { processComandResult } from '../table';
@@ -18,10 +17,6 @@ import startGame from './start';
 import { rollResult } from './attack';
 import { leave } from './commands';
 import logger from '../logger';
-
-const gamesStarted = io.counter({
-  name: 'Games started',
-});
 
 const intervalIds: {[tableTag: string]: any} = {};
 export const start = (tableTag: string) => {
@@ -67,7 +62,6 @@ const tick = async (tableTag: string) => {
         && table.gameStart !== 0
         && havePassed(0, table.gameStart)) {
       result = startGame(table);
-      gamesStarted.inc();
     } else if (table.players.length > 0) {
       result = cleanPlayers(table);
     }

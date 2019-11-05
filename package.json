@@ -5,9 +5,7 @@
   "main": "main.js",
   "author": "Benjamin Große",
   "scripts": {
-    "start": "pm2 startOrRestart ecosystem.config.js",
-    "stop": "pm2 stop ecosystem.config.js",
-    "test": "mocha",
+    "start": "node server.js",
     "deploy": "./scripts/deploy.sh"
   },
   "deploy": {
@@ -23,7 +21,6 @@
     }
   },
   "dependencies": {
-    "@pm2/io": "^3.0.0",
     "@types/node": "^10.12.18",
     "@types/pg": "^7.4.11",
     "@types/ramda": "^0.25.46",
@@ -38,7 +35,6 @@
     "pg": "^7.4.0",
     "pino": "^5.10.6",
     "pino-pretty": "^2.5.0",
-    "pm2": "^4.1.2",
     "puppeteer": "^1.12.2",
     "ramda": "^0.25.0",
     "redis": "^2.8.0",
