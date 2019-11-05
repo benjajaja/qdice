@@ -9,23 +9,20 @@ import Board
 import Board.Types
 import Footer exposing (footer)
 import GA exposing (ga)
-import Game.Chat
 import Game.State
 import Game.Types exposing (PlayerAction(..))
 import Game.View
-import Helpers exposing (pipeUpdates, httpErrorToString, consoleDebug)
+import Helpers exposing (pipeUpdates, httpErrorToString)
 import Html
 import Html.Attributes
 import Html.Lazy
-import Http
 import LeaderBoard.State
 import LeaderBoard.View
 import LoginDialog exposing (login, loginDialog)
-import Maybe
 import MyOauth
 import MyProfile.MyProfile
-import Routing exposing (parseLocation, navigateTo, replaceNavigateTo)
-import Snackbar exposing (toastError, toastMessage)
+import Routing exposing (parseLocation, navigateTo)
+import Snackbar exposing (toastError)
 import Static.View
 import Tables exposing (Map(..), Table)
 import Task
