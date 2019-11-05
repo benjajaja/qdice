@@ -2,6 +2,7 @@ FROM node:9.2.1
 
 WORKDIR /usr/src/nodice
 COPY package.json .
+COPY yarn.lock .
 RUN yarn install
 COPY . .
 

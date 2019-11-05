@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: "bgrosse"
     ports: [ "5433:5432" ]
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - ~/postgres-data:/var/lib/postgresql/data
   nginx:
     restart: always
     # network_mode: host
@@ -20,7 +20,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /var/www/qdice.wtf:/var/www/qdice.wtf
+      - dist:/var/www/qdice.wtf
       #- ../edice/dist:/var/www/qdice.wtf
       - ./data/proxy_params:/etc/nginx/proxy_params
       - ./data/nginx/default.conf.${ENV}:/etc/nginx/conf.d/default.conf
@@ -43,6 +43,10 @@ services:
       - "18083:18083"
       - "11883:11883"
       - "1883:1883"
+  edice:
+    build: ./edice
+    volumes:
+      - dist:/usr/src/edice/dist
   nodice:
     build: .
     ports: ["5001:5001"]
@@ -51,3 +55,5 @@ services:
       - postgres
       - emqx
 
+volumes:
+  dist:

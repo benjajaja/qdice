@@ -18,6 +18,9 @@ jobs:
 
     steps:
       - checkout
+      - run: git config --file=.gitmodules submodule.edice.url git@bitbucket.org:easy-rider/edice.git
+      - run: git submodule sync
+      - run: git submodule update --init
 
       # Download and cache dependencies
       - restore_cache:
