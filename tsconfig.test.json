@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "alwaysStrict": true,
+    "lib": ["es2018"],
+    "types": ["node", "jest", "puppeteer", "expect-puppeteer"],
+    "resolveJsonModule": true
+  },
+  "include": ["typings/global.d.ts"]
+}

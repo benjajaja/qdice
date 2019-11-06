@@ -41,8 +41,24 @@ jobs:
           command: |
             set -x
             docker-compose up -d
+      - run:
+          name: install fucking yarn
+          command: curl -o- -L https://yarnpkg.com/install.sh | bash
+
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install Dependencies
+          command: yarn install --frozen-lockfile
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
 
       - run:
-          name: ping
-          command: curl --retry 10 --retry-delay 1 -I http://localhost
+          name: e2e
+          command: node node_modules/jest/bin/jest.js
 
