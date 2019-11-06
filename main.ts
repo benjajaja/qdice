@@ -64,6 +64,7 @@ server.use(jwt({
       (req: any) => req.path() === `${root}/global`,
       (req: any) => req.path() === `${root}/findtable`,
       (req: any) => req.path() === `${root}/leaderboard`,
+      (req: any) => req.path() === `${root}/e2e`,
       (req: any) => req.path().indexOf(`${root}/screenshot`) === 0,
     ])(req);
     return ok;
@@ -72,6 +73,15 @@ server.use(jwt({
 
 
 const root = '/api';
+
+logger.info(`E2E: ${process.env.E2E}`);
+if (process.env.E2E) {
+  server.get(`${root}/e2e`, async (req, res) => {
+    await db.clearGames();
+    res.send(200, "ok.")
+  });
+}
+
 
 server.post(`${root}/login/:network`, user.login);
 server.get(`${root}/me`, user.me);

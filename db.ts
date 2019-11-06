@@ -8,6 +8,7 @@ import { UserId, Network, Table, Player, User, Land, Emoji, Color, Watcher } fro
 import { date } from './timestamp';
 import {setTimeout} from 'timers';
 import * as sleep from "sleep-promise";
+import * as config from './tables.config'; // for e2e only
 
 let client: Client;
 
@@ -40,6 +41,15 @@ export const retry = async function retry() {
     logger.error("pg connection error", e);
     await sleep(1000);
     return await retry();
+  }
+};
+
+export const clearGames = async (): Promise<void> => {
+  await client.query(`DELETE FROM tables`);
+  logger.info("E2E cleared all tables");
+  for (const table of config.tables) {
+    logger.info(`E2E creating table ${table.name}`);
+    await createTable(table);
   }
 };
 

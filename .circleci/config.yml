@@ -1,12 +1,13 @@
-# Javascript Node CircleCI 2.0 configuration file
-#
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
-#
-version: 2
+version: 2.1
+
+orbs:
+  puppeteer: threetreeslight/puppeteer@0.1.2
+
 jobs:
   build:
     docker:
       - image: circleci/node:10.15.3
+      - image: buildkite/puppeteer:latest
     working_directory: ~/repo
     steps:
       - checkout
@@ -31,29 +32,23 @@ jobs:
             set -x
             docker-compose up -d
 
-  test:
-    docker:
-      - image: circleci/node:10.15.3
-
-    working_directory: ~/repo
-
-    steps:
-      - checkout
       - restore_cache:
           name: Restore Yarn Package Cache
           keys:
-            - yarn-packages-{{ checksum "yarn.lock" }}
+            - yarn-packages-e2e-{{ checksum "yarn.lock" }}
       - run:
           name: Install Dependencies
+          working_directory: ./e2e
           command: yarn install --frozen-lockfile
       - save_cache:
           name: Save Yarn Package Cache
-          key: yarn-packages-{{ checksum "yarn.lock" }}
+          key: yarn-packages-e2e-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
 
       - run:
           name: e2e
+          working_directory: ./e2e
           command: yarn jest
 
 workflows:
@@ -61,8 +56,4 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - test:
-          requires:
-            - build
-
 
