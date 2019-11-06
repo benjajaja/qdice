@@ -11,7 +11,7 @@ services:
     ports: [ "5433:5432" ]
     volumes:
       - ~/data-postgres:/var/lib/postgresql/data
-  nginx:
+  edice:
     restart: always
     # network_mode: host
     build: ./edice

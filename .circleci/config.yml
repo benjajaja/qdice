@@ -7,21 +7,12 @@ jobs:
   build:
     docker:
       - image: circleci/node:10.15.3
-
     working_directory: ~/repo
-
     steps:
       - checkout
       - run: git config --file=.gitmodules submodule.edice.url git@bitbucket.org:easy-rider/edice.git
       - run: git submodule sync
       - run: git submodule update --init
-
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
       - run:
           name: Install Docker Compose
           command: |
@@ -29,18 +20,20 @@ jobs:
             chmod +x ~/docker-compose
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - setup_remote_docker
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-
       - run:
-          name: Start container
+          name: Start all containers
           command: |
             set -x
             docker-compose up -d
 
+  test:
+    docker:
+      - image: circleci/node:10.15.3
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
       - restore_cache:
           name: Restore Yarn Package Cache
           keys:
@@ -57,4 +50,14 @@ jobs:
       - run:
           name: e2e
           command: yarn jest
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+
 
