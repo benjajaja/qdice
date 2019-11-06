@@ -14,14 +14,11 @@ services:
   nginx:
     restart: always
     # network_mode: host
-    # build: Dockerfile.nginx
-    image: nginx:mainline
+    build: ./edice
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - dist:/var/www/qdice.wtf
-      #- ../edice/dist:/var/www/qdice.wtf
       - ./data/proxy_params:/etc/nginx/proxy_params
       - ./data/nginx/default.conf.${ENV}:/etc/nginx/conf.d/default.conf
       - /etc/letsencrypt/:/etc/letsencrypt/
@@ -43,10 +40,6 @@ services:
       - "18083:18083"
       - "11883:11883"
       - "1883:1883"
-  edice:
-    build: ./edice
-    volumes:
-      - dist:/usr/src/edice/dist
   nodice:
     build: .
     ports: ["5001:5001"]
@@ -54,6 +47,3 @@ services:
     links:
       - postgres
       - emqx
-
-volumes:
-  dist:

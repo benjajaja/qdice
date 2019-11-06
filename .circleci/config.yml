@@ -5,9 +5,8 @@
 version: 2
 jobs:
   build:
-    machine: true
-    # docker:
-      # - image: circleci/node:7.10
+    docker:
+      - image: circleci/node:10.15.3
 
     working_directory: ~/repo
 
@@ -29,7 +28,7 @@ jobs:
             curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
             chmod +x ~/docker-compose
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
-      #- setup_remote_docker
+      - setup_remote_docker
 
       - save_cache:
           paths:
@@ -41,9 +40,6 @@ jobs:
           command: |
             set -x
             docker-compose up -d
-      - run:
-          name: install fucking yarn
-          command: curl -o- -L https://yarnpkg.com/install.sh | bash
 
       - restore_cache:
           name: Restore Yarn Package Cache
@@ -60,5 +56,5 @@ jobs:
 
       - run:
           name: e2e
-          command: node node_modules/jest/bin/jest.js
+          command: yarn jest
 
