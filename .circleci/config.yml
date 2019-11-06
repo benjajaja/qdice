@@ -21,6 +21,11 @@ jobs:
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - setup_remote_docker
       - run:
+          name: Build all containers
+          command: |
+            set -x
+            docker-compose build
+      - run:
           name: Start all containers
           command: |
             set -x
