@@ -4,6 +4,9 @@
   "main": "index.js",
   "license": "none",
   "private": true,
+  "scripts": {
+    "test": "jest --runInBand --verbose"
+  },
   "dependencies": {
     "@types/expect-puppeteer": "^3.3.3",
     "@types/got": "^9.6.9",

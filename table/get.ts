@@ -67,7 +67,6 @@ export const getTable = async (tableTag: string): Promise<Table> => {
   if (!dbTable) {
     const tableConfig = config.tables.filter(config => config.tag === tableTag).pop();
     try {
-      logger.debug(tableTag, tableConfig);
       const dbTableData = loadLands(makeTable(tableConfig));
       dbTable = await db.createTable(dbTableData);
     } catch (e) {

@@ -14,8 +14,8 @@ export const hasTurn = ({ turnIndex, players }: { turnIndex: number, players: Re
 const scoreStep = 10;
 export const positionScore = (multiplier: number) => (gameSize: number) => (position: number): number => {
   const invPos = gameSize - position + 1;
-  const factor = ((invPos * (invPos / gameSize)) - (gameSize / 2)) * 2;
-  const baseScore = Math.round(factor * multiplier / scoreStep / gameSize);
+  const factor = ((invPos * (invPos / Math.max(0, gameSize))) - (gameSize / 2)) * 2;
+  const baseScore = Math.round(factor * multiplier / scoreStep / Math.max(0, gameSize));
   const score = baseScore * scoreStep;
   if (JSON.stringify(score) !== `${score}`) {
     logger.error(`bad score for position:${position} gameSize:${gameSize} multiplier:${multiplier}:`, score);

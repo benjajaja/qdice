@@ -28,13 +28,11 @@ import { save } from './table/get';
 
 const verifyJwt = promisify(jwt.verify);
 
-export const start = async (tableTag: string, client: mqtt.MqttClient) => {
+export const start = async (tableTag: string, lock: AsyncLock, client: mqtt.MqttClient) => {
 
   publish.tableStatus(await getTable(tableTag));
 
   client.subscribe(`tables/${tableTag}/server`);
-
-  const lock = new AsyncLock();
 
   const onMessage = async (topic, message) => {
     if (topic !== `tables/${tableTag}/server`) {
@@ -123,9 +121,9 @@ const command = (user, clientId, table: Table, type, payload): CommandResult | v
 export const processComandResult = async (table: Table, result: CommandResult | void) => {
   if (result) {
     const { type, table: props, lands, players, watchers, eliminations } = result;
-    if (type !== 'Heartbeat') {
-      logger.debug(`Command ${type} modified ${Object.keys(props || {})}, lands:${(lands || []).length}, players:${(players || []).length}, watchers:${(watchers || []).length}, eliminations:${(eliminations || []).length}`);
-    }
+    // if (type !== 'Heartbeat') {
+      // logger.debug(`Command ${type} modified ${Object.keys(props || {})}, lands:${(lands || []).length}, players:${(players || []).length}, watchers:${(watchers || []).length}, eliminations:${(eliminations || []).length}`);
+    // }
     const newTable = await save(table, props, players, lands, watchers);
     if (eliminations) {
       await processEliminations(newTable, eliminations);

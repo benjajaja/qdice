@@ -9,7 +9,7 @@ import {
 } from '../constants';
 
 const randomPoints = stackSize => {
-  const r = Math.random();
+  const r = rand(0, 999) / 1000;
   if (r > 0.98)
     return Math.min(8, Math.floor(stackSize / 2 + 1));
   else if (r > 0.90)
@@ -19,26 +19,19 @@ const randomPoints = stackSize => {
 
 const shuffle = <T>(a: T[]): ReadonlyArray<T> => {
   for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = rand(0, i);
       [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 };
 
-const randomLandOrder = (lands: ReadonlyArray<Land>, playerCount: number): ReadonlyArray<Land> => {
-  const landCount = lands.length;
-  const colorsCount = landCount - (landCount % playerCount);
-  return shuffle(lands.slice()).slice(0, colorsCount);
-};
-
 const start = (table: Table): CommandResult => {
-  const lands = table.lands.map(land => Object.assign({}, land, {
+  const lands = R.sort<Land>((a, b) => a.emoji.localeCompare(b.emoji))(table.lands).map(land => Object.assign({}, land, {
     points: randomPoints(table.stackSize),
     color: -1,
   }));
 
-  const shuffledLands = //randomLandOrder(lands, table.players.length);
-    shuffle(lands.slice()).slice(0, table.players.length)
+  const shuffledLands = shuffle(lands.slice()).slice(0, table.players.length)
     .map(land => Object.assign({}, land, {
       points: randomPoints(table.stackSize),
     }));
@@ -47,21 +40,6 @@ const start = (table: Table): CommandResult => {
     const player = table.players[index % table.players.length];
     return Object.assign({}, land, { color: player.color, points: 4 });
   });
-
-  //const assignedLands = shuffledLands.map((land, index) => {
-    //const player = table.players[index % table.players.length];
-    //return Object.assign({}, land, { color: player.color, points: 1 });
-  //});
-
-  //table.players.forEach(player => {
-    //const landCount = table.lands.length;
-    //const colorsCount = landCount - (landCount % table.players.length);
-    //const playerLandCount = colorsCount / table.players.length;
-    //R.range(0, playerLandCount).forEach(i => {
-      //const land = assignedLands.filter(R.propEq('color', player.color))[i] as any;
-      //land.points = Math.min(table.stackSize, i + 1);
-    //});
-  //});
 
   const allLands = lands.map(oldLand => {
     const match = assignedLands.filter(l => l.emoji === oldLand.emoji).pop();

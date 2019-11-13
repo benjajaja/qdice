@@ -10,12 +10,14 @@ import * as restify from 'restify';
 import * as corsMiddleware from 'restify-cors-middleware';
 import * as jwt from 'restify-jwt-community';
 import * as mqtt from 'mqtt';
+import * as AsyncLock from 'async-lock';
 
 import * as globalServer from './global';
 import { leaderboard } from './leaderboard';
 import { screenshot } from './screenshot';
 import * as publish from './table/publish';
 import * as user from './user';
+import { resetGenerator } from './rand';
 
 const server = restify.createServer();
 server.pre(restify.pre.userAgentConnection());
@@ -74,10 +76,13 @@ server.use(jwt({
 
 const root = '/api';
 
-logger.info(`E2E: ${process.env.E2E}`);
+const lock = new AsyncLock();
+
 if (process.env.E2E) {
   server.get(`${root}/e2e`, async (req, res) => {
-    await db.clearGames();
+    const ref = resetGenerator();
+    logger.debug(`E2E first random value: ${ref()}`);
+    await db.clearGames(lock);
     res.send(200, "ok.")
   });
 }
@@ -133,11 +138,11 @@ db.retry().then(() => {
     publish.setMqtt(client);
 
   });
-  table.start('Arabia', client);
-  table.start('Melchor', client);
-  table.start('DeLucía', client);
-  table.start('Miño', client);
-  table.start('España', client);
+  table.start('Arabia', lock, client);
+  table.start('Melchor', lock, client);
+  table.start('DeLucía', lock, client);
+  table.start('Miño', lock, client);
+  table.start('España', lock, client);
 
   client.on('message', globalServer.onMessage);
 

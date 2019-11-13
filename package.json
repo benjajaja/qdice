@@ -22,10 +22,12 @@
     }
   },
   "dependencies": {
+    "@types/async-lock": "^1.1.1",
     "@types/node": "^10.12.18",
     "@types/pg": "^7.4.11",
     "@types/ramda": "^0.25.46",
     "@types/restify": "^7.2.7",
+    "@types/seedrandom": "^2.4.28",
     "async-lock": "^1.2.2",
     "bluebird": "^3.5.1",
     "camelize": "^1.0.0",
@@ -44,6 +46,7 @@
     "restify": "^6.3.4",
     "restify-cors-middleware": "^1.0.1",
     "restify-jwt-community": "^1.0.0",
+    "seedrandom": "^3.0.5",
     "short-unique-id": "^1.1.0",
     "sleep-promise": "^8.0.1",
     "telegraf": "^3.17.2",

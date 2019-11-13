@@ -50,16 +50,16 @@ module.exports = {
       stackSize: 8,
       noFlagRounds: 5,
     },
-    {
-      tag: 'Null',
-      name: 'Null',
-      mapName: 'Null',
-      playerSlots: 8,
-      startSlots: 2,
-      points: 0,
-      stackSize: 8,
-      noFlagRounds: 5,
-    },
+    // {
+      // tag: 'Null',
+      // name: 'Null',
+      // mapName: 'Null',
+      // playerSlots: 8,
+      // startSlots: 2,
+      // points: 0,
+      // stackSize: 8,
+      // noFlagRounds: 5,
+    // },
   ],
 };
 

@@ -44,13 +44,16 @@ export const retry = async function retry() {
   }
 };
 
-export const clearGames = async (): Promise<void> => {
-  await client.query(`DELETE FROM tables`);
-  logger.info("E2E cleared all tables");
-  for (const table of config.tables) {
-    logger.info(`E2E creating table ${table.name}`);
-    await createTable(table);
-  }
+export const clearGames = async (lock: any): Promise<void> => {
+  lock.acquire([config.tables.map(table => table.name)], async done => {
+    await client.query(`DELETE FROM tables`);
+    for (const table of config.tables) {
+      const newTable = await require("./table/get").getTable(table.name);
+      require("./table/publish").tableStatus(newTable);
+    }
+    logger.debug("E2E cleared all tables");
+    done();
+  });
 };
 
 export const NETWORK_GOOGLE: Network = 'google';
