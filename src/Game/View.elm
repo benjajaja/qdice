@@ -6,12 +6,11 @@ import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard
 import Game.State exposing (findUserPlayer)
-import Game.Types exposing (PlayerAction(..), TableInfo, Player, statusToString)
+import Game.Types exposing (PlayerAction(..), statusToString)
+import Helpers exposing (dataTestId)
 import Html exposing (..)
-import Html.Attributes exposing (class, style, type_, disabled)
+import Html.Attributes exposing (class, disabled, style)
 import Html.Events exposing (onClick)
-import Ordinal exposing (ordinal)
-import Tables exposing (Table)
 import Time exposing (posixToMillis)
 import Types exposing (Model, Msg(..))
 
@@ -23,20 +22,20 @@ view model =
             Board.view model.game.board
                 |> Html.map BoardMsg
     in
-        div [ class "edMainScreen" ]
-            [ div [ class "edGameBoardWrapper" ]
-                [ tableInfo model
-                , header model
-                , board
-                , sitInModal model
-                , boardFooter model
-                ]
-            , div [ class "edGame__meta" ]
-                [ gameChat model
-                , gameLog model
-                ]
-            , Game.Footer.footer model
+    div [ class "edMainScreen" ]
+        [ div [ class "edGameBoardWrapper" ]
+            [ tableInfo model
+            , header model
+            , board
+            , sitInModal model
+            , boardFooter model
             ]
+        , div [ class "edGame__meta" ]
+            [ gameChat model
+            , gameLog model
+            ]
+        , Game.Footer.footer model
+        ]
 
 
 header : Model -> Html.Html Types.Msg
@@ -52,6 +51,7 @@ boardFooter model =
         toolbar =
             if model.screenshot then
                 []
+
             else
                 [ div [ class "edGameBoardFooter__content" ]
                     --[ label [ class "edCheckbox" ]
@@ -64,9 +64,9 @@ boardFooter model =
                     ]
                 ]
     in
-        div [ class "edGameBoardFooter" ] <|
-            (playerBar 0 model)
-                :: toolbar
+    div [ class "edGameBoardFooter" ] <|
+        playerBar 0 model
+            :: toolbar
 
 
 playerBar : Int -> Model -> Html Msg
@@ -95,10 +95,13 @@ seatButton model =
                     if model.game.status == Game.Types.Playing then
                         if player.out then
                             ( "Sit in", onClick <| GameCmd SitIn )
+
                         else if model.game.hasTurn then
                             ( "End turn", onClick <| GameCmd EndTurn )
+
                         else
                             ( "Sit out", onClick <| GameCmd SitOut )
+
                     else
                         ( "Leave", onClick <| GameCmd Leave )
 
@@ -107,10 +110,10 @@ seatButton model =
                         Types.Anonymous ->
                             ( "Join", onClick <| ShowLogin Types.LoginShowJoin )
 
-                        Types.Logged user ->
+                        Types.Logged _ ->
                             ( "Join", onClick <| GameCmd Join )
     in
-        button [ class "edButton edGameHeader__button", msg, disabled <| not canPlay ] [ text label ]
+    button [ class "edButton edGameHeader__button", msg, disabled <| not canPlay, dataTestId "button-seat" ] [ text label ]
 
 
 gameLog : Model -> Html.Html Types.Msg
@@ -119,7 +122,7 @@ gameLog model =
         model.game.gameLog
     <|
         "gameLog-"
-            ++ (Maybe.withDefault "NOTABLE" model.game.table)
+            ++ Maybe.withDefault "NOTABLE" model.game.table
 
 
 gameChat : Model -> Html.Html Types.Msg
@@ -131,33 +134,8 @@ gameChat model =
             model.game.chatLog
           <|
             "chatLog-"
-                ++ (Maybe.withDefault "NOTABLE" model.game.table)
+                ++ Maybe.withDefault "NOTABLE" model.game.table
         ]
-
-
-userCard : Types.User -> Html.Html Types.Msg
-userCard user_ =
-    case user_ of
-        Types.Logged user ->
-            div [ class "edGame__user", Html.Events.onClick <| NavigateTo <| Types.ProfileRoute user.id ] <|
-                [ div
-                    [ class "edPlayerChip__picture"
-                    , style "width" "70px"
-                    , style "height" "70px"
-                    ]
-                    [ div
-                        [ class "edPlayerChip__picture__image"
-                        , style "background-image" ("url(" ++ user.picture ++ ")")
-                        , style "background-size" "cover"
-                        ]
-                        []
-                    ]
-                , div [] [ text <| user.name ]
-                , div [] [ text <| "✪ " ++ String.fromInt user.points ]
-                ]
-
-        Types.Anonymous ->
-            text "not logged"
 
 
 sitInModal : Model -> Html.Html Types.Msg
@@ -165,6 +143,7 @@ sitInModal model =
     div
         [ if model.game.isPlayerOut then
             style "" ""
+
           else
             style "display" "none"
         , class "edGame__SitInModal"
@@ -195,11 +174,12 @@ tableInfo model =
                             [ text <|
                                 if model.game.playerSlots == 0 then
                                     "∅"
+
                                 else
                                     String.fromInt model.game.playerSlots
                             ]
                         , text " player game is "
-                        , span [ class "edGameStatus__chip--strong" ]
+                        , span [ class "edGameStatus__chip--strong", dataTestId "game-status" ]
                             [ text <| statusToString model.game.status ]
                         ]
                         (case model.game.gameStart of

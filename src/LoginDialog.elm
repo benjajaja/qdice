@@ -2,6 +2,7 @@ module LoginDialog exposing (login, loginDialog)
 
 import Backend.Decoding exposing (tokenDecoder)
 import Backend.Encoding exposing (profileEncoder)
+import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
@@ -20,7 +21,7 @@ loginDialog model =
             div
                 [ class "edLoginBackdrop" ]
                 [ div
-                    [ class "edLoginDialog" ]
+                    [ class "edLoginDialog", dataTestId "login-dialog" ]
                     [ body model ]
                 ]
 
@@ -78,6 +79,7 @@ body model =
                         , value model.loginName
                         , onInput SetLoginName
                         , class "edLoginDialog__name"
+                        , dataTestId "login-input"
                         ]
                         []
                     ]
@@ -85,16 +87,17 @@ body model =
             ]
         , div [ class "edLoginDialog__buttons" ]
             [ button
-                [ onClick <| ShowLogin LoginHide ]
+                [ onClick <| ShowLogin LoginHide, dataTestId "login-close" ]
                 [ text "Close" ]
             , button
                 (List.append
                     (if model.loginName == "" then
                         [ disabled True ]
+
                      else
                         []
                     )
-                    [ onClick <| Login model.loginName ]
+                    [ onClick <| Login model.loginName, dataTestId "login-login" ]
                 )
                 [ text "Play" ]
             ]
@@ -131,6 +134,6 @@ login model name =
         state =
             { network = Password, table = model.game.table }
     in
-        ( { model | showLoginDialog = LoginHide }
-        , Http.send (Types.GetToken <| Just state) request
-        )
+    ( { model | showLoginDialog = LoginHide }
+    , Http.send (Types.GetToken <| Just state) request
+    )

@@ -4,8 +4,8 @@ import Board.Colors
 import Color
 import Color.Accessibility
 import Color.Interpolate
-import Color.Manipulate
 import Game.Types exposing (Player)
+import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Ordinal exposing (ordinal)
@@ -23,6 +23,7 @@ view model index player =
         , div [ class "edPlayerChip__info" ]
             [ div
                 [ class "edPlayerChip__name"
+                , dataTestId <| "player-name-" ++ String.fromInt index
                 , style "background-color" <| Board.Colors.baseCssRgb player.color
                 , style "color" <|
                     (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
@@ -37,6 +38,7 @@ view model index player =
                     [ Html.text <|
                         if player.gameStats.position == 2 then
                             "Pole"
+
                         else
                             ordinal player.gameStats.position
                     ]
@@ -48,6 +50,7 @@ view model index player =
                             ++ String.fromInt player.gameStats.currentDice
                             ++ (if player.reserveDice > 0 then
                                     " + " ++ String.fromInt player.reserveDice
+
                                 else
                                     ""
                                )
@@ -81,17 +84,20 @@ playerContainer player hasTurn =
                     [ [ "edPlayerChip" ]
                     , if player.out then
                         [ "edPlayerChip--out" ]
+
                       else
                         []
                     , if hasTurn then
                         [ "edPlayerChip--turn" ]
+
                       else
                         []
                     ]
-          --, if hasTurn then
-          --Elevation.z6
-          --else
-          --Elevation.z2
+
+        --, if hasTurn then
+        --Elevation.z6
+        --else
+        --Elevation.z2
         ]
 
 
@@ -100,6 +106,7 @@ playerImageProgress model index player =
         [ playerCircleProgress <|
             if index == model.game.turnIndex then
                 1.0 - turnProgress model
+
             else
                 0.0
         , Html.div
@@ -124,30 +131,31 @@ playerCircleProgress progress =
                 floor (progress * 100 / 20)
                     * 20
     in
-        Svg.svg
-            [ Svg.Attributes.viewBox "-1 -1 2 2"
-            , Svg.Attributes.style "transform: rotate(-0.25turn)"
-            , Svg.Attributes.class "edPlayerChip_clock"
-            , Svg.Attributes.fill <| progressColor progress
+    Svg.svg
+        [ Svg.Attributes.viewBox "-1 -1 2 2"
+        , Svg.Attributes.style "transform: rotate(-0.25turn)"
+        , Svg.Attributes.class "edPlayerChip_clock"
+        , Svg.Attributes.fill <| progressColor progress
+        ]
+        [ Svg.path
+            [ Svg.Attributes.d
+                ("M 1 0"
+                    ++ " A 1 1 0 "
+                    ++ (if progress > 0.5 then
+                            "1"
+
+                        else
+                            "0"
+                       )
+                    ++ " 1 "
+                    ++ x
+                    ++ " "
+                    ++ y
+                    ++ " L 0 0"
+                )
             ]
-            [ Svg.path
-                [ Svg.Attributes.d
-                    ("M 1 0"
-                        ++ " A 1 1 0 "
-                        ++ (if progress > 0.5 then
-                                "1"
-                            else
-                                "0"
-                           )
-                        ++ " 1 "
-                        ++ x
-                        ++ " "
-                        ++ y
-                        ++ " L 0 0"
-                    )
-                ]
-                []
-            ]
+            []
+        ]
 
 
 baseProgressColor =
@@ -166,6 +174,7 @@ progressColor : Float -> String
 progressColor progress =
     (if progress < 0.5 then
         baseProgressColor
+
      else if progress < 0.75 then
         Color.Interpolate.interpolate Color.Interpolate.RGB
             baseProgressColor
@@ -173,6 +182,7 @@ progressColor progress =
         <|
             (progress - 0.5)
                 / 0.25
+
      else
         Color.Interpolate.interpolate Color.Interpolate.LAB
             midProgressColor
@@ -196,7 +206,7 @@ turnProgress model =
         turnStart =
             toFloat model.game.turnStart
     in
-        max 0.0 <|
-            min 1 <|
-                (turnTime - (timestamp - turnStart))
-                    / turnTime
+    max 0.0 <|
+        min 1 <|
+            (turnTime - (timestamp - turnStart))
+                / turnTime

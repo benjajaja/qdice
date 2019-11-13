@@ -1,14 +1,14 @@
 module Game.Chat exposing (chatBox, chatPlayerTag, eliminationEmoji, eliminationReasonText, gameBox, input, maybeUserChatTag, playerTag, rollLine, toChatError)
 
-import Board.Colors exposing (baseCssRgb)
-import Game.Types exposing (ChatLogEntry(..), Model, PlayerAction(..), RollLog, actionToString)
+import Board.Colors exposing (baseCssRgb, colorName)
+import Game.Types exposing (ChatLogEntry(..), PlayerAction(..), RollLog, actionToString)
+import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http exposing (Error(..))
-import Land exposing (Color)
-import Board.Colors exposing (colorName)
 import Icon
+import Land exposing (Color)
 import Ordinal exposing (ordinal)
 import Tables exposing (Table)
 import Types exposing (Msg(..))
@@ -17,7 +17,7 @@ import Types exposing (Msg(..))
 chatBox : String -> List Color -> List ChatLogEntry -> String -> Html Types.Msg
 chatBox inputValue colors lines id_ =
     div [ class "chatbox" ] <|
-        div [ class "chatbox--log", id id_ ]
+        [ div [ class "chatbox--log", id id_ ]
             (List.map
                 (\c ->
                     case c of
@@ -44,18 +44,17 @@ chatBox inputValue colors lines id_ =
                 )
                 lines
             )
-            :: 
-                    [ div [ class "chatbox--actions" ]
-                        [ Html.form [ onSubmit (SendChat inputValue), class "chatbox--actions-form" ]
-                            [ input inputValue
-                            , button
-                                [ type_ "submit"
-                                , class "chatbox--actions-button edButton"
-                                ]
-                                [ Icon.icon "keyboard_return" ]
-                            ]
-                        ]
+        , div [ class "chatbox--actions" ]
+            [ Html.form [ onSubmit (SendChat inputValue), class "chatbox--actions-form" ]
+                [ input inputValue
+                , button
+                    [ type_ "submit"
+                    , class "chatbox--actions-button edButton"
                     ]
+                    [ Icon.icon "keyboard_return" ]
+                ]
+            ]
+        ]
 
 
 input : String -> Html Types.Msg
@@ -114,13 +113,13 @@ gameBox lines id_ =
                             rollLine roll
 
                         LogTurn user color ->
-                            div [ class "chatbox--line--turn" ]
+                            div [ class "chatbox--line--turn", dataTestId "logline-turn" ]
                                 [ playerTag user color
                                 , Html.text "'s turn"
                                 ]
 
                         LogElimination user color position score reason ->
-                            div [ class "chatbox--line--elimination" ]
+                            div [ class "chatbox--line--elimination", dataTestId "logline-elimination" ]
                                 [ eliminationEmoji reason
                                 , Html.text " "
                                 , playerTag user color
@@ -210,7 +209,7 @@ rollLine roll =
                     ++ roll.defendDiesEmojis
             ]
     in
-    div [ class "chatbox--line--roll" ] text
+    div [ class "chatbox--line--roll", dataTestId "logline-roll" ] text
 
 
 eliminationEmoji reason =

@@ -1,11 +1,12 @@
 module Footer exposing (footer)
 
 import Backend.Types exposing (ConnectionStatus(..))
+import Helpers exposing (dataTestId)
 import Html exposing (..)
-import Html.Attributes exposing (class, style, href)
+import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Icon
-import Types exposing (Model, Msg(..), Route(..), StaticPage(..), User(..), LoginDialogStatus(..))
+import Types exposing (LoginDialogStatus(..), Model, Msg(..), Route(..), StaticPage(..), User(..))
 
 
 footer : Model -> Html.Html Msg
@@ -37,15 +38,16 @@ links user =
                 [ i [ class "material-icons" ] [ text "group_work" ]
                 , text "Community"
                 ]
-              --, a [ href "https://t.me/joinchat/DGkiGhEYyjf8bauoWkAGNA", class "edFooter--box__link" ]
-              --[ i [ class "material-icons" ] [ text "chat" ]
-              --, text "Telegram group"
-              --]
+
+            --, a [ href "https://t.me/joinchat/DGkiGhEYyjf8bauoWkAGNA", class "edFooter--box__link" ]
+            --[ i [ class "material-icons" ] [ text "chat" ]
+            --, text "Telegram group"
+            --]
             , link "/static/help" "Halp" "help"
             , link "/static/about" "About" "info"
             ]
     in
-        List.append group1 (userLink :: group2)
+    List.append group1 (userLink :: group2)
 
 
 link : String -> String -> String -> Html Types.Msg
@@ -104,7 +106,7 @@ statusMessage status =
                 Online ->
                     "network_wifi"
     in
-        Html.div [ Html.Attributes.class "edGameStatus" ]
-            [ Html.div [] [ Icon.icon icon ]
-            , Html.div [] [ Html.text message ]
-            ]
+    Html.div [ dataTestId "connection-status" ]
+        [ Html.div [] [ Icon.icon icon ]
+        , Html.div [] [ Html.text message ]
+        ]

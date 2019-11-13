@@ -1,5 +1,7 @@
-port module Helpers exposing (consoleDebug, find, findIndex, findIndex_, indexOf, pipeUpdates, playSound, setFavicon, httpErrorToString)
+port module Helpers exposing (consoleDebug, dataTestId, find, findIndex, findIndex_, httpErrorToString, indexOf, pipeUpdates, playSound, setFavicon)
 
+import Html exposing (Attribute)
+import Html.Attributes exposing (attribute)
 import Http
 
 
@@ -26,6 +28,7 @@ findIndex_ lst f offset =
         x :: xs ->
             if f x then
                 offset
+
             else
                 findIndex_ xs f (offset + 1)
 
@@ -46,7 +49,7 @@ pipeUpdates updater arg ( model, cmd ) =
         ( model_, cmd_ ) =
             updater model arg
     in
-        ( model_, Cmd.batch [ cmd, cmd_ ] )
+    ( model_, Cmd.batch [ cmd, cmd_ ] )
 
 
 httpErrorToString : Http.Error -> String
@@ -55,8 +58,13 @@ httpErrorToString err =
         Http.NetworkError ->
             "No connection"
 
-        Http.BadStatus statusCode ->
+        Http.BadStatus _ ->
             "Server/Client Error"
 
         _ ->
             "HTTP Error"
+
+
+dataTestId : String -> Attribute msg
+dataTestId id =
+    attribute "data-test-id" id
