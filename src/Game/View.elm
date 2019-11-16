@@ -11,6 +11,7 @@ import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, style)
 import Html.Events exposing (onClick)
+import Icon
 import Time exposing (posixToMillis)
 import Types exposing (Model, Msg(..))
 
@@ -80,40 +81,36 @@ playerBar dropCount model =
 
 seatButton : Model -> Html.Html Types.Msg
 seatButton model =
-    let
-        canPlay =
-            case model.backend.status of
-                Online ->
-                    True
+    if model.backend.status /= Online then
+        button [ class "edButton edGameHeader__button", disabled True ] [ Icon.icon "signal_wifi_off" ]
 
-                _ ->
-                    False
+    else
+        let
+            ( label, msg ) =
+                case findUserPlayer model.user model.game.players of
+                    Just player ->
+                        if model.game.status == Game.Types.Playing then
+                            if player.out then
+                                ( "Sit in", onClick <| GameCmd SitIn )
 
-        ( label, msg ) =
-            case findUserPlayer model.user model.game.players of
-                Just player ->
-                    if model.game.status == Game.Types.Playing then
-                        if player.out then
-                            ( "Sit in", onClick <| GameCmd SitIn )
+                            else if model.game.hasTurn then
+                                ( "End turn", onClick <| GameCmd EndTurn )
 
-                        else if model.game.hasTurn then
-                            ( "End turn", onClick <| GameCmd EndTurn )
+                            else
+                                ( "Sit out", onClick <| GameCmd SitOut )
 
                         else
-                            ( "Sit out", onClick <| GameCmd SitOut )
+                            ( "Leave", onClick <| GameCmd Leave )
 
-                    else
-                        ( "Leave", onClick <| GameCmd Leave )
+                    Nothing ->
+                        case model.user of
+                            Types.Anonymous ->
+                                ( "Join", onClick <| ShowLogin Types.LoginShowJoin )
 
-                Nothing ->
-                    case model.user of
-                        Types.Anonymous ->
-                            ( "Join", onClick <| ShowLogin Types.LoginShowJoin )
-
-                        Types.Logged _ ->
-                            ( "Join", onClick <| GameCmd Join )
-    in
-    button [ class "edButton edGameHeader__button", msg, disabled <| not canPlay, dataTestId "button-seat" ] [ text label ]
+                            Types.Logged _ ->
+                                ( "Join", onClick <| GameCmd Join )
+        in
+        button [ class "edButton edGameHeader__button", msg, dataTestId "button-seat" ] [ text label ]
 
 
 gameLog : Model -> Html.Html Types.Msg

@@ -4,7 +4,7 @@ import Animation
 import Board.Colors
 import Board.Types exposing (..)
 import Dict
-import Helpers exposing (dataTestId)
+import Helpers exposing (dataTestId, dataTestValue)
 import Html
 import Html.Attributes
 import Html.Lazy
@@ -95,6 +95,13 @@ landElement layout pathCache selected hovered land =
                 , onMouseOver (HoverLand land)
                 , onMouseOut (UnHoverLand land)
                 , dataTestId <| "land-" ++ land.emoji
+                , dataTestValue "selected"
+                    (if isSelected then
+                        "true"
+
+                     else
+                        "false"
+                    )
                 ]
     in
     polygon attrs []

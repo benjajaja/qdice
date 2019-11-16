@@ -1,4 +1,4 @@
-port module Helpers exposing (consoleDebug, dataTestId, find, findIndex, findIndex_, httpErrorToString, indexOf, pipeUpdates, playSound, setFavicon)
+port module Helpers exposing (consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, pipeUpdates, playSound, setFavicon)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -58,8 +58,8 @@ httpErrorToString err =
         Http.NetworkError ->
             "No connection"
 
-        Http.BadStatus _ ->
-            "Server/Client Error"
+        Http.BadStatus response ->
+            "Server/Client Error: " ++ response.body
 
         _ ->
             "HTTP Error"
@@ -68,3 +68,8 @@ httpErrorToString err =
 dataTestId : String -> Attribute msg
 dataTestId id =
     attribute "data-test-id" id
+
+
+dataTestValue : String -> String -> Attribute msg
+dataTestValue key value =
+    attribute ("data-test-" ++ key) value
