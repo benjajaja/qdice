@@ -13,18 +13,15 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
   console.log(`clicked from ${from}`);
   // jestPuppeteer.debug();
   await expect(page).toMatchElement(testValue(from, 'selected', 'true'));
-  console.log('selected from');
   await expect(page).toClick(testId(to));
   console.log(`clicked to ${to}`);
   await expect(page).toMatchElement(testValue(to, 'selected', 'true'));
-  console.log('selected to');
   await expect(page).toMatchElement(
     '[data-test-id="logline-roll"]:nth-child(1)',
     {
       text: new RegExp(`^${name} (won|lost)`),
     },
   );
-  console.log('clicked to');
 };
 
 describe('A full game', () => {
@@ -59,32 +56,35 @@ describe('A full game', () => {
 
     await expect(page).toMatchElement(testId('game-status'), {text: 'playing'});
 
-    await attack(page, 'land-🍷', 'land-💰', 'A');
+    await attack(page, 'land-🍷', 'land-🏰', 'A');
     await expect(page).toClick(testId('button-seat'), {text: 'End turn'});
 
     await attack(page2, 'land-💊', 'land-🌙', 'B');
     await expect(page2).toClick(testId('button-seat'), {text: 'End turn'});
 
-    await attack(page, 'land-🍷', 'land-💰', 'A');
+    await attack(page, 'land-🏰', 'land-🌙', 'A');
     await expect(page).toClick(testId('button-seat'), {text: 'End turn'});
 
-    await attack(page2, 'land-🌙', 'land-🏰', 'B');
+    await attack(page2, 'land-💊', 'land-🌙', 'B');
     await expect(page2).toClick(testId('button-seat'), {text: 'End turn'});
 
-    await attack(page, 'land-🍷', 'land-💰', 'A');
-    await expect(page).toClick(testId('button-seat'), {text: 'End turn'});
+    await attack(page, 'land-🌙', 'land-💊', 'A');
 
-    await attack(page2, 'land-🏰', 'land-🍷', 'B');
+    expect(
+      await page.evaluate(
+        el => el.innerText,
+        await page.$(testId('logline-elimination')),
+      ),
+    ).toMatch(
+      /^🏆 A won the game! with \d+ ✪ \(Last standing player after 5 turns\)/,
+    );
 
-    const eliminations = await page
-      .mainFrame()
-      .waitForSelector(testId('logline-elimination'));
-    console.log(eliminations.toString());
-    // text: new RegExp("^☠ A finished 2nd"),
-    // });
-    // await expect(page).toMatchElement("[data-test-id=\"logline-elimination\"]:nth-child(1)", {
-    // text: new RegExp("^🏆 B won the game!"),
-    // });
+    // expect(
+    // await page.evaluate(
+    // el => el.innerText,
+    // await page.$(testId('logline-elimination'))),
+    // ),
+    // ).toMatch(/^☠ A finished 2nd/);
 
     await browser2.close();
   }, 300000);
