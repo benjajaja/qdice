@@ -19,7 +19,7 @@ init table tableMap_ =
     let
         map =
             Maybe.map Maps.load tableMap_
-                |> Maybe.withDefault Land.emptyMap
+                |> Maybe.withDefault Maps.emptyMap
 
         board =
             Board.init map
@@ -73,15 +73,10 @@ changeTable model table =
 
 tableMap : Table -> List Game.Types.TableInfo -> Maybe Map
 tableMap table tableList =
-    case
-        List.filter (\t -> t.table == table) tableList
+    Maybe.map .mapName
+        (List.filter (\t -> t.table == table) tableList
             |> List.head
-    of
-        Just tableInfo ->
-            Just tableInfo.mapName
-
-        Nothing ->
-            Nothing
+        )
 
 
 findUserPlayer : Types.User -> List Player -> Maybe Player
@@ -152,11 +147,12 @@ updateTableStatus model status =
                 Nothing
 
         oldBoard =
-            if model.game.board.map == Land.emptyMap then
-                Board.init <| Maps.load status.mapName
-
-            else
-                model.game.board
+            -- what was this hack?
+            -- if model.game.board.map == Maps.emptyMap then
+            -- Board.init <| Maps.load status.mapName
+            --
+            -- else
+            model.game.board
 
         board_ =
             Board.State.updateLands oldBoard status.lands move

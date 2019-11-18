@@ -11,22 +11,16 @@ function logEnv(env) {
 }
 
 module.exports = env => ({
-  entry: [
-    './html/elm-dice.js',
-    './html/elm-dice.css',
-  ],
+  entry: ['./html/elm-dice.js', './html/elm-dice.css'],
 
   output: {
     path: path.join(__dirname, './dist'),
-    filename: 'elm-dice.[hash].js'
+    filename: 'elm-dice.[hash].js',
   },
 
   resolve: {
-    modules: [
-      'node_modules',
-      path.join(__dirname, "src"),
-    ],
-    extensions: ['.js', '.elm']
+    modules: ['node_modules', path.join(__dirname, 'src')],
+    extensions: ['.js', '.elm'],
   },
 
   module: {
@@ -59,14 +53,14 @@ module.exports = env => ({
         use: ExtractTextPlugin.extract({
           fallback: 'style-loader',
           use: [
-            { loader: 'css-loader', options: { importLoaders: 1 } },
+            {loader: 'css-loader', options: {importLoaders: 1}},
             {
               loader: 'postcss-loader',
               options: {
                 ident: 'postcss',
                 plugins: function(loader) {
                   return [
-                    require('autoprefixer')({ browsers: ['last 10 versions'] }),
+                    require('autoprefixer')({browsers: ['last 10 versions']}),
                     require('postcss-partial-import')({
                       addDependencyTo: webpack,
                       prefix: '',
@@ -84,33 +78,34 @@ module.exports = env => ({
 
   plugins: [
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': '"production"'
+      'process.env.NODE_ENV': '"production"',
     }),
-    new ExtractTextPlugin("elm-dice.[hash].css"),
+    new ExtractTextPlugin('elm-dice.[hash].css'),
     new CopyWebpackPlugin([
-      { from: 'html/manifest.json' },
-      { from: 'html/favicons-2', to: 'favicons-2'},
-      { from: 'html/favicon.ico' },
-      { from: 'html/die.svg' },
-      { from: 'html/board_header.svg' },
-      { from: 'html/elm-dice-serviceworker.js' },
-      { from: 'html/cache-polyfill.js' },
-      { from: 'html/sounds', to: 'sounds'},
-      { from: 'html/assets', to: 'assets'},
-      { from: 'html/iconfont', to: 'iconfont'},
-      { from: 'html/fonts', to: 'fonts'},
-      { from: 'html/robots.txt', to: 'robots.txt'},
+      {from: 'html/manifest.json'},
+      {from: 'html/favicons-2', to: 'favicons-2'},
+      {from: 'html/favicon.ico'},
+      {from: 'html/die.svg'},
+      {from: 'html/board_header.svg'},
+      {from: 'html/elm-dice-serviceworker.js'},
+      {from: 'html/cache-polyfill.js'},
+      {from: 'html/sounds', to: 'sounds'},
+      {from: 'html/assets', to: 'assets'},
+      {from: 'html/iconfont', to: 'iconfont'},
+      {from: 'html/fonts', to: 'fonts'},
+      {from: 'html/robots.txt', to: 'robots.txt'},
     ]),
     new HtmlWebpackPlugin({
       template: 'html/index.html',
       inject: false,
     }),
-  ].concat(env && logEnv(env.production)
-    ? new webpack.optimize.UglifyJsPlugin({
-        include: 'elm',
-        compress: { 
-          warnings: false,
-          pure_funcs: [
+  ].concat(
+    env && logEnv(env.production)
+      ? new webpack.optimize.UglifyJsPlugin({
+          include: 'elm',
+          compress: {
+            warnings: false,
+            pure_funcs: [
               'F2',
               'F3',
               'F4',
@@ -126,15 +121,17 @@ module.exports = env => ({
               'A6',
               'A7',
               'A8',
-              'A9'
-          ],
-          pure_getters: true,
-          keep_fargs: false,
-          unsafe_comps: true,
-          unsafe: true
-      }
-    })
-    : []),
+              'A9',
+            ],
+            pure_getters: true,
+            keep_fargs: false,
+            unsafe_comps: true,
+            unsafe: true,
+            passes: 2,
+          },
+        })
+      : [],
+  ),
 
   devServer: {
     host: '0.0.0.0',
@@ -144,6 +141,5 @@ module.exports = env => ({
     contentBase: './html',
     historyApiFallback: true,
     disableHostCheck: true,
-  }
+  },
 });
-

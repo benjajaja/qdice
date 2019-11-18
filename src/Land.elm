@@ -1,8 +1,8 @@
-module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, emptyMap, firstFreeBorder, firstFreeBorder_, fullCellMap, hasCell, hasFreeBorder, indexAt, isBorderOnSide, isBorderOnSideCube, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landColor, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, randomPlayerColor, rightSide, setColor, setNeutral, playerColors)
+module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBorderOnSide, isBorderOnSideCube, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landColor, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide, setColor, setNeutral)
 
 import Helpers exposing (find, findIndex)
 import Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
-import Hexagons.Hex as HH exposing (eq, Direction, Hex)
+import Hexagons.Hex as HH exposing (Direction, Hex, eq)
 import Hexagons.Layout as HL exposing (Layout, offsetToHex, orientationLayoutPointy)
 import List exposing (..)
 import Maybe exposing (..)
@@ -60,39 +60,51 @@ type Color
     | Editor
     | EditorSelected
 
+
 playerColors : List Color
 playerColors =
     [ Red
     , Green
-    , Blue {- 3 -}
+    , Blue
+
+    {- 3 -}
     , Yellow
     , Magenta
     , Cyan
-    , Orange {- 7 -}
-    , Beige {- 8 -}
-    , Black {- 9 -}
+    , Orange
+
+    {- 7 -}
+    , Beige
+
+    {- 8 -}
+    , Black
+
+    {- 9 -}
     ]
+
 
 cellToKey : Hex -> String
 cellToKey cell =
     case cell of
-        HH.IntCubeHex (a, b, c) ->
+        HH.IntCubeHex ( a, b, c ) ->
             String.join ","
-              [ String.fromInt a
-              , String.fromInt b
-              , String.fromInt c
-              ]
-        HH.FloatCubeHex (a, b, c) ->
+                [ String.fromInt a
+                , String.fromInt b
+                , String.fromInt c
+                ]
+
+        HH.FloatCubeHex ( a, b, c ) ->
             String.join ","
-              [ String.fromFloat a
-              , String.fromFloat b
-              , String.fromFloat c
-              ]
-        HH.AxialHex (a, b) ->
+                [ String.fromFloat a
+                , String.fromFloat b
+                , String.fromFloat c
+                ]
+
+        HH.AxialHex ( a, b ) ->
             String.join ","
-              [ String.fromInt a
-              , String.fromInt b
-              ]
+                [ String.fromInt a
+                , String.fromInt b
+                ]
 
 
 emptyEmoji : String
@@ -147,33 +159,6 @@ cellCubicCoords hex =
     Hex.cellCubicCoords hex
 
 
-fullCellMap : Int -> Int -> Color -> Map
-fullCellMap w h color =
-    Map
-        (List.map
-            (\r ->
-                List.map
-                    (\c ->
-                        { cells = [ offsetToHex ( c, r ) ]
-                        , color = color
-                        , emoji = emptyEmoji
-                        , points = 0
-                        }
-                    )
-                    (List.range 1 w)
-            )
-            (List.range 1 h)
-            |> List.concat
-        )
-        w
-        h
-
-
-emptyMap : Map
-emptyMap =
-    Map [] 40 40
-
-
 isBordering : Land -> Land -> Bool
 isBordering a b =
     List.any (isCellOnLandBorder b) a.cells
@@ -187,8 +172,11 @@ isCellOnLandBorder land hex =
 areNeighbours : Hex -> Hex -> Bool
 areNeighbours a b =
     let
-        applied = isBorderOnSide a
-        flipped = (\c -> \d -> isBorderOnSide a d c)
+        applied =
+            isBorderOnSide a
+
+        flipped =
+            \c -> \d -> isBorderOnSide a d c
     in
     List.any (flipped b) allSides
 
@@ -197,7 +185,7 @@ offsetToHex : ( Int, Int ) -> Hex
 offsetToHex ( col, row ) =
     let
         x =
-            col - round (toFloat (row + (modBy 2 (abs row))) / 2)
+            col - round (toFloat (row + modBy 2 (abs row)) / 2)
     in
     HH.intFactory ( x, row )
 
@@ -294,40 +282,43 @@ setNeutral map color =
 
 playerColor : Int -> Color
 playerColor i =
-    if i == -1 then Neutral
-    else case i of
-        1 ->
-            Red
+    if i == -1 then
+        Neutral
 
-        2 ->
-            Blue
+    else
+        case i of
+            1 ->
+                Red
 
-        3 ->
-            Green
+            2 ->
+                Blue
 
-        4 ->
-            Yellow
+            3 ->
+                Green
 
-        5 ->
-            Magenta
+            4 ->
+                Yellow
 
-        6 ->
-            Cyan
+            5 ->
+                Magenta
 
-        7 ->
-            Orange
+            6 ->
+                Cyan
 
-        8 ->
-            Beige
+            7 ->
+                Orange
 
-        9 ->
-            Black
+            8 ->
+                Beige
 
-        0 ->
-            Editor
+            9 ->
+                Black
 
-        _ ->
-            Neutral
+            0 ->
+                Editor
+
+            _ ->
+                Neutral
 
 
 randomPlayerColor : (Color -> a) -> Cmd a
@@ -399,8 +390,7 @@ nextBorders_ cells coord origin side accum fuse =
     in
     if (eq coord <| Tuple.first origin) && Tuple.second origin == side && List.length accum > 1 then
         current :: accum
-
-    --else if fuse == 0 then
+        --else if fuse == 0 then
         --Debug.todo "Recursion exhausted"
 
     else

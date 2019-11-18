@@ -61,7 +61,7 @@
     "postcss-partial-import": "^2.1.0",
     "serviceworker-loader": "^0.1.0",
     "style-loader": "0.13.1",
-    "webpack": "^3.10.0",
+    "webpack": "^3.12.0",
     "worker-loader": "^1.1.0"
   },
   "devDependencies": {

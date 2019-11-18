@@ -1,4 +1,4 @@
-module Maps exposing (consoleLogMap, emojisToMap, load, symbols, toCharList)
+module Maps exposing (consoleLogMap, emojisToMap, emptyMap, fullCellMap, load, symbols, toCharList)
 
 import Dict
 import Helpers exposing (..)
@@ -6,7 +6,7 @@ import Land exposing (Cells)
 import Maps.Sources exposing (mapSourceString)
 import Regex
 import String
-import Tables exposing (Map, Table)
+import Tables exposing (Map(..), Table)
 
 
 type alias MapSource =
@@ -251,3 +251,31 @@ indexSymbol i =
 
         Nothing ->
             Land.emptyEmoji
+
+
+fullCellMap : Int -> Int -> Land.Color -> Land.Map
+fullCellMap w h color =
+    Land.Map
+        (List.map
+            (\r ->
+                List.map
+                    (\c ->
+                        { cells = [ Land.offsetToHex ( c, r ) ]
+                        , color = color
+                        , emoji = Land.emptyEmoji
+                        , points = 0
+                        }
+                    )
+                    (List.range 1 w)
+            )
+            (List.range 1 h)
+            |> List.concat
+        )
+        w
+        h
+
+
+emptyMap : Land.Map
+emptyMap =
+    -- Land.Map [] 40 40
+    load Serrano

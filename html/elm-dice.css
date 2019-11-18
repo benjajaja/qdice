@@ -6,6 +6,7 @@
   src: local('Rubik'), local('Rubik-Regular'),
        url('./fonts/rubik-v7-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
        url('./fonts/rubik-v7-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  font-display: swap;
 }
 /* rubik-italic - latin */
 @font-face {
@@ -15,6 +16,7 @@
   src: local('Rubik Italic'), local('Rubik-Italic'),
        url('./fonts/rubik-v7-latin-italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
        url('./fonts/rubik-v7-latin-italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  font-display: swap;
 }
 /* rubik-500 - latin */
 @font-face {
@@ -24,6 +26,7 @@
   src: local('Rubik Medium'), local('Rubik-Medium'),
        url('./fonts/rubik-v7-latin-500.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
        url('./fonts/rubik-v7-latin-500.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  font-display: swap;
 }
 
 /*@import "https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext";*/

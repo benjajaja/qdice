@@ -7,12 +7,14 @@ import Backend.MqttCommands exposing (gameCommand)
 import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
 import Board.Types
+import Browser
+import Browser.Navigation exposing (Key)
 import Footer exposing (footer)
 import GA exposing (ga)
 import Game.State
 import Game.Types exposing (PlayerAction(..))
 import Game.View
-import Helpers exposing (pipeUpdates, httpErrorToString)
+import Helpers exposing (httpErrorToString, pipeUpdates)
 import Html
 import Html.Attributes
 import Html.Lazy
@@ -21,15 +23,13 @@ import LeaderBoard.View
 import LoginDialog exposing (login, loginDialog)
 import MyOauth
 import MyProfile.MyProfile
-import Routing exposing (parseLocation, navigateTo)
+import Routing exposing (navigateTo, parseLocation)
 import Snackbar exposing (toastError)
 import Static.View
 import Tables exposing (Map(..), Table)
 import Task
 import Time
 import Types exposing (..)
-import Browser
-import Browser.Navigation exposing (Key)
 import Url exposing (Url)
 
 
@@ -76,12 +76,12 @@ init flags location key =
                         loadBackend =
                             { backend | jwt = Just token }
                     in
-                        ( loadBackend
-                        , [ auth [ token ]
-                          , loadMe loadBackend
-                          , navigateTo key <| GameRoute ""
-                          ]
-                        )
+                    ( loadBackend
+                    , [ auth [ token ]
+                      , loadMe loadBackend
+                      , navigateTo key <| GameRoute ""
+                      ]
+                    )
 
                 _ ->
                     ( backend
@@ -131,7 +131,7 @@ init flags location key =
                     , [ Routing.routeEnterCmd model route ]
                     ]
     in
-        ( model, cmds )
+    ( model, cmds )
 
 
 updateWrapper : Msg -> Model -> ( Model, Cmd Msg )
@@ -140,7 +140,7 @@ updateWrapper msg model =
         ( model_, cmd ) =
             update msg model
     in
-        ( model_, cmd )
+    ( model_, cmd )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -164,20 +164,21 @@ update msg model =
                         model_ =
                             { model | settings = settings, tableList = tables }
                     in
-                        case model.route of
-                            GameRoute table ->
-                                case model.backend.status of
-                                    Online ->
-                                        Game.State.changeTable model_ table
+                    case model.route of
+                        GameRoute table ->
+                            case model.backend.status of
+                                Online ->
+                                    Game.State.changeTable model_ table
 
-                                    _ ->
-                                        ( model_, Cmd.none )
+                                _ ->
+                                    Game.State.changeTable model_ table
 
-                            HomeRoute ->
-                                ( model_, Routing.goToBestTable model_ )
+                        --( model_, Cmd.none )
+                        HomeRoute ->
+                            ( model_, Routing.goToBestTable model_ )
 
-                            _ ->
-                                ( model_, Cmd.none )
+                        _ ->
+                            ( model_, Cmd.none )
 
         GetToken table res ->
             case res of
@@ -197,13 +198,13 @@ update msg model =
                         model_ =
                             { model | backend = backend_ }
                     in
-                        ( model_
-                        , Cmd.batch
-                            [ auth [ token ]
-                            , loadMe backend_
-                            , gameCommand model_.backend model.game.table Game.Types.Join
-                            ]
-                        )
+                    ( model_
+                    , Cmd.batch
+                        [ auth [ token ]
+                        , loadMe backend_
+                        , gameCommand model_.backend model.game.table Game.Types.Join
+                        ]
+                    )
 
         GetProfile res ->
             case res of
@@ -220,9 +221,9 @@ update msg model =
                         backend_ =
                             { backend | jwt = Just token }
                     in
-                        ( { model | user = Logged profile, backend = backend_ }
-                        , ga [ "send", "event", "auth", "GetProfile" ]
-                        )
+                    ( { model | user = Logged profile, backend = backend_ }
+                    , ga [ "send", "event", "auth", "GetProfile" ]
+                    )
 
         GetLeaderBoard res ->
             LeaderBoard.State.setLeaderBoard model res
@@ -235,9 +236,9 @@ update msg model =
                 backend_ =
                     { backend | jwt = Just token }
             in
-                ( { model | user = Logged profile, backend = backend_ }
-                , Cmd.none
-                )
+            ( { model | user = Logged profile, backend = backend_ }
+            , Cmd.none
+            )
 
         Authorize state ->
             ( model, MyOauth.authorize model.oauth state )
@@ -250,9 +251,9 @@ update msg model =
                 backend_ =
                     { backend | jwt = Just token }
             in
-                ( { model | backend = backend_ }
-                , Cmd.batch [ loadMe backend_, ga [ "send", "event", "auth", "LoadToken" ] ]
-                )
+            ( { model | backend = backend_ }
+            , Cmd.batch [ loadMe backend_, ga [ "send", "event", "auth", "LoadToken" ] ]
+            )
 
         Authenticate code state ->
             ( model
@@ -273,19 +274,19 @@ update msg model =
                 player =
                     Game.State.findUserPlayer model.user model.game.players
             in
-                ( { model | user = Anonymous, backend = backend_ }
-                , Cmd.batch
-                    [ auth []
-                    , case player of
-                        Just _ ->
-                            gameCommand model.backend model.game.table Game.Types.Leave
+            ( { model | user = Anonymous, backend = backend_ }
+            , Cmd.batch
+                [ auth []
+                , case player of
+                    Just _ ->
+                        gameCommand model.backend model.game.table Game.Types.Leave
 
-                        Nothing ->
-                            Cmd.none
-                    , navigateTo model.key HomeRoute
-                    , ga [ "send", "event", "auth", "Logout" ]
-                    ]
-                )
+                    Nothing ->
+                        Cmd.none
+                , navigateTo model.key HomeRoute
+                , ga [ "send", "event", "auth", "Logout" ]
+                ]
+            )
 
         SetLoginName text ->
             ( { model | loginName = text }
@@ -329,14 +330,14 @@ update msg model =
                 board =
                     game.board
             in
-                ( { model
-                    | game =
-                        { game
-                            | board = Board.updateAnimations board (Animation.update animateMsg)
-                        }
-                  }
-                , Cmd.none
-                )
+            ( { model
+                | game =
+                    { game
+                        | board = Board.updateAnimations board (Animation.update animateMsg)
+                    }
+              }
+            , Cmd.none
+            )
 
         BoardMsg boardMsg ->
             let
@@ -352,17 +353,17 @@ update msg model =
                 model_ =
                     { model | game = game_ }
             in
-                case boardMsg of
-                    Board.Types.ClickLand land ->
-                        Game.State.clickLand model_ land
+            case boardMsg of
+                Board.Types.ClickLand land ->
+                    Game.State.clickLand model_ land
 
-                    Board.Types.HoverLand land ->
-                        Game.State.hoverLand model_ land
+                Board.Types.HoverLand land ->
+                    Game.State.hoverLand model_ land
 
-                    _ ->
-                        ( model_
-                        , Cmd.map BoardMsg newBoardMsg
-                        )
+                _ ->
+                    ( model_
+                    , Cmd.map BoardMsg newBoardMsg
+                    )
 
         InputChat text ->
             let
@@ -372,9 +373,9 @@ update msg model =
                 game_ =
                     { game | chatInput = text }
             in
-                ( { model | game = game_ }
-                , Cmd.none
-                )
+            ( { model | game = game_ }
+            , Cmd.none
+            )
 
         SendChat string ->
             let
@@ -384,12 +385,13 @@ update msg model =
                 game_ =
                     { game | chatInput = "" }
             in
-                if string /= "" then
-                    ( { model | game = game_ }
-                    , gameCommand model.backend model.game.table <| Game.Types.Chat string
-                    )
-                else
-                    ( model, Cmd.none )
+            if string /= "" then
+                ( { model | game = game_ }
+                , gameCommand model.backend model.game.table <| Game.Types.Chat string
+                )
+
+            else
+                ( model, Cmd.none )
 
         GameCmd playerAction ->
             ( model
@@ -409,9 +411,9 @@ update msg model =
                     Cmd.batch <|
                         [ enter, Cmd.none ]
             in
-                ( model
-                , cmds
-                )
+            ( model
+            , cmds
+            )
 
         UnknownTopicMessage error topic message ->
             ( model
@@ -454,9 +456,9 @@ update msg model =
                         game_ =
                             Game.State.updateGameInfo model.game tables
                     in
-                        ( { model | tableList = tables, game = game_ }
-                        , Cmd.none
-                        )
+                    ( { model | tableList = tables, game = game_ }
+                    , Cmd.none
+                    )
 
         TableMsg table tableMsg ->
             Game.State.updateTable model table tableMsg
@@ -470,6 +472,7 @@ update msg model =
                                 Just c ->
                                     if Time.posixToMillis newTime - Time.posixToMillis model.backend.lastHeartbeat > 5000 then
                                         gameCommand model.backend model.game.table Heartbeat
+
                                     else
                                         Cmd.none
 
@@ -479,14 +482,14 @@ update msg model =
                         _ ->
                             Cmd.none
             in
-                ( { model | time = newTime }, cmd )
+            ( { model | time = newTime }, cmd )
 
         SetLastHeartbeat time ->
             let
                 backend =
                     model.backend
             in
-                ( { model | backend = { backend | lastHeartbeat = time } }, Cmd.none )
+            ( { model | backend = { backend | lastHeartbeat = time } }, Cmd.none )
 
 
 msgsToCmds : List Msg -> List (Cmd Msg)
@@ -591,26 +594,27 @@ onLocationChange model location =
         cmd =
             Routing.routeEnterCmd model_ newRoute
     in
-        if newRoute == model.route then
-            ( model
-            , Cmd.none
-            )
-        else
-            ( model_, cmd )
-                |> (case newRoute of
-                        GameRoute table ->
-                            pipeUpdates Game.State.changeTable table
+    if newRoute == model.route then
+        ( model
+        , Cmd.none
+        )
 
-                        _ ->
-                            identity
-                   )
-                |> (case model.route of
-                        GameRoute table ->
-                            pipeUpdates Backend.unsubscribeGameTable table
+    else
+        ( model_, cmd )
+            |> (case newRoute of
+                    GameRoute table ->
+                        pipeUpdates Game.State.changeTable table
 
-                        _ ->
-                            identity
-                   )
+                    _ ->
+                        identity
+               )
+            |> (case model.route of
+                    GameRoute table ->
+                        pipeUpdates Backend.unsubscribeGameTable table
+
+                    _ ->
+                        identity
+               )
 
 
 subscriptions : Model -> Sub Msg
