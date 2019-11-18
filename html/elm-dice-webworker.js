@@ -2,7 +2,7 @@ console.log('elm-dice-webworker reporting in');
 var mqtt = require('mqtt');
 
 function getMqttConfig() {
-  if (self.location.hostname === 'localhost' || self.location.hostname === 'lvh.me') {
+  if (['localhost', 'lvh.me', 'edice'].indexOf(self.location.hostname) !== -1) {
     return {
       protocol: 'ws',
       hostname: 'localhost',

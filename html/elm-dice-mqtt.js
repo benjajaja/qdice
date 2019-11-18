@@ -1,7 +1,7 @@
 var mqtt = require('mqtt');
 
 function getMqttConfig() {
-  if (self.location.hostname === 'localhost' || self.location.hostname === 'lvh.me') {
+  if (['localhost', 'lvh.me'].indexOf(self.location.hostname) !== -1) {
     return {
       protocol: 'ws',
       hostname: self.location.hostname,
@@ -9,6 +9,11 @@ function getMqttConfig() {
       path: 'mqtt',
       username: 'client',
       password: 'client',
+    };
+  } else if (self.location.hostname === 'edice') {
+    return {
+      protocol: 'ws',
+      path: 'mqtt',
     };
   } else {
     return {
