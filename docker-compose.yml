@@ -14,7 +14,12 @@ services:
   edice:
     restart: always
     # network_mode: host
-    build: ./edice
+    build:
+      context: ./edice
+      dockerfile: Dockerfile
+      args:
+        ENV: $ENV
+    # env_file: .env
     ports:
       - "80:80"
       - "443:443"

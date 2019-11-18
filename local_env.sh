@@ -1,5 +1,14 @@
 #!/bin/bash
 
+
+
+docker-compose up -d
+docker-compose stop nodice
+
+kitty -d ./edice --detach yarn start
+kitty -d . --detach docker-compose logs -f
+kitty -d . --hold --detach nv
+
 export GOOGLE_OAUTH_SECRET="e8Nkmj9X05_hSrrREcRuDCFj"
 export PORT=5001
 export JWT_SECRET="dnauh23uasjdnlnalkslk1daWDEDasdd1madremia"
@@ -16,3 +25,7 @@ export BOT_OFFICIAL_GROUPS=""
 export AVATAR_PATH="/Users/bgrosse/o/edice/html/pictures"
 export PICTURE_URL_PREFIX="/pictures/"
 export E2E="1"
+
+
+node server.js
+
