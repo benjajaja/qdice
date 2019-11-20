@@ -1,4 +1,4 @@
-port module Backend exposing (addSubscribed, baseUrl, connect, decodeDirection, decodeMessage, decodeSubscribed, decodeTopic, hasDuplexSubscribed, hasSubscribedTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, onToken, setStatus, subscribe, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribe, unsubscribeGameTable, updateConnected, updateSubscribed)
+port module Backend exposing (addSubscribed, baseUrl, connect, decodeDirection, decodeMessage, decodeSubscribed, decodeTopic, hasDuplexSubscribed, hasSubscribedTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, onToken, reset, setStatus, subscribe, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribe, unsubscribeGameTable, updateConnected, updateSubscribed)
 
 import Backend.MessageCodification exposing (..)
 import Backend.MqttCommands exposing (..)
@@ -87,7 +87,7 @@ updateConnected model clientId =
         backend =
             model.backend
     in
-    ( setStatus SubscribingGeneral { model | backend = { backend | clientId = Just clientId } }
+    ( setStatus { model | backend = { backend | clientId = Just clientId } } SubscribingGeneral
     , Cmd.batch
         [ subscribe <| Client clientId
         , subscribe AllClients
@@ -129,6 +129,12 @@ updateSubscribed model topic =
 
             else
                 case topic of
+                    AllClients ->
+                        ( model, Cmd.none )
+
+                    Client _ ->
+                        ( model, Cmd.none )
+
                     Tables table direction ->
                         case model_.game.table of
                             Nothing ->
@@ -143,7 +149,7 @@ updateSubscribed model topic =
                                     )
 
                                 else if hasSubscribedTable subscribed table then
-                                    ( setStatus Online model_
+                                    ( setStatus model_ Online
                                     , Task.succeed (EnterGame table)
                                         |> Task.perform identity
                                     )
@@ -153,23 +159,14 @@ updateSubscribed model topic =
                                     , Cmd.none
                                     )
 
-                    _ ->
-                        ( model_
-                        , Cmd.none
-                        )
-
 
 subscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
 subscribeGameTable model table =
     if hasSubscribedTable model.backend.subscribed table then
-        if model.backend.status == Online then
-            ( model, consoleDebug "ignoring already subbed" )
-
-        else
-            ( setStatus Online model, consoleDebug "already subbed, set status Online" )
+        ( model, consoleDebug "ignoring already subbed" )
 
     else
-        ( setStatus SubscribingTable model
+        ( setStatus model SubscribingTable
         , Cmd.batch <|
             [ subscribe <| Tables table ClientDirection
             , subscribe <| Tables table Broadcast
@@ -327,13 +324,29 @@ decodeDirection string =
             Nothing
 
 
-setStatus : ConnectionStatus -> Types.Model -> Types.Model
-setStatus status model =
+setStatus : Types.Model -> ConnectionStatus -> Types.Model
+setStatus model status =
     let
         backend =
             model.backend
     in
     { model | backend = { backend | status = status } }
+
+
+reset : Types.Model -> ConnectionStatus -> Types.Model
+reset model status =
+    let
+        backend =
+            model.backend
+    in
+    { model
+        | backend =
+            { backend
+                | status = status
+                , subscribed = []
+                , lastHeartbeat = millisToPosix 0
+            }
+    }
 
 
 hasDuplexSubscribed : List Topic -> List Topic -> Topic -> Bool

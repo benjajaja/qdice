@@ -421,17 +421,17 @@ update msg model =
             )
 
         StatusConnect _ ->
-            ( Backend.setStatus Connecting model
+            ( Backend.setStatus model Connecting
             , Cmd.none
             )
 
         StatusReconnect attemptCount ->
-            ( Backend.setStatus (Reconnecting attemptCount) model
+            ( Backend.reset model <| Reconnecting attemptCount
             , Cmd.none
             )
 
         StatusOffline _ ->
-            ( Backend.setStatus Offline model
+            ( Backend.reset model Offline
             , Cmd.none
             )
 
