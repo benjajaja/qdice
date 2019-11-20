@@ -3,15 +3,15 @@ port module Backend exposing (addSubscribed, baseUrl, connect, decodeDirection, 
 import Backend.MessageCodification exposing (..)
 import Backend.MqttCommands exposing (..)
 import Backend.Types exposing (..)
-import Game.Types exposing (Player, PlayerAction(..), RollLog)
-import Helpers exposing (find, consoleDebug)
+import Game.Types exposing (PlayerAction(..), RollLog)
+import Helpers exposing (consoleDebug, find)
 import Land exposing (Color(..))
-import Url exposing (Url, Protocol(..))
 import String
 import Tables exposing (Table)
-import Types exposing (Msg(..))
-import Time exposing (millisToPosix)
 import Task
+import Time exposing (millisToPosix)
+import Types exposing (Msg(..))
+import Url exposing (Protocol(..), Url)
 
 
 port onToken : (String -> msg) -> Sub msg
@@ -55,8 +55,11 @@ connect =
 baseUrl : Url -> String
 baseUrl location =
     case Maybe.withDefault 80 location.port_ of
-        5000 -> "http://localhost:5001/api"
-        _ -> "/api"
+        5000 ->
+            "http://localhost:5001/api"
+
+        _ ->
+            "/api"
 
 
 init : Url -> Bool -> ( Model, Cmd Msg )
@@ -69,6 +72,7 @@ init location isTelegram =
       , findTableTimeout =
             if isTelegram then
                 2000
+
             else
                 1000
       , lastHeartbeat = millisToPosix 0
@@ -83,12 +87,12 @@ updateConnected model clientId =
         backend =
             model.backend
     in
-        ( setStatus SubscribingGeneral { model | backend = { backend | clientId = Just clientId } }
-        , Cmd.batch
-            [ subscribe <| Client clientId
-            , subscribe AllClients
-            ]
-        )
+    ( setStatus SubscribingGeneral { model | backend = { backend | clientId = Just clientId } }
+    , Cmd.batch
+        [ subscribe <| Client clientId
+        , subscribe AllClients
+        ]
+    )
 
 
 updateSubscribed : Types.Model -> Topic -> ( Types.Model, Cmd Msg )
@@ -115,47 +119,55 @@ updateSubscribed model topic =
                         subscribed
                         topic
             in
-                if hasSubscribedGeneral then
-                    case model_.game.table of
-                        Just table ->
-                            subscribeGameTable model_ table
+            if hasSubscribedGeneral then
+                case model_.game.table of
+                    Just table ->
+                        subscribeGameTable model_ table
 
-                        Nothing ->
-                            ( model_, Cmd.none )
-                else
-                    case topic of
-                        Tables table direction ->
-                            case model_.game.table of
-                                Nothing ->
+                    Nothing ->
+                        ( model_, Cmd.none )
+
+            else
+                case topic of
+                    Tables table direction ->
+                        case model_.game.table of
+                            Nothing ->
+                                ( model_
+                                , consoleDebug "subscribed to table but not in table"
+                                )
+
+                            Just gameTable ->
+                                if table /= gameTable then
                                     ( model_
-                                    , consoleDebug "subscribed to table but not in table"
+                                    , consoleDebug "subscribed to another table"
                                     )
 
-                                Just gameTable ->
-                                    if table /= gameTable then
-                                        ( model_
-                                        , consoleDebug "subscribed to another table"
-                                        )
-                                    else if hasSubscribedTable subscribed table then
-                                        ( setStatus Online model_
-                                        , Task.succeed (EnterGame table)
-                                            |> Task.perform identity
-                                        )
-                                    else
-                                        ( model_
-                                        , Cmd.none
-                                        )
+                                else if hasSubscribedTable subscribed table then
+                                    ( setStatus Online model_
+                                    , Task.succeed (EnterGame table)
+                                        |> Task.perform identity
+                                    )
 
-                        _ ->
-                            ( model_
-                            , Cmd.none
-                            )
+                                else
+                                    ( model_
+                                    , Cmd.none
+                                    )
+
+                    _ ->
+                        ( model_
+                        , Cmd.none
+                        )
 
 
 subscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
 subscribeGameTable model table =
     if hasSubscribedTable model.backend.subscribed table then
-        ( model, consoleDebug "ignoring already subbed" )
+        if model.backend.status == Online then
+            ( model, consoleDebug "ignoring already subbed" )
+
+        else
+            ( setStatus Online model, consoleDebug "already subbed, set status Online" )
+
     else
         ( setStatus SubscribingTable model
         , Cmd.batch <|
@@ -183,14 +195,14 @@ unsubscribeGameTable model table =
                 )
                 backend.subscribed
     in
-        ( { model | backend = { backend | subscribed = subscribed } }
-        , Cmd.batch
-            [ --publish <| TableMsg table <| Backend.Types.Leave <| Types.getUsername model
-              exit model.backend table
-            , unsubscribe <| Tables table ClientDirection
-            , unsubscribe <| Tables table Broadcast
-            ]
-        )
+    ( { model | backend = { backend | subscribed = subscribed } }
+    , Cmd.batch
+        [ --publish <| TableMsg table <| Backend.Types.Leave <| Types.getUsername model
+          exit model.backend table
+        , unsubscribe <| Tables table ClientDirection
+        , unsubscribe <| Tables table Broadcast
+        ]
+    )
 
 
 addSubscribed : Types.Model -> Topic -> Types.Model
@@ -202,7 +214,7 @@ addSubscribed model topic =
         subscribed =
             topic :: backend.subscribed
     in
-        { model | backend = { backend | subscribed = subscribed } }
+    { model | backend = { backend | subscribed = subscribed } }
 
 
 subscriptions : Types.Model -> Sub Types.Msg
@@ -257,6 +269,7 @@ decodeTopic : ClientId -> String -> Maybe Topic
 decodeTopic clientId string =
     if string == "clients/" ++ clientId then
         Just <| Client clientId
+
     else if String.startsWith "tables/" string then
         let
             parts =
@@ -268,22 +281,23 @@ decodeTopic clientId string =
             direction =
                 parts |> List.drop 1 |> List.head
         in
-            case tableName of
-                Nothing ->
-                    Nothing
+        case tableName of
+            Nothing ->
+                Nothing
 
-                Just table ->
-                    case direction of
-                        Nothing ->
-                            Nothing
+            Just table ->
+                case direction of
+                    Nothing ->
+                        Nothing
 
-                        Just direction1 ->
-                            case decodeDirection direction1 of
-                                Nothing ->
-                                    Nothing
+                    Just direction1 ->
+                        case decodeDirection direction1 of
+                            Nothing ->
+                                Nothing
 
-                                Just direction2 ->
-                                    Just <| Tables table direction2
+                            Just direction2 ->
+                                Just <| Tables table direction2
+
     else
         case string of
             "clients" ->
@@ -319,7 +333,7 @@ setStatus status model =
         backend =
             model.backend
     in
-        { model | backend = { backend | status = status } }
+    { model | backend = { backend | status = status } }
 
 
 hasDuplexSubscribed : List Topic -> List Topic -> Topic -> Bool
@@ -376,6 +390,7 @@ toRollLog model roll =
                 Just land ->
                     if land.color == Land.Neutral then
                         Just neutralPlayer
+
                     else
                         find (\p -> p.color == land.color) players
 
@@ -387,22 +402,23 @@ toRollLog model roll =
                 Just land ->
                     if land.color == Land.Neutral then
                         Just neutralPlayer
+
                     else
                         find (\p -> p.color == land.color) players
 
                 Nothing ->
                     Nothing
     in
-        { attacker = Maybe.withDefault errorPlayer attacker |> .name
-        , defender = Maybe.withDefault errorPlayer defender |> .name
-        , attackRoll = List.sum roll.from.roll
-        , attackDiesEmojis = toDiesEmojis roll.from.roll
-        , attackDiceCount = List.length roll.from.roll
-        , defendRoll = List.sum roll.to.roll
-        , defendDiesEmojis = toDiesEmojis roll.to.roll
-        , defendDiceCount = List.length roll.to.roll
-        , success = List.sum roll.from.roll > List.sum roll.to.roll
-        }
+    { attacker = Maybe.withDefault errorPlayer attacker |> .name
+    , defender = Maybe.withDefault errorPlayer defender |> .name
+    , attackRoll = List.sum roll.from.roll
+    , attackDiesEmojis = toDiesEmojis roll.from.roll
+    , attackDiceCount = List.length roll.from.roll
+    , defendRoll = List.sum roll.to.roll
+    , defendDiesEmojis = toDiesEmojis roll.to.roll
+    , defendDiceCount = List.length roll.to.roll
+    , success = List.sum roll.from.roll > List.sum roll.to.roll
+    }
 
 
 toDiesEmojis : List Int -> String
