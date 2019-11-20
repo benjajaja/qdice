@@ -126,6 +126,9 @@ button, .edButton {
   overflow: hidden;
   vertical-align: middle;
 }
+button .material-icons, .edButton .material-icons {
+  font-size: 20px;
+}
 
 .edCheckbox {
   height: 20px;
@@ -232,6 +235,10 @@ button, .edButton {
 }
 .edGameHeader__chip--strong {
   font-weight: bold;
+}
+.edGameHeader__button--icon {
+  min-width: 0;
+  padding: 0;
 }
 
 .edGameBoardFooter {

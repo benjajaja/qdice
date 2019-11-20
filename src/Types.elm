@@ -1,17 +1,17 @@
-module Types exposing (GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, AuthNetwork(..), AuthState, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, getUsername)
 
 import Animation
 import Backend.Types
 import Board exposing (Msg)
+import Browser
+import Browser.Navigation exposing (Key)
 import Game.Types exposing (GameStatus, PlayerAction, TableInfo, TableStatus)
 import Http
-import Url exposing (Url)
 import MyProfile.Types
 import OAuth
 import Tables exposing (Table)
 import Time
-import Browser
-import Browser.Navigation exposing (Key)
+import Url exposing (Url)
 
 
 type Msg
@@ -22,6 +22,7 @@ type Msg
     | Animate Animation.Msg
     | MyProfileMsg MyProfile.Types.MyProfileMsg
     | ErrorToast String String
+    | RequestFullscreen
       -- oauth
     | Nop
     | GetGlobalSettings (Result Http.Error ( GlobalSettings, List TableInfo ))

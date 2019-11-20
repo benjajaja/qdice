@@ -12,7 +12,13 @@ import Types exposing (LoginDialogStatus(..), Model, Msg(..), Route(..), StaticP
 footer : Model -> Html.Html Msg
 footer model =
     div [ class "edFooter" ]
-        [ div [ class "edFooter--box" ] [ statusMessage model.backend.status ]
+        [ div [ class "edFooter--box edFooter--box__links" ]
+            [ statusMessage model.backend.status
+            , div [ class "edFooter--box__link", onClick RequestFullscreen ]
+                [ i [ class "material-icons" ] [ text "fullscreen" ]
+                , text "Go fullscreen"
+                ]
+            ]
         , div [ class "edFooter--box edFooter--box__links" ] <|
             links model.user
         ]
@@ -107,6 +113,6 @@ statusMessage status =
                     "network_wifi"
     in
     Html.div [ dataTestId "connection-status" ]
-        [ Html.div [] [ Icon.icon icon ]
-        , Html.div [] [ Html.text message ]
+        [ Html.span [] [ Icon.icon icon ]
+        , Html.span [] [ Html.text message ]
         ]

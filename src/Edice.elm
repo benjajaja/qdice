@@ -491,6 +491,9 @@ update msg model =
             in
             ( { model | backend = { backend | lastHeartbeat = time } }, Cmd.none )
 
+        RequestFullscreen ->
+            ( model, requestFullscreen () )
+
 
 msgsToCmds : List Msg -> List (Cmd Msg)
 msgsToCmds msgs =
@@ -630,3 +633,6 @@ port started : String -> Cmd msg
 
 
 port auth : List String -> Cmd msg
+
+
+port requestFullscreen : () -> Cmd msg

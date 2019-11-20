@@ -147,6 +147,21 @@ setTimeout(function() {
   });
 
   global.edice = app;
+
+  app.ports.requestFullscreen.subscribe(function() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  });
+  window.addEventListener('orientationchange', function() {
+    if (screen.orientation.angle !== 90 && document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  });
 });
 
 var logPublish = function(args) {
