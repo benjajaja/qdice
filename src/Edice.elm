@@ -517,7 +517,7 @@ view model =
     { title = "Qdice.wtf"
     , body =
         [ loginDialog model
-        , Html.div [ Html.Attributes.class "Main" ]
+        , Html.main_ [ Html.Attributes.class "Main" ]
             [ mainView model
             ]
         , footer model

@@ -50,6 +50,7 @@ chatBox inputValue colors lines id_ =
                 , button
                     [ type_ "submit"
                     , class "chatbox--actions-button edButton"
+                    , attribute "aria-label" "submit chat message"
                     ]
                     [ Icon.icon "keyboard_return" ]
                 ]
@@ -63,6 +64,7 @@ input value_ =
         [ onInput InputChat
         , value value_
         , class "chatbox--actions-input"
+        , attribute "aria-label" "chat prompt"
         ]
         []
 

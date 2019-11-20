@@ -26,7 +26,7 @@ module.exports = env => ({
   module: {
     rules: [
       {
-        test: /\.(woff|eot|woff2|ttf|png|xml|ico|svg|json)$/,
+        test: /\.(woff|eot|woff2|ttf|png|xml|ico|svg|json|ogg)$/,
         exclude: /node_modules/,
         use: [
           {
