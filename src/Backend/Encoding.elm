@@ -1,8 +1,7 @@
-module Backend.Encoding exposing (actionPayload, encodeJwt, playerEncoder, profileEncoder, encodePlayerAction, authStateEncoder, encodeAuthNetwork)
+module Backend.Encoding exposing (actionPayload, authStateEncoder, encodeAuthNetwork, encodeJwt, encodePlayerAction, playerEncoder, profileEncoder)
 
-import Game.Types exposing (Player, PlayerAction(..), TableStatus, actionToString)
-import Json.Encode exposing (Value, encode, list, null, object, string)
-import Land exposing (Color, playerColor)
+import Game.Types exposing (Player, PlayerAction(..), actionToString)
+import Json.Encode exposing (Value, bool, encode, list, null, object, string)
 import Types exposing (..)
 
 
@@ -66,6 +65,9 @@ actionPayload action =
 
         Chat text ->
             Just <| string text
+
+        ToggleReady ready ->
+            Just <| bool ready
 
         _ ->
             Nothing

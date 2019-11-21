@@ -1,9 +1,10 @@
-port module Backend.MqttCommands exposing (attack, enter, exit, gameCommand, leave, mqttPublish, publish)
+port module Backend.MqttCommands exposing (attack, enter, exit, leave, mqttPublish, publish, sendGameCommand)
 
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
 import Backend.Types exposing (ClientId, Model, Topic(..), TopicDirection(..))
 import Game.Types exposing (Player, PlayerAction(..))
+import Helpers exposing (consoleDebug)
 import Land exposing (Color(..))
 import Snackbar exposing (toastError)
 import Tables exposing (Table)
@@ -37,14 +38,14 @@ publish jwt clientId table action =
             toastError "Command error: not connected" "attempted publish without clientId"
 
 
-gameCommand : Model -> Maybe Table -> PlayerAction -> Cmd Msg
-gameCommand model table playerAction =
+sendGameCommand : Model -> Maybe Table -> PlayerAction -> Cmd Msg
+sendGameCommand model table playerAction =
     case table of
         Just t ->
             publish model.jwt model.clientId t playerAction
 
         Nothing ->
-            Cmd.none
+            consoleDebug "sendGameCommand without table"
 
 
 enter : Model -> Table -> Cmd Msg

@@ -163,6 +163,9 @@ button .material-icons, .edButton .material-icons {
   overflow: hidden;
   vertical-align: middle;
 }
+.edCheckbox .material-icons {
+  font-size: 18px;
+}
 
 
 

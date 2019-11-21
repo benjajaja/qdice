@@ -3,7 +3,7 @@ port module Edice exposing (auth, started, subscriptions)
 import Animation
 import Backend
 import Backend.HttpCommands exposing (authenticate, loadGlobalSettings, loadMe)
-import Backend.MqttCommands exposing (gameCommand)
+import Backend.MqttCommands exposing (sendGameCommand)
 import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
 import Board.Types
@@ -11,7 +11,7 @@ import Browser
 import Browser.Navigation exposing (Key)
 import Footer exposing (footer)
 import GA exposing (ga)
-import Game.State
+import Game.State exposing (gameCommand)
 import Game.Types exposing (PlayerAction(..))
 import Game.View
 import Helpers exposing (httpErrorToString, pipeUpdates)
@@ -202,7 +202,7 @@ update msg model =
                     , Cmd.batch
                         [ auth [ token ]
                         , loadMe backend_
-                        , gameCommand model_.backend model.game.table Game.Types.Join
+                        , sendGameCommand model_.backend model.game.table Game.Types.Join
                         ]
                     )
 
@@ -279,7 +279,7 @@ update msg model =
                 [ auth []
                 , case player of
                     Just _ ->
-                        gameCommand model.backend model.game.table Game.Types.Leave
+                        sendGameCommand model.backend model.game.table Game.Types.Leave
 
                     Nothing ->
                         Cmd.none
@@ -387,16 +387,14 @@ update msg model =
             in
             if string /= "" then
                 ( { model | game = game_ }
-                , gameCommand model.backend model.game.table <| Game.Types.Chat string
+                , sendGameCommand model.backend model.game.table <| Game.Types.Chat string
                 )
 
             else
                 ( model, Cmd.none )
 
         GameCmd playerAction ->
-            ( model
-            , gameCommand model.backend model.game.table playerAction
-            )
+            gameCommand model playerAction
 
         EnterGame table ->
             -- now the player is really in a game/table
@@ -471,7 +469,7 @@ update msg model =
                             case model.backend.clientId of
                                 Just c ->
                                     if Time.posixToMillis newTime - Time.posixToMillis model.backend.lastHeartbeat > 5000 then
-                                        gameCommand model.backend model.game.table Heartbeat
+                                        sendGameCommand model.backend model.game.table Heartbeat
 
                                     else
                                         Cmd.none

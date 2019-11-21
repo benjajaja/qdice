@@ -1,7 +1,7 @@
-port module Game.State exposing (changeTable, clickLand, findUserPlayer, hoverLand, init, scrollElement, showRoll, tableMap, updateGameInfo, updateTable, updateTableStatus)
+port module Game.State exposing (changeTable, clickLand, findUserPlayer, gameCommand, hoverLand, init, scrollElement, showRoll, tableMap, updateGameInfo, updateTable, updateTableStatus)
 
 import Backend
-import Backend.MqttCommands exposing (attack)
+import Backend.MqttCommands exposing (attack, sendGameCommand)
 import Backend.Types exposing (Topic(..))
 import Board
 import Board.State
@@ -49,7 +49,37 @@ init table tableMap_ =
     , isPlayerOut = False
     , roundCount = 0
     , canFlag = False
+    , isReady = Nothing
     }
+
+
+gameCommand : Types.Model -> PlayerAction -> ( Types.Model, Cmd Msg )
+gameCommand model playerAction =
+    ( case playerAction of
+        Join ->
+            let
+                game =
+                    model.game
+
+                newGame =
+                    { game | isReady = Nothing }
+            in
+            { model | game = newGame }
+
+        ToggleReady ready ->
+            let
+                game =
+                    model.game
+
+                newGame =
+                    { game | isReady = Just ready }
+            in
+            { model | game = newGame }
+
+        _ ->
+            model
+    , sendGameCommand model.backend model.game.table playerAction
+    )
 
 
 changeTable : Types.Model -> Table -> ( Types.Model, Cmd Types.Msg )

@@ -1,13 +1,12 @@
-module Backend.Decoding exposing (accknowledgeDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, rollDecoder, singleRollDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, tokenDecoder, userDecoder, authStateDecoder)
+module Backend.Decoding exposing (accknowledgeDecoder, authStateDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, rollDecoder, singleRollDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, tokenDecoder, userDecoder)
 
 import Board.Types
 import Game.Types exposing (Player, PlayerGameStats, TableStatus)
-import Json.Decode exposing (Decoder, andThen, oneOf, bool, fail, field, float, index, int, list, map, map2, map3, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, int, list, map, map2, map3, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
-import LeaderBoard.Types exposing (LeaderBoardModel)
 import Tables exposing (Table)
-import Types exposing (LoggedUser, AuthNetwork(..), AuthState, Profile)
+import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Profile)
 
 
 tokenDecoder : Decoder String
@@ -106,6 +105,7 @@ playersDecoder =
         |> required "points" int
         |> required "level" int
         |> required "flag" (nullable int)
+        |> required "ready" bool
 
 
 playerGameStatsDecoder : Decoder PlayerGameStats

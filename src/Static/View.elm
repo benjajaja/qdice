@@ -20,15 +20,18 @@ A dice game, written in [Elm](https://elm-lang.org). A simplified Risk, inspired
 
 Created by <ste3ls@gmail.com>.
 
-#### Priority-High:
-  * ✗ Flag "ready" to start
+## Roadmap
+
+#### High Priority:
+  * ✔ Flag "ready" to start
+  * ✗ AI bots
+
+#### Priority-Low:
   * ✗ Show "who's turn it is" better
+  * ✔ Fullscreen tooltip
   * ✗ Profile page
   * ✗ Set password on account, login with password
   * ✗ Connect an auth method to anonymous account
-
-#### Priority-Low:
-  * ✗ Fullscreen tooltip
   * ✗ Replay a game
   * ✗ Login with twitter, facebook, github
 """

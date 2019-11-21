@@ -1,6 +1,6 @@
-module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableStatus, User, makePlayer, statusToString, statusToIcon, actionToString)
+module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableStatus, User, actionToString, makePlayer, statusToIcon, statusToString)
 
-import Board exposing (LandUpdate, Msg)
+import Board exposing (LandUpdate)
 import Land exposing (Color, Emoji)
 import Tables exposing (Table)
 
@@ -22,6 +22,7 @@ type PlayerAction
     | Attack Emoji Emoji
     | EndTurn
     | Flag
+    | ToggleReady Bool
     | Heartbeat
 
 
@@ -42,6 +43,7 @@ type alias Model =
     , isPlayerOut : Bool
     , roundCount : Int
     , canFlag : Bool
+    , isReady : Maybe Bool
     }
 
 
@@ -56,6 +58,7 @@ type alias Player =
     , points : Int
     , level : Int
     , flag : Maybe Int
+    , ready : Bool
     }
 
 
@@ -181,6 +184,7 @@ makePlayer name =
         }
     , reserveDice = 0
     , flag = Nothing
+    , ready = False
     }
 
 
@@ -242,6 +246,9 @@ actionToString action =
 
         Flag ->
             "Flag"
+
+        ToggleReady _ ->
+            "ToggleReady"
 
         Heartbeat ->
             "Heartbeat"

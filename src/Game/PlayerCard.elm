@@ -4,10 +4,11 @@ import Board.Colors
 import Color
 import Color.Accessibility
 import Color.Interpolate
-import Game.Types exposing (Player)
+import Game.Types exposing (GameStatus(..), Player)
 import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
+import Icon
 import Ordinal exposing (ordinal)
 import Svg
 import Svg.Attributes
@@ -33,30 +34,47 @@ view model index player =
                     )
                 ]
                 [ text player.name ]
-            , div [ class "edPlayerChip__gameStats" ]
-                [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
-                    [ Html.text <|
-                        if player.gameStats.position == 2 then
-                            "Pole"
+            , div [ class "edPlayerChip__gameStats" ] <|
+                gameStats
+                    model
+                    player
+            ]
+        ]
+
+
+gameStats : Model -> Player -> List (Html Msg)
+gameStats model player =
+    if model.game.status == Paused then
+        [ Html.div [ class "edPlayerChip__gameStats__item--strong" ] <|
+            if player.ready then
+                [ Html.text "✔ Ready" ]
+
+            else
+                [ Html.text "⌛ Waiting for others" ]
+        ]
+
+    else
+        [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+            [ Html.text <|
+                if player.gameStats.position == 2 then
+                    "Pole"
+
+                else
+                    ordinal player.gameStats.position
+            ]
+        , Html.div [ class "edPlayerChip__gameStats__item" ]
+            [ Html.text <| "⬢ " ++ String.fromInt player.gameStats.totalLands ]
+        , Html.div [ class "edPlayerChip__gameStats__item" ]
+            [ Html.text <|
+                ("⚂ "
+                    ++ String.fromInt player.gameStats.currentDice
+                    ++ (if player.reserveDice > 0 then
+                            " + " ++ String.fromInt player.reserveDice
 
                         else
-                            ordinal player.gameStats.position
-                    ]
-                , Html.div [ class "edPlayerChip__gameStats__item" ]
-                    [ Html.text <| "⬢ " ++ String.fromInt player.gameStats.totalLands ]
-                , Html.div [ class "edPlayerChip__gameStats__item" ]
-                    [ Html.text <|
-                        ("⚂ "
-                            ++ String.fromInt player.gameStats.currentDice
-                            ++ (if player.reserveDice > 0 then
-                                    " + " ++ String.fromInt player.reserveDice
-
-                                else
-                                    ""
-                               )
-                        )
-                    ]
-                ]
+                            ""
+                       )
+                )
             ]
         ]
 
