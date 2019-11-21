@@ -1,4 +1,4 @@
-import { TableStatus, Color, EliminationReason } from './types';
+import {TableStatus, Color, EliminationReason} from './types';
 
 export const STATUS_PAUSED: TableStatus = 'PAUSED';
 export const STATUS_PLAYING: TableStatus = 'PLAYING';
@@ -6,10 +6,7 @@ export const STATUS_FINISHED: TableStatus = 'FINISHED';
 
 export const TURN_SECONDS = 30;
 export const ROLL_SECONDS = 1.0;
-export const GAME_START_COUNTDOWN = 
-  process.env.NODE_ENV === 'production'
-    ? 30
-    : 3;
+export const GAME_START_COUNTDOWN = 30;
 
 export const COLOR_NEUTRAL = -1;
 export const COLOR_RED = 1;

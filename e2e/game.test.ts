@@ -36,6 +36,8 @@ describe('A full game', () => {
 
     await expect(page).toMatchElement(testId('player-name-0'), {text: 'A'});
 
+    await expect(page).toClick(testId('check-ready'));
+
     const browser2 = await puppeteer.launch({...launch, headless: true});
     const page2 = await browser2.newPage();
     await page2.evaluateOnNewDocument(() => localStorage.clear());
@@ -53,6 +55,8 @@ describe('A full game', () => {
     await expect(page2).not.toMatchElement(testId('login-dialog'));
 
     await expect(page2).toMatchElement(testId('player-name-1'), {text: 'B'});
+
+    await expect(page2).toClick(testId('check-ready'));
 
     await expect(page).toMatchElement(testId('game-status'), {text: 'playing'});
 
@@ -87,5 +91,5 @@ describe('A full game', () => {
     // ).toMatch(/^☠ A finished 2nd/);
 
     await browser2.close();
-  }, 300000);
+  }, 30000);
 });

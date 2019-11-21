@@ -1,15 +1,18 @@
 import * as R from 'ramda';
 
 import * as maps from '../maps';
-import { groupedPlayerPositions, positionScore, tablePoints } from '../helpers';
-import { Table, Player } from '../types';
+import {groupedPlayerPositions, positionScore, tablePoints} from '../helpers';
+import {Table, Player} from '../types';
 import logger from '../logger';
 
 export const serializeTable = (table: Table) => {
+  const players = table.players.map(serializePlayer(table));
 
-  const players = table.players.map(serializePlayer(table));  
-
-  const lands = table.lands.map(({ emoji, color, points }) => [emoji, color, points]);
+  const lands = table.lands.map(({emoji, color, points}) => [
+    emoji,
+    color,
+    points,
+  ]);
 
   return {
     tag: table.tag,
@@ -29,13 +32,27 @@ export const serializeTable = (table: Table) => {
   };
 };
 
-
 export const serializePlayer = (table: Table) => {
   const derived = computePlayerDerived(table);
   return (player: Player) => {
-    return Object.assign({}, R.pick([
-      'id', 'name', 'picture', 'color', 'reserveDice', 'out', 'outTurns', 'points', 'level', 'score', 'flag',
-    ])(player), { derived: derived(player) });
+    return Object.assign(
+      {},
+      R.pick([
+        'id',
+        'name',
+        'picture',
+        'color',
+        'reserveDice',
+        'out',
+        'outTurns',
+        'points',
+        'level',
+        'score',
+        'flag',
+        'ready',
+      ])(player),
+      {derived: derived(player)},
+    );
   };
 };
 
@@ -68,4 +85,3 @@ export const computePlayerDerived = (table: Table) => {
     };
   };
 };
-

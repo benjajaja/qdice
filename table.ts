@@ -1,15 +1,21 @@
-import { promisify } from 'util';
+import {promisify} from 'util';
 import * as R from 'ramda';
 import * as mqtt from 'mqtt';
 import * as jwt from 'jsonwebtoken';
 import * as AsyncLock from 'async-lock';
 
-import { UserId, Table, CommandResult, Elimination, IllegalMoveError } from './types';
+import {
+  UserId,
+  Table,
+  CommandResult,
+  Elimination,
+  IllegalMoveError,
+} from './types';
 import * as db from './db';
 import * as publish from './table/publish';
 import * as tick from './table/tick';
-import { getTable } from './table/get';
-import { findTable, hasTurn, positionScore, tablePoints } from './helpers';
+import {getTable} from './table/get';
+import {findTable, hasTurn, positionScore, tablePoints} from './helpers';
 import logger from './logger';
 
 import {
@@ -23,13 +29,17 @@ import {
   sitOut,
   sitIn,
   chat,
+  toggleReady,
 } from './table/commands';
-import { save } from './table/get';
+import {save} from './table/get';
 
 const verifyJwt = promisify(jwt.verify);
 
-export const start = async (tableTag: string, lock: AsyncLock, client: mqtt.MqttClient) => {
-
+export const start = async (
+  tableTag: string,
+  lock: AsyncLock,
+  client: mqtt.MqttClient,
+) => {
   publish.tableStatus(await getTable(tableTag));
 
   client.subscribe(`tables/${tableTag}/server`);
@@ -44,22 +54,20 @@ export const start = async (tableTag: string, lock: AsyncLock, client: mqtt.Mqtt
       return;
     }
 
-    const { type, clientId, token, payload } = parsedMessage;
+    const {type, clientId, token, payload} = parsedMessage;
 
     lock.acquire(tableTag, async done => {
       try {
         const user = await (token
           ? verifyJwt(token, process.env.JWT_SECRET)
-          : null
-        );
+          : null);
         const table = await getTable(tableTag);
 
         const result = command(user, clientId, table, type, payload);
         await processComandResult(table, result);
-
       } catch (e) {
         publish.clientError(clientId, e);
-        if ((e instanceof IllegalMoveError)) {
+        if (e instanceof IllegalMoveError) {
           logger.error(e, 'illegal move caught gracefully');
         } else {
           throw e;
@@ -79,17 +87,32 @@ export const start = async (tableTag: string, lock: AsyncLock, client: mqtt.Mqtt
   };
 };
 
-const parseMessage = (message: string): { type: string, clientId: string, token: string, payload: any | undefined } | null => {
+const parseMessage = (
+  message: string,
+): {
+  type: string;
+  clientId: string;
+  token: string;
+  payload: any | undefined;
+} | null => {
   try {
-    const { type, client: clientId, token, payload } = JSON.parse(message.toString());
-    return { type, clientId, token, payload };
+    const {type, client: clientId, token, payload} = JSON.parse(
+      message.toString(),
+    );
+    return {type, clientId, token, payload};
   } catch (e) {
     logger.error(e, 'Could not parse message');
     return null;
   }
 };
 
-const command = (user, clientId, table: Table, type, payload): CommandResult | void => {
+const command = (
+  user,
+  clientId,
+  table: Table,
+  type,
+  payload,
+): CommandResult | void => {
   switch (type) {
     case 'Enter':
       return enter(user, table, clientId);
@@ -109,8 +132,10 @@ const command = (user, clientId, table: Table, type, payload): CommandResult | v
       return sitIn(user, table, clientId);
     case 'Chat':
       return chat(user, table, clientId, payload);
+    case 'ToggleReady':
+      return toggleReady(user, table, clientId, payload);
     //case 'Flag':
-      //return flag(user, table, clientId);
+    //return flag(user, table, clientId);
     case 'Heartbeat':
       return heartbeat(user, table, clientId);
     default:
@@ -118,11 +143,14 @@ const command = (user, clientId, table: Table, type, payload): CommandResult | v
   }
 };
 
-export const processComandResult = async (table: Table, result: CommandResult | void) => {
+export const processComandResult = async (
+  table: Table,
+  result: CommandResult | void,
+) => {
   if (result) {
-    const { type, table: props, lands, players, watchers, eliminations } = result;
+    const {type, table: props, lands, players, watchers, eliminations} = result;
     // if (type !== 'Heartbeat') {
-      // logger.debug(`Command ${type} modified ${Object.keys(props || {})}, lands:${(lands || []).length}, players:${(players || []).length}, watchers:${(watchers || []).length}, eliminations:${(eliminations || []).length}`);
+    // logger.debug(`Command ${type} modified ${Object.keys(props || {})}, lands:${(lands || []).length}, players:${(players || []).length}, watchers:${(watchers || []).length}, eliminations:${(eliminations || []).length}`);
     // }
     const newTable = await save(table, props, players, lands, watchers);
     if (eliminations) {
@@ -135,33 +163,45 @@ export const processComandResult = async (table: Table, result: CommandResult | 
   }
 };
 
-const processEliminations = async (table: Table, eliminations: ReadonlyArray<Elimination>): Promise<void> => {
-  return Promise.all(eliminations.map(async (elimination) => {
-    const { player, position, reason, source } = elimination;
+const processEliminations = async (
+  table: Table,
+  eliminations: ReadonlyArray<Elimination>,
+): Promise<void> => {
+  return Promise.all(
+    eliminations.map(async elimination => {
+      const {player, position, reason, source} = elimination;
 
-    const score = player.score + positionScore(tablePoints(table))(table.playerStartCount)(position);
+      const score =
+        player.score +
+        positionScore(tablePoints(table))(table.playerStartCount)(position);
 
-    publish.elimination(table, player, position, score, {
-      type: reason,
-      ...source,
-    });
-    publish.event({
-      type: 'elimination',
-      table: table.name,
-      player,
-      position,
-      score,
-    });
+      publish.elimination(table, player, position, score, {
+        type: reason,
+        ...source,
+      });
+      publish.event({
+        type: 'elimination',
+        table: table.name,
+        player,
+        position,
+        score,
+      });
 
-    logger.debug('ELIMINATION-------------');
-    logger.debug(position, player.name);
-    try {
-      const user = await db.addScore(player.id, score);
-      publish.userUpdate(player.clientId)(user);
-    } catch (e) {
-      // send a message to this specific player
-      publish.clientError(player.clientId, new Error(`You earned ${score} points, but I failed to add them to your profile.`));
-      throw e;
-    }
-  })).then(() => undefined);
+      logger.debug('ELIMINATION-------------');
+      logger.debug(position, player.name);
+      try {
+        const user = await db.addScore(player.id, score);
+        publish.userUpdate(player.clientId)(user);
+      } catch (e) {
+        // send a message to this specific player
+        publish.clientError(
+          player.clientId,
+          new Error(
+            `You earned ${score} points, but I failed to add them to your profile.`,
+          ),
+        );
+        throw e;
+      }
+    }),
+  ).then(() => undefined);
 };
