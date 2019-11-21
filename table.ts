@@ -152,13 +152,14 @@ export const processComandResult = async (
     // if (type !== 'Heartbeat') {
     // logger.debug(`Command ${type} modified ${Object.keys(props || {})}, lands:${(lands || []).length}, players:${(players || []).length}, watchers:${(watchers || []).length}, eliminations:${(eliminations || []).length}`);
     // }
-    const newTable = await save(table, props, players, lands, watchers);
-    if (eliminations) {
-      await processEliminations(newTable, eliminations);
-    }
-
-    if (type !== 'Heartbeat') {
-      publish.tableStatus(newTable);
+    if (type !== 'Heartbeat' || (watchers && watchers.length > 0)) {
+      const newTable = await save(table, props, players, lands, watchers);
+      if (eliminations) {
+        await processEliminations(newTable, eliminations);
+      }
+      if (type !== 'Heartbeat') {
+        publish.tableStatus(newTable);
+      }
     }
   }
 };
@@ -187,20 +188,22 @@ const processEliminations = async (
         score,
       });
 
-      logger.debug('ELIMINATION-------------');
-      logger.debug(position, player.name);
-      try {
-        const user = await db.addScore(player.id, score);
-        publish.userUpdate(player.clientId)(user);
-      } catch (e) {
-        // send a message to this specific player
-        publish.clientError(
-          player.clientId,
-          new Error(
-            `You earned ${score} points, but I failed to add them to your profile.`,
-          ),
-        );
-        throw e;
+      if (player.bot === null) {
+        logger.debug('ELIMINATION-------------');
+        logger.debug(position, player.name);
+        try {
+          const user = await db.addScore(player.id, score);
+          publish.userUpdate(player.clientId)(user);
+        } catch (e) {
+          // send a message to this specific player
+          publish.clientError(
+            player.clientId,
+            new Error(
+              `You earned ${score} points, but I failed to add them to your profile.`,
+            ),
+          );
+          throw e;
+        }
       }
     }),
   ).then(() => undefined);

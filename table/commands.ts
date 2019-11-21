@@ -91,7 +91,11 @@ export const exit = (user, table, clientId): CommandResult | undefined => {
   return;
 };
 
-const makePlayer = (user, clientId, playerCount): Player => ({
+export const makePlayer = (
+  user: User,
+  clientId,
+  playerCount: number,
+): Player => ({
   id: user.id,
   clientId,
   name: user.name,
@@ -107,6 +111,7 @@ const makePlayer = (user, clientId, playerCount): Player => ({
   flag: null,
   lastBeat: now(),
   ready: false,
+  bot: null,
 });
 
 export const join = (user, table: Table, clientId): CommandResult => {
@@ -118,6 +123,7 @@ export const join = (user, table: Table, clientId): CommandResult => {
     throw new IllegalMoveError('already joined', user.id);
   }
 
+  logger.debug('join', typeof user.id);
   const players = table.players.concat([
     makePlayer(user, clientId, table.players.length),
   ]);
@@ -141,7 +147,7 @@ export const join = (user, table: Table, clientId): CommandResult => {
   if (table.players.length === table.playerSlots) {
     gameStart = now();
   } else {
-    if (players.length >= 2 && players.length >= table.startSlots) {
+    if (players.length >= table.startSlots) {
       gameStart = addSeconds(GAME_START_COUNTDOWN);
 
       publish.event({
@@ -181,10 +187,7 @@ export const leave = (
   const players = table.players.filter(p => p !== existing);
 
   const gameStart =
-    players.length >= 2 &&
-    Math.ceil(table.playerSlots / 2) <= table.players.length
-      ? addSeconds(GAME_START_COUNTDOWN)
-      : 0;
+    players.length >= table.startSlots ? addSeconds(GAME_START_COUNTDOWN) : 0;
 
   const status =
     table.players.length === 0 && table.status === STATUS_PAUSED

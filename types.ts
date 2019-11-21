@@ -1,4 +1,4 @@
-export type UserId = number;
+export type UserId = string;
 export type Network = 'google' | 'password' | 'telegram' | 'reddit';
 export type Emoji = string;
 export type Timestamp = number;
@@ -55,7 +55,7 @@ export type Attack = {
   start: Timestamp;
   from: Emoji;
   to: Emoji;
-  clientId: string;
+  clientId?: string;
 };
 
 export type TableStatus = 'PAUSED' | 'PLAYING' | 'FINISHED';
@@ -91,6 +91,7 @@ export type Player = UserLike & {
   readonly flag: any;
   readonly lastBeat: Timestamp;
   readonly ready: boolean;
+  readonly bot: Persona | null;
 };
 
 export type Watcher = {
@@ -161,4 +162,8 @@ export type CommandResult = {
   readonly players?: ReadonlyArray<Player>;
   readonly watchers?: ReadonlyArray<Watcher>;
   readonly eliminations?: ReadonlyArray<Elimination>;
+};
+
+export type Persona = {
+  name: string;
 };

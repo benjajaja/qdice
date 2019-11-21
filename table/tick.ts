@@ -15,6 +15,7 @@ import * as publish from './publish';
 import nextTurn from './turn';
 import startGame from './start';
 import {rollResult} from './attack';
+import {addBots, tickBotTurn} from './bots';
 import {leave} from './commands';
 import logger from '../logger';
 
@@ -26,7 +27,7 @@ export const start = (tableTag: string, lock: any) => {
   }
   intervalIds[tableTag] = setInterval(() => {
     tick(tableTag, lock);
-  }, 100);
+  }, 500);
 };
 
 export const stop = (tableTag: string) => {
@@ -57,10 +58,17 @@ const tick = async (tableTag: string, lock) => {
         result = nextTurn('TickTurnOver', table, !table.turnActivity);
       } else if (table.players.every(R.prop('out'))) {
         result = nextTurn('TickTurnAllOut', table);
+      } else if (table.players[table.turnIndex].bot !== null) {
+        result = tickBotTurn(table);
       }
     } else if (table.status === STATUS_PAUSED) {
       if (shouldStart(table)) {
         result = startGame(table);
+      } else if (
+        table.players.length < table.startSlots &&
+        table.players.filter(R.complement(isBot)).length > 0
+      ) {
+        result = addBots(table);
       } else if (table.players.length > 0) {
         result = cleanPlayers(table);
       }
@@ -76,7 +84,7 @@ const tick = async (tableTag: string, lock) => {
 };
 
 const shouldStart = (table: Table) =>
-  table.players.length >= 2 &&
+  table.players.length >= table.startSlots &&
   (countdownFinished(table.gameStart) ||
     table.players.every(player => player.ready));
 
@@ -111,10 +119,19 @@ const cleanWatchers = (table: Table): CommandResult | undefined => {
   return undefined;
 };
 
+const isBot = (player: Player) => player.bot !== null;
+
 const cleanPlayers = (table: Table): CommandResult | undefined => {
   const [stillWatching, stoppedWatching] = checkWatchers(table.players, 60 * 5);
   if (stoppedWatching.length > 0) {
     return leave(stoppedWatching[0], table);
+  }
+
+  if (table.players.length > 0) {
+    const bots = table.players.filter(isBot);
+    if (bots.length === table.players.length) {
+      return leave(bots[0], table);
+    }
   }
   return undefined;
 };
