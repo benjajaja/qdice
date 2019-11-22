@@ -41,14 +41,15 @@ export const positionScore = (multiplier: number) => (gameSize: number) => (
   return score;
 };
 
-export const groupedPlayerPositions = (
-  table: Table,
-): ((player: Player) => number) => {
+export const groupedPlayerPositions = (table: {
+  players: {id: string; color: number}[];
+  lands: {color: number}[];
+}): ((player: {id: string; color: number}) => number) => {
   const idLandCounts = table.players.map<[UserId, number]>(player => [
     player.id,
     table.lands.filter(R.propEq('color', player.color)).length,
   ]);
-  const sorted = R.sortBy(([id, count]) => count)(idLandCounts);
+  const sorted = R.sortBy(([_, count]) => count)(idLandCounts);
   const reversed = R.reverse(sorted);
 
   const positions = reversed.reduce((dict, [id, landCount], i) => {

@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as R from 'ramda';
 import {Grid, HEX_ORIENTATIONS} from 'honeycomb-grid';
+import {Land} from '../types';
 
 const srcDir = process.argv[2];
 
@@ -44,9 +45,7 @@ const loadMap = (
         if (char !== land.emoji) {
           return rowCells;
         } else {
-          return rowCells.concat([
-            grid.Hex(/*y % 2 === 0 ? x : x - 1*/ x, y + 1),
-          ]);
+          return rowCells.concat([grid.Hex(y % 2 === 0 ? x : x - 1, y + 1)]);
         }
       }, cells);
     }, []);
@@ -83,14 +82,19 @@ const isBorder = (module.exports.isBorder = R.curry(
     return from.cells.some(fromCell =>
       to.cells.some(toCell => {
         return grid.Hex.neighbors(fromCell).some(neighbor => {
-          return R.equals(neighbor, toCell);
+          return (
+            neighbor.x === toCell.x &&
+            neighbor.y === toCell.y &&
+            neighbor.z === toCell.z
+          );
         });
       }),
     );
   },
 ));
 
-const findLand = lands => emoji => R.find(R.propEq('emoji', emoji))(lands);
+const findLand = (lands: Land[]) => (emoji: string) =>
+  R.find<Land>(R.propEq('emoji', emoji))(lands)!;
 
 const write = fs.createWriteStream('./map-sources.json');
 write.write(
