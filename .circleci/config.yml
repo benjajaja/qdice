@@ -1,49 +1,106 @@
-version: 2.1
-
+version: 2
 jobs:
-  build:
+  checkout_code:
     docker:
-      - image: circleci/node:10.15.3
+    - image: circleci/node:10.15.3
     working_directory: ~/repo
     steps:
-      - checkout
-      - run: git config --file=.gitmodules submodule.edice.url git@bitbucket.org:easy-rider/edice.git
-      - run: git submodule sync
-      - run: git submodule update --init
-      - run:
-          name: Install Docker Compose
-          command: |
-            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-            chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
-      - setup_remote_docker
-      - run:
-          name: Build all containers
-          command: |
-            set -x
-            docker-compose build
-      - run:
-          name: Create network
-          command: docker network create qdice
-      - run:
-          name: Start all containers
-          command: |
-            set -x
-            docker-compose up -d
-
-      - run:
-          name: Build e2e
-          command: |
-            docker build ./e2e -t qdice2e
-      - run:
-          name: Build e2e
-          command: |
-            docker run --network qdice -e E2E_URL=http://edice qdice2e yarn test
-
-
+    - checkout
+    - run:
+        command: git config --file=.gitmodules submodule.edice.url git@bitbucket.org:easy-rider/edice.git
+    - run:
+        command: git submodule sync
+    - run:
+        command: git submodule update --init
+    - save_cache:
+        key: repo-{{ .Environment.CIRCLE_SHA1 }}
+        paths:
+        - ~/repo
+  install_dependencies:
+    docker:
+    - image: circleci/node:10.15.3
+    working_directory: ~/repo
+    steps:
+    - restore_cache:
+        name: Checkout source code
+        key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - restore_cache:
+        name: Restore Yarn package cache
+        keys:
+        - yarn-packages-{{ checksum "yarn.lock" }}
+    - run:
+        name: Install dependencies
+        command: yarn install --frozen-lockfile
+    - save_cache:
+        name: Save Yarn package cache
+        key: yarn-packages-{{ checksum "yarn.lock" }}
+        paths:
+        - ~/.cache/yarn
+  test_nodejs:
+    docker:
+    - image: circleci/node:10.15.3
+    working_directory: ~/repo
+    steps:
+    - restore_cache:
+        name: Checkout source code
+        key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - restore_cache:
+        name: Restore Yarn package cache
+        keys:
+        - yarn-packages-{{ checksum "yarn.lock" }}
+    - run:
+        name: Install dependencies
+        command: yarn install --frozen-lockfile
+    - run:
+        command: yarn jest
+  test_e2e:
+    docker:
+    - image: circleci/node:10.15.3
+    working_directory: ~/repo
+    steps:
+    - restore_cache:
+        name: Checkout source code
+        key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - run:
+        name: Install Docker Compose
+        command: |
+          curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+          chmod +x ~/docker-compose
+          sudo mv ~/docker-compose /usr/local/bin/docker-compose
+    - setup_remote_docker
+    - run:
+        name: Build all containers
+        command: |
+          set -x
+          docker-compose build
+    - run:
+        name: Create network
+        command: docker network create qdice
+    - run:
+        name: Start all containers
+        command: |
+          set -x
+          docker-compose up -d
+    - run:
+        name: Build e2e
+        command: |
+          docker build ./e2e -t qdice2e
+    - run:
+        name: Run e2e
+        command: |
+          docker run --network qdice -e E2E_URL=http://edice qdice2e yarn test
 workflows:
   version: 2
   build_and_test:
     jobs:
-      - build
+    - checkout_code
+    - install_dependencies:
+        requires:
+        - checkout_code
+    - test_nodejs:
+        requires:
+        - install_dependencies
+    - test_e2e:
+        requires:
+        - checkout_code
 

@@ -42,8 +42,8 @@ export const positionScore = (multiplier: number) => (gameSize: number) => (
 };
 
 export const groupedPlayerPositions = (table: {
-  players: {id: string; color: number}[];
-  lands: {color: number}[];
+  players: ReadonlyArray<{id: string; color: number}>;
+  lands: ReadonlyArray<{color: number}>;
 }): ((player: {id: string; color: number}) => number) => {
   const idLandCounts = table.players.map<[UserId, number]>(player => [
     player.id,

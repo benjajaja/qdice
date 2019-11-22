@@ -4,7 +4,7 @@
     "strictNullChecks": true,
     "alwaysStrict": true,
     "lib": ["es2018"],
-    "types": ["node"],
+    "types": ["node", "jest"],
     "resolveJsonModule": true
   }
 }
