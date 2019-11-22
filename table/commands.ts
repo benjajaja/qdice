@@ -323,6 +323,9 @@ export const endTurn = (user: User, table: Table, clientId): CommandResult => {
   if (!hasTurn(table)(user)) {
     throw new IllegalMoveError('endTurn while not having turn', user.id);
   }
+  if (table.attack !== null) {
+    throw new IllegalMoveError('endTurn while ongoing attack', user.id);
+  }
 
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
@@ -390,7 +393,6 @@ export const toggleReady = (
     throw new IllegalMoveError('toggleReady while not in game', user.id);
   }
 
-  logger.debug('ToggleReady', payload);
   const players = table.players.map(p =>
     p === player ? {...p, ready: payload} : p,
   );
