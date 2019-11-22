@@ -3,7 +3,7 @@
     "noImplicitAny": false,
     "strictNullChecks": true,
     "alwaysStrict": true,
-    "lib": ["es2018"],
+    "lib": ["dom", "es2018"],
     "resolveJsonModule": true,
     "esModuleInterop": true
   }

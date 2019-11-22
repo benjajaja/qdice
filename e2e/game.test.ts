@@ -1,31 +1,60 @@
 import puppeteer, {Page} from 'puppeteer';
 import {launch} from './jest-puppeteer.config.js';
+import {setInterval, clearInterval} from 'timers';
 
-const attack = async (page: Page, from: string, to: string, name: string) => {
+const hisTurn = async (page: Page, name: string) =>
   await expect(page).toMatchElement(
     '[data-test-id="logline-turn"]:nth-child(1)',
     {
       text: new RegExp(`^${name}'s turn`),
     },
   );
-  console.log(`${name}'s turn`);
+
+const attack = async (page: Page, from: string, to: string, name: string) => {
+  console.log(`player "${name}" attack from ${from} to ${to}`);
+  const latestLog = await page.evaluate(
+    () =>
+      document.querySelector('[data-test-id="logline-roll"]:nth-child(1)')
+        ?.textContent,
+  );
+  console.log(latestLog);
+
   await expect(page).toClick(testId(from));
-  console.log(`clicked from ${from}`);
-  // jestPuppeteer.debug();
   await expect(page).toMatchElement(testValue(from, 'selected', 'true'));
   await expect(page).toClick(testId(to));
-  console.log(`clicked to ${to}`);
   await expect(page).toMatchElement(testValue(to, 'selected', 'true'));
+
+  // must wait for a new logline if there were previous
+  if (latestLog !== undefined) {
+    await new Promise(resolve => {
+      const interval = setInterval(async () => {
+        if (
+          (await page.evaluate(
+            () =>
+              document.querySelector(
+                '[data-test-id="logline-roll"]:nth-child(1)',
+              )?.textContent,
+          )) !== latestLog
+        ) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 1);
+    });
+  }
+  // but also ensure that is was our roll
   await expect(page).toMatchElement(
     '[data-test-id="logline-roll"]:nth-child(1)',
     {
-      text: new RegExp(`^${name} (won|lost)`),
+      text: new RegExp(`^${name} (won over|lost against)`),
     },
   );
 };
 
 describe('A full game', () => {
   test('should play a full game', async () => {
+    await expect(page).toClick(testId('go-to-table-Melchor'));
+
     await expect(page).toClick(testId('button-seat'));
     await expect(page).toMatchElement(testId('login-dialog'));
 
@@ -46,6 +75,7 @@ describe('A full game', () => {
       text: 'Online',
     });
 
+    await expect(page2).toClick(testId('go-to-table-Melchor'));
     await expect(page2).toClick(testId('button-seat'), {text: 'Join'});
     await expect(page2).toMatchElement(testId('login-dialog'));
 
@@ -60,19 +90,31 @@ describe('A full game', () => {
 
     await expect(page).toMatchElement(testId('game-status'), {text: 'playing'});
 
-    await attack(page, 'land-🍷', 'land-🏰', 'A');
+    await hisTurn(page, 'A');
+    await attack(page, 'land-🥑', 'land-🐵', 'A');
+    await attack(page, 'land-🐵', 'land-🍺', 'A');
     await expect(page).toClick(testId('button-seat'), {text: 'End turn'});
 
-    await attack(page2, 'land-💊', 'land-🌙', 'B');
+    await hisTurn(page2, 'B');
+    await attack(page2, 'land-🐸', 'land-🍺', 'B');
     await expect(page2).toClick(testId('button-seat'), {text: 'End turn'});
 
-    await attack(page, 'land-🏰', 'land-🌙', 'A');
+    await hisTurn(page, 'A');
+    await attack(page, 'land-🍺', 'land-🐸', 'A');
     await expect(page).toClick(testId('button-seat'), {text: 'End turn'});
 
-    await attack(page2, 'land-💊', 'land-🌙', 'B');
+    await hisTurn(page2, 'B');
     await expect(page2).toClick(testId('button-seat'), {text: 'End turn'});
 
-    await attack(page, 'land-🌙', 'land-💊', 'A');
+    await hisTurn(page, 'A');
+    await expect(page).toClick(testId('button-seat'), {text: 'End turn'});
+
+    await hisTurn(page2, 'B');
+    await attack(page2, 'land-🐸', 'land-🍺', 'B');
+    await expect(page2).toClick(testId('button-seat'), {text: 'End turn'});
+
+    await hisTurn(page, 'A');
+    await attack(page, 'land-🍺', 'land-🐸', 'A');
 
     expect(
       await page.evaluate(
@@ -80,16 +122,15 @@ describe('A full game', () => {
         await page.$(testId('logline-elimination')),
       ),
     ).toMatch(
-      /^🏆 A won the game! with \d+ ✪ \(Last standing player after 5 turns\)/,
+      /^🏆 A won the game! with \d+ ✪ \(Last standing player after \d+ turns\)/,
     );
 
+    await browser2.close();
     // expect(
     // await page.evaluate(
     // el => el.innerText,
     // await page.$(testId('logline-elimination'))),
     // ),
     // ).toMatch(/^☠ A finished 2nd/);
-
-    await browser2.close();
-  }, 30000);
+  }, 300000);
 });

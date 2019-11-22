@@ -5,7 +5,13 @@ module.exports = {
     slowMo: 0,
     args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox'],
     devtools: true,
-    defaultViewport: null,
+    defaultViewport: {
+      width: 400,
+      height: 600,
+      isMobile: true,
+      hasTouch: true,
+      isLandscape: false,
+    },
   },
   browserContext: 'default',
 };
