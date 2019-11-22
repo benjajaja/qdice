@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import {Table, CommandResult, User, Persona, Player} from '../types';
+import {Table, CommandResult, User, Persona, Player, Land} from '../types';
 import {now, addSeconds, havePassed} from '../timestamp';
 import * as publish from './publish';
 import {rand, shuffle} from '../rand';
@@ -80,35 +80,45 @@ export const tickBotTurn = (table: Table): CommandResult => {
 
   const otherLands = table.lands.filter(other => other.color !== player.color);
   const sourceLands = shuffle(
-    table.lands.filter(
-      land =>
-        land.color === player.color &&
-        land.points > 1 &&
-        otherLands.some(other =>
-          isBorder(table.adjacency, land.emoji, other.emoji),
-        ),
-    ),
-  );
+    table.lands.filter(land => land.color === player.color && land.points > 1),
+  )
+    .map(source => ({
+      source,
+      targets: otherLands.filter(other =>
+        isBorder(table.adjacency, source.emoji, other.emoji),
+      ),
+    }))
+    .filter(attack => attack.targets.length > 0);
 
   if (sourceLands.length === 0) {
     logger.debug('no possible source');
     return nextTurn('EndTurn', table);
   }
 
-  const fromLand = sourceLands[0]; // shuffled random
-  const adjacentLands = shuffle(
-    otherLands.filter(other =>
-      isBorder(table.adjacency, fromLand.emoji, other.emoji),
-    ),
+  const attack = sourceLands.reduce<{from: Land; to: Land} | null>(
+    (attack, {source, targets}) =>
+      targets.reduce((attack, target) => {
+        const bestChance = attack
+          ? attack.from.points - attack.to.points
+          : -Infinity;
+        const thisChance = source.points - target.points;
+        if (thisChance > bestChance) {
+          if (thisChance > 0) {
+            return {from: source, to: target};
+          }
+        }
+        return attack;
+      }, attack),
+    null,
   );
 
-  if (adjacentLands.length === 0) {
-    logger.debug('no adjacent', otherLands.length, fromLand.emoji);
+  if (attack === null) {
+    logger.debug('no appropiate attack');
     return nextTurn('EndTurn', table);
   }
 
-  const emojiFrom = fromLand.emoji;
-  const emojiTo = adjacentLands[0].emoji; // shuffled random
+  const emojiFrom = attack.from.emoji;
+  const emojiTo = attack.to.emoji; // shuffled random
 
   const timestamp = now();
   publish.move(table, {
