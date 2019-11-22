@@ -1,11 +1,13 @@
 module Game.Footer exposing (footer)
 
 import Game.Types exposing (TableInfo, statusToIcon)
+import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
-import Types exposing (Model, Msg(..))
 import Icon
+import Types exposing (Model, Msg(..))
+
 
 
 --import Tables exposing (Table, tableList)
@@ -22,7 +24,8 @@ tableOfTables model =
         [ thead []
             [ tr []
                 [ th [] [ text "Table" ]
-                  --, th [] [ text "Level" ]
+
+                --, th [] [ text "Level" ]
                 , th [] [ text "Players" ]
                 , th [] [ text "Watching" ]
                 , th [] [ text "Status" ]
@@ -37,9 +40,11 @@ tableOfTables model =
                     \table ->
                         tr
                             [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
+                            , dataTestId <| "go-to-table-" ++ table.table
                             ]
                             [ td [] [ text <| table.table ]
-                              --, td [] [ text <| String.fromInt table.points ]
+
+                            --, td [] [ text <| String.fromInt table.points ]
                             , td []
                                 [ text <|
                                     String.fromInt table.playerCount
