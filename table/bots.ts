@@ -11,6 +11,7 @@ import {isBorder} from '../maps';
 
 const defaultPersona: Persona = {
   name: 'Personality',
+  picture: 'assets/bot_profile_picture.svg',
 };
 const personas: Persona[] = [
   {...defaultPersona, name: 'Oliva'},
@@ -28,7 +29,7 @@ export const addBots = (table: Table): CommandResult => {
   const botUser: User = {
     id: '-1',
     name: persona.name,
-    picture: 'assets/empty_profile_picture.svg',
+    picture: persona.picture,
     level: 1,
     points: 100,
     email: 'bot@skynet',
