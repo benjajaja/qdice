@@ -90,6 +90,7 @@ export type Player = UserLike & {
   readonly score: number;
   readonly flag: any;
   readonly lastBeat: Timestamp;
+  readonly joined: Timestamp;
   readonly ready: boolean;
   readonly bot: Persona | null;
 };

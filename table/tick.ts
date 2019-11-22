@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import {getTable, save} from './get';
 import {Table, Player, CommandResult, Timestamp} from '../types';
 import {processComandResult} from '../table';
-import {havePassed} from '../timestamp';
+import {havePassed, addSeconds, now} from '../timestamp';
 
 import {
   STATUS_PAUSED,
@@ -10,6 +10,7 @@ import {
   STATUS_FINISHED,
   TURN_SECONDS,
   ROLL_SECONDS,
+  GAME_START_COUNTDOWN,
 } from '../constants';
 import * as publish from './publish';
 import nextTurn from './turn';
@@ -65,9 +66,15 @@ const tick = async (tableTag: string, lock) => {
       if (shouldStart(table)) {
         result = startGame(table);
       } else if (
+        table.players.filter(R.complement(isBot)).length > 0 &&
         table.players.length < table.startSlots &&
-        table.players.filter(R.complement(isBot)).length > 0
+        havePassed(3, lastJoined(table.players))
       ) {
+        logger.debug(
+          table.gameStart,
+          addSeconds(-GAME_START_COUNTDOWN, table.gameStart),
+          havePassed(3, addSeconds(-GAME_START_COUNTDOWN, table.gameStart)),
+        );
         result = addBots(table);
       } else if (table.players.length > 0) {
         result = cleanPlayers(table);
@@ -134,4 +141,16 @@ const cleanPlayers = (table: Table): CommandResult | undefined => {
     }
   }
   return undefined;
+};
+
+const lastJoined = (players: ReadonlyArray<Player>): Timestamp => {
+  const last = R.reduce<Timestamp, Timestamp>(
+    R.max,
+    0,
+    players
+      .filter(player => player.bot === null)
+      .map<Timestamp>(player => player.joined),
+  );
+  logger.debug('last', last);
+  return last;
 };

@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import {Table, CommandResult, User, Persona} from '../types';
+import {Table, CommandResult, User, Persona, Player} from '../types';
 import {now, addSeconds, havePassed} from '../timestamp';
 import * as publish from './publish';
 import {rand, shuffle} from '../rand';

@@ -110,6 +110,7 @@ export const makePlayer = (
   score: 0,
   flag: null,
   lastBeat: now(),
+  joined: now(),
   ready: false,
   bot: null,
 });
