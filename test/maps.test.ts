@@ -42,7 +42,7 @@ describe('Maps', () => {
     });
   });
 
-  describe('Borders', () => {
+  describe('Borders of Melchor', () => {
     const [lands, adjacency] = maps.loadMap('Melchor');
     const spec: [string, string, boolean][] = [
       ['🍋', '🔥', true],
@@ -64,7 +64,7 @@ describe('Maps', () => {
     });
   });
 
-  describe.skip('More borders', () => {
+  describe('Borders of Serrano', () => {
     const [lands, adjacency] = maps.loadMap('Serrano');
     const spec: [string, string, boolean][] = [
       ['🏰', '💰', false],
