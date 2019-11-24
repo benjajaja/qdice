@@ -47,11 +47,15 @@ describe('Maps', () => {
     const spec: [string, string, boolean][] = [
       ['🍋', '🔥', true],
       ['🍋', '💰', false],
+      ['💰', '🐸', true],
       ['😺', '🐵', true],
+      ['😺', '🍺', true],
       ['🐙', '🐵', false],
       ['🐵', '🍺', true],
       ['🐵', '🌵', true],
+      ['🌵', '🐵', true],
       ['🐵', '🥑', true],
+      ['🌵', '🌙', true],
     ];
     spec.forEach(([from, to, isBorder]) => {
       it(`${from}  should ${isBorder ? '' : 'NOT '}border ${to}`, () => {
