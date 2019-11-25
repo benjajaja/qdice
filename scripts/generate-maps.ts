@@ -1,60 +1,63 @@
 import * as fs from 'fs';
 import * as R from 'ramda';
-import {Grid, HEX_ORIENTATIONS} from 'honeycomb-grid';
-import {Land} from '../types';
+
+// type Hex = {x: number; y: number; z: number};
+type Hex = {row: number; col: number};
+type Land = {emoji: string; cells: Hex[]};
 
 const srcDir = process.argv[2];
 
-const grid = Grid({
-  size: 100,
-  orientation: HEX_ORIENTATIONS.POINTY,
-});
+const cubeFromAxial = (col: number, row: number) => {
+  const cubeX = col - ((row - (row & 1)) >> 1);
+  return {x: cubeX, z: row, y: -cubeX - row};
+};
 
 const loadMap = (
   rawMap: string[],
 ): [{emoji: string; cells: any[]}[], {matrix: any; indexes: any}] => {
-  //const rawMap = fs.readFileSync('./maps/' + tableName + '.emoji')
-  //.toString().split('\n').filter(line => line !== '');
   const regex = new RegExp(
-    '〿|\\u30C3|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]',
+    '\\u30C3|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]',
     'gi',
   );
 
-  const rows = rawMap.map(line => {
+  const lines = rawMap.map(line => {
     const results: string[] = [];
-    let result;
-    let index = 0;
+    let result: any;
     while ((result = regex.exec(line))) {
       results.push(result[0]);
-      index++;
     }
     return results;
   });
-  //const maxWidth = rows.map(row => row.length).reduce((max, width) => Math.max(max, width));
-  const lands = R.uniq(rows.reduce(R.concat, []))
+  // const width = lines
+  // .map(row => row.length)
+  // .reduce((max, width) => Math.max(max, width));
+  // const height = lines.length;
+
+  const emptyLands: Land[] = R.uniq(lines.reduce(R.concat, []))
     .filter(R.complement(R.equals('〿')))
     .filter(R.complement(R.equals('ｯ')))
     .filter(R.complement(R.equals('\u3000')))
     .map((emoji: string) => ({
       emoji: emoji,
+      cells: [],
     }));
 
-  const fullLands = lands.map(land => {
-    const cells = rows.reduce((cells, row, y) => {
-      return row.reduce((rowCells, char, x) => {
-        if (char !== land.emoji) {
-          return rowCells;
-        } else {
-          return rowCells.concat([grid.Hex(y % 2 === 0 ? x : x - 1, y + 1)]);
+  const lands = lines.reduce<Land[]>((lands, line, row) => {
+    return line.reduce<Land[]>((lands, char, col) => {
+      const cell = {row, col};
+      return lands.map(land => {
+        if (land.emoji === char) {
+          return {...land, cells: land.cells.concat([cell])};
         }
-      }, cells);
-    }, []);
-    return Object.assign(land, {cells});
-  });
-  return [fullLands, createAdjacencyMatrix(fullLands)];
+        return land;
+      });
+    }, lands);
+  }, emptyLands);
+
+  return [lands, createAdjacencyMatrix(lands)];
 };
 
-const createAdjacencyMatrix = lands => {
+const createAdjacencyMatrix = (lands: Land[]) => {
   process.stdout.write(
     `caclulating adjacency matrix for ${lands.length} lands...`,
   );
@@ -72,7 +75,7 @@ const createAdjacencyMatrix = lands => {
 };
 
 const isBorder = (module.exports.isBorder = R.curry(
-  (lands, fromEmoji, toEmoji) => {
+  (lands: Land[], fromEmoji: string, toEmoji: string) => {
     if (fromEmoji === toEmoji) {
       return false;
     }
@@ -81,17 +84,50 @@ const isBorder = (module.exports.isBorder = R.curry(
     const to = find(toEmoji);
     return from.cells.some(fromCell =>
       to.cells.some(toCell => {
-        return grid.Hex.neighbors(fromCell).some(neighbor => {
-          return (
-            neighbor.x === toCell.x &&
-            neighbor.y === toCell.y &&
-            neighbor.z === toCell.z
-          );
-        });
+        return neighbors(fromCell).some(
+          neighbor =>
+            neighbor.row === toCell.row && neighbor.col === toCell.col,
+        );
       }),
     );
   },
 ));
+
+const cube = (x: number, y: number, z: number) => ({x, y, z});
+const cubeDirections = [
+  cube(+1, -1, 0),
+  cube(+1, 0, -1),
+  cube(0, +1, -1),
+  cube(-1, +1, 0),
+  cube(-1, 0, +1),
+  cube(0, -1, +1),
+];
+const oddrDirections = [
+  [
+    [+1, 0],
+    [0, -1],
+    [-1, -1],
+    [-1, 0],
+    [-1, +1],
+    [0, +1],
+  ],
+  [
+    [+1, 0],
+    [+1, -1],
+    [0, -1],
+    [-1, 0],
+    [0, +1],
+    [+1, +1],
+  ],
+];
+
+const neighborAt = (hex: Hex, direction: number): Hex => {
+  const parity = hex.row & 1;
+  const dir = oddrDirections[parity][direction];
+  return {col: hex.col + dir[0], row: hex.row + dir[1]};
+};
+const neighbors = (hex: Hex): Hex[] =>
+  [0, 1, 2, 3, 4, 5].map(i => neighborAt(hex, i));
 
 const findLand = (lands: Land[]) => (emoji: string) =>
   R.find<Land>(R.propEq('emoji', emoji))(lands)!;
@@ -104,7 +140,6 @@ write.write(
         const buffer = fs.readFileSync(`${srcDir}/${file}`);
         const lines = buffer.toString().split('\n');
         const name = lines.shift()!;
-        //const tag = lines.shift();
         console.log(name);
         const [lands, adjacency] = loadMap(lines);
         console.log(`${lands.length} lands`);

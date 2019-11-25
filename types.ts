@@ -46,7 +46,6 @@ export type Table = TableProps & {
 
 export type Land = {
   readonly emoji: Emoji;
-  readonly cells: ReadonlyArray<{x: number; y: number; z: number}>;
   readonly color: Color;
   readonly points: number;
 };
