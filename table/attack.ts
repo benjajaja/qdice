@@ -24,6 +24,7 @@ import {
 } from '../types';
 import {now} from '../timestamp';
 import logger from '../logger';
+import {botsNotifyAttack} from './bots';
 
 export const rollResult = (table: Table): CommandResult => {
   if (!table.attack) {
@@ -42,7 +43,7 @@ export const rollResult = (table: Table): CommandResult => {
       to: {emoji: table.attack.to, roll: toRoll},
     });
     let lands = table.lands;
-    let players = table.players;
+    let players = botsNotifyAttack(table);
     let eliminations: ReadonlyArray<Elimination> | undefined = undefined;
     let turnIndex: number | undefined = undefined;
     if (isSuccess) {

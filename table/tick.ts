@@ -1,22 +1,20 @@
 import * as R from 'ramda';
-import {getTable, save} from './get';
+import {getTable} from './get';
 import {Table, Player, CommandResult, Timestamp} from '../types';
 import {processComandResult} from '../table';
-import {havePassed, addSeconds, now} from '../timestamp';
+import {havePassed} from '../timestamp';
 
 import {
   STATUS_PAUSED,
   STATUS_PLAYING,
-  STATUS_FINISHED,
   TURN_SECONDS,
   ROLL_SECONDS,
-  GAME_START_COUNTDOWN,
 } from '../constants';
 import * as publish from './publish';
 import nextTurn from './turn';
 import startGame from './start';
 import {rollResult} from './attack';
-import {addBots, tickBotTurn} from './bots';
+import {addBots, tickBotTurn, isBot} from './bots';
 import {leave} from './commands';
 import logger from '../logger';
 
@@ -121,10 +119,8 @@ const cleanWatchers = (table: Table): CommandResult | undefined => {
   return undefined;
 };
 
-const isBot = (player: Player) => player.bot !== null;
-
 const cleanPlayers = (table: Table): CommandResult | undefined => {
-  const [stillWatching, stoppedWatching] = checkWatchers(table.players, 60 * 5);
+  const [_, stoppedWatching] = checkWatchers(table.players, 60 * 5);
   if (stoppedWatching.length > 0) {
     return leave(stoppedWatching[0], table);
   }

@@ -7,24 +7,31 @@ import {
   Player,
   Land,
   BotStrategy,
+  BotPlayer,
+  Color,
 } from '../types';
 import {now, addSeconds, havePassed} from '../timestamp';
 import * as publish from './publish';
-import {rand, shuffle} from '../rand';
+import {shuffle, rand} from '../rand';
 import logger from '../logger';
 import {GAME_START_COUNTDOWN} from '../constants';
 import {makePlayer} from './commands';
 import nextTurn from './turn';
 import {isBorder} from '../maps';
+import {findLand} from '../helpers';
 
 const defaultPersona: Persona = {
   name: 'Personality',
   picture: 'assets/bot_profile_picture.svg',
   strategy: 'RandomCareful',
+  state: {
+    lastAgressor: null,
+  },
 };
+
 const personas: Persona[] = [
+  {...defaultPersona, name: 'Mono', strategy: 'Revengeful'},
   {...defaultPersona, name: 'Oliva', strategy: 'RandomCareless'},
-  {...defaultPersona, name: 'Mono'},
   {...defaultPersona, name: 'Cohete'},
   {...defaultPersona, name: 'Chiqui'},
   {...defaultPersona, name: 'Patata', strategy: 'RandomCareless'},
@@ -33,17 +40,20 @@ const personas: Persona[] = [
   {...defaultPersona, name: 'Cuqui'},
 ];
 
+export const isBot = (player: Player): player is BotPlayer =>
+  player.bot !== null;
+
 export const addBots = (table: Table): CommandResult => {
   const unusedPersonas = personas.filter(
     p =>
       !R.contains(
         p.name,
-        table.players.filter(p => p.bot !== null).map(p => p.name),
+        table.players.filter(isBot).map(p => p.name),
       ),
   );
   const persona = unusedPersonas[rand(0, unusedPersonas.length - 1)];
   const botUser: User = {
-    id: '-1',
+    id: `bot_${persona.name}`,
     name: persona.name,
     picture: persona.picture,
     level: 1,
@@ -90,7 +100,7 @@ export const tickBotTurn = (table: Table): CommandResult => {
   }
 
   const player = table.players[table.turnIndex];
-  if (player.bot === null) {
+  if (!isBot(player)) {
     throw new Error('cannot tick non-bot');
   }
 
@@ -101,7 +111,7 @@ export const tickBotTurn = (table: Table): CommandResult => {
     return nextTurn('EndTurn', table);
   }
 
-  const attack = strategies(player.bot.strategy)(sources);
+  const attack = strategies(player.bot.strategy)(sources, player, table);
 
   if (attack === null) {
     logger.debug('no appropiate attack');
@@ -130,7 +140,36 @@ export const tickBotTurn = (table: Table): CommandResult => {
   };
 };
 
+export const botsNotifyAttack = (table: Table): readonly Player[] =>
+  table.players.map<Player>(player => {
+    if (
+      isBot(player) &&
+      findLand(table.lands)(table.attack!.to).color === player.color
+    ) {
+      const lastAgressor = table.players.find(
+        player =>
+          player.color === findLand(table.lands)(table.attack!.from).color,
+      );
+      logger.debug(
+        `bot ${player.name}'s last agressor is ${lastAgressor?.name}`,
+      );
+
+      return {
+        ...player,
+        bot: {
+          ...player.bot,
+          state: {
+            ...player.bot.state,
+            lastAgressor: lastAgressor?.id ?? null,
+          },
+        },
+      };
+    }
+    return player;
+  });
+
 type Source = {source: Land; targets: Land[]};
+type Attack = {from: Land; to: Land; wheight: number};
 
 const botSources = (table: Table, player: Player): Source[] => {
   const otherLands = table.lands.filter(other => other.color !== player.color);
@@ -150,36 +189,68 @@ const strategies = (strategy: BotStrategy) => {
   switch (strategy) {
     default:
     case 'RandomCareful':
-      return (sources: Source[]) =>
-        sources.reduce<{from: Land; to: Land} | null>(
+      return (sources: Source[], _: BotPlayer, __: Table) =>
+        sources.reduce<Attack | null>(
           (attack, {source, targets}) =>
             targets.reduce((attack, target) => {
-              const bestChance = attack
-                ? attack.from.points - attack.to.points
-                : -Infinity;
+              const bestChance = attack ? attack.wheight : -Infinity;
+              // >
               const thisChance = source.points - target.points;
               if (thisChance > bestChance) {
                 if (thisChance > 0) {
-                  return {from: source, to: target};
+                  return {from: source, to: target, wheight: thisChance};
                 }
               }
+              // <
               return attack;
             }, attack),
           null,
         );
 
     case 'RandomCareless':
-      return (sources: Source[]) =>
-        sources.reduce<{from: Land; to: Land} | null>(
+      return (sources: Source[], _: BotPlayer, __: Table) =>
+        sources.reduce<Attack | null>(
           (attack, {source, targets}) =>
             targets.reduce((attack, target) => {
-              const bestChance = attack
-                ? attack.from.points - attack.to.points
-                : -Infinity;
+              const bestChance = attack ? attack.wheight : -Infinity;
+              // >
               const thisChance = source.points - target.points;
               if (thisChance > bestChance) {
-                return {from: source, to: target};
+                return {from: source, to: target, wheight: thisChance};
               }
+              // <
+              return attack;
+            }, attack),
+          null,
+        );
+
+    case 'Revengeful':
+      return (sources: Source[], player: BotPlayer, table: Table) =>
+        sources.reduce<Attack | null>(
+          (attack, {source, targets}) =>
+            targets.reduce((attack, target) => {
+              const bestChance = attack ? attack.wheight : -Infinity;
+              // >
+              const lastAgressorColor =
+                table.players.find(p => p.id === player.bot.state.lastAgressor)
+                  ?.color ?? null;
+
+              if (lastAgressorColor) {
+                if (target.color === lastAgressorColor) {
+                  const thisChance = source.points - target.points;
+                  if (thisChance > bestChance) {
+                    return {from: source, to: target, wheight: thisChance};
+                  }
+                }
+              } else if (target.color === Color.Neutral) {
+                const thisChance = source.points - target.points;
+                if (thisChance > bestChance) {
+                  if (thisChance > 1) {
+                    return {from: source, to: target, wheight: thisChance};
+                  }
+                }
+              }
+              // <
               return attack;
             }, attack),
           null,

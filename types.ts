@@ -39,9 +39,9 @@ export type Table = TableProps & {
   readonly startSlots: number;
   readonly points: number;
 
-  readonly players: ReadonlyArray<Player>;
-  readonly lands: ReadonlyArray<Land>;
-  readonly watching: ReadonlyArray<Watcher>;
+  readonly players: readonly Player[];
+  readonly lands: readonly Land[];
+  readonly watching: readonly Watcher[];
 };
 
 export type Land = {
@@ -164,10 +164,17 @@ export type CommandResult = {
   readonly eliminations?: ReadonlyArray<Elimination>;
 };
 
+export type BotPlayer = Player & {
+  bot: Persona;
+};
+
 export type Persona = {
   name: string;
   picture: string;
   strategy: BotStrategy;
+  state: {
+    lastAgressor: UserId | null;
+  };
 };
 
-export type BotStrategy = 'RandomCareful' | 'RandomCareless';
+export type BotStrategy = 'RandomCareful' | 'RandomCareless' | 'Revengeful';

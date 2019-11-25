@@ -91,9 +91,9 @@ export const getTable = async (tableTag: string): Promise<Table> => {
 export const save = async (
   table: Table,
   props?: Partial<Table>,
-  players?: Player[] | ReadonlyArray<Player>,
-  lands?: Land[] | ReadonlyArray<Land>,
-  watching?: Watcher[] | ReadonlyArray<Watcher>,
+  players?: readonly Player[],
+  lands?: readonly Land[],
+  watching?: readonly Watcher[],
 ): Promise<Table> => {
   if (props && (props as any).table) {
     throw new Error('bad save');
