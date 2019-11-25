@@ -167,4 +167,7 @@ export type CommandResult = {
 export type Persona = {
   name: string;
   picture: string;
+  strategy: BotStrategy;
 };
+
+export type BotStrategy = 'RandomCareful' | 'RandomCareless';

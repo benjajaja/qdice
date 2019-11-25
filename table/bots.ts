@@ -1,5 +1,13 @@
 import * as R from 'ramda';
-import {Table, CommandResult, User, Persona, Player, Land} from '../types';
+import {
+  Table,
+  CommandResult,
+  User,
+  Persona,
+  Player,
+  Land,
+  BotStrategy,
+} from '../types';
 import {now, addSeconds, havePassed} from '../timestamp';
 import * as publish from './publish';
 import {rand, shuffle} from '../rand';
@@ -12,24 +20,26 @@ import {isBorder} from '../maps';
 const defaultPersona: Persona = {
   name: 'Personality',
   picture: 'assets/bot_profile_picture.svg',
+  strategy: 'RandomCareful',
 };
 const personas: Persona[] = [
-  {...defaultPersona, name: 'Oliva'},
+  {...defaultPersona, name: 'Oliva', strategy: 'RandomCareless'},
   {...defaultPersona, name: 'Mono'},
   {...defaultPersona, name: 'Cohete'},
   {...defaultPersona, name: 'Chiqui'},
-  {...defaultPersona, name: 'Patata'},
+  {...defaultPersona, name: 'Patata', strategy: 'RandomCareless'},
   {...defaultPersona, name: 'Paleto'},
-  {...defaultPersona, name: 'Cañón'},
+  {...defaultPersona, name: 'Cañón', strategy: 'RandomCareless'},
   {...defaultPersona, name: 'Cuqui'},
 ];
 
 export const addBots = (table: Table): CommandResult => {
-  const unusedPersonas = personas.filter(p =>
-    R.contains(
-      p.name,
-      table.players.filter(p => p.bot !== null).map(p => p.name),
-    ),
+  const unusedPersonas = personas.filter(
+    p =>
+      !R.contains(
+        p.name,
+        table.players.filter(p => p.bot !== null).map(p => p.name),
+      ),
   );
   const persona = unusedPersonas[rand(0, unusedPersonas.length - 1)];
   const botUser: User = {
@@ -84,39 +94,14 @@ export const tickBotTurn = (table: Table): CommandResult => {
     throw new Error('cannot tick non-bot');
   }
 
-  const otherLands = table.lands.filter(other => other.color !== player.color);
-  const sourceLands = shuffle(
-    table.lands.filter(land => land.color === player.color && land.points > 1),
-  )
-    .map(source => ({
-      source,
-      targets: otherLands.filter(other =>
-        isBorder(table.adjacency, source.emoji, other.emoji),
-      ),
-    }))
-    .filter(attack => attack.targets.length > 0);
+  const sources = botSources(table, player);
 
-  if (sourceLands.length === 0) {
+  if (sources.length === 0) {
     logger.debug('no possible source');
     return nextTurn('EndTurn', table);
   }
 
-  const attack = sourceLands.reduce<{from: Land; to: Land} | null>(
-    (attack, {source, targets}) =>
-      targets.reduce((attack, target) => {
-        const bestChance = attack
-          ? attack.from.points - attack.to.points
-          : -Infinity;
-        const thisChance = source.points - target.points;
-        if (thisChance > bestChance) {
-          if (thisChance > 0) {
-            return {from: source, to: target};
-          }
-        }
-        return attack;
-      }, attack),
-    null,
-  );
+  const attack = strategies(player.bot.strategy)(sources);
 
   if (attack === null) {
     logger.debug('no appropiate attack');
@@ -143,4 +128,61 @@ export const tickBotTurn = (table: Table): CommandResult => {
       },
     },
   };
+};
+
+type Source = {source: Land; targets: Land[]};
+
+const botSources = (table: Table, player: Player): Source[] => {
+  const otherLands = table.lands.filter(other => other.color !== player.color);
+  return shuffle(
+    table.lands.filter(land => land.color === player.color && land.points > 1),
+  )
+    .map(source => ({
+      source,
+      targets: otherLands.filter(other =>
+        isBorder(table.adjacency, source.emoji, other.emoji),
+      ),
+    }))
+    .filter(attack => attack.targets.length > 0);
+};
+
+const strategies = (strategy: BotStrategy) => {
+  switch (strategy) {
+    default:
+    case 'RandomCareful':
+      return (sources: Source[]) =>
+        sources.reduce<{from: Land; to: Land} | null>(
+          (attack, {source, targets}) =>
+            targets.reduce((attack, target) => {
+              const bestChance = attack
+                ? attack.from.points - attack.to.points
+                : -Infinity;
+              const thisChance = source.points - target.points;
+              if (thisChance > bestChance) {
+                if (thisChance > 0) {
+                  return {from: source, to: target};
+                }
+              }
+              return attack;
+            }, attack),
+          null,
+        );
+
+    case 'RandomCareless':
+      return (sources: Source[]) =>
+        sources.reduce<{from: Land; to: Land} | null>(
+          (attack, {source, targets}) =>
+            targets.reduce((attack, target) => {
+              const bestChance = attack
+                ? attack.from.points - attack.to.points
+                : -Infinity;
+              const thisChance = source.points - target.points;
+              if (thisChance > bestChance) {
+                return {from: source, to: target};
+              }
+              return attack;
+            }, attack),
+          null,
+        );
+  }
 };
