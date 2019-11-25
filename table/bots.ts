@@ -25,7 +25,13 @@ const personas: Persona[] = [
 ];
 
 export const addBots = (table: Table): CommandResult => {
-  const persona = personas[rand(0, personas.length - 1)];
+  const unusedPersonas = personas.filter(p =>
+    R.contains(
+      p.name,
+      table.players.filter(p => p.bot !== null).map(p => p.name),
+    ),
+  );
+  const persona = unusedPersonas[rand(0, unusedPersonas.length - 1)];
   const botUser: User = {
     id: '-1',
     name: persona.name,
