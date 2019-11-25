@@ -7,13 +7,13 @@ import Land exposing (Land, Layout, Map)
 
 type Msg
     = ClickLand Land
-    | HoverLand Land
-    | UnHoverLand Land
+    | HoverLand Land.Emoji
+    | UnHoverLand Land.Emoji
 
 
 type alias Model =
     { map : Map
-    , hovered : Maybe Land
+    , hovered : Maybe Land.Emoji
     , move : BoardMove
     , pathCache : PathCache
     , animations : Animations
@@ -76,7 +76,7 @@ getLayout map =
         sHeight =
             cellHeight * toFloat mapHeight * 0.75 |> String.fromFloat
     in
-        ( Layout ( cellWidth / sqrt 3, cellWidth * heightScale / 2 ) padding
-        , sWidth
-        , sHeight
-        )
+    ( Layout ( cellWidth / sqrt 3, cellWidth * heightScale / 2 ) padding
+    , sWidth
+    , sHeight
+    )

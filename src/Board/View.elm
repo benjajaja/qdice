@@ -15,8 +15,8 @@ import Svg.Attributes exposing (..)
 import Svg.Events exposing (..)
 
 
-view : Model -> Html.Html Msg
-view model =
+view : Model -> Maybe Land -> Html.Html Msg
+view model hovered =
     lazyBoard
         model.map
         model.pathCache
@@ -31,7 +31,7 @@ view model =
             FromTo from to ->
                 [ from, to ]
         )
-        model.hovered
+        hovered
 
 
 lazyBoard : Land.Map -> PathCache -> Animations -> List Land -> Maybe Land -> Svg Msg
@@ -92,8 +92,8 @@ landElement layout pathCache selected hovered land =
             List.append
                 (polygonAttrs layout pathCache isSelected isHovered land)
                 [ onClick (ClickLand land)
-                , onMouseOver (HoverLand land)
-                , onMouseOut (UnHoverLand land)
+                , onMouseOver (HoverLand land.emoji)
+                , onMouseOut (UnHoverLand land.emoji)
                 , dataTestId <| "land-" ++ land.emoji
                 , dataTestValue "selected"
                     (if isSelected then

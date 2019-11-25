@@ -1,4 +1,4 @@
-port module Game.State exposing (changeTable, clickLand, findUserPlayer, gameCommand, hoverLand, init, scrollElement, showRoll, tableMap, updateGameInfo, updateTable, updateTableStatus)
+port module Game.State exposing (canHover, changeTable, clickLand, findUserPlayer, gameCommand, init, scrollElement, showRoll, tableMap, updateGameInfo, updateTable, updateTableStatus)
 
 import Backend
 import Backend.MqttCommands exposing (attack, sendGameCommand)
@@ -406,20 +406,27 @@ clickLand model land =
             )
 
 
-hoverLand : Types.Model -> Land.Land -> ( Types.Model, Cmd Types.Msg )
-hoverLand model land =
-    case model.game.player of
+canHover : Model -> Land.Emoji -> Maybe Land.Land
+canHover game emoji =
+    case game.player of
         Nothing ->
-            ( model, Cmd.none )
+            Nothing
 
         Just player ->
-            let
-                hovered =
-                    if not model.game.hasTurn then
-                        Nothing
+            if not game.hasTurn then
+                Nothing
 
-                    else
-                        case model.game.board.move of
+            else
+                let
+                    findLand =
+                        \e -> find (.emoji >> (==) e)
+
+                    foundLand =
+                        findLand emoji game.board.map.lands
+                in
+                Maybe.andThen
+                    (\land ->
+                        case game.board.move of
                             Board.Types.Idle ->
                                 if land.points > 1 && land.color == player.color then
                                     Just land
@@ -452,16 +459,8 @@ hoverLand model land =
 
                             Board.Types.FromTo from to ->
                                 Nothing
-
-                game =
-                    model.game
-
-                board =
-                    game.board
-            in
-            ( { model | game = { game | board = { board | hovered = hovered } } }
-            , Cmd.none
-            )
+                    )
+                    foundLand
 
 
 updateTable : Types.Model -> Table -> Backend.Types.TableMessage -> ( Types.Model, Cmd Types.Msg )

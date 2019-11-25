@@ -29,7 +29,7 @@ update =
 
 
 view =
-    Html.Lazy.lazy Board.View.view
+    Html.Lazy.lazy2 Board.View.view
 
 
 animations : Model -> List Animation.State

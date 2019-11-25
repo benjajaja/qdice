@@ -357,9 +357,8 @@ update msg model =
                 Board.Types.ClickLand land ->
                     Game.State.clickLand model_ land
 
-                Board.Types.HoverLand land ->
-                    Game.State.hoverLand model_ land
-
+                -- Board.Types.HoverLand land ->
+                -- Game.State.hoverLand model_ land
                 _ ->
                     ( model_
                     , Cmd.map BoardMsg newBoardMsg

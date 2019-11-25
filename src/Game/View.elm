@@ -5,7 +5,7 @@ import Board
 import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard
-import Game.State exposing (findUserPlayer)
+import Game.State exposing (canHover, findUserPlayer)
 import Game.Types exposing (PlayerAction(..), statusToString)
 import Helpers exposing (dataTestId)
 import Html exposing (..)
@@ -20,7 +20,7 @@ view : Model -> Html Types.Msg
 view model =
     let
         board =
-            Board.view model.game.board
+            Board.view model.game.board (Maybe.andThen (canHover model.game) model.game.board.hovered)
                 |> Html.map BoardMsg
     in
     div [ class "edMainScreen" ]
@@ -107,6 +107,7 @@ seatButtons model =
             ]
 
 
+setButtonStates : Model -> { buttonLabel : String, msg : Msg, checkReady : Maybe Bool }
 setButtonStates model =
     case findUserPlayer model.user model.game.players of
         Just player ->

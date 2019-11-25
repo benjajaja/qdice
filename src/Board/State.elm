@@ -1,9 +1,9 @@
 module Board.State exposing (init, update, updateLands)
 
 import Animation exposing (px)
+import Board.Colors
 import Board.PathCache exposing (createPathCache)
 import Board.Types exposing (..)
-import Board.Colors
 import Dict
 import Land
 import Time exposing (millisToPosix)
@@ -18,7 +18,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         HoverLand land ->
-            ( model
+            ( { model | hovered = Just land }
             , Cmd.none
             )
 
@@ -29,6 +29,7 @@ update msg model =
                         ( { model | hovered = Nothing }
                         , Cmd.none
                         )
+
                     else
                         ( model
                         , Cmd.none
@@ -39,7 +40,7 @@ update msg model =
                     , Cmd.none
                     )
 
-        ClickLand land ->
+        ClickLand _ ->
             ( model
             , Cmd.none
             )
@@ -66,17 +67,18 @@ updateLands model updates mMove =
         move_ =
             Maybe.withDefault model.move mMove
     in
-        { model
-            | map = map_
-            , move = move_
-            , animations =
-                Dict.union
-                    (Dict.union (animationsDict landUpdates) <|
-                        attackAnimations layout move_ model.move
-                    )
-                    model.animations
-            , hovered = Nothing
-        }
+    { model
+        | map = map_
+        , move = move_
+        , animations =
+            Dict.union
+                (Dict.union (animationsDict landUpdates) <|
+                    attackAnimations layout move_ model.move
+                )
+                model.animations
+
+        -- , hovered = Nothing
+    }
 
 
 animationsDict : List ( Land.Land, List ( Int, Animation.State ) ) -> Dict.Dict String Animation.State
@@ -102,17 +104,17 @@ updateLand layout updates land =
         landUpdate =
             List.filter (\l -> l.emoji == land.emoji) updates
     in
-        case List.head landUpdate of
-            Just firstUpdate ->
-                ( { land
-                    | color = firstUpdate.color
-                    , points = firstUpdate.points
-                  }
-                , updateLandAnimations layout land firstUpdate
-                )
+    case List.head landUpdate of
+        Just firstUpdate ->
+            ( { land
+                | color = firstUpdate.color
+                , points = firstUpdate.points
+              }
+            , updateLandAnimations layout land firstUpdate
+            )
 
-            Nothing ->
-                ( land, [] )
+        Nothing ->
+            ( land, [] )
 
 
 updateLandAnimations : Land.Layout -> Land.Land -> LandUpdate -> List ( Int, Animation.State )
@@ -124,38 +126,40 @@ updateLandAnimations layout land landUpdate =
                     layout
                     land.cells
         in
-            List.map
-                (\index ->
-                    let
-                        yOffset =
-                            if index >= 4 then
-                                1.1
-                            else
-                                2
+        List.map
+            (\index ->
+                let
+                    yOffset =
+                        if index >= 4 then
+                            1.1
 
-                        y =
-                            cy - yOffset - (toFloat (modBy 4 index) * 1.2)
-                    in
-                        ( index
-                        , Animation.interrupt
-                            [ Animation.wait <| millisToPosix <| 10 * index
-                            , Animation.toWith
-                                (Animation.easing
-                                    { duration = 100
-                                    , ease = \x -> x ^ 2
-                                    }
-                                )
-                                [ Animation.y <| y ]
-                            ]
-                          <|
-                            Animation.style
-                                [ Animation.y <| y - (toFloat <| 10 * index) ]
+                        else
+                            2
+
+                    y =
+                        cy - yOffset - (toFloat (modBy 4 index) * 1.2)
+                in
+                ( index
+                , Animation.interrupt
+                    [ Animation.wait <| millisToPosix <| 10 * index
+                    , Animation.toWith
+                        (Animation.easing
+                            { duration = 100
+                            , ease = \x -> x ^ 2
+                            }
                         )
+                        [ Animation.y <| y ]
+                    ]
+                  <|
+                    Animation.style
+                        [ Animation.y <| y - (toFloat <| 10 * index) ]
                 )
-            <|
-                List.range
-                    land.points
-                    landUpdate.points
+            )
+        <|
+            List.range
+                land.points
+                landUpdate.points
+
     else
         []
 
@@ -215,19 +219,20 @@ translateStack reverse layout from to =
                 ( Animation.translate (Animation.px x) (Animation.px y)
                 , Animation.translate (Animation.px 0) (Animation.px 0)
                 )
+
             else
                 ( Animation.translate (Animation.px 0) (Animation.px 0)
                 , Animation.translate (Animation.px x) (Animation.px y)
                 )
     in
-        Animation.queue
-            [ Animation.toWith
-                (Animation.easing
-                    { duration = 100
-                    , ease = \z -> z ^ 2
-                    }
-                )
-                [ toAnimation ]
-            ]
-        <|
-            Animation.style [ fromAnimation ]
+    Animation.queue
+        [ Animation.toWith
+            (Animation.easing
+                { duration = 100
+                , ease = \z -> z ^ 2
+                }
+            )
+            [ toAnimation ]
+        ]
+    <|
+        Animation.style [ fromAnimation ]
