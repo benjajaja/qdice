@@ -70,11 +70,6 @@ const tick = async (tableTag: string, lock) => {
         table.players.length < table.startSlots &&
         havePassed(3, lastJoined(table.players))
       ) {
-        logger.debug(
-          table.gameStart,
-          addSeconds(-GAME_START_COUNTDOWN, table.gameStart),
-          havePassed(3, addSeconds(-GAME_START_COUNTDOWN, table.gameStart)),
-        );
         result = addBots(table);
       } else if (table.players.length > 0) {
         result = cleanPlayers(table);
@@ -136,8 +131,13 @@ const cleanPlayers = (table: Table): CommandResult | undefined => {
 
   if (table.players.length > 0) {
     const bots = table.players.filter(isBot);
-    if (bots.length === table.players.length) {
-      return leave(bots[0], table);
+    if (bots.length > 0) {
+      if (
+        bots.length === table.players.length ||
+        table.players.length > table.startSlots
+      ) {
+        return leave(bots[0], table);
+      }
     }
   }
   return undefined;

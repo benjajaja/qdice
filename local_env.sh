@@ -2,12 +2,12 @@
 
 
 
-docker-compose up -d
-docker-compose stop nodice
-
-kitty -d ./edice --detach yarn start
-kitty -d . --detach docker-compose logs -f
-kitty -d . --hold --detach nv
+# docker-compose up -d
+# docker-compose stop nodice
+#
+# kitty -d ./edice --detach yarn start
+# kitty -d . --detach docker-compose logs -f
+# kitty -d . --hold --detach nv
 
 export GOOGLE_OAUTH_SECRET="e8Nkmj9X05_hSrrREcRuDCFj"
 export PORT=5001
