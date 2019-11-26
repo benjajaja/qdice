@@ -172,9 +172,10 @@ attackAnimations layout move oldMove =
                 [ ( "attack_" ++ from.emoji
                   , translateStack False layout from to
                   )
-                , ( "attack_" ++ to.emoji
-                  , translateStack False layout to from
-                  )
+
+                -- , ( "attack_" ++ to.emoji
+                -- , translateStack False layout to from
+                -- )
                 ]
 
         Idle ->
@@ -184,9 +185,10 @@ attackAnimations layout move oldMove =
                         [ ( "attack_" ++ from.emoji
                           , translateStack True layout from to
                           )
-                        , ( "attack_" ++ to.emoji
-                          , translateStack True layout to from
-                          )
+
+                        -- , ( "attack_" ++ to.emoji
+                        -- , translateStack True layout to from
+                        -- )
                         ]
 
                 _ ->
@@ -209,10 +211,10 @@ translateStack reverse layout from to =
                 to.cells
 
         x =
-            (tx - fx) / 3
+            (tx - fx) * 0.75
 
         y =
-            (ty - fy) / 3
+            (ty - fy) * 0.75
 
         ( fromAnimation, toAnimation ) =
             if reverse == True then
@@ -228,8 +230,13 @@ translateStack reverse layout from to =
     Animation.queue
         [ Animation.toWith
             (Animation.easing
-                { duration = 100
-                , ease = \z -> z ^ 2
+                { duration =
+                    if not reverse then
+                        500
+
+                    else
+                        100
+                , ease = \z -> z ^ 3
                 }
             )
             [ toAnimation ]
