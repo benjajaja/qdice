@@ -223,6 +223,7 @@ subscriptions model =
         , mqttOnSubscribed <| decodeSubscribed model.backend.clientId
         , mqttOnUnSubscribed <| decodeSubscribed model.backend.clientId
         , mqttOnMessage <| decodeMessage model.backend.clientId <| model.game.table
+        , mqttOnOffline StatusOffline
         , onToken LoadToken
         ]
 

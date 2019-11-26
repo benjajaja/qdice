@@ -40,6 +40,7 @@ module.exports.connect = function() {
     clientId: clientId,
     username: mqttConfig.username,
     password: mqttConfig.password,
+    resubscribe: false,
   });
 
   var connectionAttempts = 0;
@@ -66,6 +67,10 @@ module.exports.connect = function() {
 
   client.on('close', function(event) {
     console.error('mqtt close:', event);
+    postMessage({
+      type: 'mqttOnOffline',
+      payload: connectionAttempts.toString(),
+    });
   });
 
   client.on('offline', function() {
@@ -89,7 +94,9 @@ var postMessage = function(message) {
 module.exports.subscribe = function(payload) {
   client.subscribe(payload, function(err, granted) {
     if (err) throw err;
-    postMessage({type: 'mqttOnSubscribed', payload: granted[0].topic});
+    granted.forEach(function(granted) {
+      postMessage({type: 'mqttOnSubscribed', payload: granted.topic});
+    });
     //console.log('sub', granted[0].topic);
   });
 };
