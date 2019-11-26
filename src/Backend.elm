@@ -1,4 +1,4 @@
-port module Backend exposing (addSubscribed, baseUrl, connect, decodeDirection, decodeMessage, decodeSubscribed, decodeTopic, hasDuplexSubscribed, hasSubscribedTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, onToken, reset, setStatus, subscribe, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribe, unsubscribeGameTable, updateConnected, updateSubscribed)
+port module Backend exposing (addSubscribed, baseUrl, connect, decodeMessage, decodeSubscribed, decodeTopic, hasDuplexSubscribed, hasSubscribedTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, onToken, reset, setStatus, subscribe, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribe, unsubscribeGameTable, updateConnected, updateSubscribed)
 
 import Backend.MessageCodification exposing (..)
 import Backend.MqttCommands exposing (..)
@@ -122,7 +122,11 @@ updateSubscribed model topic =
             if hasSubscribedGeneral then
                 case model_.game.table of
                     Just table ->
-                        subscribeGameTable model_ table
+                        if not <| hasSubscribedTable subscribed table then
+                            subscribeGameTable model_ table
+
+                        else
+                            ( model_, Cmd.none )
 
                     Nothing ->
                         ( model_, Cmd.none )
@@ -130,10 +134,10 @@ updateSubscribed model topic =
             else
                 case topic of
                     AllClients ->
-                        ( model, Cmd.none )
+                        ( model_, Cmd.none )
 
                     Client _ ->
-                        ( model, Cmd.none )
+                        ( model_, Cmd.none )
 
                     Tables table direction ->
                         case model_.game.table of
@@ -169,7 +173,6 @@ subscribeGameTable model table =
         ( setStatus model SubscribingTable
         , Cmd.batch <|
             [ subscribe <| Tables table ClientDirection
-            , subscribe <| Tables table Broadcast
             ]
         )
 
@@ -197,7 +200,6 @@ unsubscribeGameTable model table =
         [ --publish <| TableMsg table <| Backend.Types.Leave <| Types.getUsername model
           exit model.backend table
         , unsubscribe <| Tables table ClientDirection
-        , unsubscribe <| Tables table Broadcast
         ]
     )
 
@@ -309,22 +311,6 @@ decodeTopic clientId string =
                 Nothing
 
 
-decodeDirection : String -> Maybe TopicDirection
-decodeDirection string =
-    case string of
-        "clients" ->
-            Just ClientDirection
-
-        "server" ->
-            Just ServerDirection
-
-        "broadcast" ->
-            Just Broadcast
-
-        _ ->
-            Nothing
-
-
 setStatus : Types.Model -> ConnectionStatus -> Types.Model
 setStatus model status =
     let
@@ -358,13 +344,7 @@ hasDuplexSubscribed topics subscribed topic =
 
 hasSubscribedTable : List Topic -> Table -> Bool
 hasSubscribedTable subscribed table =
-    List.all
-        (\direction ->
-            List.member (Tables table direction) subscribed
-        )
-        [ ClientDirection
-        , Broadcast
-        ]
+    List.member (Tables table ClientDirection) subscribed
 
 
 subscribe : Topic -> Cmd msg

@@ -1,4 +1,4 @@
-module Backend.MessageCodification exposing (ChatMessage, decodeClientMessage, decodeTableMessage, decodeTopicMessage, encodeDirection, encodeTopic)
+module Backend.MessageCodification exposing (ChatMessage, decodeClientMessage, decodeDirection, decodeTableMessage, decodeTopicMessage, encodeDirection, encodeTopic)
 
 import Backend.Decoding exposing (..)
 import Backend.Types exposing (..)
@@ -28,6 +28,7 @@ decodeTopicMessage userTable topic message =
                         Just table ->
                             if tableName == table then
                                 decodeTableMessage table message
+
                             else
                                 Err <| "message for wrong table: " ++ tableName
 
@@ -191,5 +192,15 @@ encodeDirection direction =
         ServerDirection ->
             "server"
 
-        Broadcast ->
-            "broadcast"
+
+decodeDirection : String -> Maybe TopicDirection
+decodeDirection string =
+    case string of
+        "clients" ->
+            Just ClientDirection
+
+        "server" ->
+            Just ServerDirection
+
+        _ ->
+            Nothing

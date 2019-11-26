@@ -29,7 +29,6 @@ type Topic
 type TopicDirection
     = ClientDirection
     | ServerDirection
-    | Broadcast
 
 
 type ConnectionStatus
