@@ -194,40 +194,43 @@ sitInModal model =
 tableInfo : Model -> Html Types.Msg
 tableInfo model =
     div [ class "edGameStatus" ] <|
-        case model.game.table of
-            Just table ->
-                [ span [ class "edGameStatus__chip" ]
-                    [ text "Table "
-                    , span [ class "edGameStatus__chip--strong" ]
-                        [ text <| table
-                        ]
-                    ]
-                , span [ class "edGameStatus__chip" ] <|
-                    List.append
-                        [ text ", "
+        List.concat
+            [ case model.game.table of
+                Just table ->
+                    [ span [ class "edGameStatus__chip" ]
+                        [ text "Table "
                         , span [ class "edGameStatus__chip--strong" ]
-                            [ text <|
-                                if model.game.playerSlots == 0 then
-                                    "∅"
-
-                                else
-                                    String.fromInt model.game.playerSlots
+                            [ text <| table
                             ]
-                        , text " player game is "
-                        , span [ class "edGameStatus__chip--strong", dataTestId "game-status" ]
-                            [ text <| statusToString model.game.status ]
                         ]
-                        (case model.game.gameStart of
-                            Nothing ->
-                                [ text <| " round " ++ String.fromInt model.game.roundCount ]
+                    , span [ class "edGameStatus__chip" ] <|
+                        List.append
+                            [ text ", "
+                            , span [ class "edGameStatus__chip--strong" ]
+                                [ text <|
+                                    if model.game.playerSlots == 0 then
+                                        "∅"
 
-                            Just timestamp ->
-                                [ text " starting in "
-                                , span [ class "edGameStatus__chip--strong" ]
-                                    [ text <| String.fromInt (round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) ++ "s" ]
+                                    else
+                                        String.fromInt model.game.playerSlots
                                 ]
-                        )
-                ]
+                            , text " player game is "
+                            , span [ class "edGameStatus__chip--strong", dataTestId "game-status" ]
+                                [ text <| statusToString model.game.status ]
+                            ]
+                            (case model.game.gameStart of
+                                Nothing ->
+                                    [ text <| " round " ++ String.fromInt model.game.roundCount ]
 
-            Nothing ->
-                []
+                                Just timestamp ->
+                                    [ text " starting in "
+                                    , span [ class "edGameStatus__chip--strong" ]
+                                        [ text <| String.fromInt (round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) ++ "s" ]
+                                    ]
+                            )
+                    ]
+
+                Nothing ->
+                    []
+            , [ button [ class "edGameStatus__button edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ] ]
+            ]

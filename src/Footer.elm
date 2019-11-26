@@ -14,10 +14,6 @@ footer model =
     div [ class "edFooter" ]
         [ div [ class "edFooter--box edFooter--box__links" ]
             [ statusMessage model.backend.status
-            , div [ class "edFooter--box__link", onClick RequestFullscreen ]
-                [ i [ class "material-icons" ] [ text "fullscreen" ]
-                , text "Go fullscreen"
-                ]
             ]
         , div [ class "edFooter--box edFooter--box__links" ] <|
             links model.user
@@ -53,7 +49,7 @@ links user =
             , link "/static/about" "About" "info"
             ]
     in
-    List.append group1 (userLink :: group2)
+    List.concat [ group1, userLink :: group2 ]
 
 
 link : String -> String -> String -> Html Types.Msg

@@ -129,6 +129,10 @@ button, .edButton {
 button .material-icons, .edButton .material-icons {
   font-size: 20px;
 }
+.edButton--icon {
+  padding: 0;
+  min-width: 0;
+}
 
 .edCheckbox {
   height: 20px;
@@ -385,6 +389,10 @@ button .material-icons, .edButton .material-icons {
 }
 .edGameStatus > div:first-child {
   padding-left: 0;
+}
+.edGameStatus__button {
+  display: none;
+  margin-left: auto;
 }
 
 .header .header--profile-link {
@@ -704,6 +712,9 @@ button .material-icons, .edButton .material-icons {
     /*align-items: center;*/
     /*height: 35px;*/
   /*}*/
+  .edGameStatus__button {
+    display: flex;
+  }
 }
 
 .edFormLabel {
