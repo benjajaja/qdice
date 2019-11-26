@@ -52,6 +52,7 @@ authStateDecoder =
     succeed AuthState
         |> required "network" authNetworkDecoder
         |> required "table" (nullable string)
+        |> required "addTo" (nullable string)
 
 
 meDecoder : Decoder ( LoggedUser, String )

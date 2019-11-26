@@ -1,18 +1,18 @@
 module MyOauth exposing (authorize, init)
 
+import Backend.Decoding exposing (authStateDecoder)
+import Backend.Encoding exposing (authStateEncoder)
+import Browser.Navigation
 import Game.Types
 import Http
 import Json.Decode exposing (decodeString, errorToString)
 import Json.Encode exposing (encode)
-import Browser.Navigation
-import Url exposing (Url, Protocol(..))
 import OAuth
 import OAuth.AuthorizationCode exposing (AuthorizationResult(..))
-import Task
-import Types exposing (LoggedUser, Msg(..), MyOAuthModel, AuthNetwork(..), AuthState)
-import Backend.Decoding exposing (authStateDecoder)
-import Backend.Encoding exposing (authStateEncoder)
 import Snackbar exposing (toastError)
+import Task
+import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Msg(..), MyOAuthModel)
+import Url exposing (Protocol(..), Url)
 
 
 authorizationEndpoint : AuthNetwork -> ( Url, String )
@@ -51,35 +51,35 @@ init key url =
             , state = ""
             }
     in
-        case OAuth.AuthorizationCode.parseCode url of
-            Empty ->
-                ( oauth, [] )
+    case OAuth.AuthorizationCode.parseCode url of
+        Empty ->
+            ( oauth, [] )
 
-            Success { code, state } ->
-                case state of
-                    Nothing ->
-                        ( oauth, [ toastError "Logn provider did not comply, try another" "empty state" ] )
+        Success { code, state } ->
+            case state of
+                Nothing ->
+                    ( oauth, [ toastError "Logn provider did not comply, try another" "empty state" ] )
 
-                    Just state_ ->
-                        case decodeString authStateDecoder state_ of
-                            Ok authState ->
-                                ( oauth
-                                , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri
-                                  , Task.perform
-                                        (always <| Authenticate code authState)
-                                        (Task.succeed ())
-                                  ]
-                                )
+                Just state_ ->
+                    case decodeString authStateDecoder state_ of
+                        Ok authState ->
+                            ( oauth
+                            , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri
+                              , Task.perform
+                                    (always <| Authenticate code authState)
+                                    (Task.succeed ())
+                              ]
+                            )
 
-                            Err err ->
-                                ( oauth
-                                , [ toastError "Could not read your login" <| errorToString err ]
-                                )
+                        Err err ->
+                            ( oauth
+                            , [ toastError "Could not read your login" <| errorToString err ]
+                            )
 
-            Error { error, errorDescription, errorUri, state } ->
-                ( { oauth | error = Just <| Maybe.withDefault "Unknown" errorDescription }
-                , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri ]
-                )
+        Error { error, errorDescription, errorUri, state } ->
+            ( { oauth | error = Just <| Maybe.withDefault "Unknown" errorDescription }
+            , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri ]
+            )
 
 
 authorize : MyOAuthModel -> AuthState -> Cmd Msg
@@ -107,6 +107,6 @@ authorize model state =
             , state = Just stateString
             }
     in
-        Browser.Navigation.load <|
-            Url.toString <|
-                OAuth.AuthorizationCode.makeAuthUrl authorization
+    Browser.Navigation.load <|
+        Url.toString <|
+            OAuth.AuthorizationCode.makeAuthUrl authorization

@@ -6,7 +6,6 @@ import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Html.Keyed
 import Http
 import Types exposing (..)
 
@@ -44,6 +43,7 @@ body model =
 
                                 _ ->
                                     Nothing
+                        , addTo = Nothing
                         }
                 , class "edLoginSocial edLoginSocial--google"
                 ]
@@ -61,6 +61,7 @@ body model =
 
                                 _ ->
                                     Nothing
+                        , addTo = Nothing
                         }
                 , class "edLoginSocial edLoginSocial--reddit"
                 ]
@@ -132,7 +133,7 @@ login model name =
                 }
 
         state =
-            { network = Password, table = model.game.table }
+            { network = Password, table = model.game.table, addTo = Nothing }
     in
     ( { model | showLoginDialog = LoginHide }
     , Http.send (Types.GetToken <| Just state) request

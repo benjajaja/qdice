@@ -103,4 +103,12 @@ authStateEncoder state =
                 Nothing ->
                     null
           )
+        , ( "addTo"
+          , case state.addTo of
+                Just userId ->
+                    string userId
+
+                Nothing ->
+                    null
+          )
         ]

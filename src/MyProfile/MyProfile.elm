@@ -20,8 +20,40 @@ view model user =
         , h5 [] [ text "Connected login methods or networks:" ]
         , div [] <|
             List.map network user.networks
+
+        -- , h5 [] [ text "Add login network to this account:" ]
+        -- , div []
+        -- [ button
+        -- [ onClick <|
+        -- Authorize
+        -- { network = Google
+        -- , table =
+        -- Nothing
+        -- , addTo = Just user.id
+        -- }
+        -- , class "edLoginSocial edLoginSocial--google"
+        -- ]
+        -- [ img [ src "assets/social_icons/google.svg" ] []
+        -- , text "Connect with Google"
+        -- ]
+        -- , button
+        -- [ onClick <|
+        -- Authorize
+        -- { network = Reddit
+        -- , table =
+        -- Nothing
+        -- , addTo = Just user.id
+        -- }
+        -- , class "edLoginSocial edLoginSocial--reddit"
+        -- ]
+        -- [ img [ src "assets/social_icons/reddit.svg" ] []
+        -- , text "Connect with Reddit"
+        -- ]
+        -- ]
         , h5 [] [ text "Log out now:" ]
         , button [ onClick Logout ] [ text "Logout" ]
+        , h5 [] [ text "Delete account:" ]
+        , text "Not implemented yet, sorry!"
         ]
 
 

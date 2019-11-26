@@ -3,7 +3,7 @@ port module Backend.MqttCommands exposing (attack, enter, exit, leave, mqttPubli
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
 import Backend.Types exposing (ClientId, Model, Topic(..), TopicDirection(..))
-import Game.Types exposing (Player, PlayerAction(..))
+import Game.Types exposing (PlayerAction(..), actionToString)
 import Helpers exposing (consoleDebug)
 import Land exposing (Color(..))
 import Snackbar exposing (toastError)
@@ -35,7 +35,7 @@ publish jwt clientId table action =
                     toastError ("Command error: " ++ err) err
 
         Nothing ->
-            toastError "Command error: not connected" "attempted publish without clientId"
+            consoleDebug <| "attempted publish without clientId: " ++ actionToString action
 
 
 sendGameCommand : Model -> Maybe Table -> PlayerAction -> Cmd Msg

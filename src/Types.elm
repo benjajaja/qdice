@@ -59,6 +59,7 @@ type Msg
 type alias AuthState =
     { network : AuthNetwork
     , table : Maybe Table
+    , addTo : Maybe UserId
     }
 
 
