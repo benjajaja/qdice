@@ -25,19 +25,17 @@ function getMqttConfig() {
 
 var client;
 
-module.exports.connect  = function() {
+module.exports.connect = function() {
   var mqttConfig = getMqttConfig();
-  var url = [ mqttConfig.protocol, 
-    '://', 
-    mqttConfig.hostname,
-  ].concat(mqttConfig.port
-    ? [ ':', mqttConfig.port ]
-    : []
-  ).concat([
-    '/',
-    mqttConfig.path,
-  ]).join('');
-  var clientId = 'elm-dice_' + Math.random().toString(16).substr(2, 8);
+  var url = [mqttConfig.protocol, '://', mqttConfig.hostname]
+    .concat(mqttConfig.port ? [':', mqttConfig.port] : [])
+    .concat(['/', mqttConfig.path])
+    .join('');
+  var clientId =
+    'elm-dice_' +
+    Math.random()
+      .toString(16)
+      .substr(2, 8);
   client = mqtt.connect(url, {
     clientId: clientId,
     username: mqttConfig.username,
@@ -46,33 +44,38 @@ module.exports.connect  = function() {
 
   var connectionAttempts = 0;
 
-  postMessage({ type: 'mqttOnConnect', payload: ''});
+  postMessage({type: 'mqttOnConnect', payload: ''});
 
-  client.on('connect', function (connack) {
-    postMessage({ type: 'mqttOnConnected', payload: clientId});
+  client.on('connect', function(connack) {
+    postMessage({type: 'mqttOnConnected', payload: clientId});
     connectionAttempts = 0;
   });
 
-  client.on('message', function (topic, message) {
-    postMessage({ type: 'mqttOnMessage', payload: [topic, message.toString()]});
+  client.on('message', function(topic, message) {
+    postMessage({type: 'mqttOnMessage', payload: [topic, message.toString()]});
   });
 
-  client.on('error', function (error) {
+  client.on('error', function(error) {
     console.error('mqtt error:', error);
   });
 
-  client.on('reconnect', function () {
+  client.on('reconnect', function() {
     connectionAttempts = connectionAttempts + 1;
-    postMessage({ type: 'mqttOnReconnect', payload: connectionAttempts});
+    postMessage({type: 'mqttOnReconnect', payload: connectionAttempts});
   });
 
-   client.on('close', function (event) {
-     console.error('mqtt close:', event);
-   });
-
-  client.on('offline', function () {
-    postMessage({ type: 'mqttOnOffline', payload: connectionAttempts.toString()});
+  client.on('close', function(event) {
+    console.error('mqtt close:', event);
   });
+
+  client.on('offline', function() {
+    postMessage({
+      type: 'mqttOnOffline',
+      payload: connectionAttempts.toString(),
+    });
+  });
+
+  window.mqttClient = client; // for e2e
 };
 
 var postMessage = function(message) {
@@ -86,7 +89,7 @@ var postMessage = function(message) {
 module.exports.subscribe = function(payload) {
   client.subscribe(payload, function(err, granted) {
     if (err) throw err;
-    postMessage({ type: 'mqttOnSubscribed', payload: granted[0].topic});
+    postMessage({type: 'mqttOnSubscribed', payload: granted[0].topic});
     //console.log('sub', granted[0].topic);
   });
 };
