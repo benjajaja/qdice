@@ -92,7 +92,7 @@ changeTable model table =
             tableMap table model.tableList
 
         game =
-            init (Just table) map
+            updateGameInfo (init (Just table) map) model.tableList
 
         model_ =
             { model | game = game }
