@@ -569,7 +569,7 @@ mainView model =
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg
 viewWrapper =
-    Html.div [ Html.Attributes.class "edMainScreen" ]
+    Html.div [ Html.Attributes.class "edMainScreen edMainScreen__static" ]
 
 
 mainViewSubscriptions : Model -> Sub Msg

@@ -5,51 +5,53 @@ import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
-import Icon
 import Types exposing (LoginDialogStatus(..), Model, Msg(..), Route(..), StaticPage(..), User(..))
 
 
 footer : Model -> Html.Html Msg
 footer model =
     div [ class "edFooter" ]
-        [ div [ class "edFooter--box edFooter--box__links" ]
-            [ statusMessage model.backend.status
+        [ div [ class "edFooter--struts" ]
+            [ div [ class "edFooter--boxes" ]
+                [ div [ class "edFooter--box edFooter--box__links" ] <|
+                    links1 model.user
+                , div [ class "edFooter--box edFooter--box__links" ] <|
+                    links2 model.user
+                ]
+            , div [ class "edFooter--row" ]
+                [ statusMessage model.backend.status
+                ]
             ]
-        , div [ class "edFooter--box edFooter--box__links" ] <|
-            links model.user
         ]
 
 
-links : User -> List (Html Msg)
-links user =
-    let
-        group1 =
-            [ link "/" "Home" "home" ]
+links1 : User -> List (Html Msg)
+links1 user =
+    [ link "/" "Home" "home"
+    , case user of
+        Anonymous ->
+            span [ onClick <| ShowLogin LoginShow, class "edFooter--box__link" ] [ i [ class "material-icons" ] [ text "account_circle" ], text "Login" ]
 
-        userLink =
-            case user of
-                Anonymous ->
-                    span [ onClick <| ShowLogin LoginShow, class "edFooter--box__link" ] [ i [ class "material-icons" ] [ text "account_circle" ], text "Login" ]
+        Logged _ ->
+            link "/me" "Account" "account_circle"
+    , link "/leaderboard" "Leaderboard" "list"
+    ]
 
-                Logged _ ->
-                    link "/me" "Settings" "account_circle"
 
-        group2 =
-            [ link "/leaderboard" "Leaderboard" "list"
-            , a [ href "https://www.reddit.com/r/Qdice/", class "edFooter--box__link" ]
-                [ i [ class "material-icons" ] [ text "group_work" ]
-                , text "Community"
-                ]
+links2 : User -> List (Html Msg)
+links2 user =
+    [ a [ href "https://www.reddit.com/r/Qdice/", class "edFooter--box__link" ]
+        [ i [ class "material-icons" ] [ text "group_work" ]
+        , text "Community"
+        ]
 
-            --, a [ href "https://t.me/joinchat/DGkiGhEYyjf8bauoWkAGNA", class "edFooter--box__link" ]
-            --[ i [ class "material-icons" ] [ text "chat" ]
-            --, text "Telegram group"
-            --]
-            , link "/static/help" "Halp" "help"
-            , link "/static/about" "About" "info"
-            ]
-    in
-    List.concat [ group1, userLink :: group2 ]
+    --, a [ href "https://t.me/joinchat/DGkiGhEYyjf8bauoWkAGNA", class "edFooter--box__link" ]
+    --[ i [ class "material-icons" ] [ text "chat" ]
+    --, text "Telegram group"
+    --]
+    , link "/static/help" "Rules" "help"
+    , link "/static/about" "About" "info"
+    ]
 
 
 link : String -> String -> String -> Html Types.Msg
@@ -77,10 +79,10 @@ statusMessage status =
                     "Connecting..."
 
                 SubscribingGeneral ->
-                    "Network..."
+                    "Linking..."
 
                 SubscribingTable ->
-                    "Table..."
+                    "Linking table..."
 
                 Offline ->
                     "Offline"
@@ -109,6 +111,6 @@ statusMessage status =
                     "network_wifi"
     in
     Html.div [ dataTestId "connection-status" ]
-        [ Html.span [] [ Icon.icon icon ]
-        , Html.span [] [ Html.text message ]
+        -- [ Html.span [] [ Icon.icon icon ]
+        [ Html.span [] [ Html.text message ]
         ]

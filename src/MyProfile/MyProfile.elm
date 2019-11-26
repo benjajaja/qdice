@@ -8,16 +8,16 @@ import Html.Events exposing (..)
 import Http
 import MyProfile.Types exposing (..)
 import Snackbar exposing (toastError)
-import Types exposing (Model, Msg(..), User(..), LoggedUser, AuthNetwork(..))
+import Types exposing (AuthNetwork(..), LoggedUser, Model, Msg(..), User(..))
 
 
 view : MyProfileModel -> LoggedUser -> Html Msg
 view model user =
     div [ class "edMyProfile" ]
-        [ h1 [] [ text "My profile" ]
+        [ h2 [] [ text "My profile" ]
         , profileForm model user
-        , h1 [] [ text "Access" ]
-        , h5 [] [ text "Connected login networks:" ]
+        , h2 [] [ text "Access" ]
+        , h5 [] [ text "Connected login methods or networks:" ]
         , div [] <|
             List.map network user.networks
         , h5 [] [ text "Log out now:" ]
@@ -46,10 +46,12 @@ profileForm model user =
                 ]
                 []
             ]
+        , div []
+            [ button
+                []
+                [ text "Save" ]
+            ]
         , span [] [ text "Your email may be used to recover your access. You will not receive spam. If in the future we add some email features, they will be opt-in." ]
-        , button
-            []
-            [ text "Save" ]
         ]
 
 
@@ -59,7 +61,7 @@ network nw =
         [ text <|
             case nw of
                 Password ->
-                    "Password"
+                    "Password/None"
 
                 Google ->
                     "Google"
@@ -83,9 +85,9 @@ update model msg =
                 p_ =
                     { p | name = Just value }
             in
-                ( { model | myProfile = p_ }
-                , Cmd.none
-                )
+            ( { model | myProfile = p_ }
+            , Cmd.none
+            )
 
         ChangeEmail value ->
             let
@@ -95,9 +97,9 @@ update model msg =
                 p_ =
                     { p | email = Just value }
             in
-                ( { model | myProfile = p_ }
-                , Cmd.none
-                )
+            ( { model | myProfile = p_ }
+            , Cmd.none
+            )
 
         Save ->
             case model.backend.jwt of
@@ -133,9 +135,9 @@ update model msg =
                                         , withCredentials = False
                                         }
                             in
-                                ( model
-                                , Http.send (GetToken Nothing) request
-                                )
+                            ( model
+                            , Http.send (GetToken Nothing) request
+                            )
 
                         Anonymous ->
                             ( model, toastError "cannot modify anonymous user" "UI allowed to modify anonymous user!" )

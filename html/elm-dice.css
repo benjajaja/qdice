@@ -90,7 +90,12 @@ body.navigator-standalone textarea {
 }
 
 
-
+.edMainScreen {}
+.edMainScreen__static {
+  padding: 5px 10px;
+  margin: 10px 10px;
+  background: #fff9f2;
+}
 
 button, .edButton {
   font-family: 'Rubik', sans-serif;
@@ -623,11 +628,28 @@ button .material-icons, .edButton .material-icons {
 .edFooter {
   background: #444;
   color: #efefef;
-  display: flex;
   font-size: 0.65rem;
 }
+.edFooter--struts {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  margin: auto;
+}
+.edFooter--row {
+  flex: 2 0;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+.edFooter--boxes {
+  background: #444;
+  color: #efefef;
+  display: flex;
+  font-size: 0.65rem;
+  flex-wrap: wrap;
+}
 .edFooter--box {
-  flex: 1 1 50%;
+  flex: 1 1;
   display: flex;
   flex-direction: column;
   padding: 10px;
@@ -657,6 +679,9 @@ button .material-icons, .edButton .material-icons {
     width: 800px;
     margin: 0 auto;
     padding-left: 0;
+  }
+  .edFooter--struts {
+    width: 800px;
   }
 }
 @media (min-width: 1000px) {
@@ -720,6 +745,7 @@ button .material-icons, .edButton .material-icons {
 .edFormLabel {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
 }
 .edFormLabel input {
   margin-bottom: 4px;
