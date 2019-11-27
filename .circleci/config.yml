@@ -6,12 +6,6 @@ jobs:
     working_directory: ~/repo
     steps:
     - checkout
-    - run:
-        command: git config --file=.gitmodules submodule.edice.url git@bitbucket.org:easy-rider/edice.git
-    - run:
-        command: git submodule sync
-    - run:
-        command: git submodule update --init
     - save_cache:
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
         paths:
@@ -31,11 +25,40 @@ jobs:
     - run:
         name: Install dependencies
         command: yarn install --frozen-lockfile
+    - run:
+        working_directory: ~/repo/edice
+        name: Install dependencies (edice)
+        command: yarn install --frozen-lockfile
     - save_cache:
         name: Save Yarn package cache
         key: yarn-packages-{{ checksum "yarn.lock" }}
         paths:
         - ~/.cache/yarn
+  test_web:
+    docker:
+    - image: circleci/node:10.15.3
+    working_directory: ~/repo
+    steps:
+    - restore_cache:
+        name: Checkout source code
+        key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - restore_cache:
+        name: Restore Yarn package cache
+        keys:
+        - yarn-packages-{{ checksum "yarn.lock" }}
+    - run:
+        working_directory: ~/repo/edice
+        name: Install dependencies
+        command: yarn install --frozen-lockfile
+    - run:
+        working_directory: ~/repo/edice
+        command: yarn generate-maps
+    - run:
+        working_directory: ~/repo/edice
+        command: yarn build
+    - run:
+        working_directory: ~/repo/edice
+        command: yarn test
   test_nodejs:
     docker:
     - image: circleci/node:10.15.3
@@ -100,7 +123,11 @@ workflows:
     - test_nodejs:
         requires:
         - install_dependencies
+    - test_web:
+        requires:
+        - install_dependencies
     - test_e2e:
         requires:
-        - checkout_code
+        - test_nodejs
+        - test_web
 

@@ -19,7 +19,7 @@ RUN yarn install
 COPY . .
 
 
-RUN node ./scripts/generate-maps.js
+RUN yarn generate-maps
 RUN yarn build
 
 WORKDIR /
