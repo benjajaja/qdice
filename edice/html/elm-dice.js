@@ -133,7 +133,22 @@ app.ports.toast.subscribe(function(options) {
 
 var sounds = require("./sounds");
 app.ports.playSound.subscribe(sounds.play);
-app.ports.setFavicon.subscribe(require("./favicon"));
+
+const favicon = require("./favicon");
+app.ports.notification.subscribe(function(event) {
+  switch (event) {
+    case "game-start":
+      favicon("alert");
+      notification("The game started", []);
+      break;
+    case "game-turn":
+      favicon("alert");
+      notification("It's your turn!", []);
+    case null:
+    default:
+      favicon("");
+  }
+});
 
 app.ports.mqttConnect.subscribe(function() {
   var mqtt = require("./elm-dice-mqtt.js");
@@ -189,6 +204,7 @@ var logPublish = function(args) {
 
 app.ports.requestNotifications.subscribe(function() {
   if (!("Notification" in window)) {
+    window.alert("This browser or system does not support notifications.");
     console.log("No notification support");
     return;
   }
@@ -199,23 +215,54 @@ app.ports.requestNotifications.subscribe(function() {
       actionTextColor: "#38d6ff",
     });
   } else if (Notification.permission !== "denied") {
-    Notification.requestPermission(function(permission) {});
+    Notification.requestPermission(function(permission) {
+      snackbar.show({
+        text: "Notifications are now enabled",
+        pos: "bottom-center",
+        actionTextColor: "#38d6ff",
+      });
+    });
   } else if (Notification.permission === "denied") {
-    window.alert(
-      'It seems that you have blocked notifications at some time before. Try clicking on the lock icon next to the URL and look for "Notifications" or "Permissions" and unblock it.'
-    );
+    snackbar.show({
+      text:
+        'It seems that you have blocked notifications at some time before. Try clicking on the lock icon next to the URL and look for "Notifications" or "Permissions" and unblock it.',
+      pos: "bottom-center",
+      actionTextColor: "#38d6ff",
+      duration: 15000,
+    });
   }
 });
 
+var serviceWorkerRegistration = null;
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
     .register("./elm-dice-serviceworker.js", { scope: "./" })
-    .then(function(reg) {
+    .then(function(registration) {
       // registration worked
-      console.log("Registration succeeded. Scope is " + reg.scope);
+      console.log("Registration succeeded. Scope is " + registration.scope);
+      serviceWorkerRegistration = registration;
     })
     .catch(function(error) {
       // registration failed
       console.log("Registration failed with " + error);
     });
+}
+
+function notification(title, actions) {
+  if (
+    "Notification" in window &&
+    Notification.permission === "granted" &&
+    serviceWorkerRegistration !== null &&
+    typeof document.visibilityState !== "undefined" &&
+    document.visibilityState === "hidden"
+  ) {
+    var notification = serviceWorkerRegistration.showNotification(title, {
+      actions: actions,
+      vibrate: [50, 100, 50],
+    });
+    notification.onclick = function(event) {
+      event.preventDefault();
+      notification.close();
+    };
+  }
 }

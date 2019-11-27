@@ -255,7 +255,7 @@ updateTableStatus model status =
             Cmd.batch <|
                 Helpers.playSound "start"
                     :: (if hasTurn then
-                            [ Helpers.setFavicon "alert" ]
+                            [ Helpers.notification <| Just "game-start" ]
 
                         else
                             []
@@ -266,7 +266,7 @@ updateTableStatus model status =
         , if hasFinished then
             Cmd.batch
                 [ Helpers.playSound "finish"
-                , Helpers.setFavicon ""
+                , Helpers.notification Nothing
                 ]
 
           else
@@ -274,13 +274,13 @@ updateTableStatus model status =
         , if hasGainedTurn then
             Cmd.batch
                 [ Helpers.playSound "turn"
-                , Helpers.setFavicon "alert"
+                , Helpers.notification <| Just "game-turn"
                 ]
 
           else
             Cmd.none
         , if hasLostTurn then
-            Helpers.setFavicon ""
+            Helpers.notification Nothing
 
           else
             Cmd.none

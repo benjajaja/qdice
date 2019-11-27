@@ -12,7 +12,6 @@ self.addEventListener("install", function(evt) {
 // On fetch, use cache but update the entry with the latest contents
 // from the server.
 self.addEventListener("fetch", function(evt) {
-  console.log("The service worker is serving the asset.");
   // Try network and if it fails, go for the cached copy.
   evt.respondWith(
     fromNetwork(evt.request, 400).catch(function() {
@@ -68,3 +67,26 @@ function fromCache(request) {
     });
   });
 }
+
+self.onnotificationclick = function(event) {
+  console.log("On notification click: ", event.notification.tag);
+  event.notification.close();
+
+  // This looks to see if the current is already open and
+  // focuses if it is
+  event.waitUntil(
+    clients
+      .matchAll({
+        type: "window",
+      })
+      .then(function(clientList) {
+        for (var i = 0; i < clientList.length; i++) {
+          var client = clientList[i];
+          if ("focus" in client) return client.focus();
+        }
+        if (clients.openWindow) {
+          return clients.openWindow("/");
+        }
+      })
+  );
+};

@@ -13,57 +13,65 @@ import Types exposing (AuthNetwork(..), LoggedUser, Model, Msg(..), User(..))
 
 view : MyProfileModel -> LoggedUser -> Html Msg
 view model user =
-    div [ class "edMyProfile" ]
-        [ h2 [] [ text "My profile" ]
-        , profileForm model user
+    div [ class "edPage" ]
+        [ div [ class "edPageSection" ]
+            [ h2 [] [ text "My profile" ]
+            , profileForm model user
+            ]
+        , div [ class "edPageSection" ]
+            [ h2 [] [ text "Notifications" ]
+            , p [] [ text "You can get a notification when it's your turn or the game starts." ]
+            , button [ onClick RequestNotifications ] [ text "Enable notifications" ]
+            , p []
+                [ text "This feature is "
+                , strong
+                    []
+                    [ text "not available on iOS. " ]
+                , text "It exists since 2013 in Chrome and Firefox for Android."
+                ]
+            ]
+        , div [ class "edPageSection" ]
+            [ h2 [] [ text "Access" ]
+            , h5 [] [ text "Connected login methods or networks:" ]
+            , div [] <|
+                List.map network user.networks
 
-        -- , h5 [] [ text "Notifications" ]
-        -- , p [] [ text "You can get a notification when it's your turn." ]
-        -- , button [ onClick RequestNotifications ] [ text "Enable notifications" ]
-        -- , p []
-        -- [ text "This feature is available on all major mobile and desktop platforms "
-        -- , strong
-        -- []
-        -- [ text "EXCEPT on iOS." ]
-        -- ]
-        , h2 [] [ text "Access" ]
-        , h5 [] [ text "Connected login methods or networks:" ]
-        , div [] <|
-            List.map network user.networks
-
-        -- , h5 [] [ text "Add login network to this account:" ]
-        -- , div []
-        -- [ button
-        -- [ onClick <|
-        -- Authorize
-        -- { network = Google
-        -- , table =
-        -- Nothing
-        -- , addTo = Just user.id
-        -- }
-        -- , class "edLoginSocial edLoginSocial--google"
-        -- ]
-        -- [ img [ src "assets/social_icons/google.svg" ] []
-        -- , text "Connect with Google"
-        -- ]
-        -- , button
-        -- [ onClick <|
-        -- Authorize
-        -- { network = Reddit
-        -- , table =
-        -- Nothing
-        -- , addTo = Just user.id
-        -- }
-        -- , class "edLoginSocial edLoginSocial--reddit"
-        -- ]
-        -- [ img [ src "assets/social_icons/reddit.svg" ] []
-        -- , text "Connect with Reddit"
-        -- ]
-        -- ]
-        , h5 [] [ text "Log out now:" ]
-        , button [ onClick Logout ] [ text "Logout" ]
-        , h5 [] [ text "Delete account:" ]
-        , text "Not implemented yet, sorry!"
+            -- , h5 [] [ text "Add login network to this account:" ]
+            -- , div []
+            -- [ button
+            -- [ onClick <|
+            -- Authorize
+            -- { network = Google
+            -- , table =
+            -- Nothing
+            -- , addTo = Just user.id
+            -- }
+            -- , class "edLoginSocial edLoginSocial--google"
+            -- ]
+            -- [ img [ src "assets/social_icons/google.svg" ] []
+            -- , text "Connect with Google"
+            -- ]
+            -- , button
+            -- [ onClick <|
+            -- Authorize
+            -- { network = Reddit
+            -- , table =
+            -- Nothing
+            -- , addTo = Just user.id
+            -- }
+            -- , class "edLoginSocial edLoginSocial--reddit"
+            -- ]
+            -- [ img [ src "assets/social_icons/reddit.svg" ] []
+            -- , text "Connect with Reddit"
+            -- ]
+            -- ]
+            , h5 [] [ text "Log out now:" ]
+            , button [ onClick Logout ] [ text "Logout" ]
+            ]
+        , div [ class "edPageSection" ]
+            [ h5 [] [ text "Delete account:" ]
+            , text "Not implemented yet, sorry!"
+            ]
         ]
 
 

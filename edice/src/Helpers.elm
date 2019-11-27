@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, pipeUpdates, playSound, setFavicon)
+port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, notification, pipeUpdates, playSound)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -11,7 +11,7 @@ port consoleDebug : String -> Cmd msg
 port playSound : String -> Cmd msg
 
 
-port setFavicon : String -> Cmd msg
+port notification : Maybe String -> Cmd msg
 
 
 type alias Synched a =

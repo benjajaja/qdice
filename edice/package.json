@@ -33,7 +33,7 @@
     },
     {
       "path": "./dist/elm-dice-serviceworker.js",
-      "maxSize": "1 kB"
+      "maxSize": "10 kB"
     },
     {
       "path": "./dist/elm-dice.*.css",
