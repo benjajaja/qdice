@@ -93,10 +93,13 @@ var postMessage = function(message) {
 
 module.exports.subscribe = function(payload) {
   client.subscribe(payload, function(err, granted) {
-    if (err) throw err;
-    granted.forEach(function(granted) {
-      postMessage({type: 'mqttOnSubscribed', payload: granted.topic});
-    });
+    if (err) {
+      postMessage({type: 'mqttOnError', payload: error.toString()});
+    } else {
+      granted.forEach(function(granted) {
+        postMessage({type: 'mqttOnSubscribed', payload: granted.topic});
+      });
+    }
     //console.log('sub', granted[0].topic);
   });
 };

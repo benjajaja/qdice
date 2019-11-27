@@ -47,6 +47,9 @@ port mqttOnUnSubscribed : (String -> msg) -> Sub msg
 port mqttOnMessage : (( String, String ) -> msg) -> Sub msg
 
 
+port mqttOnError : (String -> msg) -> Sub msg
+
+
 connect : Cmd msg
 connect =
     mqttConnect ""
@@ -226,6 +229,7 @@ subscriptions model =
         , mqttOnUnSubscribed <| decodeSubscribed model.backend.clientId
         , mqttOnMessage <| decodeMessage model.backend.clientId <| model.game.table
         , mqttOnOffline StatusOffline
+        , mqttOnError StatusError
         , onToken LoadToken
         ]
 

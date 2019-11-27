@@ -48,6 +48,7 @@ type Msg
     | StatusConnect String
     | StatusReconnect Int
     | StatusOffline String
+    | StatusError String
     | Subscribed Backend.Types.Topic
     | ClientMsg Backend.Types.ClientMessage
     | AllClientsMsg Backend.Types.AllClientsMessage

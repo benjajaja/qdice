@@ -432,6 +432,11 @@ update msg model =
             , Cmd.none
             )
 
+        StatusError error ->
+            ( Backend.reset model Offline
+            , toastError error error
+            )
+
         Connected clientId ->
             Backend.updateConnected model clientId
 

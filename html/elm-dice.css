@@ -639,7 +639,6 @@ button .material-icons, .edButton .material-icons {
 .edFooter--row {
   flex: 2 0;
   padding: 10px;
-  border-bottom: 1px solid #ccc;
 }
 .edFooter--boxes {
   background: #444;
