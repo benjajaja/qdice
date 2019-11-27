@@ -39,7 +39,19 @@ setTimeout(function() {
     //document.getElementById('loading-indicator').remove();
     window.onerror = function(messageOrEvent, source, lineno, colno, error) {
       ga('send', 'exception', { exDescription: error.toString() });
-      window.alert(messageOrEvent.toString());
+
+
+      if (snackbar) {
+        snackbar.show(
+          Object.assign(options, {
+            text: messageOrEvent.toString(),
+            pos: 'bottom-center',
+            actionTextColor: '#38d6ff',
+          })
+        );
+      } else {
+        window.alert(messageOrEvent.toString());
+      }
       return false; // let built in handler log it too
     };
     window.dialogPolyfill = require('dialog-polyfill');
