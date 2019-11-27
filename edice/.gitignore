@@ -1,0 +1,8 @@
+elm-stuff
+node_modules
+dist
+.vscode
+.env
+stats.json
+src/Maps/Sources.elm
+html/pictures

@@ -1,0 +1,21 @@
+{
+  "short_name": "Qdice",
+  "name": "Qdice.wtf",
+  "start-url": "/?homescreen=1",
+  "icons": [
+      {
+          "src": "/favicons-2/android-chrome-192x192.png?v=1",
+          "sizes": "192x192",
+          "type": "image/png"
+      },
+      {
+          "src": "/favicons-2/android-chrome-512x512.png?v=1",
+          "sizes": "512x512",
+          "type": "image/png"
+      }
+  ],
+  "theme_color": "#38d6ff",
+  "background_color": "#38d6ff",
+  "display": "fullscreen",
+  "orientation": "landscape-primary"
+}

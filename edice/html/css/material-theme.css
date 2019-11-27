@@ -1,0 +1,15 @@
+.mdl-button.mdl-button--raised.mdl-button--colored,
+.mdl-button.mdl-button--raised.mdl-button--colored:hover {
+  background: #FFC107;
+  color: #fff;
+}
+.mdl-button.mdl-button--colored {
+  color: #FFC107;
+}
+.mdl-button--primary.mdl-button--primary {
+  color: #FFC107;
+}
+
+.mdl-data-table {
+  color: #000;
+}

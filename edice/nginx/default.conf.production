@@ -1,0 +1,52 @@
+server {
+    listen 80;
+    server_name localhost qdice.wtf;
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    ssl_certificate /etc/letsencrypt/live/qdice.wtf/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/qdice.wtf/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    server_name localhost qdice.wtf;
+    root /var/www/qdice.wtf/;
+
+    ##
+    # Gzip Settings
+    ##
+
+    gzip on;
+    gzip_disable "msie6";
+
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_buffers 16 8k;
+    gzip_http_version 1.1;
+    gzip_min_length 256;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript application/octet-stream;
+
+    location / {
+        try_files $uri /index.html;
+    }
+    location /api {
+        proxy_pass http://nodice:5001;
+        include /etc/nginx/proxy_params;
+    }
+    location /mqtt {
+        proxy_pass http://emqx:8083;
+        include /etc/nginx/proxy_params;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+    }
+}
+

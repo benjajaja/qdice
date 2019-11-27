@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <base href="/">
+    <% for (var css in htmlWebpackPlugin.files.css) { %>
+    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
+    <% } %>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- fullscreen mode -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Qdice.wtf</title>
+    <link rel="manifest" href="manifest.json">
+    <!-- favicon-crap -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicons-2/apple-touch-icon.png?v=1">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons-2/favicon-32x32.png?v=1">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons-2/favicon-16x16.png?v=1">
+    <link rel="manifest" href="/favicons-2/manifest.json?v=1">
+    <link rel="mask-icon" href="/favicons-2/safari-pinned-tab.svg?v=1" color="#ff3c58">
+    <link rel="shortcut icon" href="/favicons-2/favicon.ico?v=1">
+    <meta name="msapplication-config" content="/favicons-2/browserconfig.xml?v=1">
+    <meta name="theme-color" content="#38d6ff">
+    <!-- /favicon-crap -->
+    <meta name="description" content="Qdice is a multiplayer strategy game">
+    <style>
+body{background-color:#38d6ff}
+#loading-indicator { font-family:sans-serif; text-align:center; font-weight:bold; height: 56px; line-height:56px; color: white; }
+#loading-spinner { position: fixed; top: calc(50% - 1rem); left: calc(50% - 1rem); width: 2rem; height: 2rem; border: 0.25rem solid #ffffff; border-bottom: 0.25rem solid rgba(0,0,0,0); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <div id="loading-indicator">Loading...<div id="loading-spinner"></div></div>
+    <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
+    <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>" charset="utf-8"></script>
+    <% } %>
+  </body>
+</html>
