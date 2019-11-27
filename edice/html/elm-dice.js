@@ -42,13 +42,11 @@ app.ports.started.subscribe(function(msg) {
     ga("send", "exception", { exDescription: error.toString() });
 
     if (snackbar) {
-      snackbar.show(
-        Object.assign(options, {
-          text: messageOrEvent.toString(),
-          pos: "bottom-center",
-          actionTextColor: "#38d6ff",
-        })
-      );
+      snackbar.show({
+        text: messageOrEvent.toString(),
+        pos: "bottom-center",
+        actionTextColor: "#38d6ff",
+      });
     } else {
       window.alert(messageOrEvent.toString());
     }
@@ -188,6 +186,26 @@ var logPublish = function(args) {
     console.error("could not log pub", e);
   }
 };
+
+app.ports.requestNotifications.subscribe(function() {
+  if (!("Notification" in window)) {
+    console.log("No notification support");
+    return;
+  }
+  if (Notification.permission === "granted") {
+    snackbar.show({
+      text: "Notifications are enabled",
+      pos: "bottom-center",
+      actionTextColor: "#38d6ff",
+    });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission(function(permission) {});
+  } else if (Notification.permission === "denied") {
+    window.alert(
+      'It seems that you have blocked notifications at some time before. Try clicking on the lock icon next to the URL and look for "Notifications" or "Permissions" and unblock it.'
+    );
+  }
+});
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker

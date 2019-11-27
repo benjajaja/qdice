@@ -496,6 +496,9 @@ update msg model =
         RequestFullscreen ->
             ( model, requestFullscreen () )
 
+        RequestNotifications ->
+            ( model, requestNotifications () )
+
 
 msgsToCmds : List Msg -> List (Cmd Msg)
 msgsToCmds msgs =
@@ -638,3 +641,6 @@ port auth : List String -> Cmd msg
 
 
 port requestFullscreen : () -> Cmd msg
+
+
+port requestNotifications : () -> Cmd msg

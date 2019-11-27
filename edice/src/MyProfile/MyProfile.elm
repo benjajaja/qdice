@@ -16,6 +16,16 @@ view model user =
     div [ class "edMyProfile" ]
         [ h2 [] [ text "My profile" ]
         , profileForm model user
+
+        -- , h5 [] [ text "Notifications" ]
+        -- , p [] [ text "You can get a notification when it's your turn." ]
+        -- , button [ onClick RequestNotifications ] [ text "Enable notifications" ]
+        -- , p []
+        -- [ text "This feature is available on all major mobile and desktop platforms "
+        -- , strong
+        -- []
+        -- [ text "EXCEPT on iOS." ]
+        -- ]
         , h2 [] [ text "Access" ]
         , h5 [] [ text "Connected login methods or networks:" ]
         , div [] <|

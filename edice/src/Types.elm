@@ -23,6 +23,7 @@ type Msg
     | MyProfileMsg MyProfile.Types.MyProfileMsg
     | ErrorToast String String
     | RequestFullscreen
+    | RequestNotifications
       -- oauth
     | Nop
     | GetGlobalSettings (Result Http.Error ( GlobalSettings, List TableInfo ))
