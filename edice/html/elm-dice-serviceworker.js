@@ -1,42 +1,70 @@
-console.log("SW startup");
+var CACHE = "network-or-cache";
 
-//require('./elm-dice-webworker');
+// On install, cache some resource.
+self.addEventListener("install", function(evt) {
+  console.log("The service worker is being installed.");
 
-self.addEventListener("install", function(event) {
-  console.log("SW installed");
-  event.waitUntil(self.skipWaiting()); // Activate worker immediately
-  //event.waitUntil(caches.open('edice').then(function(cache) {
-  //return cache.addAll([
-  //'/',
-  //'/index.html',
-  //'/index.html?homescreen=1',
-  //'/?homescreen=1',
-  //'/elm-dice.css',
-  //'/elm-dice.js',
-  //'/cache-polyfill.js',
-  //]);
-  //}));
+  // Ask the service worker to keep installing until the returning promise
+  // resolves.
+  evt.waitUntil(precache());
 });
 
-//self.addEventListener('fetch', function(event) {
-//event.respondWith(
-//caches.match(event.request).then(function(response) {
-//if (response) {
-//console.log('service worker cache', event.request.url);
-//}
-//return response || fetch(event.request);
-//})
-//);
-//});
-
-self.addEventListener("activate", function(event) {
-  console.log("SW activated");
-  event.waitUntil(self.clients.claim()); // Become available to all pages
+// On fetch, use cache but update the entry with the latest contents
+// from the server.
+self.addEventListener("fetch", function(evt) {
+  console.log("The service worker is serving the asset.");
+  // Try network and if it fails, go for the cached copy.
+  evt.respondWith(
+    fromNetwork(evt.request, 400).catch(function() {
+      return fromCache(evt.request);
+    })
+  );
 });
 
-importScripts("/cache-polyfill.js");
+// Open a cache and use `addAll()` with an array of assets to add all of them
+// to the cache. Return a promise resolving when all the assets are added.
+function precache() {
+  return caches.open(CACHE).then(function(cache) {
+    return cache.addAll(
+      ["./index.html", "./die.svg"].concat(
+        [
+          "kick",
+          "start",
+          "finish",
+          "turn",
+          "diceroll",
+          "rollSuccess",
+          "rollDefeat",
+        ].map(function(name) {
+          return "./sounds/" + name + ".ogg";
+        })
+      )
+    );
+  });
+}
 
-//self.addEventListener('fetch', function(event) {
-//console.log("Caught a fetch!");
-//event.respondWith(new Response("Hello world!"));
-//});
+// Time limited network request. If the network fails or the response is not
+// served before timeout, the promise is rejected.
+function fromNetwork(request, timeout) {
+  return new Promise(function(fulfill, reject) {
+    // Reject in case of timeout.
+    var timeoutId = setTimeout(reject, timeout);
+    // Fulfill in case of success.
+    fetch(request).then(function(response) {
+      clearTimeout(timeoutId);
+      fulfill(response);
+      // Reject also if network fetch rejects.
+    }, reject);
+  });
+}
+
+// Open the cache where the assets were stored and search for the requested
+// resource. Notice that in case of no matching, the promise still resolves
+// but it does with `undefined` as value.
+function fromCache(request) {
+  return caches.open(CACHE).then(function(cache) {
+    return cache.match(request).then(function(matching) {
+      return matching || Promise.reject("no-match");
+    });
+  });
+}
