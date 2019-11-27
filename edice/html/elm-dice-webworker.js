@@ -1,41 +1,46 @@
-console.log('elm-dice-webworker reporting in');
-var mqtt = require('mqtt');
+console.log("elm-dice-webworker reporting in");
+var mqtt = require("mqtt");
 
 function getMqttConfig() {
-  if (['localhost', 'lvh.me', 'edice'].indexOf(self.location.hostname) !== -1) {
+  if (["localhost", "lvh.me", "edice"].indexOf(self.location.hostname) !== -1) {
     return {
-      protocol: 'ws',
-      hostname: 'localhost',
+      protocol: "ws",
+      hostname: "localhost",
       port: 8083,
-      path: 'mqtt',
-      username: 'client',
-      password: 'client',
+      path: "mqtt",
+      username: "client",
+      password: "client",
     };
   } else {
     return {
-      protocol: 'wss',
-      hostname: 'mqtt.qdice.wtf',
-      path: 'mqtt',
+      protocol: "wss",
+      hostname: "mqtt.qdice.wtf",
+      path: "mqtt",
     };
   }
 }
 
 var client;
-self.addEventListener('message', function(event){
+self.addEventListener("message", function(event) {
   var action = event.data;
   switch (action.type) {
-    case 'connect':
+    case "connect":
       var mqttConfig = getMqttConfig();
-      var url = [ mqttConfig.protocol, 
-        '://', 
+      var url = [
+        mqttConfig.protocol,
+        "://",
         mqttConfig.hostname,
-        ':',
+        ":",
         mqttConfig.port,
-        '/',
+        "/",
         mqttConfig.path,
-      ].join('');
-      var clientId = 'elm-dice_' + Math.random().toString(16).substr(2, 8);
-      self.document = {URL: action.url};
+      ].join("");
+      var clientId =
+        "elm-dice_" +
+        Math.random()
+          .toString(16)
+          .substr(2, 8);
+      self.document = { URL: action.url };
       client = mqtt.connect(url, {
         clientId: clientId,
         username: mqttConfig.username,
@@ -44,51 +49,60 @@ self.addEventListener('message', function(event){
 
       var connectionAttempts = 0;
 
-      postMessage({ type: 'mqttOnConnect', payload: ''});
+      postMessage({ type: "mqttOnConnect", payload: "" });
 
-      client.on('connect', function (connack) {
-        postMessage({ type: 'mqttOnConnected', payload: clientId});
+      client.on("connect", function(connack) {
+        postMessage({ type: "mqttOnConnected", payload: clientId });
         connectionAttempts = 0;
       });
 
-      client.on('message', function (topic, message) {
-        postMessage({ type: 'mqttOnMessage', payload: [topic, message.toString()]});
+      client.on("message", function(topic, message) {
+        postMessage({
+          type: "mqttOnMessage",
+          payload: [topic, message.toString()],
+        });
       });
 
-      client.on('error', function (error) {
-        console.error('mqtt error:', error);
+      client.on("error", function(error) {
+        console.error("mqtt error:", error);
       });
 
-      client.on('reconnect', function () {
+      client.on("reconnect", function() {
         connectionAttempts = connectionAttempts + 1;
-        postMessage({ type: 'mqttOnReconnect', payload: connectionAttempts});
+        postMessage({ type: "mqttOnReconnect", payload: connectionAttempts });
       });
 
-       client.on('close', function (event) {
-         console.error('mqtt close:', event);
-       });
+      client.on("close", function(event) {
+        console.error("mqtt close:", event);
+      });
 
-      client.on('offline', function () {
-        postMessage({ type: 'mqttOnOffline', payload: connectionAttempts.toString()});
+      client.on("offline", function() {
+        postMessage({
+          type: "mqttOnOffline",
+          payload: connectionAttempts.toString(),
+        });
       });
       break;
-    case 'subscribe':
+    case "subscribe":
       client.subscribe(action.payload, function(err, granted) {
         if (err) throw err;
-        postMessage({ type: 'mqttOnSubscribed', payload: granted.shift().topic});
+        postMessage({
+          type: "mqttOnSubscribed",
+          payload: granted.shift().topic,
+        });
       });
       break;
-    case 'unsubscribe':
+    case "unsubscribe":
       client.unsubscribe(action.payload, function(err, granted) {
         if (err) throw err;
         //postMessage({ type: 'mqttOnUnSubscribed', payload: action.payload});
       });
       break;
-    case 'publish':
+    case "publish":
       client.publish(action.payload[0], action.payload[1]);
       break;
   }
-});  
+});
 
 var postMessage = function(message) {
   if (self.clients) {
@@ -101,4 +115,3 @@ var postMessage = function(message) {
     self.postMessage(message);
   }
 };
-
