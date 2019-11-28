@@ -348,7 +348,7 @@ clickLand model land =
                         case model.game.board.move of
                             Board.Types.Idle ->
                                 if land.points > 1 && land.color == player.color then
-                                    ( Board.Types.From land, consoleDebug "selected \"from\"" )
+                                    ( Board.Types.From land, Cmd.none )
 
                                 else
                                     ( Board.Types.Idle, consoleDebug "cannot select foreign land" )
@@ -356,13 +356,13 @@ clickLand model land =
                             Board.Types.From from ->
                                 if land == from then
                                     -- same land: deselect
-                                    ( Board.Types.Idle, consoleDebug "deselect" )
+                                    ( Board.Types.Idle, Cmd.none )
 
                                 else if land.color == player.color then
                                     -- same color and...
                                     if land.points > 1 then
                                         -- could move: select
-                                        ( Board.Types.From land, consoleDebug "change selection" )
+                                        ( Board.Types.From land, Cmd.none )
 
                                     else
                                         -- could not move: do nothing
@@ -380,7 +380,7 @@ clickLand model land =
                                                 gameCmd =
                                                     attack model.backend table from.emoji land.emoji
                                             in
-                                            ( Board.Types.FromTo from land, Cmd.batch [ playSound "diceroll", gameCmd, consoleDebug "attack" ] )
+                                            ( Board.Types.FromTo from land, Cmd.batch [ playSound "diceroll", gameCmd ] )
 
                                         Nothing ->
                                             -- no table!
