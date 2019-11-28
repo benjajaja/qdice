@@ -1,8 +1,10 @@
 FROM node:10.15.3
 
 WORKDIR /usr/src/edice
-COPY edice/. .
+COPY edice/package.json .
+COPY edice/yarn.lock .
 RUN yarn install
+COPY edice/. .
 RUN yarn generate-maps
 RUN yarn build
 
@@ -10,7 +12,6 @@ WORKDIR /usr/src/nodice
 COPY package.json .
 COPY yarn.lock .
 RUN yarn install --frozen-lockfile
-
 COPY *.ts *.js *.json ./
 COPY scripts ./scripts
 COPY table ./table
