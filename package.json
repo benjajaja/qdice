@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node server.js",
     "deploy": "./scripts/deploy.sh",
-    "postinstall": "node scripts/build.js edice/maps/"
+    "generate-maps": "node scripts/build.js edice/maps/"
   },
   "deploy": {
     "production": {

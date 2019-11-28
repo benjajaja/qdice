@@ -34,6 +34,28 @@ jobs:
         key: yarn-packages-{{ checksum "yarn.lock" }}
         paths:
         - ~/.cache/yarn
+  build_image:
+    docker:
+    - image: circleci/node:10.15.3
+    working_directory: ~/repo
+    steps:
+    - setup_remote_docker
+    - restore_cache:
+        name: Checkout source code
+        key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - run:
+        name: Build Docker image
+        command: |
+          docker build \
+            --tag bgrosse/qdice:$CIRCLE_BRANCH \
+            .
+    - run:
+        name: Push image to container registry
+        command: |
+          docker login \
+            --username $DOCKERHUB_USERNAME \
+            --password $DOCKERHUB_PASSWORD
+          docker push bgrosse/qdice
   test_web:
     docker:
     - image: circleci/node:10.15.3
@@ -75,6 +97,9 @@ jobs:
         name: Install dependencies
         command: yarn install --frozen-lockfile
     - run:
+        name: Generate maps
+        command: yarn generate-maps
+    - run:
         command: yarn jest
   test_e2e:
     docker:
@@ -91,11 +116,11 @@ jobs:
           chmod +x ~/docker-compose
           sudo mv ~/docker-compose /usr/local/bin/docker-compose
     - setup_remote_docker
-    - run:
-        name: Build all containers
-        command: |
-          set -x
-          docker-compose build
+    # - run:
+        # name: Build all containers
+        # command: |
+          # set -x
+          # docker-compose build
     - run:
         name: Create network
         command: docker network create qdice
@@ -103,6 +128,7 @@ jobs:
         name: Start all containers
         command: |
           set -x
+          docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
           docker-compose up -d
     - run:
         name: Build e2e
@@ -138,10 +164,14 @@ workflows:
     - test_web:
         requires:
         - install_dependencies
-    - test_e2e:
+    - build_image:
         requires:
+        - checkout_code
         - test_nodejs
         - test_web
+    - test_e2e:
+        requires:
+        - build_image
     - deploy:
         requires:
           - test_e2e
