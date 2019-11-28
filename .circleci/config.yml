@@ -112,6 +112,18 @@ jobs:
         name: Run e2e
         command: |
           docker run --network qdice -e E2E_URL=http://edice qdice2e yarn test
+  deploy:
+    working_directory: ~/repo
+    machine:
+      enabled: true
+    steps:
+    - restore_cache:
+        name: Checkout source code
+        key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - run:
+        name: Deploy Over SSH
+        command: |
+          ./scripts/deploy.sh
 workflows:
   version: 2
   build_and_test:
@@ -130,4 +142,10 @@ workflows:
         requires:
         - test_nodejs
         - test_web
+    - deploy:
+        requires:
+          - test_e2e
+        filters:
+          branches:
+            only: master
 
