@@ -110,7 +110,7 @@ body.navigator-standalone textarea {
 
 button, .edButton {
   font-family: 'Rubik', sans-serif;
-  height: 20px;
+  min-height: 20px;
   line-height: 20px;
   margin: 4px 8px;
   flex: 0 0 auto;
@@ -615,13 +615,15 @@ button .material-icons, .edButton .material-icons {
   padding-top: 40px;
   padding-bottom: 0;
 }
-.edLoginSocial {
-  padding-left: 0;
+.edLoginDialog .edLoginSocial {
   width: 100%;
+  padding-left: 0;
+}
+.edLoginSocial {
   justify-content: flex-start;
 }
 .edLoginSocial > img {
-  height: 100%;
+  height: 20px;
   float: left;
   margin-right: 5px;
   background: white;

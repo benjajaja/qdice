@@ -14,7 +14,7 @@ import GA exposing (ga)
 import Game.State exposing (gameCommand)
 import Game.Types exposing (PlayerAction(..))
 import Game.View
-import Helpers exposing (httpErrorToString, pipeUpdates)
+import Helpers exposing (httpErrorResponse, httpErrorToString, pipeUpdates)
 import Html
 import Html.Attributes
 import Html.Lazy
@@ -34,7 +34,8 @@ import Url exposing (Url)
 
 
 type alias Flags =
-    { isTelegram : Bool
+    { token : Maybe String
+    , isTelegram : Bool
     , screenshot : Bool
     }
 
@@ -64,7 +65,7 @@ init flags location key =
             Game.State.init table Nothing
 
         ( backend, backendCmd ) =
-            Backend.init location flags.isTelegram
+            Backend.init location flags.token flags.isTelegram
 
         ( oauth, oauthCmds ) =
             MyOauth.init key location
@@ -184,7 +185,7 @@ update msg model =
             case res of
                 Err err ->
                     ( model
-                    , toastError "Could not load profile" <| httpErrorToString err
+                    , toastError ("Could not load profile: " ++ httpErrorResponse err) <| httpErrorToString err
                     )
 
                 Ok token ->
@@ -242,18 +243,6 @@ update msg model =
 
         Authorize state ->
             ( model, MyOauth.authorize model.oauth state )
-
-        LoadToken token ->
-            let
-                backend =
-                    model.backend
-
-                backend_ =
-                    { backend | jwt = Just token }
-            in
-            ( { model | backend = backend_ }
-            , Cmd.batch [ loadMe backend_, ga [ "send", "event", "auth", "LoadToken" ] ]
-            )
 
         Authenticate code state ->
             ( model

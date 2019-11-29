@@ -44,7 +44,6 @@ type Msg
     | GameCmd PlayerAction
     | EnterGame Table
       -- backend
-    | LoadToken String
     | Connected Backend.Types.ClientId
     | StatusConnect String
     | StatusReconnect Int

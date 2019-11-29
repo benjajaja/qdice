@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, notification, pipeUpdates, playSound)
+port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorResponse, httpErrorToString, indexOf, notification, pipeUpdates, playSound)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -66,6 +66,19 @@ httpErrorToString err =
 
         Http.BadStatus response ->
             "Server/Client Error: " ++ response.body
+
+        _ ->
+            "HTTP Error"
+
+
+httpErrorResponse : Http.Error -> String
+httpErrorResponse err =
+    case err of
+        Http.NetworkError ->
+            "No connection"
+
+        Http.BadStatus response ->
+            response.body
 
         _ ->
             "HTTP Error"

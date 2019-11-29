@@ -42,7 +42,7 @@ authenticate model code state =
 
                                 Nothing ->
                                     []
-                        , url = model.baseUrl ++ "/register/" ++ encodeAuthNetwork state.network
+                        , url = model.baseUrl ++ "/add-login/" ++ encodeAuthNetwork state.network
                         , body = Http.stringBody "text/plain" code
                         , expect =
                             Http.expectJson <| tokenDecoder

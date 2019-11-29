@@ -1,9 +1,9 @@
-import * as R from 'ramda';
-import {Client} from 'pg';
-import * as camelize from 'camelize';
-import * as decamelize from 'decamelize';
+import * as R from "ramda";
+import { Client } from "pg";
+import * as camelize from "camelize";
+import * as decamelize from "decamelize";
 
-import logger from './logger';
+import logger from "./logger";
 import {
   UserId,
   Network,
@@ -14,11 +14,11 @@ import {
   Emoji,
   Color,
   Watcher,
-} from './types';
-import {date} from './timestamp';
-import {setTimeout} from 'timers';
-import * as sleep from 'sleep-promise';
-import * as config from './tables.config'; // for e2e only
+} from "./types";
+import { date } from "./timestamp";
+import { setTimeout } from "timers";
+import * as sleep from "sleep-promise";
+import * as config from "./tables.config"; // for e2e only
 
 let client: Client;
 
@@ -33,14 +33,14 @@ export const connect = async function db() {
   });
 
   try {
-    logger.debug('pg connect', process.env.PGHOST, process.env.PGPORT);
+    logger.debug("pg connect", process.env.PGHOST, process.env.PGPORT);
     await client.connect();
   } catch (e) {
     client = undefined!;
     throw e;
   }
 
-  logger.debug('pg connected!');
+  logger.debug("pg connected!");
   return client;
 };
 
@@ -48,7 +48,7 @@ export const retry = async function retry() {
   try {
     return await connect();
   } catch (e) {
-    logger.error('pg connection error', e);
+    logger.error("pg connection error", e);
     await sleep(1000);
     return await retry();
   }
@@ -58,18 +58,18 @@ export const clearGames = async (lock: any): Promise<void> => {
   lock.acquire([config.tables.map(table => table.name)], async done => {
     await client.query(`DELETE FROM tables`);
     for (const table of config.tables) {
-      const newTable = await require('./table/get').getTable(table.name);
-      require('./table/publish').tableStatus(newTable);
+      const newTable = await require("./table/get").getTable(table.name);
+      require("./table/publish").tableStatus(newTable);
     }
-    logger.debug('E2E cleared all tables');
+    logger.debug("E2E cleared all tables");
     done();
   });
 };
 
-export const NETWORK_GOOGLE: Network = 'google';
-export const NETWORK_PASSWORD: Network = 'password';
-export const NETWORK_TELEGRAM: Network = 'telegram';
-export const NETWORK_REDDIT: Network = 'reddit';
+export const NETWORK_GOOGLE: Network = "google";
+export const NETWORK_PASSWORD: Network = "password";
+export const NETWORK_TELEGRAM: Network = "telegram";
+export const NETWORK_REDDIT: Network = "reddit";
 
 export const getUser = async (id: UserId): Promise<User> => {
   const rows = await getUserRows(id);
@@ -84,26 +84,26 @@ FROM users
 LEFT JOIN authorizations ON authorizations.user_id = users.id
 WHERE id = $1
 `,
-    [id],
+    [id]
   );
   return user.rows;
 };
 
 export const getUserFromAuthorization = async (
   network: Network,
-  id: UserId,
+  id: UserId
 ) => {
   try {
     const res = await client.query(
-      'SELECT * FROM authorizations WHERE network = $1 AND network_id = $2',
-      [network, id],
+      "SELECT * FROM authorizations WHERE network = $1 AND network_id = $2",
+      [network, id]
     );
     if (res.rows.length === 0) {
       return undefined;
     }
     return await getUser(res.rows[0].user_id);
   } catch (e) {
-    console.error('user dont exist', e.toString());
+    console.error("user dont exist", e.toString());
     return undefined;
   }
 };
@@ -114,45 +114,58 @@ export const createUser = async (
   name: String,
   email: string | null,
   picture: string | null,
-  profileJson: any | null,
+  profileJson: any | null
 ) => {
   const {
     rows: [user],
   } = await client.query(
-    'INSERT INTO users (name,email,picture,registration_time) VALUES ($1, $2, $3, current_timestamp) RETURNING *',
-    [name, email, picture],
+    "INSERT INTO users (name,email,picture,registration_time) VALUES ($1, $2, $3, current_timestamp) RETURNING *",
+    [name, email, picture]
   );
-  logger.info('created user', user);
+  logger.info("created user", user);
   if (network !== NETWORK_PASSWORD) {
     /*const { rows: [ auth ] } =*/
     await client.query(
-      'INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *',
-      [user.id, network, network_id, profileJson],
+      "INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *",
+      [user.id, network, network_id, profileJson]
     );
   }
   return await getUser(user.id);
 };
 
+export const addNetwork = async (
+  userId: UserId,
+  network: Network,
+  network_id: string | null,
+  profileJson: any | null
+) => {
+  await client.query(
+    "INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *",
+    [userId, network, network_id, profileJson]
+  );
+  return await getUser(userId);
+};
+
 export const updateUser = async (
   id: UserId,
   name: string,
-  email: string | null,
+  email: string | null
 ) => {
   const res = await client.query(
-    'UPDATE users SET name = $2, email = $3 WHERE id = $1',
-    [id, name, email],
+    "UPDATE users SET name = $2, email = $3 WHERE id = $1",
+    [id, name, email]
   );
   return await getUser(id);
 };
 
 export const addScore = async (id: UserId, score: number) => {
-  logger.debug('addScore', id, score);
+  logger.debug("addScore", id, score);
   const res = await client.query(
     `
 UPDATE users
 SET points = GREATEST(points + $1, 0)
 WHERE id = $2`,
-    [score, id],
+    [score, id]
   );
   return await getUser(id);
 };
@@ -165,31 +178,31 @@ SELECT id, name, picture, points, level, ROW_NUMBER () OVER (ORDER BY points DES
 FROM users
 ORDER BY points DESC
 LIMIT $1 OFFSET $2`,
-    [limit, limit * Math.max(0, page - 1)],
+    [limit, limit * Math.max(0, page - 1)]
   );
   return result.rows.map(row =>
     Object.assign(row, {
       id: row.id.toString(),
       points: parseInt(row.points, 10),
       rank: parseInt(row.rank, 10),
-      picture: row.picture || '',
-    }),
+      picture: row.picture || "",
+    })
   );
 };
 
 export const userProfile = (rows: any[]): User => {
-  const {id, name, email, picture, level} = rows[0];
+  const { id, name, email, picture, level } = rows[0];
   return {
     id: id.toString(),
     name,
     email,
-    picture: rows[0].picture || 'assets/empty_profile_picture.svg',
+    picture: rows[0].picture || "assets/empty_profile_picture.svg",
     level,
     claimed: rows.some(
-      row => row.network !== NETWORK_PASSWORD || row.network_id !== null,
+      row => row.network !== NETWORK_PASSWORD || row.network_id !== null
     ),
     points: parseInt(rows[0].points, 10),
-    networks: rows.map(row => row.network || 'password'),
+    networks: rows.map(row => row.network || "password"),
   };
 };
 
@@ -200,7 +213,7 @@ SELECT *
 FROM tables
 WHERE tag = $1
 LIMIT 1`,
-    [tag],
+    [tag]
   );
   const row = camelize(result.rows.pop());
   if (!row) {
@@ -238,7 +251,7 @@ RETURNING *`,
       table.roundCount,
       date(table.gameStart),
       date(table.turnStart),
-    ],
+    ]
   );
   const row = result.rows.pop();
   return camelize(row);
@@ -248,12 +261,12 @@ export const saveTable = async (
   tag: string,
   props: Partial<Table> = {},
   players?: ReadonlyArray<Player>,
-  lands?: ReadonlyArray<{emoji: Emoji; color: Color; points: number}>,
-  watching?: ReadonlyArray<Watcher>,
+  lands?: ReadonlyArray<{ emoji: Emoji; color: Color; points: number }>,
+  watching?: ReadonlyArray<Watcher>
 ) => {
   const propColumns = Object.keys(props);
   const propValues = propColumns.map(column => {
-    if (column === 'gameStart' || column === 'turnStart') {
+    if (column === "gameStart" || column === "turnStart") {
       return date(props[column]!);
     }
     return props[column];
@@ -264,24 +277,24 @@ export const saveTable = async (
     .concat(lands ? [JSON.stringify(lands)] : [])
     .concat(watching ? [JSON.stringify(watching)] : []);
 
-  const extra = (players ? ['players'] : [])
-    .concat(lands ? ['lands'] : [])
-    .concat(watching ? ['watching'] : []);
+  const extra = (players ? ["players"] : [])
+    .concat(lands ? ["lands"] : [])
+    .concat(watching ? ["watching"] : []);
   const columns = propColumns.concat(extra);
 
   const query = `
 UPDATE tables
-SET (${columns.map(column => decamelize(column)).join(', ')})
-  = (${columns.map((_, i) => `$${i + 2}`).join(', ')})
+SET (${columns.map(column => decamelize(column)).join(", ")})
+  = (${columns.map((_, i) => `$${i + 2}`).join(", ")})
 WHERE tag = $1
 RETURNING *`;
   if (values.some(value => value === undefined)) {
     logger.error(
-      'undefined db',
+      "undefined db",
       columns,
-      values.map(v => `${v}`),
+      values.map(v => `${v}`)
     );
-    throw new Error('got undefined db value, use null');
+    throw new Error("got undefined db value, use null");
   }
   const result = await client.query(query, values);
   return camelize(result.rows.pop());

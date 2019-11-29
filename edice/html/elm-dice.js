@@ -28,9 +28,15 @@ var ga = function() {};
 var Elm = require("../src/Edice").Elm;
 
 var isTelegram = typeof TelegramWebviewProxy === "object";
+var token =
+  window.location.hash.indexOf("#access_token=") !== 0
+    ? localStorage.getItem("jwt_token")
+    : null;
+
 var app = Elm.Edice.init({
   node: document.body,
   flags: {
+    token: token,
     isTelegram: isTelegram,
     screenshot: /[?&]screenshot/.test(window.location.search),
   },
@@ -61,12 +67,6 @@ app.ports.started.subscribe(function(msg) {
   //}
 });
 
-if (window.location.hash.indexOf("#access_token=") !== 0) {
-  var token = localStorage.getItem("jwt_token");
-  if (token) {
-    setTimeout(app.ports.onToken.send.bind(app.ports.onToken, token));
-  }
-}
 app.ports.auth.subscribe(function(args) {
   if (args.length === 1) {
     localStorage.setItem("jwt_token", args);

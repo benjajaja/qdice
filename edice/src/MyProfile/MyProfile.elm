@@ -34,37 +34,11 @@ view model user =
             [ h2 [] [ text "Access" ]
             , h5 [] [ text "Connected login methods or networks:" ]
             , div [] <|
-                List.map network user.networks
-
-            -- , h5 [] [ text "Add login network to this account:" ]
-            -- , div []
-            -- [ button
-            -- [ onClick <|
-            -- Authorize
-            -- { network = Google
-            -- , table =
-            -- Nothing
-            -- , addTo = Just user.id
-            -- }
-            -- , class "edLoginSocial edLoginSocial--google"
-            -- ]
-            -- [ img [ src "assets/social_icons/google.svg" ] []
-            -- , text "Connect with Google"
-            -- ]
-            -- , button
-            -- [ onClick <|
-            -- Authorize
-            -- { network = Reddit
-            -- , table =
-            -- Nothing
-            -- , addTo = Just user.id
-            -- }
-            -- , class "edLoginSocial edLoginSocial--reddit"
-            -- ]
-            -- [ img [ src "assets/social_icons/reddit.svg" ] []
-            -- , text "Connect with Reddit"
-            -- ]
-            -- ]
+                List.map (\n -> div [] [ text <| networkDisplay n ]) user.networks
+            , h5 [] [ text "Add login network to this account:" ]
+            , div [] <|
+                addNetworks
+                    user
             , h5 [] [ text "Log out now:" ]
             , button [ onClick Logout ] [ text "Logout" ]
             ]
@@ -73,6 +47,53 @@ view model user =
             , text "Not implemented yet, sorry!"
             ]
         ]
+
+
+availableNetworks : LoggedUser -> List AuthNetwork
+availableNetworks user =
+    List.filter (\i -> not <| List.member i user.networks) [ Google, Reddit ]
+
+
+addNetworks : LoggedUser -> List (Html Msg)
+addNetworks user =
+    case availableNetworks user of
+        [] ->
+            [ text "Already connected to all." ]
+
+        available ->
+            List.map
+                (\n ->
+                    button
+                        [ onClick <|
+                            Authorize
+                                { network = n
+                                , table =
+                                    Nothing
+                                , addTo = Just user.id
+                                }
+                        , class <| "edLoginSocial edLoginSocial--" ++ networkIdName n
+                        ]
+                        [ img [ src <| "assets/social_icons/" ++ networkIdName n ++ ".svg" ] []
+                        , text <| "Connect with " ++ networkIdName n
+                        ]
+                )
+                available
+
+
+networkIdName : AuthNetwork -> String
+networkIdName network =
+    case network of
+        Google ->
+            "google"
+
+        Reddit ->
+            "reddit"
+
+        Telegram ->
+            "telegram"
+
+        Password ->
+            "password"
 
 
 profileForm : MyProfileModel -> LoggedUser -> Html Msg
@@ -105,23 +126,20 @@ profileForm model user =
         ]
 
 
-network : AuthNetwork -> Html Msg
-network nw =
-    div []
-        [ text <|
-            case nw of
-                Password ->
-                    "Password/None"
+networkDisplay : AuthNetwork -> String
+networkDisplay nw =
+    case nw of
+        Password ->
+            "None"
 
-                Google ->
-                    "Google"
+        Google ->
+            "Google"
 
-                Telegram ->
-                    "Telegram"
+        Telegram ->
+            "Telegram"
 
-                Reddit ->
-                    "Reddit"
-        ]
+        Reddit ->
+            "Reddit"
 
 
 update : Model -> MyProfileMsg -> ( Model, Cmd Msg )

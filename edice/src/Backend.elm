@@ -1,5 +1,6 @@
-port module Backend exposing (addSubscribed, baseUrl, connect, decodeMessage, decodeSubscribed, decodeTopic, hasDuplexSubscribed, hasSubscribedTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, onToken, reset, setStatus, subscribe, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribe, unsubscribeGameTable, updateConnected, updateSubscribed)
+port module Backend exposing (addSubscribed, baseUrl, connect, decodeMessage, decodeSubscribed, decodeTopic, hasDuplexSubscribed, hasSubscribedTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, reset, setStatus, subscribe, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribe, unsubscribeGameTable, updateConnected, updateSubscribed)
 
+import Backend.HttpCommands exposing (loadMe)
 import Backend.MessageCodification exposing (..)
 import Backend.MqttCommands exposing (..)
 import Backend.Types exposing (..)
@@ -12,9 +13,6 @@ import Task
 import Time exposing (millisToPosix)
 import Types exposing (Msg(..))
 import Url exposing (Protocol(..), Url)
-
-
-port onToken : (String -> msg) -> Sub msg
 
 
 port mqttConnect : String -> Cmd msg
@@ -65,22 +63,26 @@ baseUrl location =
             "/api"
 
 
-init : Url -> Bool -> ( Model, Cmd Msg )
-init location isTelegram =
-    ( { baseUrl = baseUrl location
-      , jwt = Nothing
-      , clientId = Nothing
-      , subscribed = []
-      , status = Offline
-      , findTableTimeout =
-            if isTelegram then
-                2000
+init : Url -> Maybe String -> Bool -> ( Model, Cmd Msg )
+init location token isTelegram =
+    let
+        model =
+            { baseUrl = baseUrl location
+            , jwt = token
+            , clientId = Nothing
+            , subscribed = []
+            , status = Offline
+            , findTableTimeout =
+                if isTelegram then
+                    2000
 
-            else
-                1000
-      , lastHeartbeat = millisToPosix 0
-      }
-    , connect
+                else
+                    1000
+            , lastHeartbeat = millisToPosix 0
+            }
+    in
+    ( model
+    , Cmd.batch [ connect, loadMe model ]
     )
 
 
@@ -230,7 +232,6 @@ subscriptions model =
         , mqttOnMessage <| decodeMessage model.backend.clientId <| model.game.table
         , mqttOnOffline StatusOffline
         , mqttOnError StatusError
-        , onToken LoadToken
         ]
 
 
