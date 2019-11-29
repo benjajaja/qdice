@@ -4,6 +4,8 @@ rsync -az --force --delete --progress --exclude-from=rsync_exclude.txt -e "ssh -
 
 ssh -tt gipsy@qdice.wtf <<'ENDSSH'
 cd nodice2
-docker-compose up -d --build --force-recreate --remove-orphans
+docker-compose down --volumes
+docker-compose pull nodice
+docker-compose up -d --force-recreate --remove-orphans
 exit 0
 ENDSSH
