@@ -104,6 +104,7 @@ if (process.env.E2E) {
 server.post(`${root}/login/:network`, user.login);
 server.post(`${root}/add-login/:network`, user.addLogin);
 server.get(`${root}/me`, user.me);
+server.del(`${root}/me`, user.del);
 server.put(`${root}/profile`, user.profile);
 server.post(`${root}/register`, user.register);
 

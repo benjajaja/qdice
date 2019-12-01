@@ -2,11 +2,11 @@ module Types exposing (AuthNetwork(..), AuthState, GlobalSettings, LoggedUser, L
 
 import Animation
 import Backend.Types
-import Board exposing (Msg)
+import Board
 import Browser
 import Browser.Navigation exposing (Key)
-import Game.Types exposing (GameStatus, PlayerAction, TableInfo, TableStatus)
-import Http
+import Game.Types exposing (PlayerAction, TableInfo)
+import Http exposing (Error)
 import MyProfile.Types
 import OAuth
 import Tables exposing (Table)
@@ -26,12 +26,12 @@ type Msg
     | RequestNotifications
       -- oauth
     | Nop
-    | GetGlobalSettings (Result Http.Error ( GlobalSettings, List TableInfo ))
+    | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo ))
     | Authorize AuthState
     | Authenticate String AuthState
-    | GetToken (Maybe AuthState) (Result Http.Error String)
-    | GetProfile (Result Http.Error ( LoggedUser, String ))
-    | GetLeaderBoard (Result Http.Error ( String, List Profile ))
+    | GetToken (Maybe AuthState) (Result Error String)
+    | GetProfile (Result Error ( LoggedUser, String ))
+    | GetLeaderBoard (Result Error ( String, List Profile ))
     | Logout
     | ShowLogin LoginDialogStatus
     | Login String

@@ -2,7 +2,7 @@ port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, 
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
-import Http
+import Http exposing (Error(..))
 
 
 port consoleDebug : String -> Cmd msg

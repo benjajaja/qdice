@@ -36,7 +36,7 @@ var token =
 var app = Elm.Edice.init({
   node: document.body,
   flags: {
-    token: token,
+    token: token || null,
     isTelegram: isTelegram,
     screenshot: /[?&]screenshot/.test(window.location.search),
   },
@@ -67,9 +67,9 @@ app.ports.started.subscribe(function(msg) {
   //}
 });
 
-app.ports.auth.subscribe(function(args) {
-  if (args.length === 1) {
-    localStorage.setItem("jwt_token", args);
+app.ports.saveToken.subscribe(function(token) {
+  if (token !== null) {
+    localStorage.setItem("jwt_token", token);
   } else {
     localStorage.removeItem("jwt_token");
   }

@@ -1,12 +1,12 @@
 module LeaderBoard.State exposing (setLeaderBoard)
 
-import Http
+import Helpers exposing (httpErrorToString)
+import Http exposing (Error)
 import Snackbar exposing (toastError)
 import Types exposing (Model, Msg, Profile)
-import Helpers exposing (httpErrorToString)
 
 
-setLeaderBoard : Model -> Result Http.Error ( String, List Profile ) -> ( Model, Cmd Msg )
+setLeaderBoard : Model -> Result Error ( String, List Profile ) -> ( Model, Cmd Msg )
 setLeaderBoard model res =
     case res of
         Err err ->
@@ -20,15 +20,15 @@ setLeaderBoard model res =
                 leaderBoard =
                     staticPage.leaderBoard
             in
-                ( { model
-                    | staticPage =
-                        { staticPage
-                            | leaderBoard =
-                                { leaderBoard
-                                    | month = month
-                                    , top = top
-                                }
-                        }
-                  }
-                , Cmd.none
-                )
+            ( { model
+                | staticPage =
+                    { staticPage
+                        | leaderBoard =
+                            { leaderBoard
+                                | month = month
+                                , top = top
+                            }
+                    }
+              }
+            , Cmd.none
+            )

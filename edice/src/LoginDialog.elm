@@ -1,13 +1,10 @@
-module LoginDialog exposing (login, loginDialog)
+module LoginDialog exposing (loginDialog)
 
-import Backend.Decoding exposing (tokenDecoder)
-import Backend.Encoding exposing (profileEncoder)
 import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Http
-import Types exposing (..)
+import Types exposing (AuthNetwork(..), LoginDialogStatus(..), Model, Msg(..))
 
 
 loginDialog : Model -> Html Msg
@@ -103,38 +100,3 @@ body model =
                 [ text "Play" ]
             ]
         ]
-
-
-login : Model -> String -> ( Model, Cmd Msg )
-login model name =
-    let
-        profile =
-            { name = name
-            , id = "💩"
-            , email = Nothing
-            , picture = ""
-            , points = 0
-            , level = 0
-            , claimed = False
-            , networks = [ Password ]
-            }
-
-        request =
-            Http.request
-                { method = "POST"
-                , url = model.backend.baseUrl ++ "/register"
-                , headers = []
-                , body =
-                    Http.jsonBody <| profileEncoder profile
-                , expect =
-                    Http.expectJson <| tokenDecoder
-                , timeout = Nothing
-                , withCredentials = False
-                }
-
-        state =
-            { network = Password, table = model.game.table, addTo = Nothing }
-    in
-    ( { model | showLoginDialog = LoginHide }
-    , Http.send (Types.GetToken <| Just state) request
-    )

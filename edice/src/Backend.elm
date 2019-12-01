@@ -82,7 +82,12 @@ init location token isTelegram =
             }
     in
     ( model
-    , Cmd.batch [ connect, loadMe model ]
+    , case token of
+        Just _ ->
+            Cmd.batch [ connect, loadMe model ]
+
+        Nothing ->
+            connect
     )
 
 

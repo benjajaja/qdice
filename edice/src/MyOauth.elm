@@ -1,4 +1,4 @@
-module MyOauth exposing (authorize, init)
+port module MyOauth exposing (authorize, init, saveToken)
 
 import Backend.Decoding exposing (authStateDecoder)
 import Backend.Encoding exposing (authStateEncoder)
@@ -13,6 +13,9 @@ import Snackbar exposing (toastError)
 import Task
 import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Msg(..), MyOAuthModel)
 import Url exposing (Protocol(..), Url)
+
+
+port saveToken : Maybe String -> Cmd msg
 
 
 authorizationEndpoint : AuthNetwork -> ( Url, String )

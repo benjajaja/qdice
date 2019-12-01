@@ -158,6 +158,18 @@ export const updateUser = async (
   return await getUser(id);
 };
 
+export const deleteUser = async (id: UserId) => {
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM authorizations WHERE user_id = $1", [id]);
+    await client.query("DELETE FROM users WHERE id = $1", [id]);
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  }
+};
+
 export const addScore = async (id: UserId, score: number) => {
   logger.debug("addScore", id, score);
   const res = await client.query(

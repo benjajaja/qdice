@@ -1,8 +1,8 @@
-port module Edice exposing (auth, started, subscriptions)
+port module Edice exposing (started, subscriptions)
 
 import Animation
 import Backend
-import Backend.HttpCommands exposing (authenticate, loadGlobalSettings, loadMe)
+import Backend.HttpCommands exposing (authenticate, loadGlobalSettings, loadMe, login)
 import Backend.MqttCommands exposing (sendGameCommand)
 import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
@@ -20,9 +20,10 @@ import Html.Attributes
 import Html.Lazy
 import LeaderBoard.State
 import LeaderBoard.View
-import LoginDialog exposing (login, loginDialog)
+import LoginDialog exposing (loginDialog)
 import MyOauth
 import MyProfile.MyProfile
+import MyProfile.Types
 import Routing exposing (navigateTo, parseLocation)
 import Snackbar exposing (toastError)
 import Static.View
@@ -78,7 +79,7 @@ init flags location key =
                             { backend | jwt = Just token }
                     in
                     ( loadBackend
-                    , [ auth [ token ]
+                    , [ MyOauth.saveToken <| Just token
                       , loadMe loadBackend
                       , navigateTo key <| GameRoute ""
                       ]
@@ -95,7 +96,7 @@ init flags location key =
             , key = key
             , oauth = oauth
             , game = game
-            , myProfile = { name = Nothing, email = Nothing }
+            , myProfile = { name = Nothing, email = Nothing, deleteAccount = MyProfile.Types.None }
             , backend = backend_
             , user = Types.Anonymous
             , tableList = []
@@ -201,7 +202,7 @@ update msg model =
                     in
                     ( model_
                     , Cmd.batch
-                        [ auth [ token ]
+                        [ MyOauth.saveToken <| Just token
                         , loadMe backend_
                         , sendGameCommand model_.backend model.game.table Game.Types.Join
                         ]
@@ -265,7 +266,7 @@ update msg model =
             in
             ( { model | user = Anonymous, backend = backend_ }
             , Cmd.batch
-                [ auth []
+                [ MyOauth.saveToken Nothing
                 , case player of
                     Just _ ->
                         sendGameCommand model.backend model.game.table Game.Types.Leave
@@ -624,9 +625,6 @@ subscriptions model =
 
 
 port started : String -> Cmd msg
-
-
-port auth : List String -> Cmd msg
 
 
 port requestFullscreen : () -> Cmd msg

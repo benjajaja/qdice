@@ -2,13 +2,16 @@ module MyProfile.MyProfile exposing (update, view)
 
 import Backend.Decoding exposing (tokenDecoder)
 import Backend.Encoding exposing (profileEncoder)
+import Backend.HttpCommands
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
+import MyOauth exposing (saveToken)
 import MyProfile.Types exposing (..)
+import Routing exposing (navigateTo)
 import Snackbar exposing (toastError)
-import Types exposing (AuthNetwork(..), LoggedUser, Model, Msg(..), User(..))
+import Types exposing (AuthNetwork(..), LoggedUser, Model, Msg(..), Route(..), User(..))
 
 
 view : MyProfileModel -> LoggedUser -> Html Msg
@@ -43,9 +46,11 @@ view model user =
             , button [ onClick Logout ] [ text "Logout" ]
             ]
         , div [ class "edPageSection" ]
-            [ h5 [] [ text "Delete account:" ]
-            , text "Not implemented yet, sorry!"
-            ]
+            (h5
+                []
+                [ text "Delete account:" ]
+                :: deleteAccount model
+            )
         ]
 
 
@@ -142,6 +147,33 @@ networkDisplay nw =
             "Reddit"
 
 
+deleteAccount : MyProfileModel -> List (Html Msg)
+deleteAccount model =
+    case model.deleteAccount of
+        None ->
+            [ button [ onClick <| MyProfileMsg <| DeleteAccount Confirm ]
+                [ text "Delete my account" ]
+            ]
+
+        Confirm ->
+            [ button [ onClick <| MyProfileMsg <| DeleteAccount Process ]
+                [ text
+                    "Confirm: delete my account (irreversible)"
+                ]
+            ]
+
+        Process ->
+            [ text "Deleting..." ]
+
+        Deleted res ->
+            case res of
+                Err _ ->
+                    [ text "Could not delete account. Try reloading." ]
+
+                Ok _ ->
+                    [ text "Account deleted." ]
+
+
 update : Model -> MyProfileMsg -> ( Model, Cmd Msg )
 update model msg =
     case msg of
@@ -170,42 +202,70 @@ update model msg =
             )
 
         Save ->
-            case model.backend.jwt of
-                Nothing ->
-                    ( model, toastError "Missing JWT" "jwt is Nothing, cannot update profile" )
+            case model.user of
+                Logged user ->
+                    let
+                        profile =
+                            { user
+                                | name = Maybe.withDefault user.name model.myProfile.name
+                                , email =
+                                    case model.myProfile.email of
+                                        Just email ->
+                                            Just email
 
-                Just jwt ->
-                    case model.user of
-                        Logged user ->
+                                        Nothing ->
+                                            user.email
+                            }
+                    in
+                    ( model
+                    , Backend.HttpCommands.updateAccount model.backend profile
+                    )
+
+                Anonymous ->
+                    ( model, toastError "cannot modify anonymous user" "UI allowed to modify anonymous user!" )
+
+        DeleteAccount state ->
+            let
+                profile =
+                    model.myProfile
+
+                model_ =
+                    { model
+                        | myProfile =
+                            { profile | deleteAccount = state }
+                    }
+            in
+            case state of
+                None ->
+                    ( model_, Cmd.none )
+
+                Confirm ->
+                    ( model_, Cmd.none )
+
+                Process ->
+                    ( model_
+                    , Backend.HttpCommands.deleteAccount (\a -> MyProfileMsg <| DeleteAccount <| Deleted a) model.backend model.user
+                    )
+
+                Deleted res ->
+                    case res of
+                        Ok _ ->
                             let
-                                profile =
-                                    { user
-                                        | name = Maybe.withDefault user.name model.myProfile.name
-                                        , email =
-                                            case model.myProfile.email of
-                                                Just email ->
-                                                    Just email
+                                backend =
+                                    model.backend
 
-                                                Nothing ->
-                                                    user.email
-                                    }
-
-                                request =
-                                    Http.request
-                                        { method = "PUT"
-                                        , headers = [ Http.header "authorization" ("Bearer " ++ jwt) ]
-                                        , url = model.backend.baseUrl ++ "/profile"
-                                        , body =
-                                            Http.jsonBody <| profileEncoder profile
-                                        , expect =
-                                            Http.expectJson <| tokenDecoder
-                                        , timeout = Nothing
-                                        , withCredentials = False
-                                        }
+                                backend_ =
+                                    { backend | jwt = Nothing }
                             in
-                            ( model
-                            , Http.send (GetToken Nothing) request
+                            ( { model | user = Anonymous, backend = backend_ }
+                            , Cmd.batch
+                                [ Snackbar.toastMessage "Account deleted" 0
+                                , navigateTo model.key HomeRoute
+                                , saveToken Nothing
+                                ]
                             )
 
-                        Anonymous ->
-                            ( model, toastError "cannot modify anonymous user" "UI allowed to modify anonymous user!" )
+                        Err err ->
+                            ( model_
+                            , Backend.HttpCommands.toastHttpError err
+                            )

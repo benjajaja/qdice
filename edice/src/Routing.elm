@@ -2,7 +2,6 @@ module Routing exposing (goToBestTable, matchers, navigateTo, parseLocation, rep
 
 import Backend.HttpCommands exposing (leaderBoard)
 import Browser.Navigation exposing (Key)
-import Http
 import Tables exposing (Table)
 import Types exposing (..)
 import Url exposing (Url, percentDecode)
@@ -42,15 +41,6 @@ tableMatcher =
     custom "GAME" <|
         \segment ->
             percentDecode segment |> Maybe.map GameRoute
-
-
-
---case Http.decodeUri segment of
---Just table ->
---Ok (GameRoute table)
---Nothing ->
---Err <| "No such table: " ++ segment
--- XXXXX
 
 
 parseLocation : Url -> Route

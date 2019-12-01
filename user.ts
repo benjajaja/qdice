@@ -147,6 +147,7 @@ const getProfile = (network, code, referer): Promise<any> => {
     });
   });
 };
+
 export const me = function(req, res, next) {
   db.getUser(req.user.id)
     .then(profile => {
@@ -176,6 +177,15 @@ export const register = function(req, res, next) {
     .then(profile => {
       const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
       res.send(200, token);
+      next();
+    })
+    .catch(e => next(e));
+};
+
+export const del = function(req, res, next) {
+  db.deleteUser(req.user.id)
+    .then(_ => {
+      res.send(200);
       next();
     })
     .catch(e => next(e));
