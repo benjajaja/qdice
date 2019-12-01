@@ -14,10 +14,10 @@ WORKDIR /usr/src/nodice
 COPY package.json .
 COPY yarn.lock .
 RUN yarn install --frozen-lockfile
-COPY *.ts *.js *.json ./
+COPY *.ts *.js *.json start.sh ./
 COPY scripts ./scripts
 COPY table ./table
 RUN node scripts/build.js /usr/src/edice/maps
 
 EXPOSE 5001
-CMD ["node", "server.js"]
+CMD ["sh", "start.sh"]

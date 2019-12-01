@@ -378,10 +378,6 @@ nextBorders cells coord origin side accum =
     nextBorders_ cells coord origin side [] 100000
 
 
-
--- |> List.reverse
-
-
 nextBorders_ : Cells -> Hex -> Border -> Direction -> List Border -> Int -> List Border
 nextBorders_ cells coord origin side accum fuse =
     let

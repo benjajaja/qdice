@@ -67,8 +67,14 @@ httpErrorToString err =
         Http.BadStatus response ->
             "Server/Client Error: " ++ response.body
 
-        _ ->
-            "HTTP Error"
+        BadUrl url ->
+            "URL error: " ++ url
+
+        Timeout ->
+            "Networked timed out"
+
+        BadPayload str _ ->
+            "Payload error: " ++ str
 
 
 httpErrorResponse : Http.Error -> String
