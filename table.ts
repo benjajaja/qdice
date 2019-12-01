@@ -1,8 +1,8 @@
-import {promisify} from 'util';
-import * as R from 'ramda';
-import * as mqtt from 'mqtt';
-import * as jwt from 'jsonwebtoken';
-import * as AsyncLock from 'async-lock';
+import { promisify } from "util";
+import * as R from "ramda";
+import * as mqtt from "mqtt";
+import * as jwt from "jsonwebtoken";
+import * as AsyncLock from "async-lock";
 
 import {
   UserId,
@@ -10,13 +10,14 @@ import {
   CommandResult,
   Elimination,
   IllegalMoveError,
-} from './types';
-import * as db from './db';
-import * as publish from './table/publish';
-import * as tick from './table/tick';
-import {getTable} from './table/get';
-import {findTable, hasTurn, positionScore, tablePoints} from './helpers';
-import logger from './logger';
+} from "./types";
+import * as db from "./db";
+import * as publish from "./table/publish";
+import * as tick from "./table/tick";
+import { getTable } from "./table/get";
+import { findTable, hasTurn, positionScore, tablePoints } from "./helpers";
+import logger from "./logger";
+import * as config from "./tables.config";
 
 import {
   heartbeat,
@@ -30,15 +31,44 @@ import {
   sitIn,
   chat,
   toggleReady,
-} from './table/commands';
-import {save} from './table/get';
+} from "./table/commands";
+import { save } from "./table/get";
 
 const verifyJwt = promisify(jwt.verify);
+
+export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
+  await Promise.all(
+    config.tables.map(
+      async ({
+        tag,
+        name,
+        mapName,
+        playerSlots,
+        startSlots,
+        points,
+        stackSize,
+        // noFlagRounds,
+      }) => {
+        const table = await getTable(tag);
+        await save(table, {
+          name,
+          mapName,
+          playerSlots,
+          startSlots,
+          points,
+          stackSize,
+          // noFlagRounds,
+        });
+        await start(table.tag, lock, client);
+      }
+    )
+  );
+};
 
 export const start = async (
   tableTag: string,
   lock: AsyncLock,
-  client: mqtt.MqttClient,
+  client: mqtt.MqttClient
 ) => {
   publish.tableStatus(await getTable(tableTag));
 
@@ -54,7 +84,7 @@ export const start = async (
       return;
     }
 
-    const {type, clientId, token, payload} = parsedMessage;
+    const { type, clientId, token, payload } = parsedMessage;
 
     lock.acquire(tableTag, async done => {
       try {
@@ -68,7 +98,7 @@ export const start = async (
       } catch (e) {
         publish.clientError(clientId, e);
         if (e instanceof IllegalMoveError) {
-          logger.error(e, 'illegal move caught gracefully');
+          logger.error(e, "illegal move caught gracefully");
         } else {
           throw e;
         }
@@ -78,17 +108,17 @@ export const start = async (
     });
   };
 
-  client.on('message', onMessage);
+  client.on("message", onMessage);
 
   tick.start(tableTag, lock);
   return () => {
-    client.off('message', onMessage);
+    client.off("message", onMessage);
     tick.stop(tableTag);
   };
 };
 
 const parseMessage = (
-  message: string,
+  message: string
 ): {
   type: string;
   clientId: string;
@@ -96,12 +126,12 @@ const parseMessage = (
   payload: any | undefined;
 } | null => {
   try {
-    const {type, client: clientId, token, payload} = JSON.parse(
-      message.toString(),
+    const { type, client: clientId, token, payload } = JSON.parse(
+      message.toString()
     );
-    return {type, clientId, token, payload};
+    return { type, clientId, token, payload };
   } catch (e) {
-    logger.error(e, 'Could not parse message');
+    logger.error(e, "Could not parse message");
     return null;
   }
 };
@@ -111,32 +141,32 @@ const command = (
   clientId,
   table: Table,
   type,
-  payload,
+  payload
 ): CommandResult | void => {
   switch (type) {
-    case 'Enter':
+    case "Enter":
       return enter(user, table, clientId);
-    case 'Exit':
+    case "Exit":
       return exit(user, table, clientId);
-    case 'Join':
+    case "Join":
       return join(user, table, clientId);
-    case 'Leave':
+    case "Leave":
       return leave(user, table, clientId);
-    case 'Attack':
+    case "Attack":
       return attack(user, table, clientId, payload);
-    case 'EndTurn':
+    case "EndTurn":
       return endTurn(user, table, clientId);
-    case 'SitOut':
+    case "SitOut":
       return sitOut(user, table, clientId);
-    case 'SitIn':
+    case "SitIn":
       return sitIn(user, table, clientId);
-    case 'Chat':
+    case "Chat":
       return chat(user, table, clientId, payload);
-    case 'ToggleReady':
+    case "ToggleReady":
       return toggleReady(user, table, clientId, payload);
     //case 'Flag':
     //return flag(user, table, clientId);
-    case 'Heartbeat':
+    case "Heartbeat":
       return heartbeat(user, table, clientId);
     default:
       throw new Error(`unknown command "${type}"`);
@@ -145,19 +175,26 @@ const command = (
 
 export const processComandResult = async (
   table: Table,
-  result: CommandResult | void,
+  result: CommandResult | void
 ) => {
   if (result) {
-    const {type, table: props, lands, players, watchers, eliminations} = result;
+    const {
+      type,
+      table: props,
+      lands,
+      players,
+      watchers,
+      eliminations,
+    } = result;
     // if (type !== 'Heartbeat') {
     // logger.debug(`Command ${type} modified ${Object.keys(props || {})}, lands:${(lands || []).length}, players:${(players || []).length}, watchers:${(watchers || []).length}, eliminations:${(eliminations || []).length}`);
     // }
-    if (type !== 'Heartbeat' || (watchers && watchers.length > 0)) {
+    if (type !== "Heartbeat" || (watchers && watchers.length > 0)) {
       const newTable = await save(table, props, players, lands, watchers);
       if (eliminations) {
         await processEliminations(newTable, eliminations);
       }
-      if (type !== 'Heartbeat') {
+      if (type !== "Heartbeat") {
         publish.tableStatus(newTable);
       }
     }
@@ -166,11 +203,11 @@ export const processComandResult = async (
 
 const processEliminations = async (
   table: Table,
-  eliminations: ReadonlyArray<Elimination>,
+  eliminations: ReadonlyArray<Elimination>
 ): Promise<void> => {
   return Promise.all(
     eliminations.map(async elimination => {
-      const {player, position, reason, source} = elimination;
+      const { player, position, reason, source } = elimination;
 
       const score =
         player.score +
@@ -181,7 +218,7 @@ const processEliminations = async (
         ...source,
       });
       publish.event({
-        type: 'elimination',
+        type: "elimination",
         table: table.name,
         player,
         position,
@@ -189,7 +226,7 @@ const processEliminations = async (
       });
 
       if (player.bot === null) {
-        logger.debug('ELIMINATION-------------');
+        logger.debug("ELIMINATION-------------");
         logger.debug(position, player.name);
         try {
           const user = await db.addScore(player.id, score);
@@ -199,12 +236,12 @@ const processEliminations = async (
           publish.clientError(
             player.clientId,
             new Error(
-              `You earned ${score} points, but I failed to add them to your profile.`,
-            ),
+              `You earned ${score} points, but I failed to add them to your profile.`
+            )
           );
           throw e;
         }
       }
-    }),
+    })
   ).then(() => undefined);
 };

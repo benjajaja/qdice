@@ -155,11 +155,8 @@ db.retry().then(() => {
     }
     publish.setMqtt(client);
   });
-  table.start("Arabia", lock, client);
-  table.start("Melchor", lock, client);
-  table.start("DeLucía", lock, client);
-  table.start("Miño", lock, client);
-  table.start("España", lock, client);
+
+  table.startTables(lock, client);
 
   client.on("message", globalServer.onMessage);
 
