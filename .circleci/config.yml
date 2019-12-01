@@ -47,7 +47,7 @@ jobs:
         name: Build Docker image
         command: |
           docker build \
-            --tag bgrosse/qdice:$CIRCLE_BRANCH \
+            --tag bgrosse/qdice:latest \
             .
     - run:
         name: Push image to container registry

@@ -1,4 +1,5 @@
 FROM node:10.15.3
+ARG build_id
 
 WORKDIR /usr/src/edice
 COPY edice/package.json .
@@ -6,6 +7,7 @@ COPY edice/yarn.lock .
 RUN yarn install
 COPY edice/. .
 RUN yarn generate-maps
+ENV build_id=$build_id
 RUN yarn build
 
 WORKDIR /usr/src/nodice

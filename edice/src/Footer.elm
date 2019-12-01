@@ -19,7 +19,7 @@ footer model =
                     links2 model.user
                 ]
             , div [ class "edFooter--row" ]
-                [ statusMessage model.backend.status
+                [ statusMessage model.backend.version model.backend.status
                 ]
             ]
         ]
@@ -62,8 +62,8 @@ link path label iconName =
         ]
 
 
-statusMessage : ConnectionStatus -> Html Types.Msg
-statusMessage status =
+statusMessage : String -> ConnectionStatus -> Html Types.Msg
+statusMessage version status =
     let
         message =
             case status of
@@ -110,7 +110,7 @@ statusMessage status =
                 Online ->
                     "network_wifi"
     in
-    Html.div [ dataTestId "connection-status" ]
-        -- [ Html.span [] [ Icon.icon icon ]
-        [ Html.span [] [ Html.text message ]
+    div []
+        [ span [] [ text <| "Version: " ++ version ++ ", Status: " ]
+        , span [ dataTestId "connection-status" ] [ text message ]
         ]

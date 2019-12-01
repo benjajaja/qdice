@@ -36,6 +36,7 @@ var token =
 var app = Elm.Edice.init({
   node: document.body,
   flags: {
+    version: version ? version.substr(0, 7) : "dev",
     token: token || null,
     isTelegram: isTelegram,
     screenshot: /[?&]screenshot/.test(window.location.search),

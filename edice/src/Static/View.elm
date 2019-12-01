@@ -27,11 +27,11 @@ There is a [subreddit in place as a community forum](https://reddit.com/r/qdice)
 ## Roadmap
 
 #### High priority:
-  * ✗ Connect an auth method to anonymous account
-  * ✗ Delete account (GDPR)
-  * ✗ ToS on signup/login (GDPR)
+  * ✗ Fix telegram bot
+  * ✗ Surrender / flag out
 
 #### Low priority:
+  * ✗ Spread out initial positions
   * ✗ Login with password
   * ✗ Profile page
   * ✗ Login with twitter, facebook, github
@@ -39,6 +39,8 @@ There is a [subreddit in place as a community forum](https://reddit.com/r/qdice)
   * ✗ Replay a game
 
 #### Complete:
+  * ✔ Connect an auth method to anonymous account
+  * ✔ Delete account
   * ✔ Flag "ready" to start
   * ✔ Bots
   * ✔ Fullscreen tooltip

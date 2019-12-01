@@ -35,7 +35,8 @@ import Url exposing (Url)
 
 
 type alias Flags =
-    { token : Maybe String
+    { version : String
+    , token : Maybe String
     , isTelegram : Bool
     , screenshot : Bool
     }
@@ -66,7 +67,7 @@ init flags location key =
             Game.State.init table Nothing
 
         ( backend, backendCmd ) =
-            Backend.init location flags.token flags.isTelegram
+            Backend.init flags.version location flags.token flags.isTelegram
 
         ( oauth, oauthCmds ) =
             MyOauth.init key location

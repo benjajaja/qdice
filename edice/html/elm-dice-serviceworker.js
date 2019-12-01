@@ -9,16 +9,18 @@ self.addEventListener("install", function(evt) {
   evt.waitUntil(precache());
 });
 
-// On fetch, use cache but update the entry with the latest contents
-// from the server.
-self.addEventListener("fetch", function(evt) {
-  // Try network and if it fails, go for the cached copy.
-  evt.respondWith(
-    fromNetwork(evt.request, 400).catch(function() {
-      return fromCache(evt.request);
-    })
-  );
-});
+if (false) {
+  // On fetch, use cache but update the entry with the latest contents
+  // from the server.
+  self.addEventListener("fetch", function(evt) {
+    // Try network and if it fails, go for the cached copy.
+    evt.respondWith(
+      fromNetwork(evt.request, 400).catch(function() {
+        return fromCache(evt.request);
+      })
+    );
+  });
+}
 
 // Open a cache and use `addAll()` with an array of assets to add all of them
 // to the cache. Return a promise resolving when all the assets are added.

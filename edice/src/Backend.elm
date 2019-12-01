@@ -63,11 +63,12 @@ baseUrl location =
             "/api"
 
 
-init : Url -> Maybe String -> Bool -> ( Model, Cmd Msg )
-init location token isTelegram =
+init : String -> Url -> Maybe String -> Bool -> ( Model, Cmd Msg )
+init version location token isTelegram =
     let
         model =
-            { baseUrl = baseUrl location
+            { version = version
+            , baseUrl = baseUrl location
             , jwt = token
             , clientId = Nothing
             , subscribed = []

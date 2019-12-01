@@ -6,7 +6,8 @@ import Time
 
 
 type alias Model =
-    { baseUrl : String
+    { version : String
+    , baseUrl : String
     , jwt : Maybe String
     , clientId : Maybe ClientId
     , subscribed : List Topic
