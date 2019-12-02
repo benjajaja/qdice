@@ -319,3 +319,6 @@ FROM tables
 LIMIT 100`);
   return result.rows.map(camelize);
 };
+
+export const deleteTable = async (tag: string): Promise<any> =>
+  await client.query("DELETE FROM tables WHERE tag = $1", [tag]);

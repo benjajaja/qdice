@@ -37,31 +37,49 @@ import { save } from "./table/get";
 const verifyJwt = promisify(jwt.verify);
 
 export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
-  await Promise.all(
-    config.tables.map(
-      async ({
+  const tables: string[] = (await db.getTablesStatus()).map(
+    status => status.tag
+  );
+  const deleteTables = tables.filter(tag =>
+    R.not(
+      R.contains(
         tag,
-        name,
-        mapName,
-        playerSlots,
-        startSlots,
-        points,
-        stackSize,
-        // noFlagRounds,
-      }) => {
-        const table = await getTable(tag);
-        await save(table, {
+        config.tables.map(t => t.tag)
+      )
+    )
+  );
+  await Promise.all(
+    config.tables
+      .map(
+        async ({
+          tag,
           name,
           mapName,
           playerSlots,
           startSlots,
           points,
           stackSize,
-          // noFlagRounds,
-        });
-        await start(table.tag, lock, client);
-      }
-    )
+          // noFlagRounds, // not in db schema
+        }) => {
+          const table = await getTable(tag);
+          await save(table, {
+            name,
+            mapName,
+            playerSlots,
+            startSlots,
+            points,
+            stackSize,
+            // noFlagRounds,
+          });
+          await start(table.tag, lock, client);
+        }
+      )
+      .concat(
+        deleteTables.map(async tag => {
+          logger.warn(`Deleting table: "${tag}"`);
+          await db.deleteTable(tag);
+        })
+      )
   );
 };
 
