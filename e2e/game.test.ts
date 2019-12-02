@@ -25,7 +25,7 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
   await expect(page).toClick(testId(to));
   await expect(page).toMatchElement(testValue(to, "selected", "true"));
 
-  const lines = await page.$eval("#gameLog-Melchor", container => {
+  const lines = await page.$eval("#gameLog-Polo", container => {
     return new Promise<string[]>(resolve => {
       const observer = new MutationObserver(() => {
         observer.disconnect();
@@ -57,7 +57,7 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
 
 describe("A full game", () => {
   test("should play a full game", async () => {
-    await expect(page).toClick(testId("go-to-table-Melchor"));
+    await expect(page).toClick(testId("go-to-table-Polo"));
 
     await expect(page).toClick(testId("button-seat"));
     await expect(page).toMatchElement(testId("login-dialog"));
@@ -79,7 +79,7 @@ describe("A full game", () => {
       text: "Online",
     });
 
-    await expect(page2).toClick(testId("go-to-table-Melchor"));
+    await expect(page2).toClick(testId("go-to-table-Polo"));
     await expect(page2).toClick(testId("button-seat"), { text: "Join" });
     await expect(page2).toMatchElement(testId("login-dialog"));
 

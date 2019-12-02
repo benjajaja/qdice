@@ -5,7 +5,8 @@
   "license": "none",
   "private": true,
   "scripts": {
-    "test": "jest --runInBand --verbose"
+    "test": "jest --runInBand --verbose",
+    "test_dev": "E2E_URL=\"http://localhost:5000\" E2E_API_RESET_URL=\"http://localhost:5001/api/e2e\" yarn test"
   },
   "dependencies": {
     "@types/expect-puppeteer": "^3.3.3",

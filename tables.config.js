@@ -21,8 +21,8 @@ module.exports = {
       noFlagRounds: 5,
     },
     {
-      tag: "DeLucía",
-      name: "DeLucía",
+      tag: "Lagos",
+      name: "Lagos",
       mapName: "DeLucía",
       playerSlots: 7,
       startSlots: 4,
@@ -31,8 +31,8 @@ module.exports = {
       noFlagRounds: 5,
     },
     {
-      tag: "Melchor",
-      name: "Melchor",
+      tag: "Polo",
+      name: "Polo",
       mapName: "Melchor",
       playerSlots: 5,
       startSlots: 2,

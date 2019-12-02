@@ -240,7 +240,6 @@ if ("serviceWorker" in navigator) {
     .register("./elm-dice-serviceworker.js", { scope: "./" })
     .then(function(registration) {
       // registration worked
-      console.log("Registration succeeded. Scope is " + registration.scope);
       serviceWorkerRegistration = registration;
     })
     .catch(function(error) {
