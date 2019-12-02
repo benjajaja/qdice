@@ -1,6 +1,16 @@
 module.exports = {
   tables: [
     {
+      tag: "Planeta",
+      name: "Planeta",
+      mapName: "Planeta",
+      playerSlots: 9,
+      startSlots: 5,
+      points: 100,
+      stackSize: 8,
+      noFlagRounds: 5,
+    },
+    {
       tag: "España",
       name: "España",
       mapName: "Serrano",

@@ -12,6 +12,7 @@ type Map
     | Serrano
     | DeLucía
     | Sabicas
+    | Planeta
 
 
 
@@ -37,6 +38,9 @@ decodeMap name =
 
         "Sabicas" ->
             Just Sabicas
+
+        "Planeta" ->
+            Just Planeta
 
         _ ->
             Nothing
