@@ -48,6 +48,7 @@ jobs:
         command: |
           docker build \
             --tag bgrosse/qdice:latest \
+            --build-arg build_id=$(git rev-parse HEAD) \
             .
     - run:
         name: Push image to container registry
@@ -55,7 +56,7 @@ jobs:
           docker login \
             --username $DOCKERHUB_USERNAME \
             --password $DOCKERHUB_PASSWORD
-          docker push bgrosse/qdice
+          docker push bgrosse/qdice:latest
   test_web:
     docker:
     - image: circleci/node:10.15.3
@@ -137,7 +138,7 @@ jobs:
     - run:
         name: Run e2e
         command: |
-          docker run --network qdice -e E2E_URL=http://edice qdice2e yarn test
+          docker run --network qdice -e E2E_URL=http://nginx qdice2e yarn test
   deploy:
     working_directory: ~/repo
     machine:

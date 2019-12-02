@@ -1,24 +1,24 @@
-var mqtt = require('mqtt');
+var mqtt = require("mqtt");
 
 function getMqttConfig() {
-  if (['localhost', 'lvh.me'].indexOf(self.location.hostname) !== -1) {
+  if (["localhost", "lvh.me"].indexOf(self.location.hostname) !== -1) {
     return {
-      protocol: 'ws',
+      protocol: "ws",
       hostname: self.location.hostname,
       port: 8083,
-      path: 'mqtt',
-      username: 'client',
-      password: 'client',
+      path: "mqtt",
+      username: "client",
+      password: "client",
     };
-  } else if (self.location.hostname === 'edice') {
+  } else if (self.location.hostname === "nginx") {
     return {
-      protocol: 'ws',
-      path: 'mqtt',
+      protocol: "ws",
+      path: "mqtt",
     };
   } else {
     return {
-      protocol: 'wss',
-      path: 'mqtt',
+      protocol: "wss",
+      path: "mqtt",
     };
   }
 }
@@ -27,12 +27,12 @@ var client;
 
 module.exports.connect = function() {
   var mqttConfig = getMqttConfig();
-  var url = [mqttConfig.protocol, '://', mqttConfig.hostname]
-    .concat(mqttConfig.port ? [':', mqttConfig.port] : [])
-    .concat(['/', mqttConfig.path])
-    .join('');
+  var url = [mqttConfig.protocol, "://", mqttConfig.hostname]
+    .concat(mqttConfig.port ? [":", mqttConfig.port] : [])
+    .concat(["/", mqttConfig.path])
+    .join("");
   var clientId =
-    'elm-dice_' +
+    "elm-dice_" +
     Math.random()
       .toString(16)
       .substr(2, 8);
@@ -45,37 +45,40 @@ module.exports.connect = function() {
 
   var connectionAttempts = 0;
 
-  postMessage({type: 'mqttOnConnect', payload: ''});
+  postMessage({ type: "mqttOnConnect", payload: "" });
 
-  client.on('connect', function(connack) {
-    postMessage({type: 'mqttOnConnected', payload: clientId});
+  client.on("connect", function(connack) {
+    postMessage({ type: "mqttOnConnected", payload: clientId });
     connectionAttempts = 0;
   });
 
-  client.on('message', function(topic, message) {
-    postMessage({type: 'mqttOnMessage', payload: [topic, message.toString()]});
-  });
-
-  client.on('error', function(error) {
-    console.error('mqtt error:', error);
-  });
-
-  client.on('reconnect', function() {
-    connectionAttempts = connectionAttempts + 1;
-    postMessage({type: 'mqttOnReconnect', payload: connectionAttempts});
-  });
-
-  client.on('close', function(event) {
-    console.error('mqtt close:', event);
+  client.on("message", function(topic, message) {
     postMessage({
-      type: 'mqttOnOffline',
+      type: "mqttOnMessage",
+      payload: [topic, message.toString()],
+    });
+  });
+
+  client.on("error", function(error) {
+    console.error("mqtt error:", error);
+  });
+
+  client.on("reconnect", function() {
+    connectionAttempts = connectionAttempts + 1;
+    postMessage({ type: "mqttOnReconnect", payload: connectionAttempts });
+  });
+
+  client.on("close", function(event) {
+    console.error("mqtt close:", event);
+    postMessage({
+      type: "mqttOnOffline",
       payload: connectionAttempts.toString(),
     });
   });
 
-  client.on('offline', function() {
+  client.on("offline", function() {
     postMessage({
-      type: 'mqttOnOffline',
+      type: "mqttOnOffline",
       payload: connectionAttempts.toString(),
     });
   });
@@ -87,17 +90,17 @@ var postMessage = function(message) {
   if (module.exports.onmessage) {
     module.exports.onmessage(message);
   } else {
-    console.error('mqtt postMessage not set');
+    console.error("mqtt postMessage not set");
   }
 };
 
 module.exports.subscribe = function(payload) {
   client.subscribe(payload, function(err, granted) {
     if (err) {
-      postMessage({type: 'mqttOnError', payload: error.toString()});
+      postMessage({ type: "mqttOnError", payload: error.toString() });
     } else {
       granted.forEach(function(granted) {
-        postMessage({type: 'mqttOnSubscribed', payload: granted.topic});
+        postMessage({ type: "mqttOnSubscribed", payload: granted.topic });
       });
     }
     //console.log('sub', granted[0].topic);
