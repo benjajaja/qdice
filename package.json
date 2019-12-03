@@ -8,7 +8,9 @@
   "scripts": {
     "start": "node server.js",
     "deploy": "./scripts/deploy.sh",
-    "generate-maps": "node scripts/build.js edice/maps/"
+    "generate-maps": "node scripts/build.js edice/maps/",
+    "lint": "yarn prettier --check '**/*.{ts,tsx}'",
+    "format": "yarn prettier --write '**/*.{ts,tsx}'"
   },
   "deploy": {
     "production": {
@@ -42,6 +44,7 @@
     "pg": "^7.4.0",
     "pino": "^5.10.6",
     "pino-pretty": "^2.5.0",
+    "prettier": "1.19.1",
     "puppeteer": "^2.0.0",
     "ramda": "^0.25.0",
     "redis": "^2.8.0",
