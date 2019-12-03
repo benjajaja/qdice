@@ -33,14 +33,12 @@ export const connect = async function db() {
   });
 
   try {
-    logger.debug("pg connect", process.env.PGHOST, process.env.PGPORT);
     await client.connect();
   } catch (e) {
     client = undefined!;
     throw e;
   }
 
-  logger.debug("pg connected!");
   return client;
 };
 
@@ -241,8 +239,8 @@ export const createTable = async (table: Table) => {
   const result = await client.query(
     `
 INSERT INTO tables
-(tag, name, map_name, stack_size, player_slots, start_slots, points, players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+(tag, name, map_name, stack_size, player_slots, start_slots, points, players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start, params)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
 RETURNING *`,
     [
       table.tag,
@@ -263,6 +261,7 @@ RETURNING *`,
       table.roundCount,
       date(table.gameStart),
       date(table.turnStart),
+      JSON.stringify(table.params),
     ]
   );
   const row = result.rows.pop();
@@ -314,7 +313,7 @@ RETURNING *`;
 
 export const getTablesStatus = async (): Promise<any> => {
   const result = await client.query(`
-SELECT tag, name, map_name, stack_size, status, player_slots, points, players, watching
+SELECT tag, name, map_name, stack_size, status, player_slots, start_slots, points, players, watching
 FROM tables
 LIMIT 100`);
   return result.rows.map(camelize);

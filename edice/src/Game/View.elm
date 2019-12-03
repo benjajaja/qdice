@@ -5,13 +5,14 @@ import Board
 import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard
-import Game.State exposing (canHover, findUserPlayer)
+import Game.State exposing (canHover)
 import Game.Types exposing (PlayerAction(..), statusToString)
 import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (checked, class, disabled, style, type_)
 import Html.Events exposing (onClick)
 import Icon
+import Ordinal exposing (ordinal)
 import Time exposing (posixToMillis)
 import Types exposing (Model, Msg(..))
 
@@ -102,6 +103,24 @@ seatButtons model =
 
                 Nothing ->
                     []
+            , if model.game.canFlag then
+                [ label
+                    [ class "edCheckbox"
+                    , onClick <| GameCmd <| Flag <| not <| Maybe.withDefault False model.game.flag
+                    , dataTestId "check-flag"
+                    ]
+                    [ Icon.icon "flag"
+                    , text <|
+                        if model.game.playerPosition == List.length model.game.players then
+                            "Surrender"
+
+                        else
+                            ordinal model.game.playerPosition
+                    ]
+                ]
+
+              else
+                []
             , [ button [ class "edButton edGameHeader__button", onClick msg, dataTestId "button-seat" ] [ text buttonLabel ]
               ]
             ]
@@ -109,7 +128,7 @@ seatButtons model =
 
 setButtonStates : Model -> { buttonLabel : String, msg : Msg, checkReady : Maybe Bool }
 setButtonStates model =
-    case findUserPlayer model.user model.game.players of
+    case model.game.player of
         Just player ->
             if model.game.status == Game.Types.Playing then
                 if player.out then

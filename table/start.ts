@@ -53,6 +53,7 @@ const start = (table: Table): CommandResult => {
       turnStart: now(),
       turnActivity: false,
       playerStartCount: table.players.length,
+      roundCount: 1,
     },
     lands: allLands,
   };

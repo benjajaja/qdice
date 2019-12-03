@@ -31,6 +31,7 @@ tableOfTables model =
                 , th [] [ text "Status" ]
                 , th [] [ text "Size" ]
                 , th [] [ text "Stacks" ]
+                , th [] [ text "Points" ]
                 , th [] []
                 ]
             ]
@@ -47,15 +48,20 @@ tableOfTables model =
                             --, td [] [ text <| String.fromInt table.points ]
                             , td []
                                 [ text <|
-                                    String.fromInt table.playerCount
-                                        ++ " / "
-                                        ++ String.fromInt table.playerSlots
+                                    String.concat
+                                        [ String.fromInt table.playerCount
+                                        , " / "
+                                        , String.fromInt table.startSlots
+                                        , "-"
+                                        , String.fromInt table.playerSlots
+                                        ]
                                 ]
                             , td [] [ text <| String.fromInt table.watchCount ]
                             , td []
                                 [ Icon.icon <| statusToIcon table.status ]
                             , td [] [ text <| String.fromInt table.landCount ]
                             , td [] [ text <| String.fromInt table.stackSize ]
+                            , td [] [ text <| String.fromInt table.points ]
                             ]
                 )
                 model.tableList

@@ -8,21 +8,29 @@ import {
   Watcher,
   CommandResult,
   IllegalMoveError,
+  Elimination,
 } from "../types";
 import * as publish from "./publish";
 import { addSeconds, now } from "../timestamp";
-import { hasTurn, findLand, adjustPlayer } from "../helpers";
+import {
+  hasTurn,
+  findLand,
+  adjustPlayer,
+  groupedPlayerPositions,
+  removePlayerCascade,
+} from "../helpers";
 import { isBorder } from "../maps";
 import nextTurn from "./turn";
 import {
   STATUS_PAUSED,
   STATUS_PLAYING,
   STATUS_FINISHED,
-  TURN_SECONDS,
   COLOR_NEUTRAL,
   GAME_START_COUNTDOWN,
+  ELIMINATION_REASON_SURRENDER,
 } from "../constants";
 import logger from "../logger";
+import endGame from "./endGame";
 
 export const heartbeat = (
   user: User,
@@ -397,4 +405,74 @@ export const toggleReady = (
     p === player ? { ...p, ready: payload } : p
   );
   return { type: "ToggleReady", players };
+};
+
+export const flag = (user, table: Table, clientId): CommandResult => {
+  if (table.status !== STATUS_PLAYING) {
+    throw new IllegalMoveError("Flag while not STATUS_PLAYING", user.id);
+  }
+  const player = table.players.filter(p => p.id === user.id).pop();
+  if (!player) {
+    throw new IllegalMoveError("Flag while not in game", user.id);
+  }
+  // if (table.attack) {
+  // throw new IllegalMoveError("Flag during attack", user.id);
+  // }
+  const positions = groupedPlayerPositions(table);
+  const position = positions(player);
+  if (position === 1) {
+    throw new IllegalMoveError("cannot flag first", user.id);
+  }
+
+  if (player.flag !== null && player.flag >= position) {
+    throw new IllegalMoveError(
+      "cannot flag higher or equal than before",
+      user.id
+    );
+  }
+
+  logger.debug(`${player.name} flagged ${player.position}`);
+
+  if (hasTurn(table)(user) && position === table.players.length) {
+    logger.debug(`${player.name} flagged suicide`);
+
+    const elimination: Elimination = {
+      player,
+      position,
+      reason: ELIMINATION_REASON_SURRENDER,
+      source: {
+        flag: position,
+      },
+    };
+
+    const [players, lands, turnIndex, eliminations] = removePlayerCascade(
+      table,
+      table.players,
+      table.lands,
+      player,
+      table.turnIndex,
+      elimination
+    );
+
+    if (players.length === table.players.length) {
+      throw new Error(`could not remove player ${player.id}`);
+    }
+
+    const result: CommandResult = {
+      type: "Flag",
+      table: { turnStart: now() },
+      lands: lands,
+      players: players,
+      eliminations,
+    };
+    if (players.length === 1) {
+      return endGame(table, result);
+    }
+    return result;
+  }
+
+  const players = table.players.map(p =>
+    p === player ? { ...p, flag: position } : p
+  );
+  return { type: "Flag", players };
 };

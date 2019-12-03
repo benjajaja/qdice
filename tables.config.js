@@ -8,7 +8,9 @@ module.exports = {
       startSlots: 5,
       points: 100,
       stackSize: 8,
-      noFlagRounds: 5,
+      params: {
+        noFlagRounds: 5,
+      },
     },
     {
       tag: "España",
@@ -16,19 +18,23 @@ module.exports = {
       mapName: "Serrano",
       playerSlots: 8,
       startSlots: 3,
-      points: 0,
+      points: 50,
       stackSize: 8,
-      noFlagRounds: 5,
+      params: {
+        noFlagRounds: 4,
+      },
     },
     {
       tag: "Lagos",
       name: "Lagos",
       mapName: "DeLucía",
-      playerSlots: 7,
-      startSlots: 4,
+      playerSlots: 9,
+      startSlots: 6,
       points: 100,
       stackSize: 8,
-      noFlagRounds: 5,
+      params: {
+        noFlagRounds: 5,
+      },
     },
     {
       tag: "Polo",
@@ -38,7 +44,9 @@ module.exports = {
       startSlots: 2,
       points: 0,
       stackSize: 8,
-      noFlagRounds: 1,
+      params: {
+        noFlagRounds: 1,
+      },
     },
     {
       tag: "Miño",
@@ -48,27 +56,21 @@ module.exports = {
       startSlots: 2,
       points: 0,
       stackSize: 4,
-      noFlagRounds: 5,
+      params: {
+        noFlagRounds: 0,
+      },
     },
     {
       tag: "Arabia",
       name: "Arabia",
       mapName: "Sabicas",
       playerSlots: 9,
-      startSlots: 5,
+      startSlots: 7,
       points: 200,
       stackSize: 8,
-      noFlagRounds: 5,
+      params: {
+        noFlagRounds: 5,
+      },
     },
-    // {
-    // tag: 'Null',
-    // name: 'Null',
-    // mapName: 'Null',
-    // playerSlots: 8,
-    // startSlots: 2,
-    // points: 0,
-    // stackSize: 8,
-    // noFlagRounds: 5,
-    // },
   ],
 };

@@ -1,6 +1,7 @@
 import * as R from "ramda";
-import { Table, Land, UserId, Player } from "./types";
+import { Table, Land, UserId, Player, Elimination } from "./types";
 import logger from "./logger";
+import { COLOR_NEUTRAL, ELIMINATION_REASON_SURRENDER } from "./constants";
 
 export const findTable = (tables: Table[]) => (name: string): Table =>
   tables.filter(table => table.name === name).pop()!;
@@ -80,3 +81,75 @@ export const adjustPlayer = R.curry(
   (index: number, props: Partial<Player>, players: ReadonlyArray<Player>) =>
     R.adjust(player => ({ ...player, ...props }), index, players)
 );
+
+export const removePlayer = (
+  players: readonly Player[],
+  lands: readonly Land[],
+  player: Player,
+  turnIndex: number
+): [readonly Player[], readonly Land[], number] => {
+  const turnPlayer = players[turnIndex];
+  const players_ = players.filter(R.complement(R.equals(player)));
+  return [
+    players_,
+    lands.map(
+      R.when(R.propEq("color", player.color), land =>
+        Object.assign(land, { color: COLOR_NEUTRAL })
+      )
+    ),
+    turnPlayer !== player
+      ? players_.indexOf(turnPlayer)
+      : turnIndex === players_.length
+      ? 0
+      : turnIndex,
+  ];
+};
+
+export const removePlayerCascade = (
+  table: Table,
+  players: readonly Player[],
+  lands: readonly Land[],
+  player: Player,
+  turnIndex: number,
+  elimination: Elimination
+): [readonly Player[], readonly Land[], number, readonly Elimination[]] => {
+  let [players_, lands_, turnIndex_] = removePlayer(
+    players,
+    lands,
+    player,
+    turnIndex
+  );
+  let eliminations: Elimination[] = [elimination];
+
+  return removeNext([players_, lands_, turnIndex_, eliminations]);
+};
+
+const removeNext = ([players, lands, turnIndex, eliminations]: [
+  readonly Player[],
+  readonly Land[],
+  number,
+  readonly Elimination[]
+]): [readonly Player[], readonly Land[], number, readonly Elimination[]] => {
+  const next = players.find(
+    player => player.flag && player.flag === players.length
+  );
+  if (next) {
+    const [a, b, c] = removePlayer(players, lands, next, turnIndex);
+    return removeNext([
+      a,
+      b,
+      c,
+      eliminations.concat([
+        {
+          player: next,
+          position: players.length,
+          reason: ELIMINATION_REASON_SURRENDER,
+          source: {
+            flag: next.flag!,
+          },
+        },
+      ]),
+    ]);
+  }
+  return [players, lands, turnIndex, eliminations];
+};

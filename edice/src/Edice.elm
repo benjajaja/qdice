@@ -261,14 +261,11 @@ update msg model =
 
                 backend_ =
                     { backend | jwt = Nothing }
-
-                player =
-                    Game.State.findUserPlayer model.user model.game.players
             in
             ( { model | user = Anonymous, backend = backend_ }
             , Cmd.batch
                 [ MyOauth.saveToken Nothing
-                , case player of
+                , case model.game.player of
                     Just _ ->
                         sendGameCommand model.backend model.game.table Game.Types.Leave
 

@@ -1,4 +1,4 @@
-port module Game.State exposing (canHover, changeTable, clickLand, findUserPlayer, gameCommand, init, scrollElement, showRoll, tableMap, updateGameInfo, updateTable, updateTableStatus)
+port module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, scrollElement, showRoll, tableMap, updateGameInfo, updateTable, updateTableStatus)
 
 import Backend
 import Backend.MqttCommands exposing (attack, sendGameCommand)
@@ -47,9 +47,11 @@ init table tableMap_ =
             Nothing ->
                 []
     , isPlayerOut = False
+    , playerPosition = 0
     , roundCount = 0
     , canFlag = False
     , isReady = Nothing
+    , flag = Nothing
     }
 
 
@@ -73,6 +75,16 @@ gameCommand model playerAction =
 
                 newGame =
                     { game | isReady = Just ready }
+            in
+            { model | game = newGame }
+
+        Flag flag ->
+            let
+                game =
+                    model.game
+
+                newGame =
+                    { game | flag = Just flag }
             in
             { model | game = newGame }
 
@@ -116,7 +128,9 @@ findUserPlayer user players =
             Nothing
 
         Types.Logged user_ ->
-            List.head <| List.filter (\p -> p.id == user_.id) players
+            players
+                |> List.filter (.id >> (==) user_.id)
+                |> List.head
 
 
 updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
@@ -236,6 +250,7 @@ updateTableStatus model status =
                 , board = board_
                 , roundCount = status.roundCount
                 , canFlag = canFlag
+                , playerPosition = Maybe.withDefault 0 <| Maybe.map (.gameStats >> .position) player
             }
 
         ( model_, turnChangeCmd ) =

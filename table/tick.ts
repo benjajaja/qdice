@@ -25,7 +25,11 @@ export const start = (tableTag: string, lock: any) => {
     throw new Error("already ticking");
   }
   intervalIds[tableTag] = setInterval(() => {
-    tick(tableTag, lock);
+    try {
+      tick(tableTag, lock);
+    } catch (e) {
+      logger.error("Tick error!", e);
+    }
   }, 500);
 };
 

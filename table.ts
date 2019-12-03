@@ -31,6 +31,7 @@ import {
   sitIn,
   chat,
   toggleReady,
+  flag,
 } from "./table/commands";
 import { save } from "./table/get";
 
@@ -59,7 +60,7 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
           startSlots,
           points,
           stackSize,
-          // noFlagRounds, // not in db schema
+          params,
         }) => {
           const table = await getTable(tag);
           await save(table, {
@@ -69,7 +70,7 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
             startSlots,
             points,
             stackSize,
-            // noFlagRounds,
+            params,
           });
           await start(table.tag, lock, client);
         }
@@ -128,6 +129,7 @@ export const start = async (
 
   client.on("message", onMessage);
 
+  // await db.clearGames(lock);
   tick.start(tableTag, lock);
   return () => {
     client.off("message", onMessage);
@@ -182,8 +184,8 @@ const command = (
       return chat(user, table, clientId, payload);
     case "ToggleReady":
       return toggleReady(user, table, clientId, payload);
-    //case 'Flag':
-    //return flag(user, table, clientId);
+    case "Flag":
+      return flag(user, table, clientId);
     case "Heartbeat":
       return heartbeat(user, table, clientId);
     default:

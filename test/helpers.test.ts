@@ -1,6 +1,8 @@
 import * as assert from "assert";
 import * as R from "ramda";
 import * as helpers from "../helpers";
+import { Table, Elimination, Player } from "../types";
+import { ELIMINATION_REASON_SURRENDER } from "../constants";
 
 describe("Helpers", function() {
   describe("positionScore", () => {
@@ -128,6 +130,181 @@ describe("Helpers", function() {
           5
         );
       });
+    });
+  });
+
+  describe("removePlayerCascade", () => {
+    it("surrender current turn", () => {
+      const players: Player[] = [
+        { id: "a" } as any,
+        { id: "b", flag: 3 } as any,
+        { id: "c" } as any,
+      ];
+      const table = ({ players, lands: [] } as any) as Table;
+
+      const player = players[1];
+      const elimination: Elimination = {
+        player,
+        position: players.length,
+        reason: ELIMINATION_REASON_SURRENDER,
+        source: {
+          flag: player.flag!,
+        },
+      };
+      const [
+        players_,
+        lands_,
+        turnIndex,
+        eliminations,
+      ] = helpers.removePlayerCascade(
+        table,
+        players,
+        [],
+        player,
+        1,
+        elimination
+      );
+
+      assert.deepEqual(turnIndex, 1);
+      assert.deepEqual(players_, [players[0], players[2]]);
+      assert.deepEqual(eliminations, [elimination]);
+    });
+    it("surrender current turn wraps turnIndex", () => {
+      const players: Player[] = [
+        { id: "a" } as any,
+        { id: "b" } as any,
+        { id: "c", flag: 3 } as any,
+      ];
+      const table = ({ players, lands: [] } as any) as Table;
+
+      const player = players[2];
+      const elimination: Elimination = {
+        player,
+        position: players.length,
+        reason: ELIMINATION_REASON_SURRENDER,
+        source: {
+          flag: player.flag!,
+        },
+      };
+      const [
+        players_,
+        lands_,
+        turnIndex,
+        eliminations,
+      ] = helpers.removePlayerCascade(
+        table,
+        players,
+        [],
+        player,
+        2,
+        elimination
+      );
+
+      assert.deepEqual(turnIndex, 0);
+      assert.deepEqual(players_, [players[0], players[1]]);
+      assert.deepEqual(eliminations, [elimination]);
+    });
+
+    it("surrender out of turn", () => {
+      const players: Player[] = [
+        { id: "a" } as any,
+        { id: "b" } as any,
+        { id: "c", flag: 3 } as any,
+        { id: "d", flag: 4 } as any,
+      ];
+      const table = ({ players, lands: [] } as any) as Table;
+
+      const player = players[3];
+      const elimination: Elimination = {
+        player,
+        position: players.length,
+        reason: ELIMINATION_REASON_SURRENDER,
+        source: {
+          flag: player.flag!,
+        },
+      };
+      const [
+        players_,
+        lands_,
+        turnIndex,
+        eliminations,
+      ] = helpers.removePlayerCascade(
+        table,
+        players,
+        [],
+        player,
+        3,
+        elimination
+      );
+
+      assert.deepEqual(turnIndex, 0);
+      assert.deepEqual(players_, [players[0], players[1]]);
+      assert.deepEqual(eliminations, [
+        elimination,
+        {
+          player: players[2],
+          position: 3,
+          reason: ELIMINATION_REASON_SURRENDER,
+          source: {
+            flag: players[2].flag!,
+          },
+        },
+      ]);
+    });
+
+    it("surrender cascade all", () => {
+      const players: Player[] = [
+        { id: "a" } as any,
+        { id: "b", flag: 2 } as any,
+        { id: "c", flag: 3 } as any,
+        { id: "d", flag: 4 } as any,
+      ];
+      const table = ({ players, lands: [] } as any) as Table;
+
+      const player = players[3];
+      const elimination: Elimination = {
+        player,
+        position: 4,
+        reason: ELIMINATION_REASON_SURRENDER,
+        source: {
+          flag: player.flag!,
+        },
+      };
+      const [
+        players_,
+        lands_,
+        turnIndex,
+        eliminations,
+      ] = helpers.removePlayerCascade(
+        table,
+        players,
+        [],
+        player,
+        3,
+        elimination
+      );
+
+      assert.deepEqual(turnIndex, 0);
+      assert.deepEqual(players_, [players[0]]);
+      assert.deepEqual(eliminations, [
+        elimination,
+        {
+          player: players[2],
+          position: 3,
+          reason: ELIMINATION_REASON_SURRENDER,
+          source: {
+            flag: players[2].flag!,
+          },
+        },
+        {
+          player: players[1],
+          position: 2,
+          reason: ELIMINATION_REASON_SURRENDER,
+          source: {
+            flag: players[1].flag!,
+          },
+        },
+      ]);
     });
   });
 });

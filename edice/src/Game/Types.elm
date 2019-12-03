@@ -21,7 +21,7 @@ type PlayerAction
     | SitIn
     | Attack Emoji Emoji
     | EndTurn
-    | Flag
+    | Flag Bool
     | ToggleReady Bool
     | Heartbeat
 
@@ -41,9 +41,11 @@ type alias Model =
     , chatLog : List ChatLogEntry
     , gameLog : List ChatLogEntry
     , isPlayerOut : Bool
+    , playerPosition : Int
     , roundCount : Int
     , canFlag : Bool
     , isReady : Maybe Bool
+    , flag : Maybe Bool
     }
 
 
@@ -108,6 +110,7 @@ type alias TableInfo =
     { table : Table
     , mapName : Tables.Map
     , playerSlots : Int
+    , startSlots : Int
     , playerCount : Int
     , watchCount : Int
     , status : GameStatus
@@ -205,13 +208,13 @@ statusToIcon : GameStatus -> String
 statusToIcon status =
     case status of
         Paused ->
-            "done"
-
-        Playing ->
             "schedule"
 
+        Playing ->
+            "play_arrow"
+
         Finished ->
-            "done"
+            "snooze"
 
 
 actionToString : PlayerAction -> String
@@ -244,7 +247,7 @@ actionToString action =
         EndTurn ->
             "EndTurn"
 
-        Flag ->
+        Flag _ ->
             "Flag"
 
         ToggleReady _ ->

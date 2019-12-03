@@ -52,6 +52,7 @@ const getTablesStatus = async () => {
           "stackSize",
           "status",
           "playerSlots",
+          "startSlots",
           "landCount",
           "points",
         ])(table),

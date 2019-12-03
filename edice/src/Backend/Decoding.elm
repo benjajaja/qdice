@@ -257,6 +257,7 @@ tableInfoDecoder =
         |> required "name" string
         |> required "mapName" mapNameDecoder
         |> required "playerSlots" int
+        |> required "startSlots" int
         |> required "playerCount" int
         |> required "watchCount" int
         |> required "status" gameStatusDecoder

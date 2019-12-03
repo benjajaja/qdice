@@ -71,7 +71,6 @@ export const addBots = (table: Table): CommandResult => {
   ]);
 
   let gameStart = table.gameStart;
-  logger.debug("addbot", table.startSlots, players.length);
   if (players.length >= table.startSlots) {
     gameStart = addSeconds(GAME_START_COUNTDOWN);
 
@@ -107,14 +106,12 @@ export const tickBotTurn = (table: Table): CommandResult => {
   const sources = botSources(table, player);
 
   if (sources.length === 0) {
-    logger.debug("no possible source");
     return nextTurn("EndTurn", table);
   }
 
   const attack = strategies(player.bot.strategy)(sources, player, table);
 
   if (attack === null) {
-    logger.debug("no appropiate attack");
     return nextTurn("EndTurn", table);
   }
 
@@ -149,9 +146,6 @@ export const botsNotifyAttack = (table: Table): readonly Player[] =>
       const lastAgressor = table.players.find(
         player =>
           player.color === findLand(table.lands)(table.attack!.from).color
-      );
-      logger.debug(
-        `bot ${player.name}'s last agressor is ${lastAgressor?.name}`
       );
 
       return {

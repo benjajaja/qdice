@@ -54,29 +54,40 @@ gameStats model player =
         ]
 
     else
-        [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
-            [ Html.text <|
-                if player.gameStats.position == 2 then
-                    "Pole"
-
-                else
-                    ordinal player.gameStats.position
-            ]
-        , Html.div [ class "edPlayerChip__gameStats__item" ]
-            [ Html.text <| "⬢ " ++ String.fromInt player.gameStats.totalLands ]
-        , Html.div [ class "edPlayerChip__gameStats__item" ]
-            [ Html.text <|
-                ("⚂ "
-                    ++ String.fromInt player.gameStats.currentDice
-                    ++ (if player.reserveDice > 0 then
-                            " + " ++ String.fromInt player.reserveDice
+        List.concat
+            [ [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+                    [ Html.text <|
+                        if player.gameStats.position == 2 then
+                            "Pole"
 
                         else
-                            ""
-                       )
-                )
+                            ordinal player.gameStats.position
+                    ]
+              ]
+            , case player.flag of
+                Just flag ->
+                    [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+                        [ Html.text <| "🏳 " ++ ordinal flag ]
+                    ]
+
+                Nothing ->
+                    []
+            , [ Html.div [ class "edPlayerChip__gameStats__item" ]
+                    [ Html.text <| "⬢ " ++ String.fromInt player.gameStats.totalLands ]
+              , Html.div [ class "edPlayerChip__gameStats__item" ]
+                    [ Html.text <|
+                        ("⚂ "
+                            ++ String.fromInt player.gameStats.currentDice
+                            ++ (if player.reserveDice > 0 then
+                                    " + " ++ String.fromInt player.reserveDice
+
+                                else
+                                    ""
+                               )
+                        )
+                    ]
+              ]
             ]
-        ]
 
 
 

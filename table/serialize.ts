@@ -19,6 +19,7 @@ export const serializeTable = (table: Table) => {
     name: table.name,
     mapName: table.mapName,
     playerSlots: table.playerSlots,
+    startSlots: table.startSlots,
     status: table.status,
     turnIndex: table.turnIndex,
     turnStart: Math.floor(table.turnStart / 1000),
@@ -27,8 +28,9 @@ export const serializeTable = (table: Table) => {
     roundCount: table.roundCount,
     players: players,
     lands: lands,
-    canFlag: table.roundCount >= table.noFlagRounds,
+    canFlag: table.roundCount > table.params.noFlagRounds,
     watchCount: table.watching.length,
+    params: table.params,
   };
 };
 
@@ -88,3 +90,11 @@ export const computePlayerDerived = (table: Table) => {
     };
   };
 };
+
+export const playerWithDerived = (
+  table: Table,
+  player: Player
+): Player & { derived: PlayerDerived } =>
+  Object.assign({}, player, {
+    derived: computePlayerDerived(table)(player),
+  });

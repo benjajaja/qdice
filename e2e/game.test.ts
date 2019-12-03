@@ -10,12 +10,6 @@ const hisTurn = async (page: Page, name: string) =>
     }
   );
 
-const logLines = async (page: Page) => {
-  return await page.$$eval(testId("logline-roll"), elements => {
-    return elements.map(element => element.textContent);
-  });
-};
-
 const attack = async (page: Page, from: string, to: string, name: string) => {
   console.log(`player "${name}" attack from ${from} to ${to}`);
   const logLineCount = (await page.$$(testId("logline-roll"))).length;
@@ -71,7 +65,7 @@ describe("A full game", () => {
 
     await expect(page).toClick(testId("check-ready"));
 
-    const browser2 = await puppeteer.launch({ ...launch, headless: true });
+    const browser2 = await puppeteer.launch({ ...launch /*, headless: true*/ });
     const page2 = await browser2.newPage();
     await page2.evaluateOnNewDocument(() => localStorage.clear());
     await page2.goto(TEST_URL);
@@ -102,36 +96,37 @@ describe("A full game", () => {
     await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
     await hisTurn(page2, "B");
-    await attack(page2, "land-🐸", "land-🍺", "B");
-    await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
+    await attack(page2, "land-🍺", "land-🐵", "B");
+    await attack(page2, "land-🐵", "land-🥑", "B");
+    // await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
 
-    await hisTurn(page, "A");
-    await attack(page, "land-🍺", "land-🐸", "A");
-    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
-
-    await hisTurn(page2, "B");
-    await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
-
-    await hisTurn(page, "A");
-    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
-
-    await hisTurn(page2, "B");
-    await attack(page2, "land-🐸", "land-🍺", "B");
-    await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
-
-    await hisTurn(page, "A");
-    const lines = await attack(page, "land-🍺", "land-🐸", "A");
+    // await hisTurn(page, "A");
+    // await attack(page, "land-🍺", "land-🐸", "A");
+    // await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+    //
+    // await hisTurn(page2, "B");
+    // await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
+    //
+    // await hisTurn(page, "A");
+    // await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+    //
+    // await hisTurn(page2, "B");
+    // await attack(page2, "land-🐸", "land-🍺", "B");
+    // await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
+    //
+    // await hisTurn(page, "A");
+    // const lines = await attack(page, "land-🍺", "land-🐸", "A");
 
     await expect(page).toMatchElement(
       `${testId("logline-elimination")}:nth-child(2)`,
       {
-        text: /^☠ B finished 2nd with -?\d+ ✪ \(Killed by A for \d+✪\)/,
+        text: /^☠ A finished 2nd with -?\d+ ✪ \(Killed by B for \d+✪\)/,
       }
     );
     await expect(page).toMatchElement(
       `${testId("logline-elimination")}:nth-child(1)`,
       {
-        text: /^🏆 A won the game! with \d+ ✪ \(Last standing player after \d+ turns\)/,
+        text: /^🏆 B won the game! with \d+ ✪ \(Last standing player after \d+ turns\)/,
       }
     );
 

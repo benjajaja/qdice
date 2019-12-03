@@ -1,30 +1,19 @@
 import * as R from "ramda";
-import { rand, diceRoll } from "../rand";
+import { diceRoll } from "../rand";
 import {
-  STATUS_PAUSED,
-  STATUS_PLAYING,
-  STATUS_FINISHED,
-  TURN_SECONDS,
-  COLOR_NEUTRAL,
-  ELIMINATION_REASON_DIE,
-  ELIMINATION_REASON_WIN,
-} from "../constants";
-import { findLand, hasTurn, tablePoints, updateLand } from "../helpers";
+  findLand,
+  updateLand,
+  removePlayerCascade,
+  tablePoints,
+} from "../helpers";
 import * as publish from "./publish";
 import endGame from "./endGame";
-import { isBorder } from "../maps";
-import { computePlayerDerived, PlayerDerived } from "./serialize";
-import {
-  Table,
-  Player,
-  Land,
-  CommandResult,
-  Elimination,
-  IllegalMoveError,
-} from "../types";
+import { Table, Land, CommandResult, Elimination } from "../types";
 import { now } from "../timestamp";
 import logger from "../logger";
 import { botsNotifyAttack } from "./bots";
+import { playerWithDerived } from "./serialize";
+import { ELIMINATION_REASON_DIE } from "../constants";
 
 export const rollResult = (table: Table): CommandResult => {
   if (!table.attack) {
@@ -56,33 +45,30 @@ export const rollResult = (table: Table): CommandResult => {
         loser &&
         R.filter(R.propEq("color", loser.color), lands).length === 0
       ) {
-        const turnPlayer = table.players[table.turnIndex];
-        const remainingPlayers = table.players.filter(
-          R.complement(R.equals(loser))
+        const attacker = players[table.turnIndex];
+        [players, lands, turnIndex, eliminations] = removePlayerCascade(
+          table,
+          players,
+          lands,
+          loser,
+          table.turnIndex,
+          {
+            player: playerWithDerived(table, loser),
+            position: players.length,
+            reason: ELIMINATION_REASON_DIE,
+            source: {
+              player: playerWithDerived(table, attacker),
+              points: tablePoints(table) / 2,
+            },
+          }
         );
-        turnIndex = remainingPlayers.indexOf(turnPlayer);
-        players = remainingPlayers.map(player => {
-          if (player === turnPlayer) {
+        // update attacker score
+        players = players.map(player => {
+          if (player === attacker) {
             return { ...player, score: player.score + tablePoints(table) / 2 };
           }
           return player;
         });
-        const eliminatedPlayerInfo: Player & {
-          derived: PlayerDerived;
-        } = Object.assign({}, turnPlayer, {
-          derived: computePlayerDerived(table)(turnPlayer),
-        });
-        eliminations = [
-          {
-            player: loser,
-            position: players.length + 1,
-            reason: ELIMINATION_REASON_DIE,
-            source: {
-              player: eliminatedPlayerInfo,
-              points: tablePoints(table) / 2,
-            },
-          },
-        ];
       }
     }
 

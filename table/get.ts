@@ -37,10 +37,10 @@ const makeTable = (config: any): Table => {
     stackSize: config.stackSize,
     playerStartCount: 0,
     turnCount: 1,
-    roundCount: 1,
-    noFlagRounds: config.noFlagRounds,
+    roundCount: 0,
     watching: config.watching || [],
     attack: null,
+    params: config.params ?? {},
   };
 };
 
@@ -76,15 +76,6 @@ export const getTable = async (tableTag: string): Promise<Table> => {
   }
   const table = loadLands(dbTable);
 
-  //if (table.tag === 'Arabia') {
-  //const players = R.range(0, 9).map(i => {
-  //return table.players[i] || Object.assign({}, R.last(table.players), {
-  //color: i + 1,
-  //name: 'fake' + i,
-  //});
-  //});
-  //return Object.assign({}, table, { players });
-  //}
   return table;
 };
 

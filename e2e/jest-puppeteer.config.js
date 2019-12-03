@@ -3,7 +3,7 @@ module.exports = {
     dumpio: false,
     headless: true,
     slowMo: 0,
-    args: ['--disable-infobars', '--no-sandbox', '--disable-setuid-sandbox'],
+    args: ["--disable-infobars", "--no-sandbox", "--disable-setuid-sandbox"],
     devtools: true,
     defaultViewport: {
       width: 400,
@@ -13,5 +13,5 @@ module.exports = {
       isLandscape: false,
     },
   },
-  browserContext: 'default',
+  browserContext: "default",
 };

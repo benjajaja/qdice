@@ -34,14 +34,19 @@ export type Table = TableProps & {
   readonly mapName: string;
   readonly adjacency: Adjacency;
   readonly stackSize: number;
-  readonly noFlagRounds: number;
   readonly playerSlots: number;
   readonly startSlots: number;
   readonly points: number;
 
+  readonly params: TableParams;
+
   readonly players: readonly Player[];
   readonly lands: readonly Land[];
   readonly watching: readonly Watcher[];
+};
+
+export type TableParams = {
+  noFlagRounds: number;
 };
 
 export type Land = {
@@ -87,7 +92,7 @@ export type Player = UserLike & {
   readonly points: number;
   readonly position: number;
   readonly score: number;
-  readonly flag: any;
+  readonly flag: number | null;
   readonly lastBeat: Timestamp;
   readonly joined: Timestamp;
   readonly ready: boolean;
@@ -105,7 +110,10 @@ export type Elimination = {
   player: Player;
   position: number;
   reason: EliminationReason;
-  source: { turns: number } | { player: Player; points: number };
+  source:
+    | { turns: number }
+    | { player: Player; points: number }
+    | { flag: number };
 };
 
 export type EliminationReason = "☠" | "💤" | "🏆" | "🏳";
@@ -146,6 +154,7 @@ export type CommandType =
   | "SitIn"
   | "Chat"
   | "ToggleReady"
+  | "Flag"
   | "Heartbeat"
   | "Roll"
   | "TickTurnOver"

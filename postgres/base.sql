@@ -84,7 +84,8 @@ CREATE TABLE tables (
     turn_count integer,
     round_count integer,
     watching json,
-    attack json
+    attack json,
+    params json
 );
 
 
