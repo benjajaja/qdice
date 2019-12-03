@@ -28,12 +28,10 @@
     <style>
 body{background-color:#38d6ff}
 #loading-indicator { font-family:sans-serif; text-align:center; font-weight:bold; height: 56px; line-height:56px; color: white; }
-#loading-spinner { position: fixed; top: calc(50% - 1rem); left: calc(50% - 1rem); width: 2rem; height: 2rem; border: 0.25rem solid #ffffff; border-bottom: 0.25rem solid rgba(0,0,0,0); border-radius: 50%; animation: spin 1s linear infinite; }
-@keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
   </head>
   <body>
-    <div id="loading-indicator">Loading...<div id="loading-spinner"></div></div>
+    <div id="loading-indicator">Loading...</div>
     <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
     <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>" charset="utf-8"></script>
     <% } %>

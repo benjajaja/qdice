@@ -237,7 +237,7 @@ app.ports.requestNotifications.subscribe(function() {
 var serviceWorkerRegistration = null;
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
-    .register("./elm-dice-serviceworker.js", { scope: "./" })
+    .register("./elm-dice-serviceworker.js", { scope: "." })
     .then(function(registration) {
       // registration worked
       serviceWorkerRegistration = registration;

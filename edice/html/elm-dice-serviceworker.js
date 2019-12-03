@@ -1,74 +1,102 @@
-var CACHE = "network-or-cache";
+var CACHE = "cache2";
 
-// On install, cache some resource.
+// INSTALL
+
 self.addEventListener("install", function(evt) {
-  console.log("The service worker is being installed.");
-
-  // Ask the service worker to keep installing until the returning promise
-  // resolves.
-  evt.waitUntil(precache());
+  evt.waitUntil(preCache());
+});
+self.addEventListener("activate", function(event) {
+  event.waitUntil(self.clients.claim());
 });
 
-if (false) {
-  // On fetch, use cache but update the entry with the latest contents
-  // from the server.
-  self.addEventListener("fetch", function(evt) {
-    // Try network and if it fails, go for the cached copy.
-    evt.respondWith(
-      fromNetwork(evt.request, 400).catch(function() {
+// CACHE
+
+function preCache() {
+  return caches
+    .open(CACHE)
+    .then(function(cache) {
+      return fetch("mapnames.json")
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(maps) {
+          var files = maps
+            .concat([
+              "./die.svg",
+              "./iconfont/MaterialIcons-Regular.woff2",
+              "./fonts/rubik-v7-latin-regular.woff2",
+              "./fonts/rubik-v7-latin-500.woff2",
+            ])
+            .concat(
+              [
+                "kick",
+                "start",
+                "finish",
+                "turn",
+                "diceroll",
+                "rollSuccess",
+                "rollDefeat",
+              ].map(function(name) {
+                return "./sounds/" + name + ".ogg";
+              })
+            );
+          return cache.addAll(files);
+        });
+    })
+    .then(function() {
+      return self.skipWaiting();
+    });
+}
+
+self.addEventListener("fetch", function(event) {
+  var matches = Array.prototype.slice.call(
+    event.request.url.match(new RegExp("^https?://[^/]+/([^/]+)/?(.*)$")),
+    1
+  );
+  if (matches && matches[1] === "" && matches[0].indexOf(".") === -1) {
+    event.respondWith(
+      fetchFirst(event.request, 500).catch(function() {
         return fromCache(evt.request);
       })
     );
-  });
-}
+  } else {
+    event.respondWith(cacheFirst(event.request));
+  }
 
-// Open a cache and use `addAll()` with an array of assets to add all of them
-// to the cache. Return a promise resolving when all the assets are added.
-function precache() {
-  return caches.open(CACHE).then(function(cache) {
-    return cache.addAll(
-      ["./index.html", "./die.svg"].concat(
-        [
-          "kick",
-          "start",
-          "finish",
-          "turn",
-          "diceroll",
-          "rollSuccess",
-          "rollDefeat",
-        ].map(function(name) {
-          return "./sounds/" + name + ".ogg";
-        })
-      )
-    );
-  });
-}
+  var basePath = matches ? matches[0] : undefined;
+  if (["api", "mqtt"].indexOf(basePath) === -1) {
+    event.waitUntil(update(event.request));
+  }
+});
 
-// Time limited network request. If the network fails or the response is not
-// served before timeout, the promise is rejected.
-function fromNetwork(request, timeout) {
+function fetchFirst(request, timeout) {
   return new Promise(function(fulfill, reject) {
-    // Reject in case of timeout.
     var timeoutId = setTimeout(reject, timeout);
-    // Fulfill in case of success.
     fetch(request).then(function(response) {
       clearTimeout(timeoutId);
       fulfill(response);
-      // Reject also if network fetch rejects.
     }, reject);
   });
 }
 
-// Open the cache where the assets were stored and search for the requested
-// resource. Notice that in case of no matching, the promise still resolves
-// but it does with `undefined` as value.
-function fromCache(request) {
+function cacheFirst(request) {
+  return caches.match(request).then(function(response) {
+    if (response) {
+      return response;
+    }
+    return fetch(request);
+  });
+}
+
+function update(request) {
   return caches.open(CACHE).then(function(cache) {
-    return cache.match(request).then(function(matching) {
-      return matching || Promise.reject("no-match");
+    return fetch(request).then(function(response) {
+      return cache.put(request, response);
     });
   });
 }
+
+// NOTIFICATIONS
 
 self.onnotificationclick = function(event) {
   console.log("On notification click: ", event.notification.tag);

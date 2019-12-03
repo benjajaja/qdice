@@ -27,18 +27,24 @@ There is a [subreddit in place as a community forum](https://reddit.com/r/qdice)
 ## Roadmap
 
 #### High priority:
-  * ✗ Fix telegram bot
   * ✗ Surrender / flag out
 
-#### Low priority:
+#### Medium priority:
   * ✗ Spread out initial positions
-  * ✗ Login with password
+  * ✗ Water connections
+  * ✗ Gamerule: Fog of war
+  * ✗ Gamerule: Movement turn
+  * ✗ Gamerule: Bastionize land
+  * ✗ Gamerule: Ships on water connections
+  * ✗ Gamerule: Capitols
+
+### Low priority:
   * ✗ Profile page
-  * ✗ Login with twitter, facebook, github
-  * ✗ Show "who's turn it is" better
+  * ✗ Login with password, twitter, facebook, github
   * ✗ Replay a game
 
 #### Complete:
+  * ✔ Fix telegram bot
   * ✔ Connect an auth method to anonymous account
   * ✔ Delete account
   * ✔ Flag "ready" to start

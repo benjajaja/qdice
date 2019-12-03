@@ -89,6 +89,7 @@ module.exports = env => ({
       { from: "html/die.svg" },
       { from: "html/board_header.svg" },
       { from: "html/elm-dice-serviceworker.js" },
+      { from: "html/mapnames.json" },
       { from: "html/cache-polyfill.js" },
       { from: "html/sounds", to: "sounds" },
       { from: "html/assets", to: "assets" },
