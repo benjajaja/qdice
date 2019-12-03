@@ -1,9 +1,9 @@
-import * as R from 'ramda';
-import * as seedrandom from 'seedrandom';
-import logger from './logger';
+import * as R from "ramda";
+import * as seedrandom from "seedrandom";
+import logger from "./logger";
 
 export const resetGenerator = () => {
-  generator = seedrandom(process.env.E2E ? 'some value' : undefined);
+  generator = seedrandom(process.env.E2E ? "some value" : undefined);
   logger.info(`first rand value: ${generator()}`);
   return generator;
 };

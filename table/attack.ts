@@ -1,5 +1,5 @@
-import * as R from 'ramda';
-import {rand, diceRoll} from '../rand';
+import * as R from "ramda";
+import { rand, diceRoll } from "../rand";
 import {
   STATUS_PAUSED,
   STATUS_PLAYING,
@@ -8,12 +8,12 @@ import {
   COLOR_NEUTRAL,
   ELIMINATION_REASON_DIE,
   ELIMINATION_REASON_WIN,
-} from '../constants';
-import {findLand, hasTurn, tablePoints, updateLand} from '../helpers';
-import * as publish from './publish';
-import endGame from './endGame';
-import {isBorder} from '../maps';
-import {computePlayerDerived, PlayerDerived} from './serialize';
+} from "../constants";
+import { findLand, hasTurn, tablePoints, updateLand } from "../helpers";
+import * as publish from "./publish";
+import endGame from "./endGame";
+import { isBorder } from "../maps";
+import { computePlayerDerived, PlayerDerived } from "./serialize";
 import {
   Table,
   Player,
@@ -21,10 +21,10 @@ import {
   CommandResult,
   Elimination,
   IllegalMoveError,
-} from '../types';
-import {now} from '../timestamp';
-import logger from '../logger';
-import {botsNotifyAttack} from './bots';
+} from "../types";
+import { now } from "../timestamp";
+import logger from "../logger";
+import { botsNotifyAttack } from "./bots";
 
 export const rollResult = (table: Table): CommandResult => {
   if (!table.attack) {
@@ -36,34 +36,34 @@ export const rollResult = (table: Table): CommandResult => {
     const toLand = find(table.attack.to);
     const [fromRoll, toRoll, isSuccess] = diceRoll(
       fromLand.points,
-      toLand.points,
+      toLand.points
     );
     publish.roll(table, {
-      from: {emoji: table.attack.from, roll: fromRoll},
-      to: {emoji: table.attack.to, roll: toRoll},
+      from: { emoji: table.attack.from, roll: fromRoll },
+      to: { emoji: table.attack.to, roll: toRoll },
     });
     let lands = table.lands;
     let players = botsNotifyAttack(table);
     let eliminations: ReadonlyArray<Elimination> | undefined = undefined;
     let turnIndex: number | undefined = undefined;
     if (isSuccess) {
-      const loser = R.find(R.propEq('color', toLand.color), table.players);
+      const loser = R.find(R.propEq("color", toLand.color), table.players);
       lands = updateLand(table.lands, toLand, {
         points: fromLand.points - 1,
         color: fromLand.color,
       });
       if (
         loser &&
-        R.filter(R.propEq('color', loser.color), lands).length === 0
+        R.filter(R.propEq("color", loser.color), lands).length === 0
       ) {
         const turnPlayer = table.players[table.turnIndex];
         const remainingPlayers = table.players.filter(
-          R.complement(R.equals(loser)),
+          R.complement(R.equals(loser))
         );
         turnIndex = remainingPlayers.indexOf(turnPlayer);
         players = remainingPlayers.map(player => {
           if (player === turnPlayer) {
-            return {...player, score: player.score + tablePoints(table) / 2};
+            return { ...player, score: player.score + tablePoints(table) / 2 };
           }
           return player;
         });
@@ -86,14 +86,14 @@ export const rollResult = (table: Table): CommandResult => {
       }
     }
 
-    lands = updateLand(lands, fromLand, {points: 1});
+    lands = updateLand(lands, fromLand, { points: 1 });
 
     const props = Object.assign(
-      {turnStart: now(), attack: null},
-      turnIndex !== undefined ? {turnIndex} : {},
+      { turnStart: now(), attack: null },
+      turnIndex !== undefined ? { turnIndex } : {}
     );
     const result: CommandResult = {
-      type: 'Roll',
+      type: "Roll",
       table: props,
       players,
       lands,
@@ -106,7 +106,7 @@ export const rollResult = (table: Table): CommandResult => {
     return result;
   } catch (e) {
     if (table.attack.clientId) {
-      publish.clientError(table.attack.clientId, new Error('Roll failed'));
+      publish.clientError(table.attack.clientId, new Error("Roll failed"));
     }
     logger.error(e);
     throw e;

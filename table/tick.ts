@@ -1,28 +1,28 @@
-import * as R from 'ramda';
-import {getTable} from './get';
-import {Table, Player, CommandResult, Timestamp} from '../types';
-import {processComandResult} from '../table';
-import {havePassed} from '../timestamp';
+import * as R from "ramda";
+import { getTable } from "./get";
+import { Table, Player, CommandResult, Timestamp } from "../types";
+import { processComandResult } from "../table";
+import { havePassed } from "../timestamp";
 
 import {
   STATUS_PAUSED,
   STATUS_PLAYING,
   TURN_SECONDS,
   ROLL_SECONDS,
-} from '../constants';
-import * as publish from './publish';
-import nextTurn from './turn';
-import startGame from './start';
-import {rollResult} from './attack';
-import {addBots, tickBotTurn, isBot} from './bots';
-import {leave} from './commands';
-import logger from '../logger';
+} from "../constants";
+import * as publish from "./publish";
+import nextTurn from "./turn";
+import startGame from "./start";
+import { rollResult } from "./attack";
+import { addBots, tickBotTurn, isBot } from "./bots";
+import { leave } from "./commands";
+import logger from "../logger";
 
-const intervalIds: {[tableTag: string]: any} = {};
+const intervalIds: { [tableTag: string]: any } = {};
 
 export const start = (tableTag: string, lock: any) => {
   if (intervalIds[tableTag]) {
-    throw new Error('already ticking');
+    throw new Error("already ticking");
   }
   intervalIds[tableTag] = setInterval(() => {
     tick(tableTag, lock);
@@ -31,7 +31,7 @@ export const start = (tableTag: string, lock: any) => {
 
 export const stop = (tableTag: string) => {
   if (intervalIds[tableTag] === null) {
-    throw new Error('cannot stop, not ticking');
+    throw new Error("cannot stop, not ticking");
   }
   clearInterval(intervalIds[tableTag]);
   delete intervalIds[tableTag];
@@ -52,11 +52,11 @@ const tick = async (tableTag: string, lock) => {
         }
         // never process anything else during attack
       } else if (table.players[table.turnIndex].out) {
-        result = nextTurn('TickTurnOut', table);
+        result = nextTurn("TickTurnOut", table);
       } else if (havePassed(TURN_SECONDS, table.turnStart)) {
-        result = nextTurn('TickTurnOver', table, !table.turnActivity);
-      } else if (table.players.every(R.prop('out'))) {
-        result = nextTurn('TickTurnAllOut', table);
+        result = nextTurn("TickTurnOver", table, !table.turnActivity);
+      } else if (table.players.every(R.prop("out"))) {
+        result = nextTurn("TickTurnAllOut", table);
       } else if (table.players[table.turnIndex].bot !== null) {
         result = tickBotTurn(table);
       }
@@ -91,9 +91,9 @@ const shouldStart = (table: Table) =>
 const countdownFinished = (gameStart: number) =>
   gameStart !== 0 && havePassed(0, gameStart);
 
-const checkWatchers = <T extends {lastBeat: Timestamp}>(
+const checkWatchers = <T extends { lastBeat: Timestamp }>(
   watchers: ReadonlyArray<T>,
-  seconds: number,
+  seconds: number
 ): [ReadonlyArray<T>, ReadonlyArray<T>] => {
   return watchers.reduce(
     ([yes, no], watcher) => {
@@ -103,7 +103,7 @@ const checkWatchers = <T extends {lastBeat: Timestamp}>(
         return [yes, R.append(watcher, no)];
       }
     },
-    [[], []] as any,
+    [[], []] as any
   );
 };
 
@@ -112,7 +112,7 @@ const cleanWatchers = (table: Table): CommandResult | undefined => {
   if (stoppedWatching.length > 0) {
     stoppedWatching.forEach(user => publish.exit(table, user.name));
     return {
-      type: 'CleanWatchers',
+      type: "CleanWatchers",
       watchers: stillWatching,
     };
   }
@@ -145,8 +145,8 @@ const lastJoined = (players: ReadonlyArray<Player>): Timestamp => {
     0,
     players
       .filter(player => player.bot === null)
-      .map<Timestamp>(player => player.joined),
+      .map<Timestamp>(player => player.joined)
   );
-  logger.debug('last', last);
+  logger.debug("last", last);
   return last;
 };

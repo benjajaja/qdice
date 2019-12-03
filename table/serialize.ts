@@ -1,14 +1,14 @@
-import * as R from 'ramda';
+import * as R from "ramda";
 
-import * as maps from '../maps';
-import {groupedPlayerPositions, positionScore, tablePoints} from '../helpers';
-import {Table, Player} from '../types';
-import logger from '../logger';
+import * as maps from "../maps";
+import { groupedPlayerPositions, positionScore, tablePoints } from "../helpers";
+import { Table, Player } from "../types";
+import logger from "../logger";
 
 export const serializeTable = (table: Table) => {
   const players = table.players.map(serializePlayer(table));
 
-  const lands = table.lands.map(({emoji, color, points}) => [
+  const lands = table.lands.map(({ emoji, color, points }) => [
     emoji,
     color,
     points,
@@ -38,20 +38,20 @@ export const serializePlayer = (table: Table) => {
     return Object.assign(
       {},
       R.pick([
-        'id',
-        'name',
-        'picture',
-        'color',
-        'reserveDice',
-        'out',
-        'outTurns',
-        'points',
-        'level',
-        'score',
-        'flag',
-        'ready',
+        "id",
+        "name",
+        "picture",
+        "color",
+        "reserveDice",
+        "out",
+        "outTurns",
+        "points",
+        "level",
+        "score",
+        "flag",
+        "ready",
       ])(player),
-      {derived: derived(player)},
+      { derived: derived(player) }
     );
   };
 };
@@ -71,7 +71,7 @@ export const computePlayerDerived = (table: Table) => {
       ? positionScore(tablePoints(table))(table.playerStartCount)
       : () => 0;
   return (player: Player): PlayerDerived => {
-    const lands = table.lands.filter(R.propEq('color', player.color));
+    const lands = table.lands.filter(R.propEq("color", player.color));
     const connectedLands = maps.countConnectedLands(table)(player.color);
     const position = positions(player);
     let score = player.score + getScore(position);
@@ -82,7 +82,7 @@ export const computePlayerDerived = (table: Table) => {
     return {
       connectedLands,
       totalLands: lands.length,
-      currentDice: R.sum(lands.map(R.prop('points'))),
+      currentDice: R.sum(lands.map(R.prop("points"))),
       position,
       score,
     };

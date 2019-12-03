@@ -1,23 +1,23 @@
-import * as fs from 'fs';
-import * as R from 'ramda';
+import * as fs from "fs";
+import * as R from "ramda";
 
 // type Hex = {x: number; y: number; z: number};
-type Hex = {row: number; col: number};
-type Land = {emoji: string; cells: Hex[]};
+type Hex = { row: number; col: number };
+type Land = { emoji: string; cells: Hex[] };
 
 const srcDir = process.argv[2];
 
 const cubeFromAxial = (col: number, row: number) => {
   const cubeX = col - ((row - (row & 1)) >> 1);
-  return {x: cubeX, z: row, y: -cubeX - row};
+  return { x: cubeX, z: row, y: -cubeX - row };
 };
 
 const loadMap = (
-  rawMap: string[],
-): [{emoji: string; cells: any[]}[], {matrix: any; indexes: any}] => {
+  rawMap: string[]
+): [{ emoji: string; cells: any[] }[], { matrix: any; indexes: any }] => {
   const regex = new RegExp(
-    '\\u30C3|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]',
-    'gi',
+    "\\u30C3|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]",
+    "gi"
   );
 
   const lines = rawMap.map(line => {
@@ -34,9 +34,9 @@ const loadMap = (
   // const height = lines.length;
 
   const emptyLands: Land[] = R.uniq(lines.reduce(R.concat, []))
-    .filter(R.complement(R.equals('〿')))
-    .filter(R.complement(R.equals('ｯ')))
-    .filter(R.complement(R.equals('\u3000')))
+    .filter(R.complement(R.equals("〿")))
+    .filter(R.complement(R.equals("ｯ")))
+    .filter(R.complement(R.equals("\u3000")))
     .map((emoji: string) => ({
       emoji: emoji,
       cells: [],
@@ -44,10 +44,10 @@ const loadMap = (
 
   const lands = lines.reduce<Land[]>((lands, line, row) => {
     return line.reduce<Land[]>((lands, char, col) => {
-      const cell = {row, col};
+      const cell = { row, col };
       return lands.map(land => {
         if (land.emoji === char) {
-          return {...land, cells: land.cells.concat([cell])};
+          return { ...land, cells: land.cells.concat([cell]) };
         }
         return land;
       });
@@ -59,18 +59,18 @@ const loadMap = (
 
 const createAdjacencyMatrix = (lands: Land[]) => {
   process.stdout.write(
-    `caclulating adjacency matrix for ${lands.length} lands...`,
+    `caclulating adjacency matrix for ${lands.length} lands...`
   );
   const result = {
     matrix: lands.map(land => {
-      process.stdout.write('.');
+      process.stdout.write(".");
       return lands.map(other => isBorder(lands, land.emoji, other.emoji));
     }),
     indexes: lands.reduce((indexes, land, index) => {
-      return Object.assign({}, indexes, {[land.emoji]: index});
+      return Object.assign({}, indexes, { [land.emoji]: index });
     }, {}),
   };
-  process.stdout.write('\n');
+  process.stdout.write("\n");
   return result;
 };
 
@@ -85,15 +85,14 @@ const isBorder = (module.exports.isBorder = R.curry(
     return from.cells.some(fromCell =>
       to.cells.some(toCell => {
         return neighbors(fromCell).some(
-          neighbor =>
-            neighbor.row === toCell.row && neighbor.col === toCell.col,
+          neighbor => neighbor.row === toCell.row && neighbor.col === toCell.col
         );
-      }),
+      })
     );
-  },
+  }
 ));
 
-const cube = (x: number, y: number, z: number) => ({x, y, z});
+const cube = (x: number, y: number, z: number) => ({ x, y, z });
 const cubeDirections = [
   cube(+1, -1, 0),
   cube(+1, 0, -1),
@@ -124,21 +123,21 @@ const oddrDirections = [
 const neighborAt = (hex: Hex, direction: number): Hex => {
   const parity = hex.row & 1;
   const dir = oddrDirections[parity][direction];
-  return {col: hex.col + dir[0], row: hex.row + dir[1]};
+  return { col: hex.col + dir[0], row: hex.row + dir[1] };
 };
 const neighbors = (hex: Hex): Hex[] =>
   [0, 1, 2, 3, 4, 5].map(i => neighborAt(hex, i));
 
 const findLand = (lands: Land[]) => (emoji: string) =>
-  R.find<Land>(R.propEq('emoji', emoji))(lands)!;
+  R.find<Land>(R.propEq("emoji", emoji))(lands)!;
 
-const write = fs.createWriteStream('./map-sources.json');
+const write = fs.createWriteStream("./map-sources.json");
 write.write(
   JSON.stringify(
     {
       maps: fs.readdirSync(srcDir).reduce((dict, file) => {
         const buffer = fs.readFileSync(`${srcDir}/${file}`);
-        const lines = buffer.toString().split('\n');
+        const lines = buffer.toString().split("\n");
         const name = lines.shift()!;
         console.log(name);
         const [lands, adjacency] = loadMap(lines);
@@ -153,6 +152,6 @@ write.write(
       }, {}),
     },
     null,
-    '\t',
-  ),
+    "\t"
+  )
 );

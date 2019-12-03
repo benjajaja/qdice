@@ -1,7 +1,7 @@
-import * as pino from 'pino';
+import * as pino from "pino";
 
 const logger = pino({
-  level: 'debug',
+  level: "debug",
   timestamp: false,
   prettyPrint: true,
   useLevelLabels: true,
@@ -11,4 +11,3 @@ logger.pipe = <T>(message: string, arg: T) => {
   return arg;
 };
 export default logger;
-

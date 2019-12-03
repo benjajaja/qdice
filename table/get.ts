@@ -1,20 +1,20 @@
-import * as R from 'ramda';
-import {UserId, Table, Player, Land, Watcher} from '../types';
-import * as maps from '../maps';
-import * as db from '../db';
+import * as R from "ramda";
+import { UserId, Table, Player, Land, Watcher } from "../types";
+import * as maps from "../maps";
+import * as db from "../db";
 import {
   STATUS_PAUSED,
   STATUS_PLAYING,
   STATUS_FINISHED,
   COLOR_NEUTRAL,
   GAME_START_COUNTDOWN,
-} from '../constants';
-import * as config from '../tables.config';
-import logger from '../logger';
+} from "../constants";
+import * as config from "../tables.config";
+import logger from "../logger";
 
 const makeTable = (config: any): Table => {
   if (!config.tag) {
-    throw new Error('Cannot makeTable without even a tag');
+    throw new Error("Cannot makeTable without even a tag");
   }
   return {
     name: config.name,
@@ -51,7 +51,7 @@ const loadLands = (table: Table): Table => {
       ? table.lands.map(land => {
           const match = lands.filter(l => l.emoji === land.emoji).pop();
           if (!match) {
-            throw new Error('cannot get land: ' + table.mapName);
+            throw new Error("cannot get land: " + table.mapName);
           }
           return Object.assign({}, match, land);
         })
@@ -93,13 +93,13 @@ export const save = async (
   props?: Partial<Table>,
   players?: readonly Player[],
   lands?: readonly Land[],
-  watching?: readonly Watcher[],
+  watching?: readonly Watcher[]
 ): Promise<Table> => {
   if (props && (props as any).table) {
-    throw new Error('bad save');
+    throw new Error("bad save");
   }
   if (lands && lands.length !== table.lands.length) {
-    throw new Error('lost lands');
+    throw new Error("lost lands");
   }
   if (
     lands &&
@@ -108,7 +108,7 @@ export const save = async (
     })
   ) {
     logger.debug(lands.map(l => l.emoji));
-    throw new Error('duped lands');
+    throw new Error("duped lands");
   }
   if (
     (!props || Object.keys(props).length === 0) &&
@@ -117,7 +117,7 @@ export const save = async (
     !watching
   ) {
     console.trace();
-    throw new Error('cannot save nothing to table');
+    throw new Error("cannot save nothing to table");
   }
   const saved = await db.saveTable(
     table.tag,
@@ -130,7 +130,7 @@ export const save = async (
           points: land.points,
         }))
       : undefined,
-    watching,
+    watching
   );
   return loadLands(saved);
 };
@@ -140,7 +140,7 @@ export const getStatuses = async () => {
   const statuses = tables.map(tableStatus =>
     Object.assign(tableStatus, {
       landCount: maps.loadMap(tableStatus.mapName)[0].length,
-    }),
+    })
   );
   return statuses;
 };

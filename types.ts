@@ -1,5 +1,5 @@
 export type UserId = string;
-export type Network = 'google' | 'password' | 'telegram' | 'reddit';
+export type Network = "google" | "password" | "telegram" | "reddit";
 export type Emoji = string;
 export type Timestamp = number;
 
@@ -57,11 +57,11 @@ export type Attack = {
   clientId?: string;
 };
 
-export type TableStatus = 'PAUSED' | 'PLAYING' | 'FINISHED';
+export type TableStatus = "PAUSED" | "PLAYING" | "FINISHED";
 
 export type Adjacency = {
   readonly matrix: ReadonlyArray<ReadonlyArray<boolean>>;
-  indexes: Readonly<{[index: string]: number}>;
+  indexes: Readonly<{ [index: string]: number }>;
 };
 
 type UserLike = {
@@ -105,10 +105,10 @@ export type Elimination = {
   player: Player;
   position: number;
   reason: EliminationReason;
-  source: {turns: number} | {player: Player; points: number};
+  source: { turns: number } | { player: Player; points: number };
 };
 
-export type EliminationReason = '☠' | '💤' | '🏆' | '🏳';
+export type EliminationReason = "☠" | "💤" | "🏆" | "🏳";
 
 export class IllegalMoveError extends Error {
   userId?: UserId;
@@ -123,7 +123,7 @@ export class IllegalMoveError extends Error {
     emojiFrom?: Emoji,
     emojiTo?: Emoji,
     fromLand?: Land,
-    toLand?: Land,
+    toLand?: Land
   ) {
     super(message);
     Object.setPrototypeOf(this, IllegalMoveError.prototype);
@@ -136,24 +136,24 @@ export class IllegalMoveError extends Error {
 }
 
 export type CommandType =
-  | 'Enter'
-  | 'Exit'
-  | 'Join'
-  | 'Leave'
-  | 'Attack'
-  | 'EndTurn'
-  | 'SitOut'
-  | 'SitIn'
-  | 'Chat'
-  | 'ToggleReady'
-  | 'Heartbeat'
-  | 'Roll'
-  | 'TickTurnOver'
-  | 'TickTurnOut'
-  | 'TickTurnAllOut'
-  | 'TickStart'
-  | 'CleanWatchers'
-  | 'CleanPlayers';
+  | "Enter"
+  | "Exit"
+  | "Join"
+  | "Leave"
+  | "Attack"
+  | "EndTurn"
+  | "SitOut"
+  | "SitIn"
+  | "Chat"
+  | "ToggleReady"
+  | "Heartbeat"
+  | "Roll"
+  | "TickTurnOver"
+  | "TickTurnOut"
+  | "TickTurnAllOut"
+  | "TickStart"
+  | "CleanWatchers"
+  | "CleanPlayers";
 
 export type CommandResult = {
   readonly type: CommandType;
@@ -177,4 +177,4 @@ export type Persona = {
   };
 };
 
-export type BotStrategy = 'RandomCareful' | 'RandomCareless' | 'Revengeful';
+export type BotStrategy = "RandomCareful" | "RandomCareless" | "Revengeful";
