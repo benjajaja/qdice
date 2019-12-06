@@ -54,12 +54,10 @@ After your turn you will receive one die per each **connected land**. If you hav
 
 ### Flags
 
-It is common for one player to flag another player. This means he wants to stop fighting, but "surrenders" below his position. This gives both players an advantage over the rest of the players. Some clarifications about flags:
+After a certain amount of rounds, it is possible to "flag" or surrender. This mechanic allows to finish a game early, without having to wait out a territorial takeover. It also allows an obviously dominant first player to step back and let others fight out their positions.
 
- * There is no game mechanic to enforce flags. Be wary of backstabbers.
- * Usually a flag should be acknowledged by the receptor. A silent acknowledgement is suspicious.
- * A flag must not be accepted. In fact, it may be disadvantageous because it can cripple growth.
- * Other players should actively counter flagged players.
+If you are last, you can click "surrender" and you will exit immediately or when your turn comes.
 
+If you are between last and first, you will be marked as "flagged Nth" where N is your current position. As soon as that position is the last of the game, you will be ejected.
 
 """

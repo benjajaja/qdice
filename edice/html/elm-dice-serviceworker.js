@@ -49,10 +49,15 @@ function preCache() {
 }
 
 self.addEventListener("fetch", function(event) {
-  var matches = Array.prototype.slice.call(
-    event.request.url.match(new RegExp("^https?://[^/]+/([^/]+)/?(.*)$")),
-    1
+  var result = event.request.url.match(
+    new RegExp("^https?://[^/]+/([^/]+)/?(.*)$")
   );
+  if (result === null) {
+    fetchFirst(event.request, 500);
+    return;
+  }
+
+  var matches = result ? Array.prototype.slice.call(result, 1) : null;
   if (matches && matches[1] === "" && matches[0].indexOf(".") === -1) {
     event.respondWith(
       fetchFirst(event.request, 500).catch(function() {

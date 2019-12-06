@@ -27,7 +27,7 @@ There is a [subreddit in place as a community forum](https://reddit.com/r/qdice)
 ## Roadmap
 
 #### High priority:
-  * ✗ Surrender / flag out
+  * (testing) Surrender / flag out
 
 #### Medium priority:
   * ✗ Spread out initial positions
