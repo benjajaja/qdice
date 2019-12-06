@@ -36,7 +36,7 @@ export const rollResult = (table: Table): CommandResult => {
     let eliminations: ReadonlyArray<Elimination> | undefined = undefined;
     let turnIndex: number | undefined = undefined;
     if (isSuccess) {
-      const loser = R.find(R.propEq("color", toLand.color), table.players);
+      const loser = R.find(R.propEq("color", toLand.color), players);
       lands = updateLand(table.lands, toLand, {
         points: fromLand.points - 1,
         color: fromLand.color,
@@ -45,6 +45,7 @@ export const rollResult = (table: Table): CommandResult => {
         loser &&
         R.filter(R.propEq("color", loser.color), lands).length === 0
       ) {
+        logger.debug("a loser");
         const attacker = players[table.turnIndex];
         [players, lands, turnIndex, eliminations] = removePlayerCascade(
           table,
@@ -62,6 +63,8 @@ export const rollResult = (table: Table): CommandResult => {
             },
           }
         );
+        logger.debug(eliminations);
+        logger.debug(players);
         // update attacker score
         players = players.map(player => {
           if (player === attacker) {

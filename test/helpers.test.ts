@@ -2,7 +2,10 @@ import * as assert from "assert";
 import * as R from "ramda";
 import * as helpers from "../helpers";
 import { Table, Elimination, Player } from "../types";
-import { ELIMINATION_REASON_SURRENDER } from "../constants";
+import {
+  ELIMINATION_REASON_SURRENDER,
+  ELIMINATION_REASON_DIE,
+} from "../constants";
 
 describe("Helpers", function() {
   describe("positionScore", () => {
@@ -296,6 +299,53 @@ describe("Helpers", function() {
             flag: players[2].flag!,
           },
         },
+        {
+          player: players[1],
+          position: 2,
+          reason: ELIMINATION_REASON_SURRENDER,
+          source: {
+            flag: players[1].flag!,
+          },
+        },
+      ]);
+    });
+
+    it("surrender cascade attack", () => {
+      const players: Player[] = [
+        { id: "a" } as any,
+        { id: "b", flag: 2 } as any,
+        { id: "c" } as any,
+      ];
+      const table = ({ players, lands: [] } as any) as Table;
+
+      const player = players[2];
+      const elimination: Elimination = {
+        player,
+        position: 3,
+        reason: ELIMINATION_REASON_DIE,
+        source: {
+          player: null!,
+          points: 1,
+        },
+      };
+      const [
+        players_,
+        lands_,
+        turnIndex,
+        eliminations,
+      ] = helpers.removePlayerCascade(
+        table,
+        players,
+        [],
+        player,
+        1,
+        elimination
+      );
+
+      assert.deepEqual(turnIndex, 0);
+      assert.deepEqual(players_, [players[0]]);
+      assert.deepEqual(eliminations, [
+        elimination,
         {
           player: players[1],
           position: 2,

@@ -10,10 +10,6 @@ services:
     ports: [ "5433:5432" ]
     volumes:
       - ~/data-postgres:/var/lib/postgresql/data
-    logging:
-      driver: "syslog"
-      options:
-        tag: "postgres"
   emqx:
     image: emqx/emqx:v3.0.0
     ports:
@@ -22,10 +18,6 @@ services:
       - "18083:18083"
       - "11883:11883"
       - "1883:1883"
-    logging:
-      driver: "syslog"
-      options:
-        tag: "emqx"
   nodice:
     restart: always
     image: bgrosse/qdice:latest
@@ -36,10 +28,6 @@ services:
     depends_on:
       - postgres
       - emqx
-    logging:
-      driver: "syslog"
-      options:
-        tag: "nodice"
   certbot:
     image: certbot/certbot
     volumes:
@@ -66,10 +54,6 @@ services:
       - emqx
       - nodice
       - certbot
-    logging:
-      driver: "syslog"
-      options:
-        tag: "nginx"
 
 networks:
   default:
