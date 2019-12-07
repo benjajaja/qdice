@@ -67,6 +67,7 @@ type alias AuthState =
 type StaticPage
     = Help
     | About
+    | Changelog
 
 
 type Route

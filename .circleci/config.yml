@@ -78,6 +78,9 @@ jobs:
         command: yarn generate-maps
     - run:
         working_directory: ~/repo/edice
+        command: yarn generate-changelog
+    - run:
+        working_directory: ~/repo/edice
         command: yarn build
     - run:
         working_directory: ~/repo/edice

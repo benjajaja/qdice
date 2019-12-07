@@ -51,6 +51,7 @@ links2 user =
     --]
     , link "/static/help" "Rules" "help"
     , link "/static/about" "About" "info"
+    , link "/static/changelog" "Changelog" "new_releases"
     ]
 
 

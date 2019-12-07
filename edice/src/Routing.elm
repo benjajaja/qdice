@@ -32,6 +32,9 @@ staticPageMatcher =
                 "about" ->
                     Just About
 
+                "changelog" ->
+                    Just Changelog
+
                 _ ->
                     Nothing
 
@@ -75,6 +78,9 @@ routeToString route =
 
                 About ->
                     "static/about"
+
+                Changelog ->
+                    "static/changelog"
 
         NotFoundRoute ->
             "404"
