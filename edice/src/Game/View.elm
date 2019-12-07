@@ -79,95 +79,102 @@ seatButtons model =
         ]
 
     else
-        let
-            { buttonLabel, msg, checkReady } =
-                setButtonStates model
-        in
-        List.concat
-            [ case checkReady of
-                Just ready ->
-                    [ label
-                        [ class "edCheckbox"
-                        , onClick <| GameCmd <| ToggleReady <| not <| Maybe.withDefault ready model.game.isReady
-                        , dataTestId "check-ready"
-                        ]
-                        [ Icon.icon <|
-                            if Maybe.withDefault ready model.game.isReady then
-                                "check_box"
-
-                            else
-                                "check_box_outline_blank"
-                        , text "Ready"
-                        ]
-                    ]
-
-                Nothing ->
-                    []
-            , if model.game.canFlag then
-                [ label
-                    [ class "edCheckbox"
-                    , onClick <| GameCmd <| Flag <| not <| Maybe.withDefault False model.game.flag
-                    , dataTestId "check-flag"
-                    ]
-                    [ Icon.icon "flag"
-                    , text <|
-                        if model.game.playerPosition == List.length model.game.players then
-                            "Surrender"
-
-                        else
-                            ordinal model.game.playerPosition
-                    ]
-                ]
-
-              else
+        case setButtonStates model of
+            Nothing ->
                 []
-            , [ button [ class "edButton edGameHeader__button", onClick msg, dataTestId "button-seat" ] [ text buttonLabel ]
-              ]
-            ]
+
+            Just { buttonLabel, msg, checkReady } ->
+                List.concat
+                    [ case checkReady of
+                        Just ready ->
+                            [ label
+                                [ class "edCheckbox"
+                                , onClick <| GameCmd <| ToggleReady <| not <| Maybe.withDefault ready model.game.isReady
+                                , dataTestId "check-ready"
+                                ]
+                                [ Icon.icon <|
+                                    if Maybe.withDefault ready model.game.isReady then
+                                        "check_box"
+
+                                    else
+                                        "check_box_outline_blank"
+                                , text "Ready"
+                                ]
+                            ]
+
+                        Nothing ->
+                            []
+                    , if model.game.canFlag then
+                        [ label
+                            [ class "edCheckbox"
+                            , onClick <| GameCmd <| Flag <| not <| Maybe.withDefault False model.game.flag
+                            , dataTestId "check-flag"
+                            ]
+                            [ Icon.icon "flag"
+                            , text <|
+                                if model.game.playerPosition == List.length model.game.players then
+                                    "Surrender"
+
+                                else
+                                    ordinal model.game.playerPosition
+                            ]
+                        ]
+
+                      else
+                        []
+                    , [ button [ class "edButton edGameHeader__button", onClick msg, dataTestId "button-seat" ] [ text buttonLabel ]
+                      ]
+                    ]
 
 
-setButtonStates : Model -> { buttonLabel : String, msg : Msg, checkReady : Maybe Bool }
+setButtonStates : Model -> Maybe { buttonLabel : String, msg : Msg, checkReady : Maybe Bool }
 setButtonStates model =
     case model.game.player of
         Just player ->
-            if model.game.status == Game.Types.Playing then
-                if player.out then
-                    { buttonLabel = "Sit in"
-                    , msg = GameCmd SitIn
-                    , checkReady = Nothing
-                    }
+            Just <|
+                if model.game.status == Game.Types.Playing then
+                    if player.out then
+                        { buttonLabel = "Sit in"
+                        , msg = GameCmd SitIn
+                        , checkReady = Nothing
+                        }
 
-                else if model.game.hasTurn then
-                    { buttonLabel = "End turn"
-                    , msg = GameCmd EndTurn
-                    , checkReady = Nothing
-                    }
+                    else if model.game.hasTurn then
+                        { buttonLabel = "End turn"
+                        , msg = GameCmd EndTurn
+                        , checkReady = Nothing
+                        }
+
+                    else
+                        { buttonLabel = "Sit out"
+                        , msg = GameCmd SitOut
+                        , checkReady = Nothing
+                        }
 
                 else
-                    { buttonLabel = "Sit out"
-                    , msg = GameCmd SitOut
-                    , checkReady = Nothing
+                    { buttonLabel = "Leave"
+                    , msg = GameCmd Leave
+                    , checkReady = Just player.ready
                     }
-
-            else
-                { buttonLabel = "Leave"
-                , msg = GameCmd Leave
-                , checkReady = Just player.ready
-                }
 
         Nothing ->
-            case model.user of
-                Types.Anonymous ->
-                    { buttonLabel = "Join"
-                    , msg = ShowLogin Types.LoginShowJoin
-                    , checkReady = Nothing
-                    }
+            if model.game.status /= Game.Types.Playing then
+                Just <|
+                    case model.user of
+                        Types.Anonymous ->
+                            { buttonLabel = "Join"
+                            , msg = ShowLogin Types.LoginShowJoin
+                            , checkReady = Nothing
+                            }
 
-                Types.Logged _ ->
-                    { buttonLabel = "Join"
-                    , msg = GameCmd Join
-                    , checkReady = Nothing
-                    }
+                        Types.Logged _ ->
+                            { buttonLabel = "Join"
+                            , msg = GameCmd Join
+                            , checkReady = Nothing
+                            }
+
+            else
+                Nothing
 
 
 gameLog : Model -> Html.Html Types.Msg
