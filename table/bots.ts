@@ -9,22 +9,25 @@ import {
   BotStrategy,
   BotPlayer,
   Color,
+  BotState,
+  IllegalMoveError,
 } from "../types";
 import { now, addSeconds, havePassed } from "../timestamp";
 import * as publish from "./publish";
 import { shuffle, rand } from "../rand";
 import logger from "../logger";
-import { GAME_START_COUNTDOWN } from "../constants";
-import { makePlayer } from "./commands";
+import { GAME_START_COUNTDOWN, BOT_DEADLOCK_MAX } from "../constants";
+import { makePlayer, flag } from "./commands";
 import nextTurn from "./turn";
 import { isBorder } from "../maps";
-import { findLand } from "../helpers";
+import { findLand, groupedPlayerPositions } from "../helpers";
 
 const defaultPersona: Persona = {
   name: "Personality",
   picture: "assets/bot_profile_picture.svg",
   strategy: "RandomCareful",
   state: {
+    deadlockCount: 0,
     lastAgressor: null,
   },
 };
@@ -103,16 +106,39 @@ export const tickBotTurn = (table: Table): CommandResult => {
     throw new Error("cannot tick non-bot");
   }
 
+  logger.debug(
+    `bot ${player.name} deadlockCount is ${player.bot.state.deadlockCount}`
+  );
+  if (
+    table.players.every(p => p.bot !== null) ||
+    player.bot.state.deadlockCount > BOT_DEADLOCK_MAX
+  ) {
+    const positions = groupedPlayerPositions(table);
+    const position = positions(player);
+    if (position > 1) {
+      try {
+        return flag(player, table);
+      } catch (e) {
+        logger.error("could not flag bot:", e);
+        if (e instanceof IllegalMoveError) {
+          return botNextTurn(table, player);
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+
   const sources = botSources(table, player);
 
   if (sources.length === 0) {
-    return nextTurn("EndTurn", table);
+    return botNextTurn(table, player);
   }
 
   const attack = strategies(player.bot.strategy)(sources, player, table);
 
   if (attack === null) {
-    return nextTurn("EndTurn", table);
+    return botNextTurn(table, player);
   }
 
   const emojiFrom = attack.from.emoji;
@@ -134,8 +160,37 @@ export const tickBotTurn = (table: Table): CommandResult => {
         to: emojiTo,
       },
     },
+    players: table.players.map(p =>
+      p === player ? setState(player, { deadlockCount: 0 }) : p
+    ),
   };
 };
+
+const botNextTurn = (table: Table, bot: BotPlayer) => {
+  const table_ = {
+    ...table,
+    players: table.players.map(p => {
+      if (p === bot) {
+        return setState(bot, {
+          deadlockCount: bot.bot.state.deadlockCount + 1,
+        });
+      }
+      return p;
+    }),
+  };
+  return nextTurn("EndTurn", table_);
+};
+
+const setState = (p: BotPlayer, s: Partial<BotState>): BotPlayer => ({
+  ...p,
+  bot: {
+    ...p.bot,
+    state: {
+      ...p.bot.state,
+      ...s,
+    },
+  },
+});
 
 export const botsNotifyAttack = (table: Table): readonly Player[] =>
   table.players.map<Player>(player => {
@@ -148,16 +203,7 @@ export const botsNotifyAttack = (table: Table): readonly Player[] =>
           player.color === findLand(table.lands)(table.attack!.from).color
       );
 
-      return {
-        ...player,
-        bot: {
-          ...player.bot,
-          state: {
-            ...player.bot.state,
-            lastAgressor: lastAgressor?.id ?? null,
-          },
-        },
-      };
+      return setState(player, { lastAgressor: lastAgressor?.id ?? null });
     }
     return player;
   });

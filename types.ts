@@ -69,7 +69,7 @@ export type Adjacency = {
   indexes: Readonly<{ [index: string]: number }>;
 };
 
-type UserLike = {
+export type UserLike = {
   readonly id: UserId;
   readonly name: string;
   readonly picture: string;
@@ -181,9 +181,12 @@ export type Persona = {
   name: string;
   picture: string;
   strategy: BotStrategy;
-  state: {
-    lastAgressor: UserId | null;
-  };
+  state: BotState;
+};
+
+export type BotState = {
+  deadlockCount: number;
+  lastAgressor: UserId | null;
 };
 
 export type BotStrategy = "RandomCareful" | "RandomCareless" | "Revengeful";

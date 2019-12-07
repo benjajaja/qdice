@@ -9,6 +9,7 @@ import {
   CommandResult,
   IllegalMoveError,
   Elimination,
+  UserLike,
 } from "../types";
 import * as publish from "./publish";
 import { addSeconds, now } from "../timestamp";
@@ -407,7 +408,11 @@ export const toggleReady = (
   return { type: "ToggleReady", players };
 };
 
-export const flag = (user, table: Table, clientId): CommandResult => {
+export const flag = (
+  user: UserLike,
+  table: Table,
+  clientId?
+): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
     throw new IllegalMoveError("Flag while not STATUS_PLAYING", user.id);
   }
@@ -431,7 +436,7 @@ export const flag = (user, table: Table, clientId): CommandResult => {
     );
   }
 
-  logger.debug(`${player.name} flagged ${player.position}`);
+  logger.debug(`${player.name} flagged ${position}`);
 
   if (hasTurn(table)(user) && position === table.players.length) {
     logger.debug(`${player.name} flagged suicide`);

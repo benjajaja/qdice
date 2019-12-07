@@ -39,3 +39,5 @@ export const ELIMINATION_REASON_SURRENDER: EliminationReason = "🏳";
 export const MAX_NAME_LENGTH = 20;
 
 export const OUT_TURN_COUNT_ELIMINATION = 2;
+
+export const BOT_DEADLOCK_MAX = 10;
