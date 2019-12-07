@@ -66,7 +66,7 @@ boardFooter model =
 playerBar : Int -> Model -> Html Msg
 playerBar dropCount model =
     div [ class "edPlayerChips" ] <|
-        List.indexedMap (PlayerCard.view model) <|
+        List.indexedMap (PlayerCard.view model dropCount) <|
             List.take 4 <|
                 List.drop dropCount <|
                     model.game.players

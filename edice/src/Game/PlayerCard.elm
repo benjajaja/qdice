@@ -16,8 +16,12 @@ import Time exposing (posixToMillis)
 import Types exposing (Model, Msg(..))
 
 
-view : Model -> Int -> Player -> Html.Html Types.Msg
-view model index player =
+view : Model -> Int -> Int -> Player -> Html.Html Types.Msg
+view model offset i player =
+    let
+        index =
+            offset + i
+    in
     playerContainer player
         (index == model.game.turnIndex)
         [ playerImageProgress model index player
