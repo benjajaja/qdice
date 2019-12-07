@@ -460,7 +460,7 @@ export const flag = (user, table: Table, clientId): CommandResult => {
 
     const result: CommandResult = {
       type: "Flag",
-      table: { turnStart: now() },
+      table: { turnStart: now(), turnIndex },
       lands: lands,
       players: players,
       eliminations,
