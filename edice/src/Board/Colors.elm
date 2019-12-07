@@ -1,10 +1,10 @@
-module Board.Colors exposing (base, baseCssRgb, cssRgb, highlight, hover, colorName, animationColor)
+module Board.Colors exposing (animationColor, base, baseCssRgb, colorName, cssRgb, highlight, hover)
 
+import Animation
 import Color
 import Color.Convert exposing (colorToHex)
 import Color.Manipulate exposing (darken, lighten)
 import Land exposing (Color)
-import Animation
 
 
 base : Color -> Color.Color
@@ -32,12 +32,13 @@ base color =
             Color.rgb255 187 86 149
 
         Land.Cyan ->
-            Color.rgb255 103 189 170
+            Color.rgb255 64 224 208
 
+        -- 103 189 170
         Land.Orange ->
             Color.rgb255 245 130 48
 
-        Land.Beige ->
+        Land.Brown ->
             Color.rgb255 255 250 200
 
         Land.Editor ->
@@ -97,8 +98,8 @@ colorName color =
         Land.Orange ->
             "orange"
 
-        Land.Beige ->
-            "beige"
+        Land.Brown ->
+            "brown"
 
         Land.Editor ->
             "editor"
@@ -113,8 +114,8 @@ animationColor c =
         color =
             base c |> Color.toRgba
     in
-        { red = round color.red
-        , green = round color.green
-        , blue = round color.blue
-        , alpha = color.alpha
-        }
+    { red = round color.red
+    , green = round color.green
+    , blue = round color.blue
+    , alpha = color.alpha
+    }

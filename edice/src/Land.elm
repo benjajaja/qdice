@@ -55,7 +55,7 @@ type Color
     | Magenta
     | Cyan
     | Orange {- 7 -}
-    | Beige {- 8 -}
+    | Brown {- 8 -}
     | Black {- 9 -}
     | Editor
     | EditorSelected
@@ -74,7 +74,7 @@ playerColors =
     , Orange
 
     {- 7 -}
-    , Beige
+    , Brown
 
     {- 8 -}
     , Black
@@ -309,7 +309,7 @@ playerColor i =
                 Orange
 
             8 ->
-                Beige
+                Brown
 
             9 ->
                 Black
