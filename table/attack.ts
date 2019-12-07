@@ -45,7 +45,6 @@ export const rollResult = (table: Table): CommandResult => {
         loser &&
         R.filter(R.propEq("color", loser.color), lands).length === 0
       ) {
-        logger.debug("a loser");
         const attacker = players[table.turnIndex];
         [players, lands, turnIndex, eliminations] = removePlayerCascade(
           table,
@@ -63,8 +62,9 @@ export const rollResult = (table: Table): CommandResult => {
             },
           }
         );
-        logger.debug(eliminations);
-        logger.debug(players);
+        logger.debug(
+          `Attack produced ${eliminations.length} eliminations: ${table.players.length} -> ${players.length}`
+        );
         // update attacker score
         players = players.map(player => {
           if (player === attacker) {

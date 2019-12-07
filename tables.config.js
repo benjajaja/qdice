@@ -64,8 +64,8 @@ module.exports = {
       tag: "Arabia",
       name: "Arabia",
       mapName: "Sabicas",
-      playerSlots: 9,
-      startSlots: 7,
+      playerSlots: 8,
+      startSlots: 8,
       points: 200,
       stackSize: 8,
       params: {
