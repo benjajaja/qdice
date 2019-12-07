@@ -16,6 +16,10 @@ var commits = gitlog.read({
   fields: ["subject", "body", "authorDate"],
 });
 
+if (commits.lenth === 0) {
+  throw new Error("no changelog");
+}
+
 commits.forEach(commit => {
   write.write(`${commit.authorDate}  \n`);
   write.write(`- ${commit.subject}  \n`);

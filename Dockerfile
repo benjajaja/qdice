@@ -6,9 +6,10 @@ COPY edice/package.json .
 COPY edice/yarn.lock .
 RUN yarn install
 COPY edice/. .
-COPY .git ..
-RUN yarn generate-maps
+COPY .git/ .
 RUN yarn generate-changelog
+RUN rm -rf .git
+RUN yarn generate-maps
 ENV build_id=$build_id
 RUN yarn build
 
