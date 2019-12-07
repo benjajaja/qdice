@@ -21,7 +21,7 @@ module.exports = {
       points: 50,
       stackSize: 8,
       params: {
-        noFlagRounds: 4,
+        noFlagRounds: 2,
       },
     },
     {
