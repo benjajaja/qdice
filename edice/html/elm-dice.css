@@ -98,6 +98,9 @@ body.navigator-standalone textarea {
   display: flex;
   align-items: stretch;
 }
+.edMainScreen__static img {
+  max-width: 100%;
+}
 
 .edPage {
   display: flex;

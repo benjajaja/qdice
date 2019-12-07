@@ -27,7 +27,7 @@ footer model =
 
 links1 : User -> List (Html Msg)
 links1 user =
-    [ link "/" "Home" "home"
+    [ link "/" "Play" "play_arrow"
     , case user of
         Anonymous ->
             span [ onClick <| ShowLogin LoginShow, class "edFooter--box__link" ] [ i [ class "material-icons" ] [ text "account_circle" ], text "Login" ]
