@@ -63,6 +63,8 @@ board map pathCache animations selected hovered =
             --[ viewBox ("0 0 100 100")
             , preserveAspectRatio "xMidYMin meet"
             , class "edBoard--svg"
+
+            -- , Svg.Attributes.style "background: url(https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2F2.bp.blogspot.com%2F-vtEHvcmS-Ac%2FTtHk0IvsxoI%2FAAAAAAAAAnw%2FV6e_eGfmCac%2Fs1600%2FRisk%2BII%2BGame%2BBoard.jpg&f=1&nofb=1); background-size: 110% 110%; background-position: top -20px left -30px"
             ]
             (List.concat
                 [ List.map landShapeF map.lands
