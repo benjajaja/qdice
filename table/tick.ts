@@ -157,6 +157,5 @@ const lastJoined = (players: ReadonlyArray<Player>): Timestamp => {
       .filter(player => player.bot === null)
       .map<Timestamp>(player => player.joined)
   );
-  logger.debug("last", last);
   return last;
 };

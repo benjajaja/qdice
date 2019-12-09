@@ -106,9 +106,6 @@ export const tickBotTurn = (table: Table): CommandResult => {
     throw new Error("cannot tick non-bot");
   }
 
-  logger.debug(
-    `bot ${player.name} deadlockCount is ${player.bot.state.deadlockCount}`
-  );
   if (
     table.players.every(p => p.bot !== null) ||
     player.bot.state.deadlockCount > BOT_DEADLOCK_MAX
