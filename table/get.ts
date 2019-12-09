@@ -44,22 +44,6 @@ const makeTable = (config: any): Table => {
   };
 };
 
-const loadLands = (table: Table): Table => {
-  const [lands, adjacency] = maps.loadMap(table.mapName);
-  return Object.assign({}, table, {
-    lands: table.lands.length
-      ? table.lands.map(land => {
-          const match = lands.filter(l => l.emoji === land.emoji).pop();
-          if (!match) {
-            throw new Error("cannot get land: " + table.mapName);
-          }
-          return Object.assign({}, match, land);
-        })
-      : lands,
-    adjacency,
-  });
-};
-
 export const getTable = async (tableTag: string): Promise<Table> => {
   let dbTable = await db.getTable(tableTag);
   if (!dbTable) {
@@ -67,14 +51,17 @@ export const getTable = async (tableTag: string): Promise<Table> => {
       .filter(config => config.tag === tableTag)
       .pop();
     try {
-      const dbTableData = loadLands(makeTable(tableConfig));
+      const [lands, adjacency] = maps.loadMap(tableConfig.mapName);
+      const dbTableData = { ...makeTable(tableConfig), lands, adjacency };
       dbTable = await db.createTable(dbTableData);
     } catch (e) {
       logger.error(`could not load map ${tableTag}`);
       throw e;
     }
   }
-  const table = loadLands(dbTable);
+
+  const [_, adjacency] = maps.loadMap(dbTable.mapName);
+  const table = { ...dbTable, adjacency };
 
   return table;
 };
@@ -89,18 +76,7 @@ export const save = async (
   if (props && (props as any).table) {
     throw new Error("bad save");
   }
-  if (lands && lands.length !== table.lands.length) {
-    throw new Error("lost lands");
-  }
-  if (
-    lands &&
-    (lands as any).some(land => {
-      return lands.filter(other => other.emoji === land.emoji).length !== 1;
-    })
-  ) {
-    logger.debug(lands.map(l => l.emoji));
-    throw new Error("duped lands");
-  }
+
   if (
     (!props || Object.keys(props).length === 0) &&
     !players &&
@@ -123,7 +99,13 @@ export const save = async (
       : undefined,
     watching
   );
-  return loadLands(saved);
+  return {
+    ...table,
+    ...saved,
+    lands: lands ?? table.lands,
+    players: players ?? table.players,
+    watching: watching ?? table.watching,
+  };
 };
 
 export const getStatuses = async () => {

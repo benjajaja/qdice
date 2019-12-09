@@ -3,6 +3,7 @@ import * as R from "ramda";
 import * as mqtt from "mqtt";
 import * as jwt from "jsonwebtoken";
 import * as AsyncLock from "async-lock";
+import * as maps from "./maps";
 
 import {
   UserId,
@@ -63,15 +64,21 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
           params,
         }) => {
           const table = await getTable(tag);
-          await save(table, {
-            name,
-            mapName,
-            playerSlots,
-            startSlots,
-            points,
-            stackSize,
-            params,
-          });
+          const lands = maps.hasChanged(table.mapName, table.lands);
+          await save(
+            table,
+            {
+              name,
+              mapName,
+              playerSlots,
+              startSlots,
+              points,
+              stackSize,
+              params,
+            },
+            undefined,
+            lands
+          );
           await start(table.tag, lock, client);
         }
       )

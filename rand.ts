@@ -19,13 +19,11 @@ export const diceRoll = (fromPoints: number, toPoints: number) => {
   return [fromRoll, toRoll, success];
 };
 
-/**
- * It mutates and returns the input
- */
-export const shuffle = <T>(a: T[]): ReadonlyArray<T> => {
-  for (let i = a.length - 1; i > 0; i--) {
+export const shuffle = <T>(a: readonly T[]): readonly T[] => {
+  const b = a.slice();
+  for (let i = b.length - 1; i > 0; i--) {
     const j = rand(0, i);
-    [a[i], a[j]] = [a[j], a[i]];
+    [b[i], b[j]] = [b[j], b[i]];
   }
-  return a;
+  return b;
 };
