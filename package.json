@@ -12,7 +12,8 @@
     "push": "docker push bgrosse/qdice:latest",
     "generate-maps": "node scripts/build.js edice/maps/",
     "lint": "yarn prettier --check '**/*.{ts,tsx}'",
-    "format": "yarn prettier --write '**/*.{ts,tsx}'"
+    "format": "yarn prettier --write '**/*.{ts,tsx}'",
+    "test": "yarn jest --verbose"
   },
   "deploy": {
     "production": {

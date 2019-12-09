@@ -1,6 +1,7 @@
 import * as assert from "assert";
 import * as R from "ramda";
 import * as maps from "../maps";
+import * as config from "../tables.config";
 
 describe("Maps", () => {
   describe("Loading", () => {
@@ -164,5 +165,26 @@ describe("Maps", () => {
         2
       );
     });
+  });
+
+  describe("land order should be fixed for e2e determinism", () => {
+    const orders = {
+      Planeta:
+        "🐸🐧🐵👀🍷👙🍀🍌🍏🍉🥑😺🍺💰🍒👍🍋🐙🎩🌵🏰👻💊🔥🌙🐰🎵💀💎🌴💣💥💋💃💧🍩🐟👑🌎🤠",
+      Serrano: "🐙🐸🍷💰🏰💀💎🎩🌙💊👑🍒👙🔥🍋🌴💃",
+      DeLucía: "💰😺🐵👻🐙🥑💎🐸💧💊🌴🌙🍒🎩🍉🍩🍌🍏🌵💋👙🍀💣🌎💀",
+      Melchor: "🔥😺🍋🐵💰👻🐙🥑🐸🍺🌵👑🌙",
+      Miño: "🍋💩🐙🔥💰",
+      Sabicas:
+        "🎩🍉🥑🍏🎵👀👙🍺🐵🐟🐧👍🐸😺🏰💰🐰🍷🍋👻🐙🍩🌴🔥🌙💥💋🌎💀💣💊💧",
+    };
+    config.tables
+      .map(t => t.mapName)
+      .forEach(mapName => {
+        const [lands, _] = maps.loadMap(mapName);
+        it(`${mapName} should be fixed`, () => {
+          assert.equal(lands.map(l => l.emoji).join(""), orders[mapName]);
+        });
+      });
   });
 });
