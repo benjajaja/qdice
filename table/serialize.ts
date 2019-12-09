@@ -4,14 +4,15 @@ import * as maps from "../maps";
 import { groupedPlayerPositions, positionScore, tablePoints } from "../helpers";
 import { Table, Player } from "../types";
 import logger from "../logger";
+import { COLOR_NEUTRAL } from "../constants";
 
 export const serializeTable = (table: Table) => {
   const players = table.players.map(serializePlayer(table));
 
   const lands = table.lands.map(({ emoji, color, points }) => [
     emoji,
-    color,
-    points,
+    color ?? COLOR_NEUTRAL,
+    points ?? 1,
   ]);
 
   return {
