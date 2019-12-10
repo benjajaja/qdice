@@ -61,11 +61,20 @@ app.ports.started.subscribe(function(msg) {
   };
   window.dialogPolyfill = require("dialog-polyfill");
 
-  //if (window.location.hostname !== 'localhost' && window.location.hostname !== 'lvh.me') {
-  //ga = require('ga-lite');
-  //ga('create', 'UA-111861514-1', 'auto');
-  //ga('send', 'pageview');
-  //}
+  const ackeeTracker = require("ackee-tracker");
+  ackeeTracker
+    .create(
+      {
+        server:
+          window.location.protocol + "//" + window.location.hostname + "/ackee",
+        domainId: "6f3492e2-9780-45a6-85ee-550777943d24",
+      },
+      { ignoreLocalhost: false }
+    )
+    .record();
+  // ga = require('ga-lite');
+  // ga('create', 'UA-111861514-1', 'auto');
+  // ga('send', 'pageview');
 });
 
 app.ports.saveToken.subscribe(function(token) {

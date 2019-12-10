@@ -38,7 +38,7 @@ server {
         try_files $uri /index.html;
     }
     location /api {
-        proxy_pass http://nodice:5001;
+        proxy_pass http://nodice:5001/;
         include /etc/nginx/proxy_params;
     }
     location /mqtt {
@@ -47,6 +47,20 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "Upgrade";
+    }
+    location /ackee/ {
+        add_header          Access-Control-Allow-Origin "*" always;
+        add_header          Access-Control-Allow-Methods "GET, POST, PATCH, OPTIONS" always;
+        add_header          Access-Control-Allow-Headers "Content-Type" always;
+        add_header          Strict-Transport-Security "max-age=31536000" always;
+        add_header          X-Frame-Options deny;
+        proxy_pass          http://ackee:3000/;
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_redirect      off;
+        proxy_buffering     off;
+        proxy_set_header    Host $host;
+        proxy_set_header    X-Real-IP $remote_addr;
+        proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
 

@@ -30,7 +30,7 @@
   "bundlesize": [
     {
       "path": "./dist/elm-dice.*.js",
-      "maxSize": "125 kB"
+      "maxSize": "130 kB"
     },
     {
       "path": "./dist/elm-dice-serviceworker.js",
@@ -42,6 +42,7 @@
     }
   ],
   "dependencies": {
+    "ackee-tracker": "^3.2.2",
     "autoprefixer": "^6.5.3",
     "bundlesize": "^0.15.3",
     "copy-webpack-plugin": "^4.2.3",

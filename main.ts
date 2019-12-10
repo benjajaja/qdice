@@ -88,7 +88,7 @@ server.use(
   })
 );
 
-const root = "/api";
+const root = "/";
 
 const lock = new AsyncLock();
 

@@ -54,6 +54,25 @@ services:
       - emqx
       - nodice
       - certbot
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    volumes:
+      - ~/data-mongo:/data/db
+  ackee:
+    image: electerious/ackee
+    container_name: ackee
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - WAIT_HOSTS=mongo:27017
+      - ACKEE_MONGODB=mongodb://mongo:27017/ackee
+    env_file:
+      - .env
+    depends_on:
+      - mongo
 
 networks:
   default:

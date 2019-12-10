@@ -48,7 +48,7 @@ function preCache() {
     });
 }
 
-self.addEventListener("fetch", function(event) {
+self.addEventListener("fetch_DISABLED", function(event) {
   var result = event.request.url.match(
     new RegExp("^https?://[^/]+/([^/]+)/?(.*)$")
   );
@@ -69,7 +69,7 @@ self.addEventListener("fetch", function(event) {
   }
 
   var basePath = matches ? matches[0] : undefined;
-  if (["api", "mqtt"].indexOf(basePath) === -1) {
+  if (["api", "mqtt", "ackee"].indexOf(basePath) === -1) {
     event.waitUntil(update(event.request));
   }
 });
