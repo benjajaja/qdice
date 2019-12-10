@@ -28,6 +28,16 @@ services:
     depends_on:
       - postgres
       - emqx
+  telegram:
+    restart: always
+    image: bgrosse/qdice:latest
+    env_file: .env
+    volumes:
+      - ~/data-avatars:/avatars
+    depends_on:
+      - postgres
+      - emqx
+    command: "node telegram.js"
   certbot:
     image: certbot/certbot
     volumes:
@@ -49,6 +59,7 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - statics:/var/www/qdice.wtf
+      - ~/data-avatars:/var/www/qdice.wtf/pictures
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
     depends_on:
       - emqx

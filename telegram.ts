@@ -322,3 +322,9 @@ const sendScreenshot = async (id, table) => {
     source: image,
   });
 };
+
+process.on("unhandledRejection", (reason, p) => {
+  console.error("Unhandled Rejection at: Promise", p, "reason:", reason);
+  // application specific logging, throwing an error, or other logic here
+  throw reason;
+});

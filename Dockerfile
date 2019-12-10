@@ -25,4 +25,4 @@ COPY table ./table
 RUN node scripts/build.js /usr/src/edice/maps
 
 EXPOSE 5001
-CMD ["sh", "start.sh"]
+CMD ["node", "server.js"]
