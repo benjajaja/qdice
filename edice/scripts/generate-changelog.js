@@ -9,26 +9,16 @@ write.write(`    Markdown.toHtml [] """\n`);
 write.write("## Changelog\n");
 write.write("\n");
 
-const gitlog = require("git-log-reader");
+const lines = process.env.git_log.split("\n");
 
-// commits is an array of commit objects
-var commits = gitlog.read({
-  fields: ["subject", "body", "authorDate"],
-});
-
-if (commits.lenth === 0) {
-  throw new Error("no changelog");
+if (lines.length === 0) {
+  throw new Error("empty git_log env variable");
 }
-
-commits.forEach(commit => {
-  write.write(`${commit.authorDate}  \n`);
-  write.write(`- ${commit.subject}  \n`);
-  if (commit.body) {
-    write.write(`  ${commit.body}\n`);
-  } else {
-    write.write(`  \n`);
-  }
+lines.forEach(line => {
+  write.write(`- ${line}  \n`);
 });
 
 write.write(`"""\n`);
 write.close();
+
+console.log("Changelog entries: " + lines.length);

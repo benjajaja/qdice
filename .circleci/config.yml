@@ -45,11 +45,7 @@ jobs:
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
     - run:
         name: Build Docker image
-        command: |
-          docker build \
-            --tag bgrosse/qdice:latest \
-            --build-arg build_id=$(git rev-parse HEAD) \
-            .
+        command: ./scripts/build.sh
     - run:
         name: Push image to container registry
         command: |
@@ -61,6 +57,8 @@ jobs:
     docker:
     - image: circleci/node:10.15.3
     working_directory: ~/repo
+    environment:
+      git_log: dummy
     steps:
     - restore_cache:
         name: Checkout source code

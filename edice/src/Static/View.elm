@@ -31,29 +31,35 @@ There is a [subreddit in place as a community forum](https://reddit.com/r/qdice)
 ## Roadmap
 
 #### High priority:
-  * (testing) Surrender / flag out
+  * (nothing at the moment)
 
 #### Medium priority:
-  * ✗ Spread out initial positions
-  * ✗ Water connections
-  * ✗ Gamerule: Fog of war
-  * ✗ Gamerule: Movement turn
-  * ✗ Gamerule: Bastionize land
-  * ✗ Gamerule: Ships on water connections
-  * ✗ Gamerule: Capitols
+  * ✗ Lower flag to current position
+  * ✗ Profile page
 
 ### Low priority:
-  * ✗ Profile page
-  * ✗ Login with password, twitter, facebook, github
-  * ✗ Replay a game
+  * ✗ Unintented login change when adding already registered user of auth network
+  * ✗ Upload avatar
+  * ✗ Record and replay a game
+  * ✗ Reset monthly leaderboard, give awards
 
-#### Complete:
-  * ✔ Fix telegram bot
+### Considering:
+  * ? Login with password, twitter, facebook, github
+  * ? Spread out initial positions
+  * ? Gamerule: Water connections
+  * ? Gamerule: Fog of war
+  * ? Gamerule: Movement turn
+  * ? Gamerule: Bastionize land
+  * ? Gamerule: Ships on water connections
+  * ? Gamerule: Capitols
+
+#### Complete (also see [changelog](/changelog) for bug fixes):
+  * ✔ Surrender / flag out
+  * ✔ Fix telegram bot (needs verification)
   * ✔ Connect an auth method to anonymous account
   * ✔ Delete account
   * ✔ Flag "ready" to start
   * ✔ Bots
   * ✔ Fullscreen tooltip
-  * ✔ Set password on account
   * ...
 """
