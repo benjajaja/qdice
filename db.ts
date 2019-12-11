@@ -120,7 +120,7 @@ export const createUser = async (
     "INSERT INTO users (name,email,picture,registration_time) VALUES ($1, $2, $3, current_timestamp) RETURNING *",
     [name, email, picture]
   );
-  logger.info("created user", user);
+  logger.info("created user", user.name);
   if (network !== NETWORK_PASSWORD) {
     /*const { rows: [ auth ] } =*/
     await client.query(
@@ -181,7 +181,7 @@ WHERE id = $2`,
 };
 
 export const leaderBoardTop = async (page = 1) => {
-  const limit = 10;
+  const limit = 100;
   const result = await client.query(
     `
 SELECT id, name, picture, points, level, ROW_NUMBER () OVER (ORDER BY points DESC) AS rank

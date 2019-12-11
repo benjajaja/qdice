@@ -10,15 +10,13 @@ export const login = (req, res, next) => {
   const network = req.params.network;
   getProfile(network, req.body, req.headers.origin + "/")
     .then(profile => {
-      console.log("login", profile);
+      logger.debug("login", profile.id);
       return db
         .getUserFromAuthorization(network, profile.id)
         .then(user => {
-          console.log("got user", user);
           if (user) {
             return user;
           }
-          console.log("create");
           return db.createUser(
             network,
             profile.id,
@@ -29,14 +27,13 @@ export const login = (req, res, next) => {
           );
         })
         .then(user => {
-          console.log("got user", user);
           const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET);
           res.send(200, token);
           next();
         });
     })
     .catch(e => {
-      console.error("login error", e.toString());
+      logger.error("login error", e.toString());
       next(e);
     });
 };
@@ -45,21 +42,17 @@ export const addLogin = (req, res, next) => {
   const network = req.params.network;
   getProfile(network, req.body, req.headers.origin + "/")
     .then(profile => {
-      console.log("addlogin", profile);
+      logger.debug("addlogin", profile);
       return db
         .getUserFromAuthorization(network, profile.id)
         .then(user => {
-          console.log("got user", user);
           if (user) {
             throw new Error("already registered");
           }
           db.getUser(req.user.id);
-          console.log("add");
           return db.addNetwork(req.user.id, network, profile.id, profile);
-          // return db.createUser(network, profile.id, profile.name, profile.email, profile.picture, profile);
         })
         .then(user => {
-          console.log("got user", user);
           const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET);
           res.send(200, token);
           next();

@@ -33,7 +33,10 @@ client.on("message", (topic, message) => {
       case "join":
         subscribed.forEach(id =>
           telegram
-            .sendMessage(id, `${event.player.name} joined ${event.table}`)
+            .sendMessage(
+              id,
+              `${event.player.name} joined https://qdice.wtf/${event.table}`
+            )
             .catch(e => console.error(e))
         );
         //if (officialGroups.length) {
@@ -217,9 +220,7 @@ bot.gameQuery(ctx => {
 
 bot.startPolling();
 
-const subscribed = [
-  /*208216602*/
-] as number[];
+const subscribed = [208216602] as number[];
 bot.command("notifyme", ctx => {
   const index = subscribed.indexOf(ctx.chat.id);
   if (index === -1) {
