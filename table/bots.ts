@@ -82,12 +82,6 @@ export const addBots = (table: Table): CommandResult => {
       table: table.name,
       players: players,
     });
-  } else {
-    publish.event({
-      type: "join",
-      table: table.name,
-      player: { name: botUser.name },
-    });
   }
   return {
     type: "Join",
