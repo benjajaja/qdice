@@ -37,7 +37,8 @@ SET search_path = public, pg_catalog;
 CREATE TYPE network AS ENUM (
     'google',
     'password',
-    'telegram'
+    'telegram',
+    'reddit'
 );
 
 
