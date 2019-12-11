@@ -69,7 +69,7 @@ export const addBots = (table: Table): CommandResult => {
     {
       ...makePlayer(botUser, "bot", table.players.length),
       bot: persona,
-      ready: true,
+      ready: false,
     },
   ]);
 

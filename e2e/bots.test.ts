@@ -67,6 +67,7 @@ describe("A game with bots", () => {
 
     await expect(page).toMatchElement(testId("game-status"), {
       text: "playing",
+      timeout: 40000,
     });
 
     await hisTurn(page, "A");
