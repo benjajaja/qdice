@@ -66,13 +66,142 @@ board map pathCache animations selected hovered =
 
             -- , Svg.Attributes.style "background: url(https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2F2.bp.blogspot.com%2F-vtEHvcmS-Ac%2FTtHk0IvsxoI%2FAAAAAAAAAnw%2FV6e_eGfmCac%2Fs1600%2FRisk%2BII%2BGame%2BBoard.jpg&f=1&nofb=1); background-size: 110% 110%; background-position: top -20px left -30px"
             ]
-            (List.concat
-                [ List.map landShapeF map.lands
+          <|
+            List.concat
+                [ [ die ]
+                , List.map landShapeF map.lands
 
                 --, List.map massShapeF <| landMasses map.lands
                 , List.map landDiesF map.lands
                 ]
-            )
+        ]
+
+
+die : Svg Msg
+die =
+    defs []
+        [ g
+            [ id "die"
+            , transform "scale(0.055)"
+            ]
+            [ Svg.path
+                [ Svg.Attributes.style
+                    "opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , d "M 44.274701,38.931604 44.059081,18.315979 23.545011,3.0644163 3.0997027,18.315979 2.9528307,38.931604 23.613771,54.273792 Z"
+                ]
+                []
+            , rect
+                [ Svg.Attributes.style "opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.70753205;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , id "rect4157"
+                , width "25.320923"
+                , height "25.320923"
+                , x "-13.198412"
+                , y "17.248964"
+                , transform "matrix(0.8016383,-0.59780937,0.8016383,0.59780937,0,0)"
+                ]
+                []
+            , Svg.path
+                [ Svg.Attributes.style
+                    "opacity:1;fill:#ebebeb;fill-opacity:1;stroke:#000000;stroke-width:0.57285416;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , d "m 2.9522657,18.430618 20.5011153,15.342466 0,20.501118 L 2.9522657,38.931736 Z"
+                ]
+                []
+            , Svg.path
+                [ Svg.Attributes.style
+                    "opacity:1;fill:#ebebeb;fill-opacity:1;stroke:#000000;stroke-width:0.57285416;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , d "m 44.275301,18.430618 -20.50112,15.342466 0,20.501118 20.50112,-15.342466 z"
+                ]
+                []
+            , ellipse
+                [ Svg.Attributes.style "opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.80000001;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , id "path4165"
+                , cx "23.545307"
+                , cy "18.201725"
+                , rx "4.7748194"
+                , ry "3.5811143"
+                ]
+                []
+            , ellipse
+                [ cy "42.152149"
+                , cx "-8.0335274"
+                , id "circle4167"
+                , Svg.Attributes.style "opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.80000001;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , rx "2.1917808"
+                , ry "2.53085"
+                , transform "matrix(1,0,0.5,0.8660254,0,0)"
+                ]
+                []
+            , ellipse
+                [ Svg.Attributes.style "opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.80000001;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , id "circle4171"
+                , cx "55.690258"
+                , cy "42.094212"
+                , rx "2.1917808"
+                , ry "2.5308504"
+                , transform "matrix(1,0,-0.5,0.8660254,0,0)"
+                ]
+                []
+            , ellipse
+                [ transform "matrix(1,0,0.5,0.8660254,0,0)"
+                , ry "2.5308504"
+                , rx "2.1917808"
+                , Svg.Attributes.style "opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.80000001;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , id "ellipse4173"
+                , cx "-8.2909203"
+                , cy "32.980541"
+                ]
+                []
+            , ellipse
+                [ cy "50.764507"
+                , cx "-7.6902356"
+                , id "ellipse4175"
+                , Svg.Attributes.style "opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.80000001;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , rx "2.1917808"
+                , ry "2.5308504"
+                , transform "matrix(1,0,0.5,0.8660254,0,0)"
+                ]
+                []
+            , ellipse
+                [ transform "matrix(1,0,-0.5,0.8660254,0,0)"
+                , ry "2.5308504"
+                , rx "2.1917808"
+                , cy "31.414658"
+                , cx "55.871754"
+                , id "ellipse4177"
+                , Svg.Attributes.style "opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.80000001;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                ]
+                []
+            , ellipse
+                [ Svg.Attributes.style "opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.80000001;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , id "ellipse4179"
+                , cx "61.509121"
+                , cy "43.270634"
+                , rx "2.1917808"
+                , ry "2.5308504"
+                , transform "matrix(1,0,-0.5,0.8660254,0,0)"
+                ]
+                []
+            , ellipse
+                [ Svg.Attributes.style "opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.80000001;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                , id "ellipse4181"
+                , cx "49.791553"
+                , cy "41.145508"
+                , rx "2.1917808"
+                , ry "2.5308504"
+                , transform "matrix(1,0,-0.5,0.8660254,0,0)"
+                ]
+                []
+            , ellipse
+                [ transform "matrix(1,0,-0.5,0.8660254,0,0)"
+                , ry "2.5308504"
+                , rx "2.1917808"
+                , cy "51.882996"
+                , cx "55.063419"
+                , id "ellipse4183"
+                , Svg.Attributes.style "opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.80000001;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+                ]
+                []
+            ]
         ]
 
 
@@ -201,7 +330,7 @@ landDie getAnimation ( cx, cy ) points index =
         animation =
             getAnimation index
     in
-    Svg.image
+    Svg.use
         (List.concat
             [ case animation of
                 Just a ->
@@ -219,7 +348,7 @@ landDie getAnimation ( cx, cy ) points index =
               , textAnchor "middle"
               , alignmentBaseline "central"
               , class "edBoard--dies"
-              , xlinkHref "die.svg"
+              , xlinkHref "#die"
               , height "3"
               , width "3"
               ]
