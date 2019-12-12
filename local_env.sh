@@ -19,6 +19,8 @@ export PGPORT="5433"
 export PGHOST="localhost"
 export PGUSER="bgrosse"
 export PGDATABASE="nodice"
+export API_ROOT="/api"
+
 export BOT_TOKEN="423731161:AAGtwf2CmhOFOnwVocSwe0ylyh63zCyfzbo"
 export BOT_GAME="QueDiceTest"
 export BOT_OFFICIAL_GROUPS=""

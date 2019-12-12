@@ -53,6 +53,7 @@ const cors = corsMiddleware({
     "https://www.qdice.wtf",
     "https://elm-dice.herokuapp.com",
     "https://*.hwcdn.net",
+    "http://electron",
   ],
   allowHeaders: ["authorization"],
   exposeHeaders: ["authorization"],
@@ -88,7 +89,10 @@ server.use(
   })
 );
 
-const root = "/";
+if (!process.env.API_ROOT) {
+  throw new Error("API_ROOT_is not set");
+}
+const root = process.env.API_ROOT;
 
 const lock = new AsyncLock();
 

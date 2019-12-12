@@ -60,7 +60,12 @@ baseUrl location =
             "http://localhost:5001/api"
 
         _ ->
-            "/api"
+            case location.host of
+                "electron" ->
+                    "https://qdice.wtf/api"
+
+                _ ->
+                    "/api"
 
 
 init : String -> Url -> Maybe String -> Bool -> ( Model, Cmd Msg )
