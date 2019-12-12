@@ -57,16 +57,19 @@ client.on("message", (topic, message) => {
         console.log("offical", officialGroups);
         if (officialGroups.length) {
           const { table, players } = event;
-          officialGroups.forEach(id => {
-            console.log("aviso", id);
-            telegram.sendMessage(
-              id,
-              `A game countdown has started in table ${table}, with ${players
-                .map(p => p.name)
-                .join(", ")}: https://qdice.wtf/${table}`
-            );
-            //sendScreenshot(id, table);
-          });
+          const realPlayerCount = players.filter(p => !p.bot).length;
+          if (realPlayerCount > 1) {
+            officialGroups.forEach(id => {
+              console.log("aviso", id);
+              telegram.sendMessage(
+                id,
+                `A game countdown has started in table ${table}, with ${players
+                  .map(p => p.name)
+                  .join(", ")}: https://qdice.wtf/${table}`
+              );
+              //sendScreenshot(id, table);
+            });
+          }
         }
     }
   }
@@ -225,10 +228,10 @@ bot.command("notifyme", ctx => {
   const index = subscribed.indexOf(ctx.chat.id);
   if (index === -1) {
     subscribed.push(ctx.chat.id);
-    ctx.reply("Te voy a dar notificationes!");
+    ctx.reply("I will notify you when anyone joins a table.");
   } else {
     subscribed.slice(index, 1);
-    ctx.reply("Ya no estas suscrito.");
+    ctx.reply("I will not notify you anymore.");
   }
 });
 

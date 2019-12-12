@@ -134,9 +134,8 @@ export const join = (user, table: Table, clientId): CommandResult => {
   }
 
   logger.debug("join", typeof user.id);
-  const players = table.players.concat([
-    makePlayer(user, clientId, table.players.length),
-  ]);
+  const player = makePlayer(user, clientId, table.players.length);
+  const players = table.players.concat([player]);
   const status =
     table.status === STATUS_FINISHED ? STATUS_PAUSED : table.status;
   const lands =
@@ -169,7 +168,7 @@ export const join = (user, table: Table, clientId): CommandResult => {
       publish.event({
         type: "join",
         table: table.name,
-        player: { name: user.name },
+        player,
       });
     }
   }
