@@ -36,6 +36,10 @@ There is a [subreddit in place as a community forum](https://reddit.com/r/qdice)
 #### Medium priority:
   * ✗ Lower flag to current position
   * ✗ Profile page
+  * ✗ Investigate shaky animations
+  * ✗ Redirect to best table
+  * ✗ Auth does not always return to same table
+  * ✗ Table list header/description
 
 ### Low priority:
   * ✗ Unintented login change when adding already registered user of auth network
