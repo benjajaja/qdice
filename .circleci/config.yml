@@ -47,6 +47,16 @@ jobs:
     - run:
         name: Build Docker image
         command: ./scripts/build.sh
+  push_image:
+    docker:
+    - image: circleci/node:10.15.3
+    working_directory: ~/repo
+    steps:
+    - setup_remote_docker:
+        docker_layer_caching: true
+    - restore_cache:
+        name: Checkout source code
+        key: repo-{{ .Environment.CIRCLE_SHA1 }}
     - run:
         name: Push image to container registry
         command: |
@@ -183,11 +193,17 @@ workflows:
     - test_web:
         requires:
         - install_dependencies
-    - deploy:
+    - push_image:
         requires:
         - test_e2e
         - test_nodejs
         - test_web
+        filters:
+          branches:
+            only: master
+    - deploy:
+        requires:
+        - push_image
         filters:
           branches:
             only: master
