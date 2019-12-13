@@ -65,46 +65,59 @@ update msg model =
 
 updateLands : Model -> List LandUpdate -> Maybe BoardMove -> (String -> Msg) -> Model
 updateLands model updates mMove msg =
-    let
-        map =
-            model.map
+    if List.length updates == 0 then
+        let
+            ( layout, _, _ ) =
+                model.layout
 
-        ( layout, _, _ ) =
-            model.layout
+            move_ =
+                Maybe.withDefault model.move mMove
+        in
+        { model
+            | animations =
+                Dict.union
+                    (attackAnimations layout move_ model.move msg)
+                    model.animations
+            , move = move_
+        }
 
-        landUpdates : List ( Land.Land, List ( Int, AnimationState ) )
-        landUpdates =
-            List.map (updateLand layout updates) map.lands
+    else
+        let
+            map =
+                model.map
 
-        map_ =
-            { map
-                | lands =
-                    if List.length landUpdates == 0 then
-                        map.lands
+            ( layout, _, _ ) =
+                model.layout
 
-                    else
-                        let
-                            _ =
-                                Debug.log "actually" "updating lands"
-                        in
-                        List.map Tuple.first landUpdates
-            }
+            landUpdates : List ( Land.Land, List ( Int, AnimationState ) )
+            landUpdates =
+                List.map (updateLand layout updates) map.lands
 
-        move_ =
-            Maybe.withDefault model.move mMove
-    in
-    { model
-        | map = map_
-        , move = move_
-        , animations =
-            Dict.union
-                (Dict.union (animationsDict landUpdates) <|
-                    attackAnimations layout move_ model.move msg
-                )
-                model.animations
+            map_ =
+                { map
+                    | lands =
+                        if List.length landUpdates == 0 then
+                            map.lands
 
-        -- , hovered = Nothing
-    }
+                        else
+                            List.map Tuple.first landUpdates
+                }
+
+            move_ =
+                Maybe.withDefault model.move mMove
+        in
+        { model
+            | map = map_
+            , move = move_
+            , animations =
+                Dict.union
+                    (Dict.union (animationsDict landUpdates) <|
+                        attackAnimations layout move_ model.move msg
+                    )
+                    model.animations
+
+            -- , hovered = Nothing
+        }
 
 
 animationsDict : List ( Land.Land, List ( Int, AnimationState ) ) -> Animations

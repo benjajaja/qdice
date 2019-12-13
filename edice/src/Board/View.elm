@@ -45,9 +45,8 @@ lazyBoard map layoutInfo pathCache animations selected hovered =
 board : Land.Map -> ( Layout, String, String ) -> PathCache -> Animations -> List Land -> Maybe Land -> Svg Msg
 board map ( layout, sWidth, sHeight ) pathCache animations selected hovered =
     let
-        massShapeF =
-            Html.Lazy.lazy <| massElement layout pathCache
-
+        -- massShapeF =
+        -- Html.Lazy.lazy <| massElement layout pathCache
         landDiesF =
             Html.Lazy.lazy <| landDies layout animations
     in
@@ -131,18 +130,19 @@ polygonAttrs layout pathCache selected hovered land =
     ]
 
 
-massElement : Layout -> PathCache -> Land -> Svg Msg
-massElement layout pathCache land =
-    polygon
-        [ fill "transparent"
-        , stroke "black"
-        , strokeLinejoin "round"
-        , strokeWidth "1.5"
-        , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
-        , points <| Board.PathCache.points pathCache layout land
-        , class "edLandOutline"
-        ]
-        []
+
+-- massElement : Layout -> PathCache -> Land -> Svg Msg
+-- massElement layout pathCache land =
+-- polygon
+-- [ fill "transparent"
+-- , stroke "black"
+-- , strokeLinejoin "round"
+-- , strokeWidth "1.5"
+-- , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+-- , points <| Board.PathCache.points pathCache layout land
+-- , class "edLandOutline"
+-- ]
+-- []
 
 
 landMasses : List Land -> List Land

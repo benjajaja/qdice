@@ -6,7 +6,7 @@ import Land exposing (Cells)
 import Maps.Sources exposing (mapSourceString)
 import Regex
 import String
-import Tables exposing (Map(..), Table)
+import Tables exposing (Map(..), Table, encodeMap)
 
 
 type alias MapSource =
@@ -40,11 +40,11 @@ consoleLogMap map =
 
 load : Map -> Land.Map
 load map =
-    emojisToMap <| mapSourceString map
+    emojisToMap (encodeMap map) <| mapSourceString map
 
 
-emojisToMap : String -> Land.Map
-emojisToMap raw =
+emojisToMap : String -> String -> Land.Map
+emojisToMap name raw =
     let
         lines : List Line
         lines =
@@ -72,7 +72,8 @@ emojisToMap raw =
                 |> List.foldr dedupeEmojis []
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)
     in
-    Land.Map lands
+    Land.Map name
+        lands
         --realWidth
         --realHeight
         (max realWidth realHeight)
@@ -256,6 +257,7 @@ indexSymbol i =
 fullCellMap : Int -> Int -> Land.Color -> Land.Map
 fullCellMap w h color =
     Land.Map
+        "FULLCELLMAP"
         (List.map
             (\r ->
                 List.map

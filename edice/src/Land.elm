@@ -1,4 +1,4 @@
-module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBorderOnSide, isBorderOnSideCube, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landColor, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide, setColor, setNeutral)
+module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBorderOnSide, isBorderOnSideCube, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
 
 import Helpers exposing (find, findIndex)
 import Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
@@ -36,7 +36,8 @@ type alias Layout =
 
 
 type alias Map =
-    { lands : List Land
+    { name : String
+    , lands : List Land
     , width : Int
     , height : Int
     }
@@ -190,25 +191,6 @@ offsetToHex ( col, row ) =
     HH.intFactory ( x, row )
 
 
-landColor : Map -> Land -> Color -> Map
-landColor map land color =
-    { map
-        | lands =
-            List.map
-                (\l ->
-                    { l
-                        | color =
-                            if land == l then
-                                color
-
-                            else
-                                l.color
-                    }
-                )
-                map.lands
-    }
-
-
 append : Map -> Land -> Map
 append map land =
     { map | lands = List.append [ land ] map.lands }
@@ -259,27 +241,6 @@ concat map =
             Land hexes Neutral emptyEmoji 0
 
 
-{-| set one color to neutral
--}
-setNeutral : Map -> Color -> Map
-setNeutral map color =
-    { map
-        | lands =
-            List.map
-                (\l ->
-                    { l
-                        | color =
-                            if l.color == color then
-                                Neutral
-
-                            else
-                                l.color
-                    }
-                )
-                map.lands
-    }
-
-
 playerColor : Int -> Color
 playerColor i =
     if i == -1 then
@@ -324,22 +285,6 @@ playerColor i =
 randomPlayerColor : (Color -> a) -> Cmd a
 randomPlayerColor v =
     Random.int 1 7 |> Random.map playerColor |> Random.generate v
-
-
-setColor : Map -> Land -> Color -> Map
-setColor map land color =
-    { map
-        | lands =
-            List.map
-                (\l ->
-                    if l == land then
-                        { land | color = color }
-
-                    else
-                        l
-                )
-                map.lands
-    }
 
 
 allSides : List Direction

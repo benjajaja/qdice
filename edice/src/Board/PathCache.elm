@@ -27,15 +27,16 @@ addToDict dict layout list =
 
 toKey : Land.Layout -> Land.Land -> String
 toKey layout land =
-    let
-        layoutKey =
-            String.fromFloat (Tuple.first layout.size)
-                ++ ","
-                ++ String.fromFloat (Tuple.second layout.size)
-                ++ ","
-                ++ String.fromFloat layout.padding
-    in
-    layoutKey ++ (List.foldl (++) "" <| List.map Land.cellToKey land.cells)
+    -- let
+    -- layoutKey =
+    -- String.fromFloat (Tuple.first layout.size)
+    -- ++ ","
+    -- ++ String.fromFloat (Tuple.second layout.size)
+    -- ++ ","
+    -- ++ String.fromFloat layout.padding
+    -- in
+    -- layoutKey ++ "_" ++ land.emoji
+    land.emoji
 
 
 landPointsString : List Land.Point -> String
