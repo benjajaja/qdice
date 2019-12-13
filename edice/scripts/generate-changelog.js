@@ -9,16 +9,25 @@ write.write(`    Markdown.toHtml [] """\n`);
 write.write("## Changelog\n");
 write.write("\n");
 
-const lines = process.env.git_log.split("\n");
+const commits = process.env.git_log.split("---\n");
 
-if (lines.length === 0) {
+if (commits.length === 0) {
   throw new Error("empty git_log env variable");
 }
-lines.forEach(line => {
-  write.write(`- ${line}  \n`);
+commits.forEach(commit => {
+  const [hash, date, ...rest] = commit.split("\n");
+  write.write(`${hash} - ${date}\n\n`);
+  rest.forEach((line, i) => {
+    if (i === 0) {
+      write.write(`> **${line}**\n\n`);
+    } else {
+      write.write(`> ${line}\n\n`);
+    }
+  });
+  write.write(`\n`);
 });
 
 write.write(`"""\n`);
 write.close();
 
-console.log("Changelog entries: " + lines.length);
+console.log("Changelog entries: " + commits.length);
