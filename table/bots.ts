@@ -69,7 +69,7 @@ export const addBots = (table: Table): CommandResult => {
     {
       ...makePlayer(botUser, "bot", table.players.length),
       bot: persona,
-      ready: false,
+      ready: process.env.NODE_ENV === "local",
     },
   ]);
 

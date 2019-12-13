@@ -9,6 +9,7 @@
 # kitty -d . --detach docker-compose logs -f
 # kitty -d . --hold --detach nv
 
+export NODE_ENV="local"
 export GOOGLE_OAUTH_SECRET="e8Nkmj9X05_hSrrREcRuDCFj"
 export PORT=5001
 export JWT_SECRET="dnauh23uasjdnlnalkslk1daWDEDasdd1madremia"
