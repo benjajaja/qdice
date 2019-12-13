@@ -18,12 +18,13 @@ type alias Model =
     , hovered : Maybe Land.Emoji
     , move : BoardMove
     , pathCache : PathCache
+    , layout : ( Layout, String, String )
     , animations : Animations
     }
 
 
 type alias PathCache =
-    Layout -> Land -> String
+    Dict.Dict String String
 
 
 type alias AnimationState =

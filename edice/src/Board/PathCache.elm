@@ -1,30 +1,21 @@
-module Board.PathCache exposing (addPointToString, addToDict, createPathCache, landPointsString, pointToString, toKey)
+module Board.PathCache exposing (addPointToString, addToDict, landPointsString, pointToString, points, toKey)
 
 import Board.Types exposing (..)
 import Dict
 import Land
 
 
-createPathCache : Land.Map -> (Land.Layout -> Land.Land -> String)
-createPathCache map =
-    let
-        ( dictLayout, _, _ ) =
-            getLayout map
+points : PathCache -> Land.Layout -> Land.Land -> String
+points dict layout land =
+    case Dict.get (toKey layout land) dict of
+        Just path ->
+            path
 
-        dict : Dict.Dict String String
-        dict =
-            addToDict Dict.empty dictLayout map.lands
-    in
-        \layout ->
-            \land ->
-                case Dict.get (toKey layout land) dict of
-                    Just path ->
-                        path
-
-                    Nothing ->
-                        Land.landPath layout land.cells |> landPointsString
+        Nothing ->
+            Land.landPath layout land.cells |> landPointsString
 
 
+addToDict : Dict.Dict String String -> Land.Layout -> List Land.Land -> Dict.Dict String String
 addToDict dict layout list =
     case list of
         f :: tail ->
@@ -44,7 +35,7 @@ toKey layout land =
                 ++ ","
                 ++ String.fromFloat layout.padding
     in
-        layoutKey ++ (List.foldl (++) "" <| List.map Land.cellToKey land.cells)
+    layoutKey ++ (List.foldl (++) "" <| List.map Land.cellToKey land.cells)
 
 
 landPointsString : List Land.Point -> String

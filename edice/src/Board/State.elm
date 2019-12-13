@@ -2,8 +2,7 @@ module Board.State exposing (init, update, updateLands)
 
 import Animation exposing (px)
 import Animation.Messenger
-import Board.Colors
-import Board.PathCache exposing (createPathCache)
+import Board.PathCache
 import Board.Types exposing (..)
 import Dict
 import Land
@@ -12,7 +11,15 @@ import Time exposing (millisToPosix)
 
 init : Land.Map -> Model
 init map =
-    Model map Nothing Idle (createPathCache map) <| Dict.empty
+    let
+        ( layout, w, h ) =
+            getLayout map
+
+        pathCache : Dict.Dict String String
+        pathCache =
+            Board.PathCache.addToDict Dict.empty layout map.lands
+    in
+    Model map Nothing Idle pathCache ( layout, w, h ) Dict.empty
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -63,7 +70,7 @@ updateLands model updates mMove msg =
             model.map
 
         ( layout, _, _ ) =
-            getLayout map
+            model.layout
 
         landUpdates : List ( Land.Land, List ( Int, AnimationState ) )
         landUpdates =
@@ -71,7 +78,16 @@ updateLands model updates mMove msg =
 
         map_ =
             { map
-                | lands = List.map Tuple.first landUpdates
+                | lands =
+                    if List.length landUpdates == 0 then
+                        map.lands
+
+                    else
+                        let
+                            _ =
+                                Debug.log "actually" "updating lands"
+                        in
+                        List.map Tuple.first landUpdates
             }
 
         move_ =
