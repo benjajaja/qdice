@@ -5,7 +5,7 @@ import Backend.MqttCommands exposing (attack, sendGameCommand)
 import Backend.Types exposing (Topic(..))
 import Board
 import Board.State
-import Board.Types
+import Board.Types exposing (Msg(..))
 import Game.Types exposing (..)
 import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates, playSound)
 import Land
@@ -199,7 +199,7 @@ updateTableStatus model status =
             model.game.board
 
         board_ =
-            Board.State.updateLands oldBoard status.lands move
+            Board.State.updateLands oldBoard status.lands move AnimationDone
 
         hasStarted =
             game.status /= Playing && status.status == Playing
@@ -329,7 +329,7 @@ showRoll : Types.Model -> Roll -> ( Types.Model, Cmd Msg )
 showRoll model roll =
     let
         board_ =
-            Board.State.updateLands model.game.board [] <| Just Board.Types.Idle
+            Board.State.updateLands model.game.board [] (Just Board.Types.Idle) AnimationDone
 
         game =
             model.game
@@ -570,8 +570,8 @@ updateTable model table msg =
                                                         _ ->
                                                             []
                                                     )
-                                                <|
-                                                    Just move_
+                                                    (Just move_)
+                                                    AnimationDone
 
                                             --{ board
                                             --| move = Debug.log "bck move" move_

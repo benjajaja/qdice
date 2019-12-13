@@ -1,6 +1,7 @@
 module Board.State exposing (init, update, updateLands)
 
 import Animation exposing (px)
+import Animation.Messenger
 import Board.Colors
 import Board.PathCache exposing (createPathCache)
 import Board.Types exposing (..)
@@ -45,9 +46,18 @@ update msg model =
             , Cmd.none
             )
 
+        AnimationDone id ->
+            let
+                animations_ =
+                    Dict.remove id model.animations
+            in
+            ( { model | animations = animations_ }
+            , Cmd.none
+            )
 
-updateLands : Model -> List LandUpdate -> Maybe BoardMove -> Model
-updateLands model updates mMove =
+
+updateLands : Model -> List LandUpdate -> Maybe BoardMove -> (String -> Msg) -> Model
+updateLands model updates mMove msg =
     let
         map =
             model.map
@@ -55,7 +65,7 @@ updateLands model updates mMove =
         ( layout, _, _ ) =
             getLayout map
 
-        landUpdates : List ( Land.Land, List ( Int, Animation.State ) )
+        landUpdates : List ( Land.Land, List ( Int, AnimationState ) )
         landUpdates =
             List.map (updateLand layout updates) map.lands
 
@@ -73,7 +83,7 @@ updateLands model updates mMove =
         , animations =
             Dict.union
                 (Dict.union (animationsDict landUpdates) <|
-                    attackAnimations layout move_ model.move
+                    attackAnimations layout move_ model.move msg
                 )
                 model.animations
 
@@ -81,7 +91,7 @@ updateLands model updates mMove =
     }
 
 
-animationsDict : List ( Land.Land, List ( Int, Animation.State ) ) -> Dict.Dict String Animation.State
+animationsDict : List ( Land.Land, List ( Int, AnimationState ) ) -> Animations
 animationsDict landUpdates =
     List.foldl
         (\( land, diceAnimations ) ->
@@ -98,7 +108,7 @@ animationsDict landUpdates =
         landUpdates
 
 
-updateLand : Land.Layout -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, Animation.State ) )
+updateLand : Land.Layout -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, AnimationState ) )
 updateLand layout updates land =
     let
         landUpdate =
@@ -117,7 +127,7 @@ updateLand layout updates land =
             ( land, [] )
 
 
-updateLandAnimations : Land.Layout -> Land.Land -> LandUpdate -> List ( Int, Animation.State )
+updateLandAnimations : Land.Layout -> Land.Land -> LandUpdate -> List ( Int, AnimationState )
 updateLandAnimations layout land landUpdate =
     if landUpdate.color == land.color && landUpdate.points > land.points then
         let
@@ -130,25 +140,28 @@ updateLandAnimations layout land landUpdate =
             (\index ->
                 let
                     yOffset =
-                        if index >= 4 then
-                            1.1
+                        1
+                            + (if index >= 4 then
+                                1.1
 
-                        else
-                            2
+                               else
+                                2
+                              )
 
                     y =
-                        cy - yOffset - (toFloat (modBy 4 index) * 1.2)
+                        cy - yOffset - (toFloat (modBy 6 index) * 1.2)
                 in
                 ( index
-                , Animation.interrupt
-                    [ Animation.wait <| millisToPosix <| 10 * index
+                , Animation.queue
+                    [ Animation.wait <| millisToPosix <| 2 * index
                     , Animation.toWith
                         (Animation.easing
                             { duration = 100
-                            , ease = \x -> x ^ 2
+                            , ease = \x -> x ^ 0.5
                             }
                         )
                         [ Animation.y <| y ]
+                    , Animation.Messenger.send <| AnimationDone <| getLandDieKey land index
                     ]
                   <|
                     Animation.style
@@ -164,13 +177,13 @@ updateLandAnimations layout land landUpdate =
         []
 
 
-attackAnimations : Land.Layout -> BoardMove -> BoardMove -> Dict.Dict String Animation.State
-attackAnimations layout move oldMove =
+attackAnimations : Land.Layout -> BoardMove -> BoardMove -> (String -> Msg) -> Animations
+attackAnimations layout move oldMove msg =
     case move of
         FromTo from to ->
             Dict.fromList
                 [ ( "attack_" ++ from.emoji
-                  , translateStack False layout from to
+                  , translateStack False layout from to <| msg <| "attack_" ++ from.emoji
                   )
 
                 -- , ( "attack_" ++ to.emoji
@@ -183,7 +196,7 @@ attackAnimations layout move oldMove =
                 FromTo from to ->
                     Dict.fromList
                         [ ( "attack_" ++ from.emoji
-                          , translateStack True layout from to
+                          , translateStack True layout from to <| msg <| "attack_" ++ from.emoji
                           )
 
                         -- , ( "attack_" ++ to.emoji
@@ -198,7 +211,8 @@ attackAnimations layout move oldMove =
             Dict.empty
 
 
-translateStack reverse layout from to =
+translateStack : Bool -> Land.Layout -> Land.Land -> Land.Land -> Msg -> AnimationState
+translateStack reverse layout from to doneMsg =
     let
         ( fx, fy ) =
             Land.landCenter
@@ -228,18 +242,25 @@ translateStack reverse layout from to =
                 )
     in
     Animation.queue
-        [ Animation.toWith
+        ([ Animation.toWith
             (Animation.easing
                 { duration =
                     if not reverse then
-                        500
+                        100
 
                     else
                         100
-                , ease = \z -> z ^ 3
+                , ease = \z -> z ^ 2
                 }
             )
             [ toAnimation ]
-        ]
+         ]
+            ++ (if reverse == True then
+                    [ Animation.Messenger.send doneMsg ]
+
+                else
+                    []
+               )
+        )
     <|
         Animation.style [ fromAnimation ]

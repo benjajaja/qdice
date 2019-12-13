@@ -310,7 +310,7 @@ landDies layout animations land =
                 (land.points - 1)
 
 
-landDie : (Int -> Maybe Animation.State) -> ( Float, Float ) -> Int -> Int -> Svg Msg
+landDie : (Int -> Maybe AnimationState) -> ( Float, Float ) -> Int -> Int -> Svg Msg
 landDie getAnimation ( cx, cy ) points index =
     let
         xOffset =

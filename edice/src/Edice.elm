@@ -315,16 +315,16 @@ update msg model =
                 game =
                     model.game
 
-                board =
-                    game.board
+                ( board, cmds ) =
+                    Board.updateAnimations game.board animateMsg
             in
             ( { model
                 | game =
                     { game
-                        | board = Board.updateAnimations board (Animation.update animateMsg)
+                        | board = board
                     }
               }
-            , Cmd.none
+            , Cmd.map BoardMsg cmds
             )
 
         BoardMsg boardMsg ->
@@ -572,7 +572,11 @@ mainViewSubscriptions : Model -> Sub Msg
 mainViewSubscriptions model =
     case model.route of
         GameRoute _ ->
-            Animation.subscription Animate <| Board.animations model.game.board
+            let
+                list =
+                    Board.animations model.game.board
+            in
+            Animation.subscription Animate list
 
         _ ->
             Sub.none

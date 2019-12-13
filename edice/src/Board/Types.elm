@@ -1,6 +1,7 @@
-module Board.Types exposing (Animations, BoardMove(..), LandUpdate, Model, Msg(..), PathCache, getLandDieKey, getLayout)
+module Board.Types exposing (AnimationState, Animations, BoardMove(..), LandUpdate, Model, Msg(..), PathCache, getLandDieKey, getLayout)
 
 import Animation exposing (px)
+import Animation.Messenger
 import Dict
 import Land exposing (Land, Layout, Map)
 
@@ -9,6 +10,7 @@ type Msg
     = ClickLand Land
     | HoverLand Land.Emoji
     | UnHoverLand Land.Emoji
+    | AnimationDone String
 
 
 type alias Model =
@@ -24,8 +26,12 @@ type alias PathCache =
     Layout -> Land -> String
 
 
+type alias AnimationState =
+    Animation.Messenger.State Msg
+
+
 type alias Animations =
-    Dict.Dict String Animation.State
+    Dict.Dict String AnimationState
 
 
 getLandDieKey : Land -> Int -> String
