@@ -230,7 +230,9 @@ const strategies = (strategy: BotStrategy) => {
               const thisChance = source.points - target.points;
               if (thisChance > bestChance) {
                 if (thisChance > 0) {
-                  return { from: source, to: target, wheight: thisChance };
+                  if (canAttackSucceed(source, target)) {
+                    return { from: source, to: target, wheight: thisChance };
+                  }
                 }
               }
               // <
@@ -271,14 +273,18 @@ const strategies = (strategy: BotStrategy) => {
                 if (target.color === lastAgressorColor) {
                   const thisChance = source.points - target.points;
                   if (thisChance > bestChance) {
-                    return { from: source, to: target, wheight: thisChance };
+                    if (canAttackSucceed(source, target)) {
+                      return { from: source, to: target, wheight: thisChance };
+                    }
                   }
                 }
               } else if (target.color === Color.Neutral) {
                 const thisChance = source.points - target.points;
                 if (thisChance > bestChance) {
                   if (thisChance > 1) {
-                    return { from: source, to: target, wheight: thisChance };
+                    if (canAttackSucceed(source, target)) {
+                      return { from: source, to: target, wheight: thisChance };
+                    }
                   }
                 }
               }
@@ -289,3 +295,6 @@ const strategies = (strategy: BotStrategy) => {
         );
   }
 };
+
+const canAttackSucceed = (from: Land, to: Land) =>
+  from.points * 6 > to.points * 1;
