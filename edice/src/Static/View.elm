@@ -36,7 +36,6 @@ There is a [subreddit in place as a community forum](https://reddit.com/r/qdice)
 #### Medium priority:
   * ✗ Lower flag to current position
   * ✗ Profile page
-  * ✗ Investigate shaky animations
   * ✗ Redirect to best table
   * ✗ Auth does not always return to same table
   * ✗ Table list header/description
@@ -58,6 +57,7 @@ There is a [subreddit in place as a community forum](https://reddit.com/r/qdice)
   * ? Gamerule: Capitols
 
 #### Complete (also see [changelog](/changelog) for bug fixes):
+  * ✔ Fixed laggy animations
   * ✔ Surrender / flag out
   * ✔ Fix telegram bot (needs verification)
   * ✔ Connect an auth method to anonymous account

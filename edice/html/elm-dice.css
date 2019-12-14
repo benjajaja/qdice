@@ -229,9 +229,13 @@ button .material-icons, .edButton .material-icons {
   font-size: 33%;
   transform: skewY(15deg);
 }
+.edBoard--stack {
+  will-change: transform;
+}
 .edBoard--dies {
   pointer-events: none;
   fill: currentColor;
+  will-change: transform;
   /*transform: translate(-0.25vw, -0.25vw);*/
 }
 .edLand {

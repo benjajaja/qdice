@@ -23,7 +23,19 @@ view : Model -> Html Types.Msg
 view model =
     let
         board =
-            Board.view model.game.board (Maybe.andThen (canHover model.game) model.game.board.hovered)
+            Board.view model.game.board
+                (case model.game.board.hovered of
+                    Just emoji ->
+                        if canHover model.game emoji then
+                            model.game.board.hovered
+                            -- for Html.lazy ref-check
+
+                        else
+                            Nothing
+
+                    Nothing ->
+                        Nothing
+                )
                 |> Html.map BoardMsg
     in
     div [ class "edMainScreen" ]

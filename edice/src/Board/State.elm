@@ -26,9 +26,21 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         HoverLand land ->
-            ( { model | hovered = Just land }
-            , Cmd.none
-            )
+            -- ugly optimization for Html.lazy ref-equality check
+            case model.hovered of
+                Just hovered ->
+                    if hovered /= land then
+                        ( { model | hovered = Just land }
+                        , Cmd.none
+                        )
+
+                    else
+                        ( model, Cmd.none )
+
+                Nothing ->
+                    ( { model | hovered = Just land }
+                    , Cmd.none
+                    )
 
         UnHoverLand land ->
             case model.hovered of
@@ -140,17 +152,21 @@ animationsDict landUpdates =
 updateLand : Land.Layout -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, AnimationState ) )
 updateLand layout updates land =
     let
-        landUpdate =
+        match =
             List.filter (\l -> l.emoji == land.emoji) updates
     in
-    case List.head landUpdate of
-        Just firstUpdate ->
-            ( { land
-                | color = firstUpdate.color
-                , points = firstUpdate.points
-              }
-            , updateLandAnimations layout land firstUpdate
-            )
+    case List.head match of
+        Just landUpdate ->
+            if landUpdate.color /= land.color || landUpdate.points /= land.points then
+                ( { land
+                    | color = landUpdate.color
+                    , points = landUpdate.points
+                  }
+                , updateLandAnimations layout land landUpdate
+                )
+
+            else
+                ( land, [] )
 
         Nothing ->
             ( land, [] )
@@ -167,19 +183,6 @@ updateLandAnimations layout land landUpdate =
         in
         List.map
             (\index ->
-                let
-                    yOffset =
-                        1
-                            + (if index >= 4 then
-                                1.1
-
-                               else
-                                2
-                              )
-
-                    y =
-                        cy - yOffset - (toFloat (modBy 6 index) * 1.2)
-                in
                 ( index
                 , Animation.queue
                     [ Animation.wait <| millisToPosix <| 2 * index
@@ -189,12 +192,12 @@ updateLandAnimations layout land landUpdate =
                             , ease = \x -> x ^ 0.5
                             }
                         )
-                        [ Animation.y <| y ]
+                        [ Animation.translate (px 0) (px 0) ]
                     , Animation.Messenger.send <| AnimationDone <| getLandDieKey land index
                     ]
                   <|
                     Animation.style
-                        [ Animation.y <| y - (toFloat <| 10 * index) ]
+                        [ Animation.translate (px 0) (px <| 0 - (toFloat <| 10 * (index + 1))) ]
                 )
             )
         <|

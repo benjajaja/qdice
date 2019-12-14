@@ -490,11 +490,6 @@ update msg model =
             ( model, requestNotifications () )
 
 
-msgsToCmds : List Msg -> List (Cmd Msg)
-msgsToCmds msgs =
-    List.map (\msg -> Task.perform (always msg) (Task.succeed ())) msgs
-
-
 currentTable : Route -> Maybe Table
 currentTable route =
     case route of
@@ -503,11 +498,6 @@ currentTable route =
 
         _ ->
             Nothing
-
-
-lazyList : (a -> List (Html.Html Msg)) -> a -> List (Html.Html Msg)
-lazyList v =
-    Html.Lazy.lazy (\model -> Html.div [] (v model)) >> (\html -> [ html ])
 
 
 view : Model -> Browser.Document Msg

@@ -421,15 +421,15 @@ clickLand model land =
             )
 
 
-canHover : Model -> Land.Emoji -> Maybe Land.Land
+canHover : Model -> Land.Emoji -> Bool
 canHover game emoji =
     case game.player of
         Nothing ->
-            Nothing
+            False
 
         Just player ->
             if not game.hasTurn then
-                Nothing
+                False
 
             else
                 let
@@ -439,43 +439,44 @@ canHover game emoji =
                     foundLand =
                         findLand emoji game.board.map.lands
                 in
-                Maybe.andThen
-                    (\land ->
+                case foundLand of
+                    Just land ->
                         case game.board.move of
                             Board.Types.Idle ->
                                 if land.points > 1 && land.color == player.color then
-                                    Just land
+                                    True
 
                                 else
-                                    Nothing
+                                    False
 
                             Board.Types.From from ->
                                 if land == from then
                                     -- same land: deselect
-                                    Just land
+                                    True
 
                                 else if land.color == player.color then
                                     -- same color and...
                                     if land.points > 1 then
                                         -- could move: select
-                                        Just land
+                                        True
 
                                     else
                                         -- could not move: do nothing
-                                        Nothing
+                                        False
 
                                 else if not <| Land.isBordering land from then
                                     -- not bordering: do nothing
-                                    Nothing
+                                    False
 
                                 else
                                     -- is bordering, different land and color: attack
-                                    Just land
+                                    True
 
                             Board.Types.FromTo from to ->
-                                Nothing
-                    )
-                    foundLand
+                                False
+
+                    Nothing ->
+                        False
 
 
 updateTable : Types.Model -> Table -> Backend.Types.TableMessage -> ( Types.Model, Cmd Types.Msg )

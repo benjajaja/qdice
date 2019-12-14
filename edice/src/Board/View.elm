@@ -1,6 +1,7 @@
 module Board.View exposing (view)
 
 import Animation
+import Array
 import Board.Colors
 import Board.PathCache
 import Board.Types exposing (..)
@@ -9,7 +10,7 @@ import Helpers exposing (dataTestId, dataTestValue)
 import Html
 import Html.Attributes
 import Html.Lazy
-import Land exposing (Land, Layout, Map, Point, cellCenter, landCenter, playerColors)
+import Land exposing (Land, Layout, landCenter, playerColors)
 import String
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -17,16 +18,21 @@ import Svg.Events exposing (..)
 import Svg.Lazy
 
 
-view : Model -> Maybe Land -> Html.Html Msg
+empty : List a
+empty =
+    []
+
+
+view : Model -> Maybe Land.Emoji -> Html.Html Msg
 view model hovered =
-    lazyBoard
+    Html.Lazy.lazy6 board
         model.map
         model.layout
         model.pathCache
         model.animations
         (case model.move of
             Idle ->
-                []
+                empty
 
             From land ->
                 [ land ]
@@ -37,18 +43,13 @@ view model hovered =
         hovered
 
 
-lazyBoard : Land.Map -> ( Layout, String, String ) -> PathCache -> Animations -> List Land -> Maybe Land -> Svg Msg
-lazyBoard map layoutInfo pathCache animations selected hovered =
-    Html.Lazy.lazy6 board map layoutInfo pathCache animations selected hovered
-
-
-board : Land.Map -> ( Layout, String, String ) -> PathCache -> Animations -> List Land -> Maybe Land -> Svg Msg
+board : Land.Map -> ( Layout, String, String ) -> PathCache -> Animations -> List Land -> Maybe Land.Emoji -> Svg Msg
 board map ( layout, sWidth, sHeight ) pathCache animations selected hovered =
     let
         -- massShapeF =
         -- Html.Lazy.lazy <| massElement layout pathCache
         landDiesF =
-            Html.Lazy.lazy <| landDies layout animations
+            Html.Lazy.lazy <| lazyLandDies layout animations
     in
     Html.div [ class "edBoard" ]
         [ Svg.svg
@@ -63,71 +64,91 @@ board map ( layout, sWidth, sHeight ) pathCache animations selected hovered =
             -- , Svg.Attributes.style "background: url(https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2F2.bp.blogspot.com%2F-vtEHvcmS-Ac%2FTtHk0IvsxoI%2FAAAAAAAAAnw%2FV6e_eGfmCac%2Fs1600%2FRisk%2BII%2BGame%2BBoard.jpg&f=1&nofb=1); background-size: 110% 110%; background-position: top -20px left -30px"
             ]
             [ die
-            , lazyLands layout pathCache selected hovered map.lands
+            , lazyLands layout
+                pathCache
+                selected
+                hovered
+                map.lands
             , g [] <| List.map landDiesF map.lands
             ]
         ]
 
 
-lazyLands : Layout -> PathCache -> List Land -> Maybe Land -> List Land -> Svg Msg
+lazyLands :
+    Layout
+    -> PathCache
+    -> List Land
+    -> Maybe Land.Emoji
+    -> List Land
+    -> Svg Msg
 lazyLands =
     Svg.Lazy.lazy5 realLands
 
 
-realLands : Layout -> PathCache -> List Land -> Maybe Land -> List Land -> Svg Msg
+realLands :
+    Layout
+    -> PathCache
+    -> List Land
+    -> Maybe Land.Emoji
+    -> List Land
+    -> Svg Msg
 realLands layout pathCache selected hovered lands =
     g [] <|
-        List.map (lazyLandElement layout pathCache selected hovered) lands
+        List.map
+            (lazyLandElement layout
+                pathCache
+                selected
+                hovered
+            )
+            lands
 
 
-lazyLandElement : Layout -> PathCache -> List Land.Land -> Maybe Land -> (Land.Land -> Svg Msg)
-lazyLandElement layout pathCache selected hovered =
-    Svg.Lazy.lazy5 landElement layout pathCache selected hovered
-
-
-landElement : Layout -> PathCache -> List Land.Land -> Maybe Land -> Land.Land -> Svg Msg
-landElement layout pathCache selected hovered land =
+lazyLandElement :
+    Layout
+    -> PathCache
+    -> List Land.Land
+    -> Maybe Land.Emoji
+    -> Land.Land
+    -> Svg Msg
+lazyLandElement layout pathCache selected hovered land =
     let
         isSelected =
             List.member land selected
 
         isHovered =
             case hovered of
-                Just l ->
-                    l == land
+                Just emoji ->
+                    emoji == land.emoji
 
                 Nothing ->
                     False
-
-        attrs =
-            List.append
-                (polygonAttrs layout pathCache isSelected isHovered land)
-                [ onClick (ClickLand land)
-                , onMouseOver (HoverLand land.emoji)
-                , onMouseOut (UnHoverLand land.emoji)
-                , dataTestId <| "land-" ++ land.emoji
-                , dataTestValue "selected"
-                    (if isSelected then
-                        "true"
-
-                     else
-                        "false"
-                    )
-                ]
     in
-    polygon attrs []
+    Svg.Lazy.lazy5 landElement layout pathCache isSelected isHovered land
 
 
-polygonAttrs : Layout -> PathCache -> Bool -> Bool -> Land.Land -> List (Svg.Attribute Msg)
-polygonAttrs layout pathCache selected hovered land =
-    [ fill <| landColor selected hovered land.color
-    , stroke "black"
-    , strokeLinejoin "round"
-    , strokeWidth "1"
-    , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
-    , points <| Board.PathCache.points pathCache layout land
-    , class "edLand"
-    ]
+landElement : Layout -> PathCache -> Bool -> Bool -> Land.Land -> Svg Msg
+landElement layout pathCache isSelected isHovered land =
+    polygon
+        [ fill <| landColor isSelected isHovered land.color
+        , stroke "black"
+        , strokeLinejoin "round"
+        , strokeWidth "1"
+        , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+        , points <| Board.PathCache.points pathCache layout land
+        , class "edLand"
+        , onClick (ClickLand land)
+        , onMouseOver (HoverLand land.emoji)
+        , onMouseOut (UnHoverLand land.emoji)
+        , dataTestId <| "land-" ++ land.emoji
+        , dataTestValue "selected"
+            (if isSelected then
+                "true"
+
+             else
+                "false"
+            )
+        ]
+        []
 
 
 
@@ -164,21 +185,63 @@ landMasses lands =
         lands
 
 
-landDies : Layout -> Animations -> Land.Land -> Svg Msg
-landDies layout animations land =
+lazyLandDies : Layout -> Animations -> Land.Land -> Svg Msg
+lazyLandDies layout animations land =
     let
-        attrs =
-            case Dict.get ("attack_" ++ land.emoji) animations of
-                Just animation ->
-                    Animation.render animation
+        stackAnimation : Maybe AnimationState
+        stackAnimation =
+            Dict.get ("attack_" ++ land.emoji) animations
 
-                Nothing ->
-                    []
+        diceAnimations : Array.Array (Maybe AnimationState)
+        diceAnimations =
+            getDiceAnimations animations land
     in
-    g attrs <|
+    Svg.Lazy.lazy4 landDies layout stackAnimation diceAnimations land
+
+
+getDiceAnimations : Animations -> Land.Land -> Array.Array (Maybe AnimationState)
+getDiceAnimations dict land =
+    let
+        animations =
+            List.range 0 (land.points - 1)
+                |> List.map (getLandDieKey land)
+                |> List.map (\k -> Dict.get k dict)
+    in
+    if
+        List.any
+            (\i ->
+                case i of
+                    Just _ ->
+                        True
+
+                    Nothing ->
+                        False
+            )
+            animations
+    then
+        Array.fromList animations
+
+    else
+        Array.empty
+
+
+landDies : Layout -> Maybe AnimationState -> Array.Array (Maybe AnimationState) -> Land.Land -> Svg Msg
+landDies layout stackAnimation diceAnimations land =
+    g
+        (class "edBoard--stack"
+            :: (case stackAnimation of
+                    Just animation ->
+                        Animation.render animation
+
+                    Nothing ->
+                        []
+               )
+        )
+    <|
         List.map
             (landDie
-                (\i -> Dict.get (getLandDieKey land i) animations)
+                diceAnimations
+                -- (\i -> Dict.get (getLandDieKey land i) animations)
                 (landCenter
                     layout
                     land.cells
@@ -191,8 +254,8 @@ landDies layout animations land =
                 (land.points - 1)
 
 
-landDie : (Int -> Maybe AnimationState) -> ( Float, Float ) -> Int -> Int -> Svg Msg
-landDie getAnimation ( cx, cy ) points index =
+landDie : Array.Array (Maybe AnimationState) -> ( Float, Float ) -> Int -> Int -> Svg Msg
+landDie animations ( cx, cy ) points index =
     let
         xOffset =
             if index >= 4 then
@@ -208,8 +271,9 @@ landDie getAnimation ( cx, cy ) points index =
             else
                 2
 
+        animation : Maybe AnimationState
         animation =
-            getAnimation index
+            Array.get index animations |> Maybe.andThen identity
     in
     Svg.use
         (List.concat
@@ -219,13 +283,8 @@ landDie getAnimation ( cx, cy ) points index =
 
                 Nothing ->
                     []
-            , case animation of
-                Just _ ->
-                    []
-
-                Nothing ->
-                    [ y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2) ]
-            , [ x <| String.fromFloat <| cx - xOffset
+            , [ y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2)
+              , x <| String.fromFloat <| cx - xOffset
               , textAnchor "middle"
               , alignmentBaseline "central"
               , class "edBoard--dies"
