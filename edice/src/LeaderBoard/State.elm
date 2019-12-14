@@ -14,20 +14,14 @@ setLeaderBoard model res =
 
         Ok ( month, top ) ->
             let
-                staticPage =
-                    model.staticPage
-
                 leaderBoard =
-                    staticPage.leaderBoard
+                    model.leaderBoard
             in
             ( { model
-                | staticPage =
-                    { staticPage
-                        | leaderBoard =
-                            { leaderBoard
-                                | month = month
-                                , top = top
-                            }
+                | leaderBoard =
+                    { leaderBoard
+                        | month = month
+                        , top = top
                     }
               }
             , Cmd.none

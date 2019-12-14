@@ -209,9 +209,12 @@ eliminationReasonDecoder =
             )
 
 
-globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo )
+globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo, ( String, List Profile ) )
 globalDecoder =
-    map2 (\a b -> ( a, b )) (field "settings" globalSettingsDecoder) (field "tables" (list tableInfoDecoder))
+    map3 (\a b c -> ( a, b, c ))
+        (field "settings" globalSettingsDecoder)
+        (field "tables" (list tableInfoDecoder))
+        (field "leaderboard" leaderBoardDecoder)
 
 
 globalSettingsDecoder : Decoder Types.GlobalSettings

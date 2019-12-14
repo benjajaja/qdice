@@ -111,14 +111,9 @@ init flags location key =
                 , maxNameLength = 20
                 , turnSeconds = 10
                 }
-            , staticPage =
-                { help =
-                    { tab = 0
-                    }
-                , leaderBoard =
-                    { month = "This month"
-                    , top = []
-                    }
+            , leaderBoard =
+                { month = "this month"
+                , top = []
                 }
             }
 
@@ -162,10 +157,17 @@ update msg model =
                 Err err ->
                     ( model, toastError "Could not load global configuration!" <| httpErrorToString err )
 
-                Ok ( settings, tables ) ->
+                Ok ( settings, tables, ( month, top ) ) ->
                     let
                         model_ =
-                            { model | settings = settings, tableList = tables }
+                            { model
+                                | settings = settings
+                                , tableList = tables
+                                , leaderBoard =
+                                    { month = month
+                                    , top = top
+                                    }
+                            }
                     in
                     case model.route of
                         GameRoute table ->
@@ -560,7 +562,7 @@ mainView model =
 
         LeaderBoardRoute ->
             viewWrapper
-                [ LeaderBoard.View.view model ]
+                [ LeaderBoard.View.view 100 model ]
 
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg

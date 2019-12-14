@@ -386,17 +386,6 @@ button .material-icons, .edButton .material-icons {
 
 
 
-.edGameList {
-  background-color: transparent;
-}
-
-.edGameList__item {
-  color: #ccc;
-}
-
-.edGameList__item__subtitle, .mdl-list__item--two-line .mdl-list__item-primary-content .mdl-list__item-sub-title.edGameList__item__subtitle {
-  color: #aaa;
-}
 
 .edGameStatus {
   display: flex;
@@ -476,12 +465,12 @@ button .material-icons, .edButton .material-icons {
 }
 
 .gamelogContainer {
-  flex: 2 1 auto;
+  flex: 1 1 50%;
   height: 200px;
   overflow-y: auto;
   font-size: 12px;
   background: #fff9f2;
-  min-width: 200px;
+  min-width: 300px;
 }
 .gamelog {
   background-color: inherit;
@@ -502,8 +491,8 @@ button .material-icons, .edButton .material-icons {
 .chatboxContainer {
   display: flex;
   justify-content: space-between;
-  flex: 1 1 auto;
   min-width: 300px;
+  flex: 1 1 50%;
 }
 .chatbox {
   height: 200px;
@@ -586,6 +575,34 @@ button .material-icons, .edButton .material-icons {
 }
 .edGameTable tbody tr:hover {
   background: #eee;
+}
+
+.edTables {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.edPlayerBoxes {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.edLeaderboardBox, .edPlayerBox {
+  flex: 1 1 50%;
+  font-size: 0.75rem;
+  background: #f2f2f2;
+  min-width: 300px;
+}
+.edLeaderboardBox{
+}
+.edPlayerBox {
+}
+.edPlayerBox__Name {
+  font-weight: bold;
 }
 
 .edLoginBackdrop {

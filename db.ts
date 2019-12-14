@@ -180,8 +180,7 @@ WHERE id = $2`,
   return await getUser(id);
 };
 
-export const leaderBoardTop = async (page = 1) => {
-  const limit = 100;
+export const leaderBoardTop = async (limit = 100, page = 1) => {
   const result = await client.query(
     `
 SELECT id, name, picture, points, level, ROW_NUMBER () OVER (ORDER BY points DESC) AS rank

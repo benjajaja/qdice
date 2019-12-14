@@ -12,18 +12,23 @@ import {
 } from "./constants";
 import * as publish from "./table/publish";
 import { getStatuses } from "./table/get";
+import * as db from "./db";
 import logger from "./logger";
 
-export const global = (req, res, next) => {
-  getTablesStatus().then(tables => {
-    res.send(200, {
-      settings: {
-        turnSeconds: TURN_SECONDS,
-        gameCountdownSeconds: GAME_START_COUNTDOWN,
-        maxNameLength: MAX_NAME_LENGTH,
-      },
-      tables,
-    });
+export const global = async (req, res, next) => {
+  const tables = await getTablesStatus();
+  const top = await db.leaderBoardTop(20);
+  res.send(200, {
+    settings: {
+      turnSeconds: TURN_SECONDS,
+      gameCountdownSeconds: GAME_START_COUNTDOWN,
+      maxNameLength: MAX_NAME_LENGTH,
+    },
+    tables,
+    leaderboard: {
+      month: new Date().toLocaleString("en-us", { month: "long" }),
+      top,
+    },
   });
 };
 

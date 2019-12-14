@@ -9,12 +9,14 @@ import Game.State exposing (canHover)
 import Game.Types exposing (PlayerAction(..), statusToString)
 import Helpers exposing (dataTestId)
 import Html exposing (..)
-import Html.Attributes exposing (checked, class, disabled, style, type_)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (checked, class, disabled, href, style, type_)
+import Html.Events exposing (onClick, preventDefaultOn)
 import Icon
+import Json.Decode exposing (succeed)
+import LeaderBoard.View
 import Ordinal exposing (ordinal)
 import Time exposing (posixToMillis)
-import Types exposing (Model, Msg(..))
+import Types exposing (Model, Msg(..), User(..))
 
 
 view : Model -> Html Types.Msg
@@ -36,6 +38,9 @@ view model =
             [ gameChat model
             , gameLog model
             ]
+        , div [ class "edPlayerBoxes" ] <|
+            playerBox model
+                ++ leaderboardBox model
         , Game.Footer.footer model
         ]
 
@@ -260,3 +265,32 @@ tableInfo model =
                     []
             , [ button [ class "edGameStatus__button edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ] ]
             ]
+
+
+playerBox : Model -> List (Html Msg)
+playerBox model =
+    [ div [ class "edPlayerBox" ] <|
+        case model.user of
+            Logged user ->
+                [ div [ class "edPlayerBox__Name" ] [ text user.name ]
+                , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ]
+                ]
+
+            Anonymous ->
+                [ div [] [ text "You're not logged in." ]
+                , a
+                    [ href "#"
+                    , preventDefaultOn "click" <|
+                        succeed <|
+                            ( ShowLogin Types.LoginShow, False )
+                    ]
+                    [ text "Pick a username" ]
+                ]
+    ]
+
+
+leaderboardBox : Model -> List (Html Msg)
+leaderboardBox model =
+    [ div [ class "edLeaderboardBox" ]
+        [ LeaderBoard.View.view 10 model ]
+    ]

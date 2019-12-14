@@ -5,10 +5,10 @@ import Html.Attributes exposing (align)
 import Types exposing (..)
 
 
-view : Model -> Html Msg
-view model =
+view : Int -> Model -> Html Msg
+view limit model =
     div []
-        [ div [] [ Html.text <| "Leaderboard for " ++ model.staticPage.leaderBoard.month ]
+        [ div [] [ Html.text <| "Leaderboard for " ++ model.leaderBoard.month ]
         , table []
             [ thead []
                 [ tr []
@@ -17,8 +17,9 @@ view model =
                     , th [ align "right" ] [ text "Points" ]
                     ]
                 ]
-            , tbody [] <|
-                List.map
+            , model.leaderBoard.top
+                |> List.take 10
+                |> List.map
                     (\profile ->
                         tr []
                             [ td [] [ text <| String.fromInt profile.rank ]
@@ -26,6 +27,6 @@ view model =
                             , td [ align "right" ] [ text <| String.fromInt profile.points ]
                             ]
                     )
-                    model.staticPage.leaderBoard.top
+                |> tbody []
             ]
         ]

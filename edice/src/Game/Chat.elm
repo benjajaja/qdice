@@ -65,6 +65,7 @@ input value_ =
         , value value_
         , class "chatbox--actions-input"
         , attribute "aria-label" "chat prompt"
+        , placeholder "say..."
         ]
         []
 

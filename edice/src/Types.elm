@@ -26,7 +26,7 @@ type Msg
     | RequestNotifications
       -- oauth
     | Nop
-    | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo ))
+    | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))
     | Authorize AuthState
     | Authenticate String AuthState
     | GetToken (Maybe AuthState) (Result Error String)
@@ -96,14 +96,7 @@ type alias Model =
     , loginName : String
     , showLoginDialog : LoginDialogStatus
     , settings : GlobalSettings
-    , staticPage :
-        { help :
-            { tab : Int }
-        , leaderBoard :
-            { month : String
-            , top : List Profile
-            }
-        }
+    , leaderBoard : LeaderBoardModel
     }
 
 
@@ -177,4 +170,10 @@ type alias Profile =
     , picture : String
     , points : Int
     , level : Int
+    }
+
+
+type alias LeaderBoardModel =
+    { month : String
+    , top : List Profile
     }
