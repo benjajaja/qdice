@@ -1,14 +1,20 @@
 module LeaderBoard.View exposing (view)
 
 import Html exposing (..)
-import Html.Attributes exposing (align)
+import Html.Attributes exposing (align, href)
 import Types exposing (..)
 
 
 view : Int -> Model -> Html Msg
 view limit model =
     div []
-        [ div [] [ Html.text <| "Leaderboard for " ++ model.leaderBoard.month ]
+        [ div []
+            [ a
+                [ href "/leaderboard"
+                ]
+                [ text "Leaderboard" ]
+            , text <| " for " ++ model.leaderBoard.month
+            ]
         , table []
             [ thead []
                 [ tr []
@@ -18,7 +24,7 @@ view limit model =
                     ]
                 ]
             , model.leaderBoard.top
-                |> List.take 10
+                |> List.take limit
                 |> List.map
                     (\profile ->
                         tr []

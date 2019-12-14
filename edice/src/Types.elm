@@ -111,6 +111,7 @@ type alias LoggedUser =
     , email : Maybe String
     , picture : String
     , points : Int
+    , rank : Int
     , level : Int
     , claimed : Bool
     , networks : List AuthNetwork

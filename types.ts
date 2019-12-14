@@ -75,6 +75,7 @@ export type UserLike = {
   readonly picture: string;
   readonly level: number;
   readonly points: number;
+  readonly rank: number;
 };
 
 export type User = UserLike & {

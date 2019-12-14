@@ -22,6 +22,7 @@ userDecoder =
         |> required "email" (nullable string)
         |> required "picture" string
         |> required "points" int
+        |> required "rank" int
         |> required "level" int
         |> required "claimed" bool
         |> required "networks" (list authNetworkDecoder)

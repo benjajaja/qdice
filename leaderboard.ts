@@ -6,7 +6,7 @@ export const leaderboard = function(req, res, next) {
 };
 
 const sendLeaderBoard = async (req, res, next) => {
-  const top = await db.leaderBoardTop();
+  const top = await db.leaderBoardTop(250);
   res.send(200, {
     month: new Date().toLocaleString("en-us", { month: "long" }),
     top: top,

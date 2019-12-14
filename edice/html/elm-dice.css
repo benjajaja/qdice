@@ -597,11 +597,15 @@ button .material-icons, .edButton .material-icons {
   background: #f2f2f2;
   min-width: 300px;
 }
+.edLeaderboardBox__inner, .edPlayerBox__inner {
+  padding: 8px;
+}
 .edLeaderboardBox{
 }
 .edPlayerBox {
 }
 .edPlayerBox__Name {
+  font-size: 0.875rem;
   font-weight: bold;
 }
 

@@ -562,7 +562,7 @@ mainView model =
 
         LeaderBoardRoute ->
             viewWrapper
-                [ LeaderBoard.View.view 100 model ]
+                [ LeaderBoard.View.view 1000 model ]
 
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg

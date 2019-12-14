@@ -97,6 +97,7 @@ login model name =
             , email = Nothing
             , picture = ""
             , points = 0
+            , rank = 0
             , level = 0
             , claimed = False
             , networks = [ Password ]

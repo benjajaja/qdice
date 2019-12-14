@@ -77,10 +77,10 @@ export const getUser = async (id: UserId): Promise<User> => {
 export const getUserRows = async (id: UserId) => {
   const user = await client.query(
     `
-SELECT *
-FROM users
-LEFT JOIN authorizations ON authorizations.user_id = users.id
-WHERE id = $1
+SELECT a.*, (SELECT COUNT(*) + 1 FROM users b WHERE b.points > a.points) AS rank
+FROM users a
+LEFT JOIN authorizations ON authorizations.user_id = a.id
+WHERE a.id = $1
 `,
     [id]
   );
@@ -200,17 +200,18 @@ LIMIT $1 OFFSET $2`,
 };
 
 export const userProfile = (rows: any[]): User => {
-  const { id, name, email, picture, level } = rows[0];
+  const { id, name, email, picture, level, points, rank } = rows[0];
   return {
     id: id.toString(),
     name,
     email,
-    picture: rows[0].picture || "assets/empty_profile_picture.svg",
+    picture: picture || "assets/empty_profile_picture.svg",
     level,
     claimed: rows.some(
       row => row.network !== NETWORK_PASSWORD || row.network_id !== null
     ),
-    points: parseInt(rows[0].points, 10),
+    points: parseInt(points, 10),
+    rank: parseInt(rank, 10),
     networks: rows.map(row => row.network || "password"),
   };
 };

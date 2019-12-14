@@ -269,28 +269,33 @@ tableInfo model =
 
 playerBox : Model -> List (Html Msg)
 playerBox model =
-    [ div [ class "edPlayerBox" ] <|
-        case model.user of
-            Logged user ->
-                [ div [ class "edPlayerBox__Name" ] [ text user.name ]
-                , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ]
-                ]
-
-            Anonymous ->
-                [ div [] [ text "You're not logged in." ]
-                , a
-                    [ href "#"
-                    , preventDefaultOn "click" <|
-                        succeed <|
-                            ( ShowLogin Types.LoginShow, False )
+    [ div [ class "edPlayerBox" ]
+        [ div [ class "edPlayerBox__inner" ] <|
+            case model.user of
+                Logged user ->
+                    [ div [ class "edPlayerBox__Name" ] [ text user.name ]
+                    , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ]
+                    , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
                     ]
-                    [ text "Pick a username" ]
-                ]
+
+                Anonymous ->
+                    [ div [] [ text "You're not logged in." ]
+                    , a
+                        [ href "#"
+                        , preventDefaultOn "click" <|
+                            succeed <|
+                                ( ShowLogin Types.LoginShow, False )
+                        ]
+                        [ text "Pick a username" ]
+                    ]
+        ]
     ]
 
 
 leaderboardBox : Model -> List (Html Msg)
 leaderboardBox model =
     [ div [ class "edLeaderboardBox" ]
-        [ LeaderBoard.View.view 10 model ]
+        [ div [ class "edLeaderboardBox__inner" ]
+            [ LeaderBoard.View.view 10 model ]
+        ]
     ]
