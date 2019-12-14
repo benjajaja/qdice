@@ -142,7 +142,7 @@ jobs:
         command: |
           set -x
           docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
-          docker-compose up -d
+          docker-compose -p nodice up -d
     - run:
         name: Run e2e
         command: |
