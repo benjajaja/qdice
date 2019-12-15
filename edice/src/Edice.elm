@@ -14,7 +14,7 @@ import GA exposing (ga)
 import Game.State exposing (gameCommand)
 import Game.Types exposing (PlayerAction(..))
 import Game.View
-import Helpers exposing (httpErrorResponse, httpErrorToString, pipeUpdates)
+import Helpers exposing (httpErrorToString, pipeUpdates)
 import Html
 import Html.Attributes
 import LeaderBoard.State
@@ -192,7 +192,7 @@ update msg model =
             case res of
                 Err err ->
                     ( model
-                    , toastError ("Could not load profile: " ++ httpErrorResponse err) <| httpErrorToString err
+                    , toastError ("Could not load profile: " ++ httpErrorToString err) <| httpErrorToString err
                     )
 
                 Ok token ->

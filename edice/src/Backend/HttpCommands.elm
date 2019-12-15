@@ -6,86 +6,80 @@ import Backend.MessageCodification exposing (..)
 import Backend.Types exposing (..)
 import Game.Types exposing (Player, PlayerAction(..))
 import Helpers exposing (httpErrorToString)
-import Http
+import Http exposing (Error, emptyBody, expectJson, expectString, header, jsonBody, stringBody)
 import Land exposing (Color(..))
 import Snackbar exposing (toastError)
 import Tables exposing (Table)
 import Types exposing (AuthNetwork(..), AuthState, LoggedUser, LoginDialogStatus(..), Msg(..), User(..))
 
 
-toastHttpError : Http.Error -> Cmd Msg
+toastHttpError : Error -> Cmd Msg
 toastHttpError err =
     toastError (httpErrorToString err) (httpErrorToString err)
 
 
 loadGlobalSettings : Model -> Cmd Msg
 loadGlobalSettings model =
-    Http.send GetGlobalSettings <|
-        Http.get (model.baseUrl ++ "/global") <|
-            globalDecoder
+    Http.get
+        { url = model.baseUrl ++ "/global"
+        , expect = expectJson GetGlobalSettings globalDecoder
+        }
 
 
 authenticate : Model -> String -> AuthState -> Cmd Msg
 authenticate model code state =
     case state.addTo of
         Nothing ->
-            let
-                request =
-                    Http.post (model.baseUrl ++ "/login/" ++ encodeAuthNetwork state.network)
-                        (code |> Http.stringBody "text/plain")
-                        tokenDecoder
-            in
-            Http.send (GetToken <| Just state) request
+            Http.post
+                { url = model.baseUrl ++ "/login/" ++ encodeAuthNetwork state.network
+                , body = stringBody "text/plain" code
+                , expect = expectString (GetToken <| Just state)
+                }
 
         Just userId ->
-            let
-                request =
-                    Http.request
-                        { method = "POST"
-                        , headers =
-                            case model.jwt of
-                                Just jwt ->
-                                    [ Http.header "authorization" ("Bearer " ++ jwt) ]
+            Http.request
+                { method = "POST"
+                , url = model.baseUrl ++ "/add-login/" ++ encodeAuthNetwork state.network
+                , headers =
+                    case model.jwt of
+                        Just jwt ->
+                            [ header "authorization" ("Bearer " ++ jwt) ]
 
-                                Nothing ->
-                                    []
-                        , url = model.baseUrl ++ "/add-login/" ++ encodeAuthNetwork state.network
-                        , body = Http.stringBody "text/plain" code
-                        , expect =
-                            Http.expectJson <| tokenDecoder
-                        , timeout = Nothing
-                        , withCredentials = False
-                        }
-            in
-            Http.send (GetToken <| Just state) request
+                        Nothing ->
+                            []
+                , body = stringBody "text/plain" code
+                , expect = expectJson (GetToken <| Just state) tokenDecoder
+                , timeout = Nothing
+                , tracker = Nothing
+                }
 
 
 loadMe : Model -> Cmd Msg
 loadMe model =
-    Http.send GetProfile <|
-        Http.request
-            { method = "GET"
-            , headers =
-                case model.jwt of
-                    Just jwt ->
-                        [ Http.header "authorization" ("Bearer " ++ jwt) ]
+    Http.request
+        { method = "GET"
+        , url = model.baseUrl ++ "/me"
+        , body = emptyBody
+        , headers =
+            case model.jwt of
+                Just jwt ->
+                    [ header "authorization" ("Bearer " ++ jwt) ]
 
-                    Nothing ->
-                        []
-            , url = model.baseUrl ++ "/me"
-            , body = Http.emptyBody
-            , expect =
-                Http.expectJson <| meDecoder
-            , timeout = Nothing
-            , withCredentials = False
-            }
+                Nothing ->
+                    []
+        , expect =
+            expectJson GetProfile meDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 
 leaderBoard : Model -> Cmd Msg
 leaderBoard model =
-    Http.send GetLeaderBoard <|
-        Http.get (model.baseUrl ++ "/leaderboard") <|
-            leaderBoardDecoder
+    Http.get
+        { url = model.baseUrl ++ "/leaderboard"
+        , expect = expectJson GetLeaderBoard leaderBoardDecoder
+        }
 
 
 login : Types.Model -> String -> ( Types.Model, Cmd Msg )
@@ -103,71 +97,62 @@ login model name =
             , networks = [ Password ]
             }
 
-        request =
-            Http.request
-                { method = "POST"
-                , url = model.backend.baseUrl ++ "/register"
-                , headers = []
-                , body =
-                    Http.jsonBody <| profileEncoder profile
-                , expect =
-                    Http.expectJson <| tokenDecoder
-                , timeout = Nothing
-                , withCredentials = False
-                }
-
         state =
             { network = Password, table = model.game.table, addTo = Nothing }
     in
     ( { model | showLoginDialog = LoginHide }
-    , Http.send (Types.GetToken <| Just state) request
+    , Http.post
+        { url = model.backend.baseUrl ++ "/register"
+        , body =
+            jsonBody <| profileEncoder profile
+        , expect =
+            expectJson (GetToken <| Just state) tokenDecoder
+        }
     )
 
 
 updateAccount : Model -> LoggedUser -> Cmd Msg
 updateAccount model profile =
-    Http.send (GetToken Nothing) <|
-        Http.request
-            { method = "PUT"
-            , headers =
-                case model.jwt of
-                    Just jwt ->
-                        [ Http.header "authorization" ("Bearer " ++ jwt) ]
+    Http.request
+        { method = "PUT"
+        , headers =
+            case model.jwt of
+                Just jwt ->
+                    [ header "authorization" ("Bearer " ++ jwt) ]
 
-                    Nothing ->
-                        []
-            , url = model.baseUrl ++ "/profile"
-            , body =
-                Http.jsonBody <| profileEncoder profile
-            , expect =
-                Http.expectJson <| tokenDecoder
-            , timeout = Nothing
-            , withCredentials = False
-            }
+                Nothing ->
+                    []
+        , url = model.baseUrl ++ "/profile"
+        , body =
+            jsonBody <| profileEncoder profile
+        , expect =
+            expectJson (GetToken Nothing) tokenDecoder
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 
-deleteAccount : (Result Http.Error String -> Msg) -> Model -> User -> Cmd Msg
+deleteAccount : (Result Error String -> Msg) -> Model -> User -> Cmd Msg
 deleteAccount msg model user =
     case user of
         Logged logged ->
-            Http.send msg <|
-                Http.request
-                    { method = "DELETE"
-                    , headers =
-                        case model.jwt of
-                            Just jwt ->
-                                [ Http.header "authorization" ("Bearer " ++ jwt) ]
+            Http.request
+                { method = "DELETE"
+                , headers =
+                    case model.jwt of
+                        Just jwt ->
+                            [ header "authorization" ("Bearer " ++ jwt) ]
 
-                            Nothing ->
-                                []
-                    , url = model.baseUrl ++ "/me"
-                    , body =
-                        Http.emptyBody
-                    , expect =
-                        Http.expectString
-                    , timeout = Nothing
-                    , withCredentials = False
-                    }
+                        Nothing ->
+                            []
+                , url = model.baseUrl ++ "/me"
+                , body =
+                    emptyBody
+                , expect =
+                    expectString msg
+                , timeout = Nothing
+                , tracker = Nothing
+                }
 
         _ ->
             toastError "Error: not logged in" ""

@@ -112,4 +112,4 @@ authorize model state =
     in
     Browser.Navigation.load <|
         Url.toString <|
-            OAuth.AuthorizationCode.makeAuthUrl authorization
+            OAuth.AuthorizationCode.makeAuthorizationUrl authorization

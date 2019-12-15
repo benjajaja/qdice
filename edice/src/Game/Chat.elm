@@ -1,7 +1,7 @@
-module Game.Chat exposing (chatBox, chatPlayerTag, eliminationEmoji, eliminationReasonText, gameBox, input, maybeUserChatTag, playerTag, rollLine, toChatError)
+module Game.Chat exposing (chatBox, chatPlayerTag, eliminationEmoji, eliminationReasonText, gameBox, input, maybeUserChatTag, playerTag, rollLine)
 
 import Board.Colors exposing (baseCssRgb, colorName)
-import Game.Types exposing (ChatLogEntry(..), PlayerAction(..), RollLog, actionToString)
+import Game.Types exposing (ChatLogEntry(..), PlayerAction(..), RollLog)
 import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -10,7 +10,6 @@ import Http exposing (Error(..))
 import Icon
 import Land exposing (Color)
 import Ordinal exposing (ordinal)
-import Tables exposing (Table)
 import Types exposing (Msg(..))
 
 
@@ -68,28 +67,6 @@ input value_ =
         , placeholder "say..."
         ]
         []
-
-
-toChatError : Table -> PlayerAction -> Http.Error -> String
-toChatError table action err =
-    actionToString action
-        ++ " failed: "
-        ++ (case err of
-                NetworkError ->
-                    "No connection"
-
-                Timeout ->
-                    "Timed out (network)"
-
-                BadStatus response ->
-                    "Server error " ++ String.fromInt response.status.code ++ " " ++ response.status.message
-
-                BadPayload error response ->
-                    "Client error: " ++ error
-
-                BadUrl error ->
-                    "Missing URL: " ++ error
-           )
 
 
 gameBox : List ChatLogEntry -> String -> Html Types.Msg
