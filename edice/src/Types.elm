@@ -24,6 +24,7 @@ type Msg
     | ErrorToast String String
     | RequestFullscreen
     | RequestNotifications
+    | NotificationsChange String
       -- oauth
     | Nop
     | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))
@@ -97,6 +98,7 @@ type alias Model =
     , showLoginDialog : LoginDialogStatus
     , settings : GlobalSettings
     , leaderBoard : LeaderBoardModel
+    , preferences : Preferences
     }
 
 
@@ -177,4 +179,10 @@ type alias Profile =
 type alias LeaderBoardModel =
     { month : String
     , top : List Profile
+    }
+
+
+type alias Preferences =
+    { notificationsEnabled : Bool
+    , anyGameStartNotify : Bool
     }

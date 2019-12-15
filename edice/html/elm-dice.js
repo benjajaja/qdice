@@ -32,6 +32,10 @@ var token =
   window.location.hash.indexOf("#access_token=") !== 0
     ? localStorage.getItem("jwt_token")
     : null;
+var notificationsEnabled = false;
+if ("Notification" in window) {
+  notificationsEnabled = Notification.permission === "granted";
+}
 
 var app = Elm.Edice.init({
   node: document.body,
@@ -40,6 +44,7 @@ var app = Elm.Edice.init({
     token: token || null,
     isTelegram: isTelegram,
     screenshot: /[?&]screenshot/.test(window.location.search),
+    notificationsEnabled: notificationsEnabled,
   },
 });
 
@@ -214,11 +219,13 @@ var logPublish = function(args) {
 
 app.ports.requestNotifications.subscribe(function() {
   if (!("Notification" in window)) {
+    app.ports.notificationsChange.send("unsupported");
     window.alert("This browser or system does not support notifications.");
     console.log("No notification support");
     return;
   }
   if (Notification.permission === "granted") {
+    app.ports.notificationsChange.send("granted");
     snackbar.show({
       text: "Notifications are enabled",
       pos: "bottom-center",
@@ -226,13 +233,18 @@ app.ports.requestNotifications.subscribe(function() {
     });
   } else if (Notification.permission !== "denied") {
     Notification.requestPermission(function(permission) {
+      app.ports.notificationsChange.send(permission);
       snackbar.show({
-        text: "Notifications are now enabled",
+        text:
+          permission === "granted"
+            ? "Notifications are now enabled"
+            : "Huh? It looks like you didn't allow notifications. Please try again.",
         pos: "bottom-center",
         actionTextColor: "#38d6ff",
       });
     });
   } else if (Notification.permission === "denied") {
+    app.ports.notificationsChange.send("denied");
     snackbar.show({
       text:
         'It seems that you have blocked notifications at some time before. Try clicking on the lock icon next to the URL and look for "Notifications" or "Permissions" and unblock it.',

@@ -612,6 +612,9 @@ button .material-icons, .edButton .material-icons {
   font-size: 0.875rem;
   font-weight: bold;
 }
+.edPlayerBox__settings {
+  margin-top: 10px;
+}
 
 .edLoginBackdrop {
   background: rgba(0, 0, 0, 0.25);

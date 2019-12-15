@@ -288,6 +288,15 @@ playerBox model =
                     [ div [ class "edPlayerBox__Name" ] [ text user.name ]
                     , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ]
                     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
+                    , div [ class "edPlayerBox__settings" ] <|
+                        if not model.preferences.notificationsEnabled then
+                            [ div [] [ text "You can enable some notifications like when it's your turn, or when the next game starts:" ]
+                            , div [] [ button [ onClick RequestNotifications ] [ text "Enable notifications" ] ]
+                            ]
+
+                        else
+                            [ div [] [ text "You have notifications enabled on this device/browser." ]
+                            ]
                     ]
 
                 Anonymous ->

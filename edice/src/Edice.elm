@@ -17,7 +17,6 @@ import Game.View
 import Helpers exposing (httpErrorResponse, httpErrorToString, pipeUpdates)
 import Html
 import Html.Attributes
-import Html.Lazy
 import LeaderBoard.State
 import LeaderBoard.View
 import LoginDialog exposing (loginDialog)
@@ -28,7 +27,6 @@ import Routing exposing (navigateTo, parseLocation)
 import Snackbar exposing (toastError)
 import Static.View
 import Tables exposing (Map(..), Table)
-import Task
 import Time
 import Types exposing (..)
 import Url exposing (Url)
@@ -39,6 +37,7 @@ type alias Flags =
     , token : Maybe String
     , isTelegram : Bool
     , screenshot : Bool
+    , notificationsEnabled : Bool
     }
 
 
@@ -110,6 +109,10 @@ init flags location key =
                 { gameCountdownSeconds = 30
                 , maxNameLength = 20
                 , turnSeconds = 10
+                }
+            , preferences =
+                { notificationsEnabled = flags.notificationsEnabled
+                , anyGameStartNotify = False
                 }
             , leaderBoard =
                 { month = "this month"
@@ -489,6 +492,24 @@ update msg model =
         RequestNotifications ->
             ( model, requestNotifications () )
 
+        NotificationsChange permission ->
+            let
+                preferences =
+                    model.preferences
+
+                notificationsEnabled =
+                    case permission of
+                        "granted" ->
+                            True
+
+                        _ ->
+                            False
+
+                preferences_ =
+                    { preferences | notificationsEnabled = notificationsEnabled }
+            in
+            ( { model | preferences = preferences_ }, Cmd.none )
+
 
 currentTable : Route -> Maybe Table
 currentTable route =
@@ -615,6 +636,7 @@ subscriptions model =
         [ mainViewSubscriptions model
         , Backend.subscriptions model
         , Time.every 250 Tick
+        , notificationsChange NotificationsChange
         ]
 
 
@@ -625,3 +647,6 @@ port requestFullscreen : () -> Cmd msg
 
 
 port requestNotifications : () -> Cmd msg
+
+
+port notificationsChange : (String -> msg) -> Sub msg
