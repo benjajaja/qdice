@@ -11,6 +11,7 @@ import * as corsMiddleware from "restify-cors-middleware";
 import * as jwt from "restify-jwt-community";
 import * as mqtt from "mqtt";
 import * as AsyncLock from "async-lock";
+import * as webPush from "web-push";
 
 import * as globalServer from "./global";
 import { leaderboard } from "./leaderboard";
@@ -18,6 +19,15 @@ import { screenshot } from "./screenshot";
 import * as publish from "./table/publish";
 import * as user from "./user";
 import { resetGenerator } from "./rand";
+
+if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+  console.log(
+    "You must set the VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY " +
+      "environment variables. You can use the following ones:"
+  );
+  console.log(webPush.generateVAPIDKeys());
+  process.exit(1);
+}
 
 const server = restify.createServer();
 server.pre(restify.pre.userAgentConnection());
@@ -82,6 +92,7 @@ server.use(
         (req: any) => req.path() === `${root}/findtable`,
         (req: any) => req.path() === `${root}/leaderboard`,
         (req: any) => req.path() === `${root}/e2e`,
+        (req: any) => req.path() === `${root}/push/key`,
         (req: any) => req.path().indexOf(`${root}/screenshot`) === 0,
       ])(req);
       return ok;
@@ -170,6 +181,16 @@ db.retry().then(() => {
   //process.exit(0);
   //});
   //});
+});
+
+webPush.setVapidDetails(
+  process.env.VAPID_URL!,
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
+
+server.get(`${root}/push/key`, (_, res) => {
+  res.send(200, process.env.VAPID_PUBLIC_KEY);
 });
 
 process.on("unhandledRejection", (reason, p) => {

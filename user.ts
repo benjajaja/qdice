@@ -27,8 +27,8 @@ export const login = (req, res, next) => {
           );
         })
         .then(user => {
-          const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET);
-          res.send(200, token);
+          const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET!);
+          res.sendRaw(200, token);
           next();
         });
     })
@@ -53,8 +53,8 @@ export const addLogin = (req, res, next) => {
           return db.addNetwork(req.user.id, network, profile.id, profile);
         })
         .then(user => {
-          const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET);
-          res.send(200, token);
+          const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET!);
+          res.sendRaw(200, token);
           next();
         });
     })
@@ -144,7 +144,7 @@ const getProfile = (network, code, referer): Promise<any> => {
 export const me = function(req, res, next) {
   db.getUser(req.user.id)
     .then(profile => {
-      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
+      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
       res.send(200, [profile, token]);
       next();
     })
@@ -154,8 +154,8 @@ export const me = function(req, res, next) {
 export const profile = function(req, res, next) {
   db.updateUser(req.user.id, req.body.name, req.body.email)
     .then(profile => {
-      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
-      res.send(200, token);
+      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
+      res.sendRaw(200, token);
       next();
     })
     .catch(e => {
@@ -168,8 +168,8 @@ export const profile = function(req, res, next) {
 export const register = function(req, res, next) {
   db.createUser(db.NETWORK_PASSWORD, null, req.body.name, null, null, null)
     .then(profile => {
-      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
-      res.send(200, token);
+      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
+      res.sendRaw(200, token);
       next();
     })
     .catch(e => next(e));

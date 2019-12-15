@@ -74,7 +74,7 @@ app.ports.started.subscribe(function(msg) {
           window.location.protocol + "//" + window.location.hostname + "/ackee",
         domainId: "6f3492e2-9780-45a6-85ee-550777943d24",
       },
-      { ignoreLocalhost: false }
+      { ignoreLocalhost: true }
     )
     .record();
   // ga = require('ga-lite');
@@ -267,6 +267,45 @@ if ("serviceWorker" in navigator) {
       // registration failed
       console.log("Registration failed with " + error);
     });
+
+  navigator.serviceWorker.ready
+    .then(function(registration) {
+      return registration.pushManager
+        .getSubscription()
+        .then(function(subscription) {
+          if (subscription) {
+            return subscription;
+          }
+
+          return new Promise(function(resolve) {
+            app.ports.pushGetKey.send(null);
+            app.ports.pushSubscribe.subscribe(function(vapidPublicKey) {
+              const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
+              resolve(
+                registration.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: convertedVapidKey,
+                })
+              );
+            });
+          });
+        });
+    })
+    .then(function(subscription) {
+      console.log(subscription);
+      app.ports.pushRegister.send(subscription);
+
+      // fetch("api/push/register", {
+      // method: "post",
+      // headers: {
+      // "Content-type": "application/json",
+      // },
+      // body: JSON.stringify({
+      // subscription: subscription,
+      // }),
+      // });
+    });
 }
 
 function notification(title, actions) {
@@ -288,4 +327,17 @@ function notification(title, actions) {
       notification.close();
     };
   }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  var base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+
+  var rawData = window.atob(base64);
+  var outputArray = new Uint8Array(rawData.length);
+
+  for (var i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
 }

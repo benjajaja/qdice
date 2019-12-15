@@ -1,8 +1,8 @@
-port module Edice exposing (started, subscriptions)
+port module Edice exposing (pushSubscribe, started, subscriptions)
 
 import Animation
 import Backend
-import Backend.HttpCommands exposing (authenticate, loadGlobalSettings, loadMe, login)
+import Backend.HttpCommands exposing (authenticate, getPushKey, loadGlobalSettings, loadMe, login, registerPush)
 import Backend.MqttCommands exposing (sendGameCommand)
 import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
@@ -510,6 +510,20 @@ update msg model =
             in
             ( { model | preferences = preferences_ }, Cmd.none )
 
+        PushGetKey ->
+            ( model, getPushKey model.backend )
+
+        PushKey res ->
+            case res of
+                Ok key ->
+                    ( model, pushSubscribe key )
+
+                Err err ->
+                    ( model, toastError "Could not get push key" <| httpErrorToString err )
+
+        PushRegister subscription ->
+            ( model, registerPush model.backend subscription )
+
 
 currentTable : Route -> Maybe Table
 currentTable route =
@@ -637,6 +651,8 @@ subscriptions model =
         , Backend.subscriptions model
         , Time.every 250 Tick
         , notificationsChange NotificationsChange
+        , pushGetKey (\_ -> PushGetKey)
+        , pushRegister PushRegister
         ]
 
 
@@ -650,3 +666,12 @@ port requestNotifications : () -> Cmd msg
 
 
 port notificationsChange : (String -> msg) -> Sub msg
+
+
+port pushGetKey : (() -> msg) -> Sub msg
+
+
+port pushSubscribe : String -> Cmd msg
+
+
+port pushRegister : (PushSubscription -> msg) -> Sub msg

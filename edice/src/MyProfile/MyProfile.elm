@@ -1,12 +1,9 @@
 module MyProfile.MyProfile exposing (update, view)
 
-import Backend.Decoding exposing (tokenDecoder)
-import Backend.Encoding exposing (profileEncoder)
 import Backend.HttpCommands
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Http
 import MyOauth exposing (saveToken)
 import MyProfile.Types exposing (..)
 import Routing exposing (navigateTo)

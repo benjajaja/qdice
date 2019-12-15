@@ -1,4 +1,4 @@
-module Types exposing (AuthNetwork(..), AuthState, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, Route(..), StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, PushSubscription, Route(..), StaticPage(..), User(..), UserId, Username, getUsername)
 
 import Animation
 import Backend.Types
@@ -25,6 +25,9 @@ type Msg
     | RequestFullscreen
     | RequestNotifications
     | NotificationsChange String
+    | PushGetKey
+    | PushKey (Result Error String)
+    | PushRegister PushSubscription
       -- oauth
     | Nop
     | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))
@@ -185,4 +188,12 @@ type alias LeaderBoardModel =
 type alias Preferences =
     { notificationsEnabled : Bool
     , anyGameStartNotify : Bool
+    }
+
+
+type alias PushSubscription =
+    { endpoint : String
+
+    -- , expirationTime : Maybe String
+    -- , options: { userVisibleOnly: Bool, applicationServerKey : String }
     }

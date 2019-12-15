@@ -30,11 +30,13 @@
   "dependencies": {
     "@types/async-lock": "^1.1.1",
     "@types/jest": "^24.0.23",
+    "@types/jsonwebtoken": "^8.3.5",
     "@types/node": "^10.12.18",
     "@types/pg": "^7.4.11",
     "@types/ramda": "^0.25.46",
     "@types/restify": "^7.2.7",
     "@types/seedrandom": "^2.4.28",
+    "@types/web-push": "^3.3.0",
     "async-lock": "^1.2.2",
     "bluebird": "^3.5.1",
     "camelize": "^1.0.0",
@@ -62,7 +64,8 @@
     "ts-date": "^2.1.7",
     "ts-jest": "^24.2.0",
     "ts-node": "^7.0.1",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.2",
+    "web-push": "^3.4.3"
   },
   "devDependencies": {
     "mocha": "^4.0.1"

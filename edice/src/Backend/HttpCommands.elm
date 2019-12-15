@@ -1,4 +1,4 @@
-module Backend.HttpCommands exposing (authenticate, deleteAccount, leaderBoard, loadGlobalSettings, loadMe, login, toastHttpError, updateAccount)
+module Backend.HttpCommands exposing (authenticate, deleteAccount, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, registerPush, toastHttpError, updateAccount)
 
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -10,7 +10,7 @@ import Http exposing (Error, emptyBody, expectJson, expectString, header, jsonBo
 import Land exposing (Color(..))
 import Snackbar exposing (toastError)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, LoggedUser, LoginDialogStatus(..), Msg(..), User(..))
+import Types exposing (AuthNetwork(..), AuthState, LoggedUser, LoginDialogStatus(..), Msg(..), PushSubscription, User(..))
 
 
 toastHttpError : Error -> Cmd Msg
@@ -48,7 +48,7 @@ authenticate model code state =
                         Nothing ->
                             []
                 , body = stringBody "text/plain" code
-                , expect = expectJson (GetToken <| Just state) tokenDecoder
+                , expect = expectString (GetToken <| Just state)
                 , timeout = Nothing
                 , tracker = Nothing
                 }
@@ -106,7 +106,7 @@ login model name =
         , body =
             jsonBody <| profileEncoder profile
         , expect =
-            expectJson (GetToken <| Just state) tokenDecoder
+            expectString (GetToken <| Just state)
         }
     )
 
@@ -126,7 +126,7 @@ updateAccount model profile =
         , body =
             jsonBody <| profileEncoder profile
         , expect =
-            expectJson (GetToken Nothing) tokenDecoder
+            expectString (GetToken Nothing)
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -156,3 +156,18 @@ deleteAccount msg model user =
 
         _ ->
             toastError "Error: not logged in" ""
+
+
+getPushKey : Model -> Cmd Msg
+getPushKey model =
+    Http.get
+        { url = model.baseUrl ++ "/push/key"
+        , expect =
+            expectString
+                PushKey
+        }
+
+
+registerPush : Model -> PushSubscription -> Cmd Msg
+registerPush model subscription =
+    Cmd.none

@@ -1,4 +1,4 @@
-module Backend.Decoding exposing (accknowledgeDecoder, authStateDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, rollDecoder, singleRollDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, tokenDecoder, userDecoder)
+module Backend.Decoding exposing (accknowledgeDecoder, authStateDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, rollDecoder, singleRollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, userDecoder)
 
 import Board.Types
 import Game.Types exposing (Player, PlayerGameStats, TableStatus)
@@ -9,8 +9,8 @@ import Tables exposing (Table)
 import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Profile)
 
 
-tokenDecoder : Decoder String
-tokenDecoder =
+stringDecoder : Decoder String
+stringDecoder =
     string
 
 
@@ -58,7 +58,7 @@ authStateDecoder =
 
 meDecoder : Decoder ( LoggedUser, String )
 meDecoder =
-    map2 (\a b -> ( a, b )) (index 0 userDecoder) (index 1 tokenDecoder)
+    map2 (\a b -> ( a, b )) (index 0 userDecoder) (index 1 stringDecoder)
 
 
 tableNameDecoder : Decoder Table

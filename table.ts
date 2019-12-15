@@ -5,18 +5,12 @@ import * as jwt from "jsonwebtoken";
 import * as AsyncLock from "async-lock";
 import * as maps from "./maps";
 
-import {
-  UserId,
-  Table,
-  CommandResult,
-  Elimination,
-  IllegalMoveError,
-} from "./types";
+import { Table, CommandResult, Elimination, IllegalMoveError } from "./types";
 import * as db from "./db";
 import * as publish from "./table/publish";
 import * as tick from "./table/tick";
 import { getTable } from "./table/get";
-import { findTable, hasTurn, positionScore, tablePoints } from "./helpers";
+import { positionScore, tablePoints } from "./helpers";
 import logger from "./logger";
 import * as config from "./tables.config";
 
@@ -115,7 +109,7 @@ export const start = async (
     lock.acquire(tableTag, async done => {
       try {
         const user = await (token
-          ? verifyJwt(token, process.env.JWT_SECRET)
+          ? verifyJwt(token, process.env.JWT_SECRET!)
           : null);
         const table = await getTable(tableTag);
 
@@ -125,6 +119,8 @@ export const start = async (
         publish.clientError(clientId, e);
         if (e instanceof IllegalMoveError) {
           logger.error(e, "illegal move caught gracefully");
+        } else if (e instanceof jwt.JsonWebTokenError) {
+          logger.error(e, "bad JWT token");
         } else {
           throw e;
         }

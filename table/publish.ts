@@ -183,7 +183,7 @@ export const chat = (table, user, message) => {
 };
 
 export const userUpdate = clientId => profile => {
-  const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
+  const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
   client.publish(
     `clients/${clientId}`,
     JSON.stringify({
