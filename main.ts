@@ -79,7 +79,12 @@ server.use(
         req.headers.authorization &&
         req.headers.authorization.split(" ")[0] === "Bearer"
       ) {
-        return req.headers.authorization.split(" ")[1] || null;
+        const token = req.headers.authorization.split(" ")[1];
+        if (token && token.indexOf('"') === 1) {
+          logger.error("Some user got a wrapped token!");
+          return token.split('"')[1] ?? null;
+        }
+        return token ?? null;
       }
       return null;
     },
