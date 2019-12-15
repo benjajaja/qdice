@@ -192,8 +192,4 @@ type alias Preferences =
 
 
 type alias PushSubscription =
-    { endpoint : String
-
-    -- , expirationTime : Maybe String
-    -- , options: { userVisibleOnly: Bool, applicationServerKey : String }
-    }
+    String

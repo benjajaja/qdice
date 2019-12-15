@@ -6,7 +6,7 @@ import Backend.MessageCodification exposing (..)
 import Backend.Types exposing (..)
 import Game.Types exposing (Player, PlayerAction(..))
 import Helpers exposing (httpErrorToString)
-import Http exposing (Error, emptyBody, expectJson, expectString, header, jsonBody, stringBody)
+import Http exposing (Error, emptyBody, expectJson, expectString, expectWhatever, header, jsonBody, stringBody)
 import Land exposing (Color(..))
 import Snackbar exposing (toastError)
 import Tables exposing (Table)
@@ -170,4 +170,19 @@ getPushKey model =
 
 registerPush : Model -> PushSubscription -> Cmd Msg
 registerPush model subscription =
-    Cmd.none
+    Http.request
+        { method = "POST"
+        , url = model.baseUrl ++ "/push/register"
+        , headers =
+            case model.jwt of
+                Just jwt ->
+                    [ header "authorization" ("Bearer " ++ jwt) ]
+
+                Nothing ->
+                    []
+        , body =
+            stringBody "application/json" subscription
+        , expect = expectWhatever <| always Nop
+        , timeout = Nothing
+        , tracker = Nothing
+        }

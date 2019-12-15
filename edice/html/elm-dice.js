@@ -217,6 +217,46 @@ var logPublish = function(args) {
   }
 };
 
+var serviceWorkerRegistration = null;
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("./elm-dice-serviceworker.js", { scope: "." })
+    .then(function(registration) {
+      // registration worked
+      serviceWorkerRegistration = registration;
+    })
+    .catch(function(error) {
+      // registration failed
+      console.log("Registration failed with " + error);
+    });
+
+  navigator.serviceWorker.ready
+    .then(function(registration) {
+      return registration.pushManager
+        .getSubscription()
+        .then(function(subscription) {
+          if (subscription) {
+            return subscription;
+          }
+
+          return new Promise(function(resolve) {
+            app.ports.pushGetKey.send(null);
+            app.ports.pushSubscribe.subscribe(function(vapidPublicKey) {
+              const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+              resolve(
+                registration.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: convertedVapidKey,
+                })
+              );
+            });
+          });
+        });
+    })
+    .then(function(subscription) {
+      app.ports.pushRegister.send(JSON.stringify(subscription));
+    });
+}
 app.ports.requestNotifications.subscribe(function() {
   if (!("Notification" in window)) {
     app.ports.notificationsChange.send("unsupported");
@@ -254,59 +294,6 @@ app.ports.requestNotifications.subscribe(function() {
     });
   }
 });
-
-var serviceWorkerRegistration = null;
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("./elm-dice-serviceworker.js", { scope: "." })
-    .then(function(registration) {
-      // registration worked
-      serviceWorkerRegistration = registration;
-    })
-    .catch(function(error) {
-      // registration failed
-      console.log("Registration failed with " + error);
-    });
-
-  navigator.serviceWorker.ready
-    .then(function(registration) {
-      return registration.pushManager
-        .getSubscription()
-        .then(function(subscription) {
-          if (subscription) {
-            return subscription;
-          }
-
-          return new Promise(function(resolve) {
-            app.ports.pushGetKey.send(null);
-            app.ports.pushSubscribe.subscribe(function(vapidPublicKey) {
-              const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-
-              resolve(
-                registration.pushManager.subscribe({
-                  userVisibleOnly: true,
-                  applicationServerKey: convertedVapidKey,
-                })
-              );
-            });
-          });
-        });
-    })
-    .then(function(subscription) {
-      console.log(subscription);
-      app.ports.pushRegister.send(subscription);
-
-      // fetch("api/push/register", {
-      // method: "post",
-      // headers: {
-      // "Content-type": "application/json",
-      // },
-      // body: JSON.stringify({
-      // subscription: subscription,
-      // }),
-      // });
-    });
-}
 
 function notification(title, actions) {
   if (

@@ -9,6 +9,27 @@ self.addEventListener("activate", function(event) {
   event.waitUntil(self.clients.claim());
 });
 
+// PUSH
+function getEndpoint() {
+  return self.registration.pushManager
+    .getSubscription()
+    .then(function(subscription) {
+      if (subscription) {
+        return subscription.endpoint;
+      }
+
+      throw new Error("User not subscribed");
+    });
+}
+
+self.addEventListener("push", function(event) {
+  event.waitUntil(
+    getEndpoint().then(function(endpoint) {
+      console.log("SW endpoint", endpoint);
+    })
+  );
+});
+
 // CACHE
 
 function preCache() {
