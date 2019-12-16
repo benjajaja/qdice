@@ -198,20 +198,9 @@ server.get(`${root}/push/key`, (_, res) => {
   res.sendRaw(200, process.env.VAPID_PUBLIC_KEY);
 });
 
-server.post(`${root}/push/register`, (req, res) => {
-  const subscription = req.body;
-  // setInterval(() => {
-  // webPush.sendNotification(
-  // subscription,
-  // JSON.stringify({
-  // title: "test",
-  // }),
-  // {
-  // }
-  // );
-  // }, 1000);
-  res.send(200);
-});
+server.post(`${root}/push/register`, user.addPushSubscription);
+server.post(`${root}/push/register/event`, user.addPushEvent(true));
+server.del(`${root}/push/register/event`, user.addPushEvent(false));
 
 process.on("unhandledRejection", (reason, p) => {
   logger.error("Unhandled Rejection at: Promise", p, "reason:", reason);

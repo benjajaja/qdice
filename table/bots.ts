@@ -21,6 +21,7 @@ import { makePlayer, flag } from "./commands";
 import nextTurn from "./turn";
 import { isBorder } from "../maps";
 import { findLand, groupedPlayerPositions } from "../helpers";
+import { defaultPreferences } from "../user";
 
 const defaultPersona: Persona = {
   name: "Personality",
@@ -65,6 +66,7 @@ export const addBots = (table: Table): CommandResult => {
     email: "bot@skynet",
     networks: [],
     claimed: true,
+    preferences: defaultPreferences(),
   };
   const players = table.players.concat([
     {

@@ -1,4 +1,4 @@
-module Types exposing (AuthNetwork(..), AuthState, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, PushSubscription, Route(..), StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, PushEvent(..), PushSubscription, Route(..), StaticPage(..), User(..), UserId, UserPreferences, UserPushPreferences, Username, getUsername)
 
 import Animation
 import Backend.Types
@@ -24,10 +24,12 @@ type Msg
     | ErrorToast String String
     | RequestFullscreen
     | RequestNotifications
+    | RenounceNotifications
     | NotificationsChange String
     | PushGetKey
     | PushKey (Result Error String)
     | PushRegister PushSubscription
+    | PushRegisterEvent ( PushEvent, Bool )
       -- oauth
     | Nop
     | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))
@@ -120,7 +122,17 @@ type alias LoggedUser =
     , level : Int
     , claimed : Bool
     , networks : List AuthNetwork
+    , preferences : UserPreferences
     }
+
+
+type alias UserPreferences =
+    { push : UserPushPreferences
+    }
+
+
+type alias UserPushPreferences =
+    { events : List PushEvent }
 
 
 type AuthNetwork
@@ -193,3 +205,7 @@ type alias Preferences =
 
 type alias PushSubscription =
     String
+
+
+type PushEvent
+    = GameStart

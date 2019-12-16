@@ -16,7 +16,7 @@ import Json.Decode exposing (succeed)
 import LeaderBoard.View
 import Ordinal exposing (ordinal)
 import Time exposing (posixToMillis)
-import Types exposing (Model, Msg(..), User(..))
+import Types exposing (Model, Msg(..), PushEvent(..), User(..))
 
 
 view : Model -> Html Types.Msg
@@ -290,12 +290,29 @@ playerBox model =
                     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
                     , div [ class "edPlayerBox__settings" ] <|
                         if not model.preferences.notificationsEnabled then
-                            [ div [] [ text "You can enable some notifications like when it's your turn, or when the next game starts:" ]
+                            [ div [] [ text "You can enable some notifications like when it's your turn, or when the game starts:" ]
                             , div [] [ button [ onClick RequestNotifications ] [ text "Enable notifications" ] ]
                             ]
 
                         else
                             [ div [] [ text "You have notifications enabled on this device/browser." ]
+                            , div [] [ button [ onClick RenounceNotifications ] [ text "Disable notifications" ] ]
+
+                            -- , div []
+                            -- [ label
+                            -- [ class "edCheckbox"
+                            -- , onClick <|
+                            -- PushRegisterEvent ( GameStart, not <| List.member GameStart user.preferences.push.events )
+                            -- ]
+                            -- [ Icon.icon <|
+                            -- if List.member GameStart user.preferences.push.events then
+                            -- "check_box"
+                            --
+                            -- else
+                            -- "check_box_outline_blank"
+                            -- , text "Get a push notification when a game starts"
+                            -- ]
+                            -- ]
                             ]
                     ]
 

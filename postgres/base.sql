@@ -103,7 +103,8 @@ CREATE TABLE users (
     picture character varying(500),
     points bigint DEFAULT 0,
     level integer DEFAULT 0,
-    registration_time timestamp with time zone NOT NULL
+    registration_time timestamp with time zone NOT NULL,
+    preferences json
 );
 
 

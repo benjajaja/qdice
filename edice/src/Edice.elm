@@ -2,7 +2,7 @@ port module Edice exposing (pushSubscribe, started, subscriptions)
 
 import Animation
 import Backend
-import Backend.HttpCommands exposing (authenticate, getPushKey, loadGlobalSettings, loadMe, login, registerPush)
+import Backend.HttpCommands exposing (authenticate, getPushKey, loadGlobalSettings, loadMe, login, registerPush, registerPushEvent)
 import Backend.MqttCommands exposing (sendGameCommand)
 import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
@@ -210,7 +210,8 @@ update msg model =
                     , Cmd.batch
                         [ MyOauth.saveToken <| Just token
                         , loadMe backend_
-                        , sendGameCommand model_.backend model.game.table Game.Types.Join
+
+                        -- , sendGameCommand model_.backend model.game.table Game.Types.Join
                         ]
                     )
 
@@ -492,6 +493,9 @@ update msg model =
         RequestNotifications ->
             ( model, requestNotifications () )
 
+        RenounceNotifications ->
+            ( model, renounceNotifications () )
+
         NotificationsChange permission ->
             let
                 preferences =
@@ -508,7 +512,13 @@ update msg model =
                 preferences_ =
                     { preferences | notificationsEnabled = notificationsEnabled }
             in
-            ( { model | preferences = preferences_ }, Cmd.none )
+            ( { model | preferences = preferences_ }
+            , if preferences_.notificationsEnabled then
+                Cmd.none
+
+              else
+                registerPush model.backend Nothing
+            )
 
         PushGetKey ->
             ( model, getPushKey model.backend )
@@ -522,7 +532,10 @@ update msg model =
                     ( model, toastError "Could not get push key" <| httpErrorToString err )
 
         PushRegister subscription ->
-            ( model, registerPush model.backend subscription )
+            ( model, registerPush model.backend <| Just subscription )
+
+        PushRegisterEvent ( event, enable ) ->
+            ( model, registerPushEvent model.backend ( event, enable ) )
 
 
 currentTable : Route -> Maybe Table
@@ -663,6 +676,9 @@ port requestFullscreen : () -> Cmd msg
 
 
 port requestNotifications : () -> Cmd msg
+
+
+port renounceNotifications : () -> Cmd msg
 
 
 port notificationsChange : (String -> msg) -> Sub msg

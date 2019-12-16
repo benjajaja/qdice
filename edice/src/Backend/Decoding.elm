@@ -6,7 +6,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, 
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Profile)
+import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Profile, PushEvent(..), UserPreferences, UserPushPreferences)
 
 
 stringDecoder : Decoder String
@@ -26,6 +26,7 @@ userDecoder =
         |> required "level" int
         |> required "claimed" bool
         |> required "networks" (list authNetworkDecoder)
+        |> required "preferences" preferencesDecoder
 
 
 authNetworkDecoder : Decoder AuthNetwork
@@ -44,6 +45,29 @@ authNetworkDecoder =
 
                 _ ->
                     Password
+        )
+        string
+
+
+preferencesDecoder : Decoder UserPreferences
+preferencesDecoder =
+    succeed UserPreferences
+        |> required "push" pushPreferencesDecoder
+
+
+pushPreferencesDecoder : Decoder UserPushPreferences
+pushPreferencesDecoder =
+    succeed UserPushPreferences
+        |> required "events" (list pushEventDecoder)
+
+
+pushEventDecoder : Decoder PushEvent
+pushEventDecoder =
+    map
+        (\s ->
+            case s of
+                _ ->
+                    GameStart
         )
         string
 

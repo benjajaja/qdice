@@ -1,16 +1,15 @@
-module Backend.HttpCommands exposing (authenticate, deleteAccount, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, registerPush, toastHttpError, updateAccount)
+module Backend.HttpCommands exposing (authenticate, deleteAccount, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, registerPush, registerPushEvent, toastHttpError, updateAccount)
 
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
 import Backend.Types exposing (..)
-import Game.Types exposing (Player, PlayerAction(..))
+import Game.Types exposing (PlayerAction(..))
 import Helpers exposing (httpErrorToString)
 import Http exposing (Error, emptyBody, expectJson, expectString, expectWhatever, header, jsonBody, stringBody)
 import Land exposing (Color(..))
 import Snackbar exposing (toastError)
-import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, LoggedUser, LoginDialogStatus(..), Msg(..), PushSubscription, User(..))
+import Types exposing (AuthNetwork(..), AuthState, LoggedUser, LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..))
 
 
 toastHttpError : Error -> Cmd Msg
@@ -95,6 +94,11 @@ login model name =
             , level = 0
             , claimed = False
             , networks = [ Password ]
+            , preferences =
+                { push =
+                    { events = []
+                    }
+                }
             }
 
         state =
@@ -168,7 +172,7 @@ getPushKey model =
         }
 
 
-registerPush : Model -> PushSubscription -> Cmd Msg
+registerPush : Model -> Maybe PushSubscription -> Cmd Msg
 registerPush model subscription =
     Http.request
         { method = "POST"
@@ -181,8 +185,37 @@ registerPush model subscription =
                 Nothing ->
                     []
         , body =
-            stringBody "application/json" subscription
+            stringBody "application/json" <| Maybe.withDefault "null" subscription
         , expect = expectWhatever <| always Nop
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+registerPushEvent : Model -> ( PushEvent, Bool ) -> Cmd Msg
+registerPushEvent model ( event, enable ) =
+    Http.request
+        { method =
+            if enable then
+                "POST"
+
+            else
+                "DELETE"
+        , url = model.baseUrl ++ "/push/register/event"
+        , headers =
+            case model.jwt of
+                Just jwt ->
+                    [ header "authorization" ("Bearer " ++ jwt) ]
+
+                Nothing ->
+                    []
+        , body =
+            stringBody "text/plain" <|
+                case event of
+                    GameStart ->
+                        "game-start"
+        , expect =
+            expectString (GetToken Nothing)
         , timeout = Nothing
         , tracker = Nothing
         }

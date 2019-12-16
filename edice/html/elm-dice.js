@@ -34,7 +34,9 @@ var token =
     : null;
 var notificationsEnabled = false;
 if ("Notification" in window) {
-  notificationsEnabled = Notification.permission === "granted";
+  notificationsEnabled =
+    Notification.permission === "granted" &&
+    localStorage.getItem("notifications") === "1";
 }
 
 var app = Elm.Edice.init({
@@ -229,7 +231,56 @@ if ("serviceWorker" in navigator) {
       // registration failed
       console.log("Registration failed with " + error);
     });
+}
 
+app.ports.requestNotifications.subscribe(function() {
+  if (!("Notification" in window)) {
+    app.ports.notificationsChange.send("unsupported");
+    window.alert("This browser or system does not support notifications.");
+    console.log("No notification support");
+    return;
+  }
+  if (Notification.permission === "granted") {
+    app.ports.notificationsChange.send("granted");
+    enablePush();
+    snackbar.show({
+      text: "Notifications are enabled",
+      pos: "bottom-center",
+      actionTextColor: "#38d6ff",
+    });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission(function(permission) {
+      app.ports.notificationsChange.send(permission);
+      enablePush();
+      snackbar.show({
+        text:
+          permission === "granted"
+            ? "Notifications are now enabled"
+            : "Huh? It looks like you didn't allow notifications. Please try again.",
+        pos: "bottom-center",
+        actionTextColor: "#38d6ff",
+      });
+    });
+  } else if (Notification.permission === "denied") {
+    app.ports.notificationsChange.send("denied");
+    snackbar.show({
+      text:
+        'It seems that you have blocked notifications at some time before. Try clicking on the lock icon next to the URL and look for "Notifications" or "Permissions" and unblock it.',
+      pos: "bottom-center",
+      actionTextColor: "#38d6ff",
+      duration: 15000,
+    });
+  }
+});
+
+app.ports.renounceNotifications.subscribe(function() {
+  localStorage.removeItem("notifications");
+  app.ports.notificationsChange.send("denied");
+});
+
+function enablePush() {
+  console.log("enablePush");
+  localStorage.setItem("notifications", "1");
   navigator.serviceWorker.ready
     .then(function(registration) {
       return registration.pushManager
@@ -257,46 +308,10 @@ if ("serviceWorker" in navigator) {
       app.ports.pushRegister.send(JSON.stringify(subscription));
     });
 }
-app.ports.requestNotifications.subscribe(function() {
-  if (!("Notification" in window)) {
-    app.ports.notificationsChange.send("unsupported");
-    window.alert("This browser or system does not support notifications.");
-    console.log("No notification support");
-    return;
-  }
-  if (Notification.permission === "granted") {
-    app.ports.notificationsChange.send("granted");
-    snackbar.show({
-      text: "Notifications are enabled",
-      pos: "bottom-center",
-      actionTextColor: "#38d6ff",
-    });
-  } else if (Notification.permission !== "denied") {
-    Notification.requestPermission(function(permission) {
-      app.ports.notificationsChange.send(permission);
-      snackbar.show({
-        text:
-          permission === "granted"
-            ? "Notifications are now enabled"
-            : "Huh? It looks like you didn't allow notifications. Please try again.",
-        pos: "bottom-center",
-        actionTextColor: "#38d6ff",
-      });
-    });
-  } else if (Notification.permission === "denied") {
-    app.ports.notificationsChange.send("denied");
-    snackbar.show({
-      text:
-        'It seems that you have blocked notifications at some time before. Try clicking on the lock icon next to the URL and look for "Notifications" or "Permissions" and unblock it.',
-      pos: "bottom-center",
-      actionTextColor: "#38d6ff",
-      duration: 15000,
-    });
-  }
-});
 
 function notification(title, actions) {
   if (
+    localStorage.getItem("notifications") === "1" &&
     "Notification" in window &&
     Notification.permission === "granted" &&
     serviceWorkerRegistration !== null &&

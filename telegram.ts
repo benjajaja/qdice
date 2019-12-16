@@ -208,7 +208,7 @@ bot.gameQuery(ctx => {
     })
     .then(profile => {
       console.log("got profile", profile);
-      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET);
+      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
       console.log("answer", gameUrl + "/token/" + token);
       return ctx.answerGameQuery(gameUrl + "/token/" + token);
     })

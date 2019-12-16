@@ -14,11 +14,13 @@ import {
   Emoji,
   Color,
   Watcher,
+  Preferences,
 } from "./types";
 import { date } from "./timestamp";
 import { setTimeout } from "timers";
 import * as sleep from "sleep-promise";
 import * as config from "./tables.config"; // for e2e only
+import { defaultPreferences } from "./user";
 
 let client: Client;
 
@@ -156,6 +158,17 @@ export const updateUser = async (
   return await getUser(id);
 };
 
+export const updateUserPreferences = async (
+  id: UserId,
+  preferences: Preferences
+) => {
+  const res = await client.query(
+    "UPDATE users SET preferences = $2 WHERE id = $1",
+    [id, preferences]
+  );
+  return await getUser(id);
+};
+
 export const deleteUser = async (id: UserId) => {
   try {
     await client.query("BEGIN");
@@ -200,7 +213,16 @@ LIMIT $1 OFFSET $2`,
 };
 
 export const userProfile = (rows: any[]): User => {
-  const { id, name, email, picture, level, points, rank } = rows[0];
+  const {
+    id,
+    name,
+    email,
+    picture,
+    level,
+    points,
+    rank,
+    preferences,
+  } = rows[0];
   return {
     id: id.toString(),
     name,
@@ -213,6 +235,10 @@ export const userProfile = (rows: any[]): User => {
     points: parseInt(points, 10),
     rank: parseInt(rank, 10),
     networks: rows.map(row => row.network || "password"),
+    preferences: {
+      ...defaultPreferences(),
+      ...preferences,
+    },
   };
 };
 

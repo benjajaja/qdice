@@ -3,8 +3,16 @@ import * as request from "request";
 import * as jwt from "jsonwebtoken";
 import * as db from "./db";
 import logger from "./logger";
+import { Preferences, PushNotificationEvents, User } from "./types";
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
+
+export const defaultPreferences = (): Preferences => ({
+  push: {
+    subscriptions: [],
+    events: [],
+  },
+});
 
 export const login = (req, res, next) => {
   const network = req.params.network;
@@ -180,6 +188,52 @@ export const del = function(req, res, next) {
     .then(_ => {
       res.send(200);
       next();
+    })
+    .catch(e => next(e));
+};
+
+export const addPushSubscription = (req, res, next) => {
+  const subscription = req.body;
+  const user: User = (req as any).user;
+  logger.debug("register push endpoint", subscription, user.id);
+  db.updateUserPreferences(user.id, {
+    ...user.preferences,
+    push: {
+      ...user.preferences.push,
+      subscriptions: user.preferences.push.subscriptions.concat(subscription),
+    },
+  })
+    .then(profile => {
+      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
+      res.sendRaw(200, token);
+    })
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);
+    })
+    .catch(e => next(e));
+};
+
+export const addPushEvent = (add: boolean) => (req, res, next) => {
+  const event = req.body;
+  const user: User = (req as any).user;
+  logger.debug("register push event", event, user.id);
+  db.updateUserPreferences(user.id, {
+    ...user.preferences,
+    push: {
+      ...user.preferences.push,
+      events: add
+        ? user.preferences.push.events.concat(event)
+        : user.preferences.push.events.filter(e => e !== event),
+    },
+  })
+    .then(profile => {
+      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
+      res.sendRaw(200, token);
+    })
+    .catch(e => {
+      console.error(e);
+      return Promise.reject(e);
     })
     .catch(e => next(e));
 };
