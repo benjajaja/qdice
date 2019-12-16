@@ -278,6 +278,8 @@ function notification(title, actions) {
     document.visibilityState === "hidden"
   ) {
     var notification = serviceWorkerRegistration.showNotification(title, {
+      icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
+      badge: "https://qdice.wtf/assets/monochrome.png",
       actions: actions,
       vibrate: [50, 100, 50],
     });
