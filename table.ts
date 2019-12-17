@@ -47,16 +47,19 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
   await Promise.all(
     config.tables
       .map(
-        async ({
-          tag,
-          name,
-          mapName,
-          playerSlots,
-          startSlots,
-          points,
-          stackSize,
-          params,
-        }) => {
+        async (
+          {
+            tag,
+            name,
+            mapName,
+            playerSlots,
+            startSlots,
+            points,
+            stackSize,
+            params,
+          },
+          index
+        ) => {
           const table = await getTable(tag);
           const lands = maps.hasChanged(table.mapName, table.lands);
           await save(
@@ -73,7 +76,7 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
             undefined,
             lands
           );
-          await start(table.tag, lock, client);
+          await start(table.tag, lock, client, index, config.tables.length);
         }
       )
       .concat(
@@ -88,7 +91,9 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
 export const start = async (
   tableTag: string,
   lock: AsyncLock,
-  client: mqtt.MqttClient
+  client: mqtt.MqttClient,
+  index: number,
+  count: number
 ) => {
   publish.tableStatus(await getTable(tableTag));
 
@@ -133,7 +138,7 @@ export const start = async (
   client.on("message", onMessage);
 
   // await db.clearGames(lock);
-  tick.start(tableTag, lock);
+  tick.start(tableTag, lock, index, count);
   return () => {
     client.off("message", onMessage);
     tick.stop(tableTag);

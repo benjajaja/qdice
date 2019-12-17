@@ -17,20 +17,25 @@ import { rollResult } from "./attack";
 import { addBots, tickBotTurn, isBot } from "./bots";
 import { leave } from "./commands";
 import logger from "../logger";
+import { setTimeout } from "timers";
 
 const intervalIds: { [tableTag: string]: any } = {};
 
-export const start = (tableTag: string, lock: any) => {
-  if (intervalIds[tableTag]) {
-    throw new Error("already ticking");
-  }
-  intervalIds[tableTag] = setInterval(() => {
-    try {
-      tick(tableTag, lock);
-    } catch (e) {
-      logger.error("Tick error!", e);
+const TICK_PERIOD_MS = 500;
+
+export const start = (tableTag: string, lock: any, index, count) => {
+  setTimeout(() => {
+    if (intervalIds[tableTag]) {
+      throw new Error("already ticking");
     }
-  }, 500);
+    intervalIds[tableTag] = setInterval(() => {
+      try {
+        tick(tableTag, lock);
+      } catch (e) {
+        logger.error("Tick error!", e);
+      }
+    }, TICK_PERIOD_MS);
+  }, (TICK_PERIOD_MS / count) * index);
 };
 
 export const stop = (tableTag: string) => {
