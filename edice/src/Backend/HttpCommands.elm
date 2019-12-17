@@ -167,8 +167,8 @@ getPushKey model =
         }
 
 
-registerPush : Model -> ( PushSubscription, Bool ) -> Cmd Msg
-registerPush model ( subscription, enable ) =
+registerPush : Model -> ( PushSubscription, Bool ) -> Maybe String -> Cmd Msg
+registerPush model ( subscription, enable ) jwt =
     Http.request
         { method =
             if enable then
@@ -178,12 +178,17 @@ registerPush model ( subscription, enable ) =
                 "DELETE"
         , url = model.baseUrl ++ "/push/register"
         , headers =
-            case model.jwt of
-                Just jwt ->
-                    [ header "authorization" ("Bearer " ++ jwt) ]
+            case jwt of
+                Just passedJwt ->
+                    [ header "authorization" ("Bearer " ++ passedJwt) ]
 
                 Nothing ->
-                    []
+                    case model.jwt of
+                        Just normalJwt ->
+                            [ header "authorization" ("Bearer " ++ normalJwt) ]
+
+                        Nothing ->
+                            []
         , body =
             stringBody "application/json" subscription
         , expect = expectWhatever <| always Nop

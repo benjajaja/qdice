@@ -25,7 +25,7 @@ type Msg
     | RequestFullscreen
     | RequestNotifications
     | RenounceNotifications
-    | NotificationsChange ( String, Maybe PushSubscription )
+    | NotificationsChange ( String, Maybe PushSubscription, Maybe String ) -- 3rd item is JWT, because this might come right after logout
     | PushGetKey
     | PushKey (Result Error String)
     | PushRegister PushSubscription

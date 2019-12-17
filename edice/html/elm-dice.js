@@ -240,7 +240,7 @@ if ("serviceWorker" in navigator) {
 
 app.ports.requestNotifications.subscribe(function() {
   if (!("Notification" in window)) {
-    app.ports.notificationsChange.send(["unsupported", null]);
+    app.ports.notificationsChange.send(["unsupported", null, null]);
     window.alert("This browser or system does not support notifications.");
     console.log("No notification support");
     return;
@@ -250,6 +250,7 @@ app.ports.requestNotifications.subscribe(function() {
       app.ports.notificationsChange.send([
         "granted",
         JSON.stringify(subscription),
+        null,
       ]);
       snackbar.show({
         text: "Notifications are enabled",
@@ -263,6 +264,7 @@ app.ports.requestNotifications.subscribe(function() {
         app.ports.notificationsChange.send([
           permission,
           JSON.stringify(subscription),
+          null,
         ]);
         snackbar.show({
           text:
@@ -275,7 +277,7 @@ app.ports.requestNotifications.subscribe(function() {
       });
     });
   } else if (Notification.permission === "denied") {
-    app.ports.notificationsChange.send(["denied", null]);
+    app.ports.notificationsChange.send(["denied", null, null]);
     snackbar.show({
       text:
         'It seems that you have blocked notifications at some time before. Try clicking on the lock icon next to the URL and look for "Notifications" or "Permissions" and unblock it.',
@@ -286,7 +288,7 @@ app.ports.requestNotifications.subscribe(function() {
   }
 });
 
-app.ports.renounceNotifications.subscribe(function() {
+app.ports.renounceNotifications.subscribe(function(jwt) {
   navigator.serviceWorker.ready.then(function(registration) {
     return registration.pushManager
       .getSubscription()
@@ -295,21 +297,19 @@ app.ports.renounceNotifications.subscribe(function() {
         app.ports.notificationsChange.send([
           "denied",
           JSON.stringify(subscription),
+          jwt,
         ]);
       });
   });
 });
 
 function enablePush() {
-  console.log("enablePush");
   localStorage.setItem("notifications", "2");
   return navigator.serviceWorker.ready
     .then(function(registration) {
-      console.log("SUB REG");
       return registration.pushManager
         .getSubscription()
         .then(function(subscription) {
-          console.log("SUB GOT");
           if (subscription) {
             return subscription;
           }

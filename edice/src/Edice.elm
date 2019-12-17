@@ -309,7 +309,7 @@ update msg model =
                     Nothing ->
                         Cmd.none
                 , navigateTo model.key HomeRoute
-                , renounceNotifications () -- TODO: send current token, get it back to unregister
+                , renounceNotifications <| model.backend.jwt
                 , ga [ "send", "event", "auth", "Logout" ]
                 ]
             )
@@ -526,9 +526,9 @@ update msg model =
             ( model, requestNotifications () )
 
         RenounceNotifications ->
-            ( model, renounceNotifications () )
+            ( model, renounceNotifications Nothing )
 
-        NotificationsChange ( permission, subscription ) ->
+        NotificationsChange ( permission, subscription, jwt ) ->
             let
                 sessionPreferences =
                     model.sessionPreferences
@@ -551,7 +551,7 @@ update msg model =
               else
                 case subscription of
                     Just sub ->
-                        registerPush model.backend ( sub, False )
+                        registerPush model.backend ( sub, False ) jwt
 
                     Nothing ->
                         toastError "Could not get push subscription to remove!" "empty subscription"
@@ -569,7 +569,7 @@ update msg model =
                     ( model, toastError "Could not get push key" <| httpErrorToString err )
 
         PushRegister subscription ->
-            ( model, registerPush model.backend ( subscription, True ) )
+            ( model, registerPush model.backend ( subscription, True ) Nothing )
 
         PushRegisterEvent ( event, enable ) ->
             ( model, registerPushEvent model.backend ( event, enable ) )
@@ -715,10 +715,10 @@ port requestFullscreen : () -> Cmd msg
 port requestNotifications : () -> Cmd msg
 
 
-port renounceNotifications : () -> Cmd msg
+port renounceNotifications : Maybe String -> Cmd msg
 
 
-port notificationsChange : (( String, Maybe PushSubscription ) -> msg) -> Sub msg
+port notificationsChange : (( String, Maybe PushSubscription, Maybe String ) -> msg) -> Sub msg
 
 
 port pushGetKey : (() -> msg) -> Sub msg
