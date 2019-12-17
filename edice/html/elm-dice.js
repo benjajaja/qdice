@@ -68,17 +68,22 @@ app.ports.started.subscribe(function(msg) {
   };
   window.dialogPolyfill = require("dialog-polyfill");
 
-  const ackeeTracker = require("ackee-tracker");
-  ackeeTracker
-    .create(
-      {
-        server:
-          window.location.protocol + "//" + window.location.hostname + "/ackee",
-        domainId: "6f3492e2-9780-45a6-85ee-550777943d24",
-      },
-      { ignoreLocalhost: true }
-    )
-    .record();
+  if (location.hostname !== "localhost") {
+    const ackee = require("ackee-tracker");
+    ackee
+      .create(
+        {
+          server:
+            window.location.protocol +
+            "//" +
+            window.location.hostname +
+            "/ackee",
+          domainId: "6f3492e2-9780-45a6-85ee-550777943d24",
+        },
+        { ignoreLocalhost: true }
+      )
+      .record();
+  }
   // ga = require('ga-lite');
   // ga('create', 'UA-111861514-1', 'auto');
   // ga('send', 'pageview');

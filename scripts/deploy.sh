@@ -7,11 +7,6 @@ rsync -az --force --delete --progress --exclude-from=rsync_exclude.txt -e "ssh -
 ssh -tt gipsy@qdice.wtf <<'ENDSSH'
 cd nodice
 docker-compose pull nodice
-docker-compose build --no-cache
-docker-compose stop nodice nginx telegram
-docker-compose rm --force -v nodice nginx
-docker volume rm nodice_statics
-docker-compose up -d --remove-orphans
-docker-compose restart telegram
+./scripts/restart.sh
 exit 0
 ENDSSH
