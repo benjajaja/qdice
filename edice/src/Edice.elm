@@ -60,7 +60,7 @@ init flags location key =
             Routing.parseLocation location
 
         table =
-            currentTable route
+            tableFromRoute route
 
         game =
             Game.State.init table Nothing
@@ -188,7 +188,7 @@ update msg model =
                         _ ->
                             ( model_, Cmd.none )
 
-        GetToken table res ->
+        GetToken authState res ->
             case res of
                 Err err ->
                     ( model
@@ -203,17 +203,46 @@ update msg model =
                         backend_ =
                             { backend | jwt = Just token }
 
+                        needsTable : Maybe Table
+                        needsTable =
+                            case model.game.table of
+                                Just currentTable ->
+                                    Maybe.andThen .table authState
+                                        |> Maybe.andThen
+                                            (\t ->
+                                                if t /= currentTable then
+                                                    Just t
+
+                                                else
+                                                    Nothing
+                                            )
+
+                                Nothing ->
+                                    Nothing
+
                         model_ =
                             { model | backend = backend_ }
-                    in
-                    ( model_
-                    , Cmd.batch
-                        [ MyOauth.saveToken <| Just token
-                        , loadMe backend_
 
-                        -- , sendGameCommand model_.backend model.game.table Game.Types.Join
-                        ]
-                    )
+                        cmd =
+                            Cmd.batch <|
+                                List.append
+                                    [ MyOauth.saveToken <| Just token
+                                    , loadMe backend_
+                                    ]
+                                <|
+                                    case Maybe.andThen .table authState of
+                                        Just table ->
+                                            [ sendGameCommand model_.backend (Just table) Game.Types.Join ]
+
+                                        Nothing ->
+                                            []
+                    in
+                    case needsTable of
+                        Nothing ->
+                            ( model_, cmd )
+
+                        Just table ->
+                            pipeUpdates Game.State.changeTable table ( model_, cmd )
 
         GetProfile res ->
             case res of
@@ -538,8 +567,8 @@ update msg model =
             ( model, registerPushEvent model.backend ( event, enable ) )
 
 
-currentTable : Route -> Maybe Table
-currentTable route =
+tableFromRoute : Route -> Maybe Table
+tableFromRoute route =
     case route of
         GameRoute table ->
             Just table
