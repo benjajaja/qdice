@@ -289,7 +289,7 @@ playerBox model =
                     , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ]
                     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
                     , div [ class "edPlayerBox__settings" ] <|
-                        if not model.preferences.notificationsEnabled then
+                        if not model.sessionPreferences.notificationsEnabled then
                             [ div [] [ text "You can enable some notifications like when it's your turn, or when the game starts:" ]
                             , div [] [ button [ onClick RequestNotifications ] [ text "Enable notifications" ] ]
                             ]
@@ -297,22 +297,21 @@ playerBox model =
                         else
                             [ div [] [ text "You have notifications enabled on this device/browser." ]
                             , div [] [ button [ onClick RenounceNotifications ] [ text "Disable notifications" ] ]
+                            , div []
+                                [ label
+                                    [ class "edCheckbox"
+                                    , onClick <|
+                                        PushRegisterEvent ( GameStart, not <| List.member GameStart model.preferences.pushEvents )
+                                    ]
+                                    [ Icon.icon <|
+                                        if List.member GameStart model.preferences.pushEvents then
+                                            "check_box"
 
-                            -- , div []
-                            -- [ label
-                            -- [ class "edCheckbox"
-                            -- , onClick <|
-                            -- PushRegisterEvent ( GameStart, not <| List.member GameStart user.preferences.push.events )
-                            -- ]
-                            -- [ Icon.icon <|
-                            -- if List.member GameStart user.preferences.push.events then
-                            -- "check_box"
-                            --
-                            -- else
-                            -- "check_box_outline_blank"
-                            -- , text "Get a push notification when a game starts"
-                            -- ]
-                            -- ]
+                                        else
+                                            "check_box_outline_blank"
+                                    , text "Get a push notification when a game starts"
+                                    ]
+                                ]
                             ]
                     ]
 

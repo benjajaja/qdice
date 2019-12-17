@@ -213,3 +213,17 @@ ALTER TABLE ONLY authorizations
 -- PostgreSQL database dump complete
 --
 
+CREATE TABLE push_subscriptions (
+  user_id int NOT NULL,
+  subscription jsonb NOT NULL,
+  CONSTRAINT push_subscriptions_pk PRIMARY KEY (user_id,subscription),
+  CONSTRAINT push_subscriptions_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE push_subscribed_events (
+  user_id integer NOT NULL,
+  "event" varchar NOT NULL,
+  CONSTRAINT push_subscribed_events_pk PRIMARY KEY (user_id,"event"),
+  CONSTRAINT push_subscribed_events_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+);
+

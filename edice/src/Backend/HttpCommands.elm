@@ -94,11 +94,6 @@ login model name =
             , level = 0
             , claimed = False
             , networks = [ Password ]
-            , preferences =
-                { push =
-                    { events = []
-                    }
-                }
             }
 
         state =
@@ -172,10 +167,15 @@ getPushKey model =
         }
 
 
-registerPush : Model -> Maybe PushSubscription -> Cmd Msg
-registerPush model subscription =
+registerPush : Model -> ( PushSubscription, Bool ) -> Cmd Msg
+registerPush model ( subscription, enable ) =
     Http.request
-        { method = "POST"
+        { method =
+            if enable then
+                "POST"
+
+            else
+                "DELETE"
         , url = model.baseUrl ++ "/push/register"
         , headers =
             case model.jwt of
@@ -185,7 +185,7 @@ registerPush model subscription =
                 Nothing ->
                     []
         , body =
-            stringBody "application/json" <| Maybe.withDefault "null" subscription
+            stringBody "application/json" subscription
         , expect = expectWhatever <| always Nop
         , timeout = Nothing
         , tracker = Nothing
@@ -201,7 +201,7 @@ registerPushEvent model ( event, enable ) =
 
             else
                 "DELETE"
-        , url = model.baseUrl ++ "/push/register/event"
+        , url = model.baseUrl ++ "/push/register/events"
         , headers =
             case model.jwt of
                 Just jwt ->

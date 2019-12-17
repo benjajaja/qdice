@@ -1,4 +1,4 @@
-module Types exposing (AuthNetwork(..), AuthState, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Profile, PushEvent(..), PushSubscription, Route(..), StaticPage(..), User(..), UserId, UserPreferences, UserPushPreferences, Username, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
 
 import Animation
 import Backend.Types
@@ -25,7 +25,7 @@ type Msg
     | RequestFullscreen
     | RequestNotifications
     | RenounceNotifications
-    | NotificationsChange String
+    | NotificationsChange ( String, Maybe PushSubscription )
     | PushGetKey
     | PushKey (Result Error String)
     | PushRegister PushSubscription
@@ -36,13 +36,13 @@ type Msg
     | Authorize AuthState
     | Authenticate String AuthState
     | GetToken (Maybe AuthState) (Result Error String)
-    | GetProfile (Result Error ( LoggedUser, String ))
+    | GetProfile (Result Error ( LoggedUser, String, Preferences ))
     | GetLeaderBoard (Result Error ( String, List Profile ))
     | Logout
     | ShowLogin LoginDialogStatus
     | Login String
     | SetLoginName String
-    | UpdateUser LoggedUser String
+    | UpdateUser LoggedUser String Preferences
       -- game
     | BoardMsg Board.Msg
     | InputChat String
@@ -104,6 +104,7 @@ type alias Model =
     , settings : GlobalSettings
     , leaderBoard : LeaderBoardModel
     , preferences : Preferences
+    , sessionPreferences : SessionPreferences
     }
 
 
@@ -122,17 +123,11 @@ type alias LoggedUser =
     , level : Int
     , claimed : Bool
     , networks : List AuthNetwork
-    , preferences : UserPreferences
     }
 
 
 type alias UserPreferences =
-    { push : UserPushPreferences
-    }
-
-
-type alias UserPushPreferences =
-    { events : List PushEvent }
+    {}
 
 
 type AuthNetwork
@@ -198,8 +193,12 @@ type alias LeaderBoardModel =
 
 
 type alias Preferences =
+    { pushEvents : List PushEvent
+    }
+
+
+type alias SessionPreferences =
     { notificationsEnabled : Bool
-    , anyGameStartNotify : Bool
     }
 
 

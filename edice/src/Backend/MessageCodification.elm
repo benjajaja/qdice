@@ -152,8 +152,8 @@ decodeClientMessage message =
             case mtype of
                 "user" ->
                     case decodeString (field "payload" meDecoder) message of
-                        Ok ( user, token ) ->
-                            Ok <| UpdateUser user token
+                        Ok ( user, token, preferences ) ->
+                            Ok <| UpdateUser user token preferences
 
                         Err err ->
                             Err <| errorToString err

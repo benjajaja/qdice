@@ -6,7 +6,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, 
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Profile, PushEvent(..), UserPreferences, UserPushPreferences)
+import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Preferences, Profile, PushEvent(..), SessionPreferences)
 
 
 stringDecoder : Decoder String
@@ -26,7 +26,6 @@ userDecoder =
         |> required "level" int
         |> required "claimed" bool
         |> required "networks" (list authNetworkDecoder)
-        |> required "preferences" preferencesDecoder
 
 
 authNetworkDecoder : Decoder AuthNetwork
@@ -49,29 +48,6 @@ authNetworkDecoder =
         string
 
 
-preferencesDecoder : Decoder UserPreferences
-preferencesDecoder =
-    succeed UserPreferences
-        |> required "push" pushPreferencesDecoder
-
-
-pushPreferencesDecoder : Decoder UserPushPreferences
-pushPreferencesDecoder =
-    succeed UserPushPreferences
-        |> required "events" (list pushEventDecoder)
-
-
-pushEventDecoder : Decoder PushEvent
-pushEventDecoder =
-    map
-        (\s ->
-            case s of
-                _ ->
-                    GameStart
-        )
-        string
-
-
 authStateDecoder : Decoder AuthState
 authStateDecoder =
     succeed AuthState
@@ -80,9 +56,29 @@ authStateDecoder =
         |> required "addTo" (nullable string)
 
 
-meDecoder : Decoder ( LoggedUser, String )
+preferencesDecoder : Decoder Preferences
+preferencesDecoder =
+    succeed Preferences
+        |> required "pushSubscribed" (list pushEventDecoder)
+
+
+pushEventDecoder : Decoder PushEvent
+pushEventDecoder =
+    map
+        (\s ->
+            case s of
+                "game-start" ->
+                    GameStart
+
+                _ ->
+                    GameStart
+        )
+        string
+
+
+meDecoder : Decoder ( LoggedUser, String, Preferences )
 meDecoder =
-    map2 (\a b -> ( a, b )) (index 0 userDecoder) (index 1 stringDecoder)
+    map3 (\a b c -> ( a, b, c )) (index 0 userDecoder) (index 1 stringDecoder) (index 2 preferencesDecoder)
 
 
 tableNameDecoder : Decoder Table

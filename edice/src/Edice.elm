@@ -111,8 +111,10 @@ init flags location key =
                 , turnSeconds = 10
                 }
             , preferences =
+                { pushEvents = []
+                }
+            , sessionPreferences =
                 { notificationsEnabled = flags.notificationsEnabled
-                , anyGameStartNotify = False
                 }
             , leaderBoard =
                 { month = "this month"
@@ -251,7 +253,7 @@ update msg model =
                     , toastError "Could not sign in, please retry" <| httpErrorToString err
                     )
 
-                Ok ( profile, token ) ->
+                Ok ( profile, token, preferences ) ->
                     let
                         backend =
                             model.backend
@@ -259,14 +261,14 @@ update msg model =
                         backend_ =
                             { backend | jwt = Just token }
                     in
-                    ( { model | user = Logged profile, backend = backend_ }
+                    ( { model | user = Logged profile, preferences = preferences, backend = backend_ }
                     , ga [ "send", "event", "auth", "GetProfile" ]
                     )
 
         GetLeaderBoard res ->
             LeaderBoard.State.setLeaderBoard model res
 
-        UpdateUser profile token ->
+        UpdateUser profile token preferences ->
             let
                 backend =
                     model.backend
@@ -274,7 +276,7 @@ update msg model =
                 backend_ =
                     { backend | jwt = Just token }
             in
-            ( { model | user = Logged profile, backend = backend_ }
+            ( { model | user = Logged profile, preferences = preferences, backend = backend_ }
             , Cmd.none
             )
 
@@ -307,6 +309,7 @@ update msg model =
                     Nothing ->
                         Cmd.none
                 , navigateTo model.key HomeRoute
+                , renounceNotifications () -- TODO: send current token, get it back to unregister
                 , ga [ "send", "event", "auth", "Logout" ]
                 ]
             )
@@ -525,10 +528,10 @@ update msg model =
         RenounceNotifications ->
             ( model, renounceNotifications () )
 
-        NotificationsChange permission ->
+        NotificationsChange ( permission, subscription ) ->
             let
-                preferences =
-                    model.preferences
+                sessionPreferences =
+                    model.sessionPreferences
 
                 notificationsEnabled =
                     case permission of
@@ -538,15 +541,20 @@ update msg model =
                         _ ->
                             False
 
-                preferences_ =
-                    { preferences | notificationsEnabled = notificationsEnabled }
+                sessionPreferences_ =
+                    { sessionPreferences | notificationsEnabled = notificationsEnabled }
             in
-            ( { model | preferences = preferences_ }
-            , if preferences_.notificationsEnabled then
+            ( { model | sessionPreferences = sessionPreferences_ }
+            , if sessionPreferences_.notificationsEnabled then
                 Cmd.none
 
               else
-                registerPush model.backend Nothing
+                case subscription of
+                    Just sub ->
+                        registerPush model.backend ( sub, False )
+
+                    Nothing ->
+                        toastError "Could not get push subscription to remove!" "empty subscription"
             )
 
         PushGetKey ->
@@ -561,7 +569,7 @@ update msg model =
                     ( model, toastError "Could not get push key" <| httpErrorToString err )
 
         PushRegister subscription ->
-            ( model, registerPush model.backend <| Just subscription )
+            ( model, registerPush model.backend ( subscription, True ) )
 
         PushRegisterEvent ( event, enable ) ->
             ( model, registerPushEvent model.backend ( event, enable ) )
@@ -710,7 +718,7 @@ port requestNotifications : () -> Cmd msg
 port renounceNotifications : () -> Cmd msg
 
 
-port notificationsChange : (String -> msg) -> Sub msg
+port notificationsChange : (( String, Maybe PushSubscription ) -> msg) -> Sub msg
 
 
 port pushGetKey : (() -> msg) -> Sub msg

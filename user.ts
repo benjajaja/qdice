@@ -1,4 +1,5 @@
 import * as R from "ramda";
+import * as errs from "restify-errors";
 import * as request from "request";
 import * as jwt from "jsonwebtoken";
 import * as db from "./db";
@@ -7,12 +8,7 @@ import { Preferences, PushNotificationEvents, User } from "./types";
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 
-export const defaultPreferences = (): Preferences => ({
-  push: {
-    subscriptions: [],
-    events: [],
-  },
-});
+export const defaultPreferences = (): Preferences => ({});
 
 export const login = (req, res, next) => {
   const network = req.params.network;
@@ -42,7 +38,7 @@ export const login = (req, res, next) => {
     })
     .catch(e => {
       logger.error("login error", e.toString());
-      next(e);
+      next(errs.InternalError("could not load profile"));
     });
 };
 
@@ -149,14 +145,17 @@ const getProfile = (network, code, referer): Promise<any> => {
   });
 };
 
-export const me = function(req, res, next) {
-  db.getUser(req.user.id)
-    .then(profile => {
-      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
-      res.send(200, [profile, token]);
-      next();
-    })
-    .catch(e => next(e));
+export const me = async function(req, res, next) {
+  try {
+    const profile = await db.getUser(req.user.id);
+    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
+    const preferences = await db.getPreferences(req.user.id);
+    res.send(200, [profile, token, preferences]);
+    next();
+  } catch (e) {
+    logger.error(e);
+    next(new errs.InternalError("could not get profile, JWT, or preferences"));
+  }
 };
 
 export const profile = function(req, res, next) {
@@ -192,17 +191,11 @@ export const del = function(req, res, next) {
     .catch(e => next(e));
 };
 
-export const addPushSubscription = (req, res, next) => {
+export const addPushSubscription = (add: boolean) => (req, res, next) => {
   const subscription = req.body;
   const user: User = (req as any).user;
   logger.debug("register push endpoint", subscription, user.id);
-  db.updateUserPreferences(user.id, {
-    ...user.preferences,
-    push: {
-      ...user.preferences.push,
-      subscriptions: user.preferences.push.subscriptions.concat(subscription),
-    },
-  })
+  db.addPushSubscription(user.id, subscription, add)
     .then(profile => {
       const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
       res.sendRaw(200, token);
@@ -218,15 +211,7 @@ export const addPushEvent = (add: boolean) => (req, res, next) => {
   const event = req.body;
   const user: User = (req as any).user;
   logger.debug("register push event", event, user.id);
-  db.updateUserPreferences(user.id, {
-    ...user.preferences,
-    push: {
-      ...user.preferences.push,
-      events: add
-        ? user.preferences.push.events.concat(event)
-        : user.preferences.push.events.filter(e => e !== event),
-    },
-  })
+  db.addPushEvent(user.id, event, add)
     .then(profile => {
       const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
       res.sendRaw(200, token);

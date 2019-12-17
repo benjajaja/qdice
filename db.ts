@@ -15,6 +15,7 @@ import {
   Color,
   Watcher,
   Preferences,
+  PushNotificationEvents,
 } from "./types";
 import { date } from "./timestamp";
 import { setTimeout } from "timers";
@@ -108,6 +109,23 @@ export const getUserFromAuthorization = async (
   }
 };
 
+export const getPreferences = async (id: UserId) => {
+  const res = await client.query(
+    `SELECT users.preferences, push_subscribed_events."event" AS "event"
+    FROM users
+    LEFT JOIN push_subscribed_events
+    ON push_subscribed_events.user_id = users.id
+    WHERE users.id = $1`,
+    [id]
+  );
+  const preferences = res.rows[0]?.preferences ?? {};
+  logger.debug("prefs", id, res.rows);
+  return {
+    pushSubscribed: res.rows.filter(row => row.event).map(row => row.event),
+    ...preferences,
+  };
+};
+
 export const createUser = async (
   network: Network,
   network_id: string | null,
@@ -158,14 +176,52 @@ export const updateUser = async (
   return await getUser(id);
 };
 
-export const updateUserPreferences = async (
+// export const updateUserPreferences = async (
+// id: UserId,
+// preferences: Preferences
+// ) => {
+// const res = await client.query(
+// "UPDATE users SET preferences = $2 WHERE id = $1",
+// [id, preferences]
+// );
+// return await getUser(id);
+// };
+
+export const addPushSubscription = async (
   id: UserId,
-  preferences: Preferences
+  subscription: any,
+  add: boolean
 ) => {
-  const res = await client.query(
-    "UPDATE users SET preferences = $2 WHERE id = $1",
-    [id, preferences]
-  );
+  if (add) {
+    await client.query(
+      "INSERT INTO push_subscriptions (user_id, subscription) VALUES ($1, $2)",
+      [id, subscription]
+    );
+  } else {
+    await client.query(
+      `DELETE FROM push_subscriptions WHERE user_id = $1 AND subscription = $2`,
+      [id, subscription]
+    );
+  }
+  return await getUser(id);
+};
+
+export const addPushEvent = async (
+  id: UserId,
+  event: PushNotificationEvents,
+  add: boolean
+) => {
+  if (add) {
+    await client.query(
+      `INSERT INTO push_subscribed_events (user_id, "event") VALUES ($1, $2)`,
+      [id, event]
+    );
+  } else {
+    await client.query(
+      `DELETE FROM push_subscribed_events WHERE user_id = $1 AND "event" = $2`,
+      [id, event]
+    );
+  }
   return await getUser(id);
 };
 
@@ -173,6 +229,13 @@ export const deleteUser = async (id: UserId) => {
   try {
     await client.query("BEGIN");
     await client.query("DELETE FROM authorizations WHERE user_id = $1", [id]);
+    await client.query("DELETE FROM push_subscriptions WHERE user_id = $1", [
+      id,
+    ]);
+    await client.query(
+      "DELETE FROM push_subscribed_events WHERE user_id = $1",
+      [id]
+    );
     await client.query("DELETE FROM users WHERE id = $1", [id]);
     await client.query("COMMIT");
   } catch (e) {
@@ -235,10 +298,6 @@ export const userProfile = (rows: any[]): User => {
     points: parseInt(points, 10),
     rank: parseInt(rank, 10),
     networks: rows.map(row => row.network || "password"),
-    preferences: {
-      ...defaultPreferences(),
-      ...preferences,
-    },
   };
 };
 

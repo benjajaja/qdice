@@ -36,7 +36,7 @@ var notificationsEnabled = false;
 if ("Notification" in window) {
   notificationsEnabled =
     Notification.permission === "granted" &&
-    localStorage.getItem("notifications") === "1";
+    localStorage.getItem("notifications") === "2";
 }
 
 var app = Elm.Edice.init({
@@ -240,34 +240,42 @@ if ("serviceWorker" in navigator) {
 
 app.ports.requestNotifications.subscribe(function() {
   if (!("Notification" in window)) {
-    app.ports.notificationsChange.send("unsupported");
+    app.ports.notificationsChange.send(["unsupported", null]);
     window.alert("This browser or system does not support notifications.");
     console.log("No notification support");
     return;
   }
   if (Notification.permission === "granted") {
-    app.ports.notificationsChange.send("granted");
-    enablePush();
-    snackbar.show({
-      text: "Notifications are enabled",
-      pos: "bottom-center",
-      actionTextColor: "#38d6ff",
-    });
-  } else if (Notification.permission !== "denied") {
-    Notification.requestPermission(function(permission) {
-      app.ports.notificationsChange.send(permission);
-      enablePush();
+    enablePush().then(function(subscription) {
+      app.ports.notificationsChange.send([
+        "granted",
+        JSON.stringify(subscription),
+      ]);
       snackbar.show({
-        text:
-          permission === "granted"
-            ? "Notifications are now enabled"
-            : "Huh? It looks like you didn't allow notifications. Please try again.",
+        text: "Notifications are enabled",
         pos: "bottom-center",
         actionTextColor: "#38d6ff",
       });
     });
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission(function(permission) {
+      enablePush().then(function(subscription) {
+        app.ports.notificationsChange.send([
+          permission,
+          JSON.stringify(subscription),
+        ]);
+        snackbar.show({
+          text:
+            permission === "granted"
+              ? "Notifications are now enabled"
+              : "Huh? It looks like you didn't allow notifications. Please try again.",
+          pos: "bottom-center",
+          actionTextColor: "#38d6ff",
+        });
+      });
+    });
   } else if (Notification.permission === "denied") {
-    app.ports.notificationsChange.send("denied");
+    app.ports.notificationsChange.send(["denied", null]);
     snackbar.show({
       text:
         'It seems that you have blocked notifications at some time before. Try clicking on the lock icon next to the URL and look for "Notifications" or "Permissions" and unblock it.',
@@ -279,18 +287,29 @@ app.ports.requestNotifications.subscribe(function() {
 });
 
 app.ports.renounceNotifications.subscribe(function() {
-  localStorage.removeItem("notifications");
-  app.ports.notificationsChange.send("denied");
+  navigator.serviceWorker.ready.then(function(registration) {
+    return registration.pushManager
+      .getSubscription()
+      .then(function(subscription) {
+        localStorage.removeItem("notifications");
+        app.ports.notificationsChange.send([
+          "denied",
+          JSON.stringify(subscription),
+        ]);
+      });
+  });
 });
 
 function enablePush() {
   console.log("enablePush");
-  localStorage.setItem("notifications", "1");
-  navigator.serviceWorker.ready
+  localStorage.setItem("notifications", "2");
+  return navigator.serviceWorker.ready
     .then(function(registration) {
+      console.log("SUB REG");
       return registration.pushManager
         .getSubscription()
         .then(function(subscription) {
+          console.log("SUB GOT");
           if (subscription) {
             return subscription;
           }
@@ -311,6 +330,10 @@ function enablePush() {
     })
     .then(function(subscription) {
       app.ports.pushRegister.send(JSON.stringify(subscription));
+      return subscription;
+    })
+    .catch(function(error) {
+      console.error("Error while subscribing push:", error);
     });
 }
 
@@ -347,4 +370,13 @@ function urlBase64ToUint8Array(base64String) {
     outputArray[i] = rawData.charCodeAt(i);
   }
   return outputArray;
+}
+
+if (localStorage.getItem("notifications") === "1") {
+  // this was a hotfix in production
+  snackbar.show({
+    text: 'Please click "Enable notifications" one more time',
+    pos: "bottom-center",
+    actionTextColor: "#38d6ff",
+  });
 }

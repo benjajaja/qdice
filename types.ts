@@ -82,7 +82,6 @@ export type User = UserLike & {
   readonly email: string;
   readonly networks: ReadonlyArray<string>;
   readonly claimed: boolean;
-  readonly preferences: Preferences;
 };
 
 export type Player = UserLike & {
@@ -101,12 +100,7 @@ export type Player = UserLike & {
   readonly bot: Persona | null;
 };
 
-export type Preferences = {
-  push: {
-    subscriptions: any[];
-    events: PushNotificationEvents[];
-  };
-};
+export type Preferences = {};
 
 export type PushNotificationEvents = "game-start";
 

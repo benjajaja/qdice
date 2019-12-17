@@ -30,6 +30,37 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 }
 
 const server = restify.createServer();
+server.on("InternalServer", function(req, res, err, cb) {
+  // by default, restify will usually render the Error object as plaintext or
+  // JSON depending on content negotiation. the default text formatter and JSON
+  // formatter are pretty simple, they just call toString() and toJSON() on the
+  // object being passed to res.send, which in this case, is the error object.
+  // so to customize what it sent back to the client when this error occurs,
+  // you would implement as follows:
+
+  // for any response that is text/plain
+  err.toString = function toString() {
+    return "an internal server error occurred!";
+  };
+  // for any response that is application/json
+  err.toJSON = function toJSON() {
+    return {
+      message: "an internal server error occurred!",
+      code: "boom!",
+    };
+  };
+
+  return cb();
+});
+
+server.on("restifyError", function(req, res, err, cb) {
+  // this listener will fire after both events above!
+  // `err` here is the same as the error that was passed to the above
+  // error handlers.
+  logger.error(err);
+  return cb();
+});
+
 server.pre(restify.pre.userAgentConnection());
 server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.authorizationParser());
@@ -198,9 +229,10 @@ server.get(`${root}/push/key`, (_, res) => {
   res.sendRaw(200, process.env.VAPID_PUBLIC_KEY);
 });
 
-server.post(`${root}/push/register`, user.addPushSubscription);
-server.post(`${root}/push/register/event`, user.addPushEvent(true));
-server.del(`${root}/push/register/event`, user.addPushEvent(false));
+server.post(`${root}/push/register`, user.addPushSubscription(true));
+server.del(`${root}/push/register`, user.addPushSubscription(false));
+server.post(`${root}/push/register/events`, user.addPushEvent(true));
+server.del(`${root}/push/register/events`, user.addPushEvent(false));
 
 process.on("unhandledRejection", (reason, p) => {
   logger.error("Unhandled Rejection at: Promise", p, "reason:", reason);
