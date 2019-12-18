@@ -286,13 +286,14 @@ button .material-icons, .edButton .material-icons {
   flex-wrap: nowrap;
   flex-grow: 2;
   height: 38px;
+  padding-right: 38px; /* hack */
 }
 .edPlayerChip {
   background: #fff;
   transition: transform 0.25s ease;
   display: flex;
   align-items: stretch;
-  flex: 1 1 25%;
+  flex: 1 0 25%;
   background: transparent;
   box-shadow: none;
   margin: 4px;
