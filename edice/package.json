@@ -30,7 +30,7 @@
   "bundlesize": [
     {
       "path": "./dist/elm-dice.*.js",
-      "maxSize": "130 kB"
+      "maxSize": "140 kB"
     },
     {
       "path": "./dist/elm-dice-serviceworker.js",

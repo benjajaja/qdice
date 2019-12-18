@@ -1,10 +1,7 @@
 #!/bin/bash
 set -e
 
-./scripts/unit_tests.sh
-
 ./scripts/build.sh
-
 
 ./scripts/restart.sh
 
