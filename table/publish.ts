@@ -1,5 +1,6 @@
 import { Table } from "../types";
 import { serializeTable, serializePlayer } from "./serialize";
+import logger from "../logger";
 import * as jwt from "jsonwebtoken";
 
 let client;

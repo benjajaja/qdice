@@ -45,6 +45,7 @@ view model =
             , board
             , sitInModal model
             , boardFooter model
+            , tableDetails model
             ]
         , div [ class "edGame__meta" ]
             [ gameChat model
@@ -237,46 +238,55 @@ sitInModal model =
 tableInfo : Model -> Html Types.Msg
 tableInfo model =
     div [ class "edGameStatus" ] <|
-        List.concat
-            [ case model.game.table of
-                Just table ->
-                    [ span [ class "edGameStatus__chip" ]
-                        [ text "Table "
-                        , span [ class "edGameStatus__chip--strong" ]
-                            [ text <| table
-                            ]
-                        ]
-                    , span [ class "edGameStatus__chip" ] <|
-                        List.append
-                            [ text ", "
-                            , span [ class "edGameStatus__chip--strong" ]
-                                [ text <|
-                                    if model.game.playerSlots == 0 then
-                                        "∅"
+        (case model.game.table of
+            Just table ->
+                [ text "Table "
+                , text <| table
+                , text " is"
+                , span [ class "edGameStatus__chip--strong", dataTestId "game-status" ]
+                    [ text <| "\u{00A0}" ++ statusToString model.game.status ++ "\u{00A0}" ]
+                ]
+                    ++ (case model.game.gameStart of
+                            Nothing ->
+                                [ text <| "round " ++ String.fromInt model.game.roundCount ]
 
-                                    else
-                                        String.fromInt model.game.playerSlots
+                            Just timestamp ->
+                                [ text "starting in"
+                                , span [ class "edGameStatus__chip--strong" ]
+                                    [ text <| "\u{00A0}" ++ String.fromInt (round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) ++ "s" ]
                                 ]
-                            , text " player game is "
-                            , span [ class "edGameStatus__chip--strong", dataTestId "game-status" ]
-                                [ text <| statusToString model.game.status ]
-                            ]
-                            (case model.game.gameStart of
-                                Nothing ->
-                                    [ text <| " round " ++ String.fromInt model.game.roundCount ]
+                       )
 
-                                Just timestamp ->
-                                    [ text " starting in "
-                                    , span [ class "edGameStatus__chip--strong" ]
-                                        [ text <| String.fromInt (round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) ++ "s" ]
-                                    ]
-                            )
+            Nothing ->
+                []
+        )
+            ++ [ button [ class "edGameStatus__button edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ] ]
+
+
+tableDetails : Model -> Html Types.Msg
+tableDetails model =
+    div [ class "edGameDetails" ] <|
+        case model.game.table of
+            Just table ->
+                [ span [ class "edGameStatus__chip" ] <|
+                    [ text <|
+                        if model.game.playerSlots == 0 then
+                            "∅"
+
+                        else
+                            String.fromInt model.game.playerSlots
+                    , text " players"
+                    , if model.game.params.botLess then
+                        text ", no bots"
+
+                      else
+                        text ", bots will join"
+                    , text <| ", starts with " ++ String.fromInt model.game.startSlots ++ " players"
                     ]
+                ]
 
-                Nothing ->
-                    []
-            , [ button [ class "edGameStatus__button edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ] ]
-            ]
+            Nothing ->
+                []
 
 
 playerBox : Model -> List (Html Msg)

@@ -1,4 +1,4 @@
-module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableStatus, User, actionToString, makePlayer, statusToIcon, statusToString)
+module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, makePlayer, statusToIcon, statusToString)
 
 import Board exposing (LandUpdate)
 import Land exposing (Color, Emoji)
@@ -34,6 +34,7 @@ type alias Model =
     , status : GameStatus
     , gameStart : Maybe Int
     , playerSlots : Int
+    , startSlots : Int
     , turnIndex : Int
     , hasTurn : Bool
     , turnStart : Int
@@ -46,6 +47,7 @@ type alias Model =
     , canFlag : Bool
     , isReady : Maybe Bool
     , flag : Maybe Bool
+    , params : TableParams
     }
 
 
@@ -117,6 +119,13 @@ type alias TableInfo =
     , landCount : Int
     , stackSize : Int
     , points : Int
+    , params : TableParams
+    }
+
+
+type alias TableParams =
+    { noFlagRounds : Int
+    , botLess : Bool
     }
 
 

@@ -34,6 +34,7 @@ init table tableMap_ =
     , status = Paused
     , gameStart = Nothing
     , playerSlots = 0
+    , startSlots = 0
     , turnIndex = -1
     , hasTurn = False
     , turnStart = -1
@@ -52,6 +53,10 @@ init table tableMap_ =
     , canFlag = False
     , isReady = Nothing
     , flag = Nothing
+    , params =
+        { noFlagRounds = 0
+        , botLess = True
+        }
     }
 
 
@@ -319,7 +324,11 @@ updateGameInfo model tableList =
             in
             case currentTableInfo of
                 Just tableInfo ->
-                    { model | playerSlots = tableInfo.playerSlots }
+                    { model
+                        | playerSlots = tableInfo.playerSlots
+                        , startSlots = tableInfo.startSlots
+                        , params = tableInfo.params
+                    }
 
                 Nothing ->
                     model

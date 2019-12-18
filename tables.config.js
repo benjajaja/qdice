@@ -4,12 +4,13 @@ module.exports = {
       tag: "Planeta",
       name: "Planeta",
       mapName: "Planeta",
-      playerSlots: 9,
-      startSlots: 5,
+      playerSlots: 8,
+      startSlots: 8,
       points: 100,
       stackSize: 8,
       params: {
         noFlagRounds: 5,
+        botLess: false,
       },
     },
     {
@@ -17,11 +18,12 @@ module.exports = {
       name: "España",
       mapName: "Serrano",
       playerSlots: 8,
-      startSlots: 3,
+      startSlots: 4,
       points: 50,
       stackSize: 8,
       params: {
         noFlagRounds: 2,
+        botLess: false,
       },
     },
     {
@@ -34,6 +36,7 @@ module.exports = {
       stackSize: 8,
       params: {
         noFlagRounds: 5,
+        botLess: true,
       },
     },
     {
@@ -46,6 +49,7 @@ module.exports = {
       stackSize: 8,
       params: {
         noFlagRounds: 1,
+        botLess: true,
       },
     },
     {
@@ -58,6 +62,7 @@ module.exports = {
       stackSize: 4,
       params: {
         noFlagRounds: 0,
+        botLess: true,
       },
     },
     {
@@ -65,11 +70,12 @@ module.exports = {
       name: "Arabia",
       mapName: "Sabicas",
       playerSlots: 8,
-      startSlots: 8,
+      startSlots: 6,
       points: 200,
       stackSize: 8,
       params: {
         noFlagRounds: 5,
+        botLess: true,
       },
     },
   ],

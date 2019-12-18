@@ -47,6 +47,7 @@ export type Table = TableProps & {
 
 export type TableParams = {
   noFlagRounds: number;
+  botLess: boolean;
 };
 
 export type Land = {

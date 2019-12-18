@@ -79,6 +79,7 @@ const tick = async (tableTag: string, lock) => {
       if (shouldStart(table)) {
         result = startGame(table);
       } else if (
+        !table.params.botLess &&
         table.players.filter(R.complement(isBot)).length > 0 &&
         table.players.length < table.startSlots &&
         havePassed(3, lastJoined(table.players))

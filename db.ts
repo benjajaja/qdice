@@ -398,7 +398,7 @@ RETURNING *`;
 
 export const getTablesStatus = async (): Promise<any> => {
   const result = await client.query(`
-SELECT tag, name, map_name, stack_size, status, player_slots, start_slots, points, players, watching
+SELECT tag, name, map_name, stack_size, status, player_slots, start_slots, points, players, watching, params
 FROM tables
 LIMIT 100`);
   return result.rows.map(camelize);

@@ -71,39 +71,45 @@ describe("A game with bots", () => {
     });
 
     await hisTurn(page, "A");
-    await attack(page, "land-🍷", "land-🏰", "A");
+    await attack(page, "land-💀", "land-🌙", "A");
     await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
     await hisTurn(page, "A");
-    await attack(page, "land-🏰", "land-🎩", "A");
+    await attack(page, "land-🌙", "land-👑", "A");
     await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
-    await hisTurn(page, "A");
-    await attack(page, "land-🍷", "land-🐸", "A");
-    await attack(page, "land-🏰", "land-🎩", "A");
-    await expect(page).toClick(testId("check-flag") /*, { text: "Flag 2nd" }*/);
-    await attack(page, "land-🐸", "land-🐙", "A");
-    await attack(page, "land-🎩", "land-👙", "A");
+    // await hisTurn(page, "A");
+    // await attack(page, "land-🍷", "land-🐸", "A");
+    // await attack(page, "land-🏰", "land-🎩", "A");
+    // await expect(page).toClick(testId("check-flag") [>, { text: "Flag 2nd" }<]);
+    // await attack(page, "land-🐸", "land-🐙", "A");
+    // await attack(page, "land-🎩", "land-👙", "A");
 
     await expect(page).toMatchElement(
       `${testId("logline-elimination")}:nth-child(3)`,
       {
-        text: /^☠ Mono finished 3rd with -?\d+ ✪ \(Killed by A for \d+✪\)/,
+        text: /^☠ A finished 4th with -?\d+ ✪ \(Killed by Cohete for \d+✪\)/,
       }
     );
-    console.log("ok 3");
-    await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-child(2)`,
-      {
-        text: /^🏳 A finished 2nd with -?\d+ ✪ \(Flagged for 2nd\)/,
-      }
-    );
-    console.log("ok 2");
-    await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-child(1)`,
-      {
-        text: /^🏆 Cohete won the game! with \d+ ✪ \(Last standing player after \d+ turns\)/,
-      }
-    );
+    // await expect(page).toMatchElement(
+    // `${testId("logline-elimination")}:nth-child(3)`,
+    // {
+    // text: /^🏳 Mono finished 3rd with -?\d+ ✪ \(Flagged for 3rd\)/,
+    // }
+    // );
+    // console.log("ok 3");
+    // await expect(page).toMatchElement(
+    // `${testId("logline-elimination")}:nth-child(2)`,
+    // {
+    // text: /^🏳 Cohete finished 2nd with -?\d+ ✪ \(Flagged for 2nd\)/,
+    // }
+    // );
+    // console.log("ok 2");
+    // await expect(page).toMatchElement(
+    // `${testId("logline-elimination")}:nth-child(1)`,
+    // {
+    // text: /^🏆 Cuqui won the game! with \d+ ✪ \(Last standing player after \d+ turns\)/,
+    // }
+    // );
   }, 300000);
 });

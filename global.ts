@@ -60,6 +60,7 @@ const getTablesStatus = async () => {
           "startSlots",
           "landCount",
           "points",
+          "params",
         ])(table),
         {
           playerCount: table.players.length,

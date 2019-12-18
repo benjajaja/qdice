@@ -1,7 +1,7 @@
 module Backend.Decoding exposing (accknowledgeDecoder, authStateDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, rollDecoder, singleRollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, userDecoder)
 
 import Board.Types
-import Game.Types exposing (Player, PlayerGameStats, TableStatus)
+import Game.Types exposing (Player, PlayerGameStats, TableParams, TableStatus)
 import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, int, list, map, map2, map3, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
@@ -288,6 +288,14 @@ tableInfoDecoder =
         |> required "landCount" int
         |> required "stackSize" int
         |> required "points" int
+        |> required "params" tableParamsDecoder
+
+
+tableParamsDecoder : Decoder TableParams
+tableParamsDecoder =
+    succeed TableParams
+        |> required "noFlagRounds" int
+        |> required "botLess" bool
 
 
 profileDecoder : Decoder Profile

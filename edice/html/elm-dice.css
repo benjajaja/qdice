@@ -391,7 +391,7 @@ button .material-icons, .edButton .material-icons {
 
 
 
-.edGameStatus {
+.edGameStatus, .edGameDetails {
   display: flex;
   align-items: center;
   font-size: 0.875rem;
@@ -406,6 +406,12 @@ button .material-icons, .edButton .material-icons {
   display: none;
   margin-left: auto;
 }
+.edGameStatus__chip {
+}
+.edGameStatus__chip--strong {
+  /* font-weight: bold; */
+}
+
 
 .header .header--profile-link {
   height: 100%;
@@ -463,9 +469,6 @@ button .material-icons, .edButton .material-icons {
 }
 .edGameFlag .mdl-checkbox.is-checked .mdl-checkbox__box-outline {
   border-color: #FFC107;
-}
-
-.edGameStatus {
 }
 
 .gamelogContainer {
