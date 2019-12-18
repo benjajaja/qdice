@@ -406,3 +406,17 @@ LIMIT 100`);
 
 export const deleteTable = async (tag: string): Promise<any> =>
   await client.query("DELETE FROM tables WHERE tag = $1", [tag]);
+
+export const getPushSubscriptions = async (event: string) => {
+  const res = await client.query(
+    `SELECT users.id, users.name, push_subscribed_events."event" AS "event", push_subscriptions.subscription
+    FROM users
+    LEFT JOIN push_subscribed_events
+    ON push_subscribed_events.user_id = users.id
+    LEFT JOIN push_subscriptions
+    ON push_subscriptions.user_id = users.id
+    WHERE push_subscribed_events."event" = $1`,
+    [event]
+  );
+  return res.rows;
+};

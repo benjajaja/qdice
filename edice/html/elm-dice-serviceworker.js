@@ -25,7 +25,14 @@ function getEndpoint() {
 self.addEventListener("push", function(event) {
   event.waitUntil(
     getEndpoint().then(function(endpoint) {
-      console.log("SW endpoint", endpoint);
+      console.log("SW endpoint", endpoint, event.data);
+      if (event.data) {
+        self.registration.showNotification(event.data.text(), {
+          icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
+          badge: "https://qdice.wtf/assets/monochrome.png",
+          vibrate: [50, 100, 50],
+        });
+      }
     })
   );
 });

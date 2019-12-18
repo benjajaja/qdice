@@ -258,7 +258,8 @@ const processEliminations = async (
         logger.debug(position, player.name);
         try {
           const user = await db.addScore(player.id, score);
-          publish.userUpdate(player.clientId)(user);
+          const preferences = await db.getPreferences(player.id);
+          publish.userUpdate(player.clientId)(user, preferences);
         } catch (e) {
           // send a message to this specific player
           publish.clientError(

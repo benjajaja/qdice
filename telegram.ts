@@ -10,8 +10,15 @@ import * as ShortUniqueId from "short-unique-id";
 import * as R from "ramda";
 import * as puppeteer from "puppeteer";
 import * as mqtt from "mqtt";
+import * as webPush from "web-push";
 import { rand } from "./rand";
 import * as db from "./db";
+
+webPush.setVapidDetails(
+  process.env.VAPID_URL!,
+  process.env.VAPID_PUBLIC_KEY!,
+  process.env.VAPID_PRIVATE_KEY!
+);
 
 const telegram = new Telegram(process.env.BOT_TOKEN);
 const uid = new ShortUniqueId();
@@ -26,11 +33,14 @@ var client = mqtt.connect(process.env.MQTT_URL, {
   password: process.env.MQTT_PASSWORD,
 });
 client.subscribe("events");
-client.on("message", (topic, message) => {
+client.on("message", async (topic, message) => {
   if (topic === "events") {
     const event = JSON.parse(message.toString());
     switch (event.type) {
       case "join":
+        if (true || !event.player) {
+          return;
+        }
         subscribed.forEach(id =>
           telegram
             .sendMessage(
@@ -48,28 +58,48 @@ client.on("message", (topic, message) => {
 
         break;
       case "elimination":
-        const { table, player, position, score } = event;
-        if (player.telegram) {
-          setScore(player.telegram, player.points);
+        if (event.player.telegram) {
+          setScore(event.player.telegram, event.player.points);
         }
         break;
       case "countdown":
         console.log("offical", officialGroups);
-        if (officialGroups.length) {
-          const { table, players } = event;
-          const realPlayerCount = players.filter(p => !p.bot).length;
-          if (realPlayerCount > 1) {
-            officialGroups.forEach(id => {
-              console.log("aviso", id);
-              telegram.sendMessage(
-                id,
-                `A game countdown has started in table ${table}, with ${players
-                  .map(p => p.name)
-                  .join(", ")}: https://qdice.wtf/${table}`
+        const { table, players } = event;
+
+        // push notifications
+        const subscriptions = await db.getPushSubscriptions("game-start");
+        const text = `A game countdown has started in "${table}"`;
+        subscriptions.forEach(async row => {
+          if (
+            row.subscription &&
+            !players.some(player => player.id === row.id) // don't notify players in game
+          ) {
+            try {
+              const request = await webPush.sendNotification(
+                row.subscription,
+                text
               );
-              //sendScreenshot(id, table);
-            });
+              console.log("PN", row.name, request);
+            } catch (e) {
+              // console.error(e);
+              // TODO remove subscription if unsubscribed or expired
+            }
           }
+        });
+
+        if (false && officialGroups.length) {
+          // const realPlayerCount = players.filter(p => !p.bot).length;
+
+          officialGroups.forEach(id => {
+            console.log("aviso", id);
+            telegram.sendMessage(
+              id,
+              `A game countdown has started in table ${table}, with ${players
+                .map(p => p.name)
+                .join(", ")}: https://qdice.wtf/${table}`
+            );
+            //sendScreenshot(id, table);
+          });
         }
     }
   }
