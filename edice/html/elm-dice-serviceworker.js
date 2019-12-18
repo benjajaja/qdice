@@ -27,10 +27,12 @@ self.addEventListener("push", function(event) {
     getEndpoint().then(function(endpoint) {
       console.log("SW endpoint", endpoint, event.data);
       if (event.data) {
-        self.registration.showNotification(event.data.text(), {
+        var json = JSON.parse(event.data.text());
+        self.registration.showNotification(json.text, {
           icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
           badge: "https://qdice.wtf/assets/monochrome.png",
           vibrate: [50, 100, 50],
+          data: json,
         });
       }
     })
@@ -143,14 +145,19 @@ self.onnotificationclick = function(event) {
         type: "window",
       })
       .then(function(clientList) {
+        var url = event.notification.data ? event.notification.data.link : null;
         for (var i = 0; i < clientList.length; i++) {
           var client = clientList[i];
           if ("focus" in client) {
-            return client.focus();
+            client.focus();
+            if (url) {
+              client.navigate(url);
+            }
+            return;
           }
         }
         if (clients.openWindow) {
-          return clients.openWindow("/");
+          return clients.openWindow(url || "/");
         }
       })
   );

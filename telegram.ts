@@ -77,7 +77,7 @@ client.on("message", async (topic, message) => {
             try {
               const request = await webPush.sendNotification(
                 row.subscription,
-                text
+                JSON.stringify({ text, link: `https://qdice.wtf/${table}` })
               );
               console.log("PN", row.name, request);
             } catch (e) {
