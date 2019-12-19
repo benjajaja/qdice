@@ -22,6 +22,7 @@ import { setTimeout } from "timers";
 import * as sleep from "sleep-promise";
 import * as config from "./tables.config"; // for e2e only
 import { defaultPreferences } from "./user";
+import AsyncLock = require("async-lock");
 
 let client: Client;
 
@@ -55,7 +56,7 @@ export const retry = async function retry() {
   }
 };
 
-export const clearGames = async (lock: any): Promise<void> => {
+export const clearGames = async (lock: AsyncLock): Promise<void> => {
   lock.acquire([config.tables.map(table => table.name)], async done => {
     await client.query(`DELETE FROM tables`);
     for (const table of config.tables) {
@@ -314,10 +315,11 @@ LIMIT 1`,
   if (!row) {
     return null;
   }
-  return Object.assign({}, row, {
+  return {
+    ...row,
     gameStart: row.gameStart ? row.gameStart.getTime() : 0,
     turnStart: row.turnStart ? row.turnStart.getTime() : 0,
-  });
+  };
 };
 
 export const createTable = async (table: Table) => {
