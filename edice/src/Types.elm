@@ -208,3 +208,4 @@ type alias PushSubscription =
 
 type PushEvent
     = GameStart
+    | PlayerJoin

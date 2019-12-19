@@ -70,6 +70,9 @@ pushEventDecoder =
                 "game-start" ->
                     GameStart
 
+                "player-join" ->
+                    PlayerJoin
+
                 _ ->
                     GameStart
         )

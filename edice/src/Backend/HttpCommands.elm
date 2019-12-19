@@ -219,6 +219,9 @@ registerPushEvent model ( event, enable ) =
                 case event of
                     GameStart ->
                         "game-start"
+
+                    PlayerJoin ->
+                        "player-join"
         , expect =
             expectString (GetToken Nothing)
         , timeout = Nothing

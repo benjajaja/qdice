@@ -307,9 +307,11 @@ playerBox model =
                         else
                             [ div [] [ text "You have notifications enabled on this device/browser." ]
                             , div [] [ button [ onClick RenounceNotifications ] [ text "Disable notifications" ] ]
+                            , div [] [ text "You can receive a push notification, even if you don't have the website opened." ]
+                            , div [] [ text "Get a notification when:" ]
                             , div []
                                 [ label
-                                    [ class "edCheckbox"
+                                    [ class "edCheckbox--checkbox"
                                     , onClick <|
                                         PushRegisterEvent ( GameStart, not <| List.member GameStart model.preferences.pushEvents )
                                     ]
@@ -319,7 +321,22 @@ playerBox model =
 
                                         else
                                             "check_box_outline_blank"
-                                    , text "Get a push notification when a game starts"
+                                    , text "a game countdown starts"
+                                    ]
+                                ]
+                            , div []
+                                [ label
+                                    [ class "edCheckbox--checkbox"
+                                    , onClick <|
+                                        PushRegisterEvent ( PlayerJoin, not <| List.member PlayerJoin model.preferences.pushEvents )
+                                    ]
+                                    [ Icon.icon <|
+                                        if List.member PlayerJoin model.preferences.pushEvents then
+                                            "check_box"
+
+                                        else
+                                            "check_box_outline_blank"
+                                    , text "anybody joins any table"
                                     ]
                                 ]
                             ]
