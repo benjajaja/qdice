@@ -1,9 +1,11 @@
 "use strict";
-var Sentry = require("@sentry/browser");
-Sentry.init({
-  dsn: "https://5658c32b571244958da8195b723bf5cb@sentry.io/1862179",
-  release: typeof version === "string" ? version.substr(0, 7) : "dev",
-});
+if (location.hostname !== "localhost") {
+  var Sentry = require("@sentry/browser");
+  Sentry.init({
+    dsn: "https://5658c32b571244958da8195b723bf5cb@sentry.io/1862179",
+    release: typeof version === "string" ? version.substr(0, 7) : "dev",
+  });
+}
 
 // window.onerror = function(messageOrEvent, source, lineno, colno, error) {
 // var element = document.createElement("div");
