@@ -30,7 +30,7 @@
   "bundlesize": [
     {
       "path": "./dist/elm-dice.*.js",
-      "maxSize": "140 kB"
+      "maxSize": "160 kB"
     },
     {
       "path": "./dist/elm-dice-serviceworker.js",
@@ -42,6 +42,7 @@
     }
   ],
   "dependencies": {
+    "@sentry/browser": "5.10.2",
     "ackee-tracker": "^3.2.2",
     "autoprefixer": "^6.5.3",
     "bundlesize": "^0.15.3",

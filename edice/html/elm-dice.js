@@ -1,12 +1,16 @@
 "use strict";
+var Sentry = require("@sentry/browser");
+Sentry.init({
+  dsn: "https://5658c32b571244958da8195b723bf5cb@sentry.io/1862179",
+});
 
-window.onerror = function(messageOrEvent, source, lineno, colno, error) {
-  var element = document.createElement("div");
-  element.innerHTML = messageOrEvent.toString();
-  element.className = "GLOBAL_ERROR";
-  document.body.append(element);
-  return false; // let built in handler log it too
-};
+// window.onerror = function(messageOrEvent, source, lineno, colno, error) {
+// var element = document.createElement("div");
+// element.innerHTML = messageOrEvent.toString();
+// element.className = "GLOBAL_ERROR";
+// document.body.append(element);
+// return false; // let built in handler log it too
+// };
 
 if (window.navigator.standalone === true) {
   var fragment = document.createElement("div");
@@ -52,20 +56,20 @@ var app = Elm.Edice.init({
 
 app.ports.started.subscribe(function(msg) {
   //document.getElementById('loading-indicator').remove();
-  window.onerror = function(messageOrEvent, source, lineno, colno, error) {
-    ga("send", "exception", { exDescription: error.toString() });
-
-    if (snackbar) {
-      snackbar.show({
-        text: messageOrEvent.toString(),
-        pos: "bottom-center",
-        actionTextColor: "#38d6ff",
-      });
-    } else {
-      window.alert(messageOrEvent.toString());
-    }
-    return false; // let built in handler log it too
-  };
+  // window.onerror = function(messageOrEvent, source, lineno, colno, error) {
+  // ga("send", "exception", { exDescription: error.toString() });
+  //
+  // if (snackbar) {
+  // snackbar.show({
+  // text: messageOrEvent.toString(),
+  // pos: "bottom-center",
+  // actionTextColor: "#38d6ff",
+  // });
+  // } else {
+  // window.alert(messageOrEvent.toString());
+  // }
+  // return false; // let built in handler log it too
+  // };
   window.dialogPolyfill = require("dialog-polyfill");
 
   if (location.hostname !== "localhost") {
