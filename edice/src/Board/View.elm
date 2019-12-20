@@ -6,7 +6,7 @@ import Board.Colors
 import Board.PathCache
 import Board.Types exposing (..)
 import Dict
-import Helpers exposing (dataTestId, dataTestValue)
+import Helpers exposing (dataTestId, dataTestValue, find)
 import Html
 import Html.Attributes
 import Html.Lazy
@@ -64,6 +64,7 @@ board map ( layout, sWidth, sHeight ) pathCache animations selected hovered =
             -- , Svg.Attributes.style "background: url(https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2F2.bp.blogspot.com%2F-vtEHvcmS-Ac%2FTtHk0IvsxoI%2FAAAAAAAAAnw%2FV6e_eGfmCac%2Fs1600%2FRisk%2BII%2BGame%2BBoard.jpg&f=1&nofb=1); background-size: 110% 110%; background-position: top -20px left -30px"
             ]
             [ die
+            , g [] <| List.map (waterConnection layout map.lands) map.extraAdjacency
             , lazyLands layout
                 pathCache
                 selected
@@ -324,6 +325,44 @@ landText layout land =
                         [ Html.text land.emoji ]
                     ]
            )
+
+
+waterConnection : Layout -> List Land.Land -> ( Land.Emoji, Land.Emoji ) -> Svg Msg
+waterConnection layout lands ( from, to ) =
+    let
+        findLand =
+            \emoji -> find (.emoji >> (==) emoji)
+
+        ( x1f, y1f ) =
+            case findLand from lands of
+                Just land ->
+                    landCenter layout land.cells
+
+                Nothing ->
+                    landCenter layout []
+
+        ( x2f, y2f ) =
+            case findLand to lands of
+                Just land ->
+                    landCenter layout land.cells
+
+                Nothing ->
+                    landCenter layout []
+
+        _ =
+            Debug.log "line" ( from, to )
+    in
+    line
+        [ x1 <| String.fromFloat x1f
+        , y1 <| String.fromFloat y1f
+        , x2 <| String.fromFloat x2f
+        , y2 <| String.fromFloat y2f
+        , stroke "black"
+        , strokeLinejoin "round"
+        , strokeWidth "2"
+        , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
+        ]
+        []
 
 
 landColor : Bool -> Bool -> Land.Color -> String

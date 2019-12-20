@@ -2,7 +2,7 @@ module Maps exposing (consoleLogMap, emojisToMap, emptyMap, fullCellMap, load, s
 
 import Dict
 import Helpers exposing (..)
-import Land exposing (Cells)
+import Land exposing (Cells, Emoji)
 import Maps.Sources exposing (mapSourceString)
 import Regex
 import String
@@ -46,10 +46,35 @@ load map =
 emojisToMap : String -> String -> Land.Map
 emojisToMap name raw =
     let
+        rawLines : List String
+        rawLines =
+            String.lines raw
+
+        water : Maybe String
+        water =
+            rawLines
+                |> List.filter (String.startsWith "water:")
+                |> List.head
+
+        extraAdjacency : List ( Land.Emoji, Land.Emoji )
+        extraAdjacency =
+            case water of
+                Just extra ->
+                    String.split "," extra
+                        |> List.map
+                            (\conn ->
+                                Regex.find emojiRegex conn
+                                    |> List.map .match
+                            )
+                        |> List.foldl emojisToTuples []
+
+                Nothing ->
+                    []
+
         lines : List Line
         lines =
-            raw
-                |> String.lines
+            rawLines
+                |> List.filter (not << String.startsWith "water:")
                 |> List.indexedMap charRow
 
         widths : List Int
@@ -78,6 +103,17 @@ emojisToMap name raw =
         --realHeight
         (max realWidth realHeight)
         (max realWidth realHeight)
+        extraAdjacency
+
+
+emojisToTuples : List Emoji -> List ( Emoji, Emoji ) -> List ( Emoji, Emoji )
+emojisToTuples emojis acc =
+    case emojis of
+        [ a, b ] ->
+            ( a, b ) :: acc
+
+        _ ->
+            acc
 
 
 charRow : Int -> String -> Line
@@ -275,6 +311,7 @@ fullCellMap w h color =
         )
         w
         h
+        []
 
 
 emptyMap : Land.Map

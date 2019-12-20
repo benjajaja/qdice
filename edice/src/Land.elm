@@ -1,4 +1,4 @@
-module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBorderOnSide, isBorderOnSideCube, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
+module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
 
 import Helpers exposing (find, findIndex)
 import Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
@@ -40,6 +40,7 @@ type alias Map =
     , lands : List Land
     , width : Int
     , height : Int
+    , extraAdjacency : List ( Emoji, Emoji )
     }
 
 
@@ -160,9 +161,15 @@ cellCubicCoords hex =
     Hex.cellCubicCoords hex
 
 
-isBordering : Land -> Land -> Bool
-isBordering a b =
-    List.any (isCellOnLandBorder b) a.cells
+isBordering : Map -> Land -> Land -> Bool
+isBordering map a b =
+    List.any
+        (\( ta, tb ) ->
+            (ta == a.emoji && tb == b.emoji)
+                || (ta == b.emoji && tb == a.emoji)
+        )
+        map.extraAdjacency
+        || List.any (isCellOnLandBorder b) a.cells
 
 
 isCellOnLandBorder : Land -> Hex -> Bool

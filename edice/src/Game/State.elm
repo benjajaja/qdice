@@ -392,7 +392,7 @@ clickLand model land =
                                         -- could not move: do nothing
                                         ( model.game.board.move, consoleDebug "cannot select" )
 
-                                else if not <| Land.isBordering land from then
+                                else if not <| Land.isBordering model.game.board.map land from then
                                     -- not bordering: do nothing
                                     ( model.game.board.move, consoleDebug "cannot attack far land" )
 
@@ -473,7 +473,7 @@ canHover game emoji =
                                         -- could not move: do nothing
                                         False
 
-                                else if not <| Land.isBordering land from then
+                                else if not <| Land.isBordering game.board.map land from then
                                     -- not bordering: do nothing
                                     False
 
