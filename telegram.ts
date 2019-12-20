@@ -33,6 +33,8 @@ var client = mqtt.connect(process.env.MQTT_URL, {
   password: process.env.MQTT_PASSWORD,
 });
 client.subscribe("events");
+
+var lastJoinPlayer: string | null = null;
 client.on("message", async (topic, message) => {
   if (topic === "events") {
     const event = JSON.parse(message.toString());
@@ -40,6 +42,18 @@ client.on("message", async (topic, message) => {
       if (!event.player) {
         return;
       }
+      subscribed.forEach(id =>
+        telegram
+          .sendMessage(
+            id,
+            `${event.player.name} joined https://qdice.wtf/${event.table}`
+          )
+          .catch(e => console.error(e))
+      );
+      if (lastJoinPlayer === event.player.id) {
+        return;
+      }
+      lastJoinPlayer = event.player.id;
       // push notifications
       const subscriptions = await db.getPushSubscriptions("player-join");
       const text = `A player joined table "${event.table}"`;
@@ -57,14 +71,6 @@ client.on("message", async (topic, message) => {
           }
         }
       });
-      subscribed.forEach(id =>
-        telegram
-          .sendMessage(
-            id,
-            `${event.player.name} joined https://qdice.wtf/${event.table}`
-          )
-          .catch(e => console.error(e))
-      );
       //if (officialGroups.length) {
       //const { table, players } = event;
       //officialGroups.forEach(id => {
