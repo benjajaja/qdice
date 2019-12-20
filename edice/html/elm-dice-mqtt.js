@@ -103,7 +103,7 @@ var postMessage = function(message) {
 module.exports.subscribe = function(payload) {
   client.subscribe(payload, function(err, granted) {
     if (err) {
-      postMessage({ type: "mqttOnError", payload: error.toString() });
+      postMessage({ type: "mqttOnError", payload: err.toString() });
     } else {
       granted.forEach(function(granted) {
         postMessage({ type: "mqttOnSubscribed", payload: granted.topic });
