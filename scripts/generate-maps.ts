@@ -13,12 +13,30 @@ const cubeFromAxial = (col: number, row: number) => {
 };
 
 const loadMap = (
-  rawMap: string[]
+  rawLines: string[]
 ): [{ emoji: string; cells: any[] }[], { matrix: any; indexes: any }] => {
   const regex = new RegExp(
     "\\u30C3|\\u3000|[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]",
     "gi"
   );
+
+  const [rawMap, extraConnections]: [string[], [string, string][]] =
+    rawLines[rawLines.length - 2].indexOf("water:") === 0
+      ? [
+          rawLines.slice(0, rawLines.length - 2),
+          rawLines[rawLines.length - 2]
+            .split(":")[1]
+            .split(",")
+            .map(pair => {
+              const results: string[] = [];
+              let result: any;
+              while ((result = regex.exec(pair))) {
+                results.push(result[0]);
+              }
+              return results as any;
+            }),
+        ]
+      : [rawLines, []];
 
   const lines = rawMap.map(line => {
     const results: string[] = [];
@@ -54,17 +72,20 @@ const loadMap = (
     }, lands);
   }, emptyLands);
 
-  return [lands, createAdjacencyMatrix(lands)];
+  const adjacency = createAdjacencyMatrix(lands, extraConnections);
+  return [lands, adjacency];
 };
 
-const createAdjacencyMatrix = (lands: Land[]) => {
+const createAdjacencyMatrix = (lands: Land[], extra: [string, string][]) => {
   process.stdout.write(
     `caclulating adjacency matrix for ${lands.length} lands...`
   );
   const result = {
     matrix: lands.map(land => {
       process.stdout.write(".");
-      return lands.map(other => isBorder(lands, land.emoji, other.emoji));
+      return lands.map(other =>
+        isBorder(lands, extra, land.emoji, other.emoji)
+      );
     }),
     indexes: lands.reduce((indexes, land, index) => {
       return Object.assign({}, indexes, { [land.emoji]: index });
@@ -74,23 +95,33 @@ const createAdjacencyMatrix = (lands: Land[]) => {
   return result;
 };
 
-const isBorder = (module.exports.isBorder = R.curry(
-  (lands: Land[], fromEmoji: string, toEmoji: string) => {
-    if (fromEmoji === toEmoji) {
-      return false;
-    }
-    const find = findLand(lands);
-    const from = find(fromEmoji);
-    const to = find(toEmoji);
-    return from.cells.some(fromCell =>
-      to.cells.some(toCell => {
-        return neighbors(fromCell).some(
-          neighbor => neighbor.row === toCell.row && neighbor.col === toCell.col
-        );
-      })
-    );
+const isBorder = (
+  lands: Land[],
+  extra: [string, string][],
+  fromEmoji: string,
+  toEmoji: string
+) => {
+  if (fromEmoji === toEmoji) {
+    return false;
   }
-));
+  if (
+    extra.some(
+      pair => pair.indexOf(fromEmoji) !== -1 && pair.indexOf(toEmoji) !== -1
+    )
+  ) {
+    return true;
+  }
+  const find = findLand(lands);
+  const from = find(fromEmoji);
+  const to = find(toEmoji);
+  return from.cells.some(fromCell =>
+    to.cells.some(toCell => {
+      return neighbors(fromCell).some(
+        neighbor => neighbor.row === toCell.row && neighbor.col === toCell.col
+      );
+    })
+  );
+};
 
 const cube = (x: number, y: number, z: number) => ({ x, y, z });
 const cubeDirections = [

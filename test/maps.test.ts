@@ -25,6 +25,7 @@ describe("Maps", () => {
       ["🌵", "🐵", true],
       ["🐵", "🥑", true],
       ["🌵", "🌙", true],
+      ["🔥", "😺", true],
     ];
     spec.forEach(([from, to, isBorder]) => {
       it(`${from}  should ${isBorder ? "" : "NOT "}border ${to}`, () => {
@@ -170,7 +171,7 @@ describe("Maps", () => {
   describe("land order should be fixed for e2e determinism", () => {
     const orders = {
       Planeta:
-        "🐸🐧🐵👀🍷👙🍀🍌🍏🍉🥑😺🍺💰🍒👍🍋🐙🎩🌵🏰👻💊🔥🌙🐰🎵💀💎🌴💣💥💋💃💧🍩🐟👑🌎🤠",
+        "🐵🐧👀🍷👙🍀🍌🍏🍉🥑😺🛸💰🍒🍺👍🍋🐙🎩🌵🐸🏰👻💊🔥🌙🐰🎵💀💎🌴💣💥💋💃💧🍩🗿🐟🌎🤠👑",
       Serrano: "🐙🐸🍷💰🏰💀💎🎩🌙💊👑🍒👙🔥🍋🌴💃",
       DeLucía: "💰😺🐵👻🐙🥑💎🐸💧💊🌴🌙🍒🎩🍉🍩🍌🍏🌵💋👙🍀💣🌎💀",
       Melchor: "🔥😺🍋🐵💰👻🐙🥑🐸🍺🌵👑🌙",

@@ -348,9 +348,6 @@ waterConnection layout lands ( from, to ) =
 
                 Nothing ->
                     landCenter layout []
-
-        _ =
-            Debug.log "line" ( from, to )
     in
     line
         [ x1 <| String.fromFloat x1f
