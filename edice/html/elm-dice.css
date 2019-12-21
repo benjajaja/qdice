@@ -314,6 +314,7 @@ button .material-icons, .edButton .material-icons {
   flex-grow: 2;
   height: 38px;
   padding-right: 38px; /* hack */
+  transform: translate(0,0); /* z-index hack */
 }
 .edPlayerChip {
   background: #fff;

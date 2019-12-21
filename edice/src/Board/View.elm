@@ -64,8 +64,9 @@ board map ( layout, sWidth, sHeight ) pathCache animations selected hovered =
             -- , Svg.Attributes.style "background: url(https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2F2.bp.blogspot.com%2F-vtEHvcmS-Ac%2FTtHk0IvsxoI%2FAAAAAAAAAnw%2FV6e_eGfmCac%2Fs1600%2FRisk%2BII%2BGame%2BBoard.jpg&f=1&nofb=1); background-size: 110% 110%; background-position: top -20px left -30px"
             ]
             [ die
-            , g [] <| List.map (waterConnection layout map.lands) map.extraAdjacency
-            , lazyLands layout
+            , Svg.Lazy.lazy4 waterConnections layout pathCache map.extraAdjacency map.lands
+            , Svg.Lazy.lazy5 realLands
+                layout
                 pathCache
                 selected
                 hovered
@@ -73,17 +74,6 @@ board map ( layout, sWidth, sHeight ) pathCache animations selected hovered =
             , g [] <| List.map landDiesF map.lands
             ]
         ]
-
-
-lazyLands :
-    Layout
-    -> PathCache
-    -> List Land
-    -> Maybe Land.Emoji
-    -> List Land
-    -> Svg Msg
-lazyLands =
-    Svg.Lazy.lazy5 realLands
 
 
 realLands :
@@ -327,34 +317,18 @@ landText layout land =
            )
 
 
-waterConnection : Layout -> List Land.Land -> ( Land.Emoji, Land.Emoji ) -> Svg Msg
-waterConnection layout lands ( from, to ) =
-    let
-        findLand =
-            \emoji -> find (.emoji >> (==) emoji)
+waterConnections : Layout -> PathCache -> List ( Land.Emoji, Land.Emoji ) -> List Land -> Svg Msg
+waterConnections layout pathCache connections lands =
+    g [] <| List.map (waterConnection layout pathCache lands) connections
 
-        ( x1f, y1f ) =
-            case findLand from lands of
-                Just land ->
-                    landCenter layout land.cells
 
-                Nothing ->
-                    landCenter layout []
-
-        ( x2f, y2f ) =
-            case findLand to lands of
-                Just land ->
-                    landCenter layout land.cells
-
-                Nothing ->
-                    landCenter layout []
-    in
-    line
-        [ x1 <| String.fromFloat x1f
-        , y1 <| String.fromFloat y1f
-        , x2 <| String.fromFloat x2f
-        , y2 <| String.fromFloat y2f
+waterConnection : Layout -> PathCache -> List Land.Land -> ( Land.Emoji, Land.Emoji ) -> Svg Msg
+waterConnection layout pathCache lands ( from, to ) =
+    Svg.path
+        [ d <| Board.PathCache.line pathCache layout lands from to
+        , fill "none"
         , stroke "black"
+        , strokeDasharray "3 2"
         , strokeLinejoin "round"
         , strokeWidth "2"
         , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"

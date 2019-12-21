@@ -17,7 +17,8 @@ init map =
 
         pathCache : Dict.Dict String String
         pathCache =
-            Board.PathCache.addToDict Dict.empty layout map.lands
+            Board.PathCache.addToDict layout map.lands Dict.empty
+                |> Board.PathCache.addToDictLines layout map.lands map.extraAdjacency
     in
     Model map Nothing Idle pathCache ( layout, w, h ) Dict.empty
 
