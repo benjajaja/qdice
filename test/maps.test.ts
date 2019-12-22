@@ -25,7 +25,7 @@ describe("Maps", () => {
       ["🌵", "🐵", true],
       ["🐵", "🥑", true],
       ["🌵", "🌙", true],
-      ["🔥", "😺", true],
+      ["🔥", "😺", false],
     ];
     spec.forEach(([from, to, isBorder]) => {
       it(`${from}  should ${isBorder ? "" : "NOT "}border ${to}`, () => {
@@ -42,7 +42,7 @@ describe("Maps", () => {
     const [lands, adjacency] = maps.loadMap("Serrano");
     const spec: [string, string, boolean][] = [
       ["🏰", "💰", false],
-      ["💎", "🍒", false],
+      ["💎", "🍒", true],
       ["🎩", "🔥", true],
     ];
     spec.forEach(([from, to, isBorder]) => {
@@ -171,7 +171,7 @@ describe("Maps", () => {
   describe("land order should be fixed for e2e determinism", () => {
     const orders = {
       Planeta:
-        "🐵🐧👀🍷👙🍀🍌🍏🍉🥑😺🛸💰🍒🍺👍🍋🐙🎩🌵🐸🏰👻💊🔥🌙🐰🎵💀💎🌴💣💥💋💃💧🍩🗿🐟🌎🤠👑",
+        "🐵🐧👀🍷👙🍀🍌🍏🍉🥑😺🛸💰🍒🍺🎩👍🍋🐙🌵🐸🏰👻💊🔥🌙🐰🎵💀💎🌴💣💥💋💃💧🍩🗿🐟🌎🤠👑",
       Serrano: "🐙🐸🍷💰🏰💀💎🎩🌙💊👑🍒👙🔥🍋🌴💃",
       DeLucía: "💰😺🐵👻🐙🥑💎🐸💧💊🌴🌙🍒🎩🍉🍩🍌🍏🌵💋👙🍀💣🌎💀",
       Melchor: "🔥😺🍋🐵💰👻🐙🥑🐸🍺🌵👑🌙",
