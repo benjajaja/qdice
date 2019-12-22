@@ -138,6 +138,14 @@ decodeTableMessage table message =
                         Err err ->
                             Ok <| TableMsg table <| Error <| "💣"
 
+                "receive" ->
+                    case decodeString (field "payload" receiveDecoder) message of
+                        Ok ( player, count ) ->
+                            Ok <| TableMsg table <| ReceiveDice player count
+
+                        Err err ->
+                            Err <| errorToString err
+
                 _ ->
                     Err <| "unknown table message type \"" ++ mtype ++ "\""
 

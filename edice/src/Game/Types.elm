@@ -108,6 +108,12 @@ type alias RollPart =
     { emoji : Land.Emoji, roll : List Int }
 
 
+type alias ReceiveDice =
+    { player : Player
+    , count : Int
+    }
+
+
 type alias TableInfo =
     { table : Table
     , mapName : Tables.Map
@@ -148,6 +154,7 @@ type ChatLogEntry
     | LogTurn User Color
     | LogElimination User Color Int Int EliminationReason
     | LogBegin Table
+    | LogReceiveDice Player Int
 
 
 type alias RollLog =

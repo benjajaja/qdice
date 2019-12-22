@@ -58,3 +58,4 @@ type TableMessage
     | Move Game.Types.Move
     | Elimination Game.Types.Elimination
     | Error String
+    | ReceiveDice Game.Types.Player Int

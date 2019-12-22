@@ -120,6 +120,21 @@ gameBox lines id_ =
                                 [ Html.text "At table "
                                 , Html.strong [] [ Html.text <| table ]
                                 ]
+
+                        LogReceiveDice player count ->
+                            div [ class "chatbox--line--receive" ]
+                                [ playerTag player.name player.color
+                                , Html.text <|
+                                    if player.gameStats.connectedLands < player.gameStats.totalLands then
+                                        " got "
+                                            ++ String.fromInt count
+                                            ++ " dice, missing "
+                                            ++ (String.fromInt <| player.gameStats.totalLands - player.gameStats.connectedLands)
+                                            ++ " disconnected lands"
+
+                                    else
+                                        " got " ++ String.fromInt count ++ " dice"
+                                ]
                 )
             <|
                 List.reverse <|

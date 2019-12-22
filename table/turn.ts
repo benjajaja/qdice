@@ -9,6 +9,7 @@ import {
   groupedPlayerPositions,
   removePlayerCascade,
 } from "../helpers";
+import * as publish from "./publish";
 
 import {
   ELIMINATION_REASON_OUT,
@@ -31,9 +32,13 @@ const turn = (
     : table.players;
 
   const currentPlayer = inPlayers[table.turnIndex];
-  const [lands, players] = currentPlayer
+  const [receivedDice, lands, players] = currentPlayer
     ? giveDice(table, table.lands, inPlayers)(currentPlayer) // not just removed
-    : [table.lands, table.players];
+    : [0, table.lands, table.players];
+
+  if (receivedDice > 0) {
+    publish.receivedDice(table, receivedDice, currentPlayer);
+  }
 
   const nextIndex =
     table.turnIndex + 1 < players.length ? table.turnIndex + 1 : 0;
@@ -152,7 +157,7 @@ const giveDice = (
   table: Table,
   lands: ReadonlyArray<Land>,
   players: ReadonlyArray<Player>
-) => (player: Player): [ReadonlyArray<Land>, ReadonlyArray<Player>] => {
+) => (player: Player): [number, ReadonlyArray<Land>, ReadonlyArray<Player>] => {
   const connectLandCount = maps.countConnectedLands({
     lands,
     adjacency: table.adjacency,
@@ -175,6 +180,7 @@ const giveDice = (
     }
   });
   return [
+    connectLandCount,
     lands,
     players.map(p => (p === player ? { ...player, reserveDice } : p)),
   ];

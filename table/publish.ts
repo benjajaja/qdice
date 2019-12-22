@@ -199,3 +199,19 @@ export const userUpdate = clientId => (profile, preferences) => {
     }
   );
 };
+
+export const receivedDice = (table, count, player) => {
+  client.publish(
+    "tables/" + table.name + "/clients",
+    JSON.stringify({
+      type: "receive",
+      payload: { player: serializePlayer(table)(player), count },
+    }),
+    undefined,
+    err => {
+      if (err) {
+        console.log(err, "tables/" + table.name + "/clients roll", roll);
+      }
+    }
+  );
+};

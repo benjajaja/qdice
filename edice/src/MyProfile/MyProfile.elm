@@ -256,7 +256,7 @@ update model msg =
                             in
                             ( { model | user = Anonymous, backend = backend_ }
                             , Cmd.batch
-                                [ Snackbar.toastMessage "Account deleted" 0
+                                [ Snackbar.toastMessage "Account deleted" <| Just 5000
                                 , navigateTo model.key HomeRoute
                                 , saveToken Nothing
                                 ]

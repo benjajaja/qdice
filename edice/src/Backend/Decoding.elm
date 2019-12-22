@@ -1,4 +1,4 @@
-module Backend.Decoding exposing (accknowledgeDecoder, authStateDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, rollDecoder, singleRollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, userDecoder)
+module Backend.Decoding exposing (accknowledgeDecoder, authStateDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, singleRollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, userDecoder)
 
 import Board.Types
 import Game.Types exposing (Player, PlayerGameStats, TableParams, TableStatus)
@@ -231,6 +231,13 @@ eliminationReasonDecoder =
                     _ ->
                         Json.Decode.fail <| "unknown elimination type: " ++ t
             )
+
+
+receiveDecoder : Decoder ( Player, Int )
+receiveDecoder =
+    map2 (\a b -> ( a, b ))
+        (field "player" playersDecoder)
+        (field "count" int)
 
 
 globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo, ( String, List Profile ) )

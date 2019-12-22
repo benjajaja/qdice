@@ -10,6 +10,7 @@ import Game.Types exposing (..)
 import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates, playSound)
 import Land
 import Maps exposing (load)
+import Snackbar exposing (toastMessage)
 import Tables exposing (Map, Table)
 import Types exposing (Msg(..), User(..))
 
@@ -595,6 +596,10 @@ updateTable model table msg =
                         updateChatLog model <|
                             Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
 
+                    Backend.Types.ReceiveDice player count ->
+                        updateChatLog model <|
+                            Game.Types.LogReceiveDice player count
+
             else
                 ( model
                 , Cmd.none
@@ -632,7 +637,32 @@ updateChat model game table entry =
 
 updateLog : Types.Model -> Game.Types.Model -> Table -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
 updateLog model game table entry =
-    ( { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }, scrollElement <| "gameLog-" ++ table )
+    ( { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }
+    , Cmd.batch
+        [ case entry of
+            LogReceiveDice player count ->
+                case game.player of
+                    Just me ->
+                        if player.id == me.id && player.gameStats.connectedLands < player.gameStats.totalLands then
+                            toastMessage
+                                ("You missed "
+                                    ++ (String.fromInt <| player.gameStats.totalLands - player.gameStats.connectedLands)
+                                    ++ " dice because you have disconnected lands!"
+                                )
+                            <|
+                                Just 10000
+
+                        else
+                            Cmd.none
+
+                    Nothing ->
+                        Cmd.none
+
+            _ ->
+                Cmd.none
+        , scrollElement <| "gameLog-" ++ table
+        ]
+    )
 
 
 port scrollElement : String -> Cmd msg

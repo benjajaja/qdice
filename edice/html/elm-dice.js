@@ -156,6 +156,7 @@ app.ports.toast.subscribe(function(options) {
     Object.assign(options, {
       pos: "bottom-center",
       actionTextColor: "#38d6ff",
+      actionText: "Ok",
     })
   );
 });
