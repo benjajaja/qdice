@@ -185,9 +185,14 @@ setButtonStates model =
                             , checkReady = Nothing
                             }
 
-                        Types.Logged _ ->
+                        Types.Logged user ->
                             { buttonLabel = "Join"
-                            , msg = GameCmd Join
+                            , msg =
+                                if model.game.points <= user.points then
+                                    GameCmd Join
+
+                                else
+                                    ErrorToast ("Table has minimum points of " ++ String.fromInt model.game.points) "not enough points"
                             , checkReady = Nothing
                             }
 

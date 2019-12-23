@@ -38,6 +38,7 @@ init table tableMap_ =
     , gameStart = Nothing
     , playerSlots = 0
     , startSlots = 0
+    , points = 0
     , turnIndex = -1
     , hasTurn = False
     , turnStart = -1
@@ -335,6 +336,7 @@ updateGameInfo model tableList =
                     { model
                         | playerSlots = tableInfo.playerSlots
                         , startSlots = tableInfo.startSlots
+                        , points = tableInfo.points
                         , params = tableInfo.params
                     }
 

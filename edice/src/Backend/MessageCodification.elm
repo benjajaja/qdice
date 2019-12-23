@@ -172,7 +172,7 @@ decodeClientMessage message =
                 "error" ->
                     case decodeString (field "payload" Dec.string) message of
                         Ok error ->
-                            Ok <| ErrorToast "Server message error" error
+                            Ok <| ErrorToast error error
 
                         Err err ->
                             Ok <| ErrorToast "💣 Server-client error" <| errorToString err

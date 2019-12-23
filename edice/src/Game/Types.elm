@@ -40,6 +40,7 @@ type alias Model =
     , gameStart : Maybe Int
     , playerSlots : Int
     , startSlots : Int
+    , points : Int
     , turnIndex : Int
     , hasTurn : Bool
     , turnStart : Int

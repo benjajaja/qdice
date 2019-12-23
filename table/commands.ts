@@ -125,13 +125,17 @@ export const makePlayer = (
   bot: null,
 });
 
-export const join = (user, table: Table, clientId): CommandResult => {
+export const join = (user: User, table: Table, clientId): CommandResult => {
   if (table.status === STATUS_PLAYING) {
     throw new IllegalMoveError("join while STATUS_PLAYING", user.id);
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
     throw new IllegalMoveError("already joined", user.id);
+  }
+
+  if (user.points < table.points) {
+    throw new IllegalMoveError("not enough points to join", user.id);
   }
 
   logger.debug("join", typeof user.id);
