@@ -9,7 +9,7 @@ import Game.State exposing (canHover)
 import Game.Types exposing (PlayerAction(..), statusToString)
 import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
-import Html.Attributes exposing (checked, class, disabled, href, style, type_)
+import Html.Attributes exposing (checked, class, disabled, href, style, target, type_)
 import Html.Events exposing (onClick, preventDefaultOn)
 import Icon
 import Json.Decode exposing (succeed)
@@ -351,6 +351,25 @@ playerBox model =
                                 ]
                             ]
                     ]
+                        ++ (if not <| List.member "topwebgames" user.voted then
+                                [ div [ class "edPlayerBox__settings" ]
+                                    [ div [] [ text <| "You can get 500" ++ pointsSymbol ++ " by voting for qdice.wtf" ]
+                                    , div []
+                                        [ a
+                                            [ href <|
+                                                "http://topwebgames.com/in.aspx?ID=11959&uid="
+                                                    ++ user.id
+                                            , target
+                                                "_blank"
+                                            ]
+                                            [ text "Vote for qdice" ]
+                                        ]
+                                    ]
+                                ]
+
+                            else
+                                []
+                           )
 
                 Anonymous ->
                     [ div [] [ text "You're not logged in." ]

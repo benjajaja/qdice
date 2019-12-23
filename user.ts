@@ -222,3 +222,25 @@ export const addPushEvent = (add: boolean) => (req, res, next) => {
     })
     .catch(e => next(e));
 };
+
+export const registerVote = (source: "topwebgames") => async (
+  req,
+  res,
+  next
+) => {
+  const { ID, uid, votecounted } = req.body;
+  logger.debug("register vote", source, ID, uid, votecounted);
+  const user = await db.getUser(uid);
+  if (user.voted.indexOf(source) !== -1) {
+    return next(new Error(`user ${user.id} already voted "${source}"`));
+  }
+  try {
+    await db.registerVote(user, source);
+    const profile = await db.addScore(user.id, 500);
+    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
+    res.sendRaw(200, token);
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
+};

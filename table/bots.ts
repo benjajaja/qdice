@@ -67,6 +67,7 @@ export const addBots = (table: Table): CommandResult => {
     email: "bot@skynet",
     networks: [],
     claimed: true,
+    voted: [],
   };
   const players = table.players.concat([
     {

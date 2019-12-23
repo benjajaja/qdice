@@ -27,6 +27,7 @@ userDecoder =
         |> required "levelPoints" int
         |> required "claimed" bool
         |> required "networks" (list authNetworkDecoder)
+        |> required "voted" (list string)
 
 
 authNetworkDecoder : Decoder AuthNetwork

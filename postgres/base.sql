@@ -105,7 +105,8 @@ CREATE TABLE users (
     level integer DEFAULT 0,
     level_points integer DEFAULT 0,
     registration_time timestamp with time zone NOT NULL,
-    preferences json
+    preferences json,
+    voted jsonb DEFAULT '[]'::jsonb
 );
 
 

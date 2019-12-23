@@ -225,6 +225,15 @@ export const addPushEvent = async (
   return await getUser(id);
 };
 
+export const registerVote = async (user: User, source: "topwebgames") => {
+  await client.query(
+    `
+      UPDATE users SET voted = $1 WHERE id = $2`,
+    [JSON.stringify(user.voted.concat([source])), user.id]
+  );
+  return await getUser(user.id);
+};
+
 export const deleteUser = async (id: UserId) => {
   try {
     await client.query("BEGIN");
@@ -314,6 +323,7 @@ export const userProfile = (rows: any[]): User => {
     points,
     rank,
     preferences,
+    voted,
   } = rows[0];
   return {
     id: id.toString(),
@@ -328,6 +338,7 @@ export const userProfile = (rows: any[]): User => {
     points: parseInt(points, 10),
     rank: parseInt(rank, 10),
     networks: rows.map(row => row.network || "password"),
+    voted,
   };
 };
 

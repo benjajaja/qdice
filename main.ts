@@ -137,6 +137,7 @@ export const server = async () => {
           (req: any) => req.path() === `${root}/e2e`,
           (req: any) => req.path() === `${root}/push/key`,
           (req: any) => req.path().indexOf(`${root}/screenshot`) === 0,
+          (req: any) => req.path() === `${root}/topwebgames`,
         ])(req);
         return ok;
       },
@@ -240,6 +241,8 @@ export const server = async () => {
   server.del(`${root}/push/register`, user.addPushSubscription(false));
   server.post(`${root}/push/register/events`, user.addPushEvent(true));
   server.del(`${root}/push/register/events`, user.addPushEvent(false));
+
+  server.get(`${root}/topwebgames`, user.registerVote("topwebgames"));
 
   process.on("SIGINT", async function() {
     logger.info("SIGINT");

@@ -95,6 +95,7 @@ login model name =
             , levelPoints = 0
             , claimed = False
             , networks = [ Password ]
+            , voted = []
             }
 
         state =

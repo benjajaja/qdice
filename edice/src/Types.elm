@@ -125,6 +125,7 @@ type alias LoggedUser =
     , levelPoints : Int
     , claimed : Bool
     , networks : List AuthNetwork
+    , voted : List String
     }
 
 

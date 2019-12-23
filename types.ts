@@ -84,6 +84,7 @@ export type User = UserLike & {
   readonly networks: ReadonlyArray<string>;
   readonly claimed: boolean;
   readonly levelPoints: number;
+  readonly voted: string[];
 };
 
 export type Player = UserLike & {
