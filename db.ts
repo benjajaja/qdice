@@ -137,7 +137,7 @@ export const createUser = async (
   const {
     rows: [user],
   } = await client.query(
-    "INSERT INTO users (name,email,picture,registration_time) VALUES ($1, $2, $3, current_timestamp) RETURNING *",
+    "INSERT INTO users (name,email,picture,registration_time,points) VALUES ($1, $2, $3, current_timestamp, 100) RETURNING *",
     [name, email, picture]
   );
   logger.info("created user", user.name);
