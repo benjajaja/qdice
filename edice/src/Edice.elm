@@ -8,6 +8,7 @@ import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDire
 import Board
 import Board.Types
 import Browser
+import Browser.Dom
 import Browser.Navigation exposing (Key)
 import Footer exposing (footer)
 import GA exposing (ga)
@@ -27,6 +28,7 @@ import Routing exposing (navigateTo, parseLocation)
 import Snackbar exposing (toastError, toastMessage)
 import Static.View
 import Tables exposing (Map(..), Table)
+import Task
 import Time
 import Types exposing (..)
 import Url exposing (Url)
@@ -335,7 +337,12 @@ update msg model =
         OnUrlRequest urlRequest ->
             case urlRequest of
                 Browser.Internal location ->
-                    ( model, Browser.Navigation.pushUrl model.key <| Url.toString location )
+                    ( model
+                    , Cmd.batch
+                        [ Browser.Navigation.pushUrl model.key <| Url.toString location
+                        , Task.perform (\_ -> Nop) (Browser.Dom.setViewport 0 0)
+                        ]
+                    )
 
                 Browser.External urlString ->
                     ( model, Browser.Navigation.load urlString )
