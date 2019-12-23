@@ -607,7 +607,6 @@ button .material-icons, .edButton .material-icons {
   background: #f2f2f2;
 }
 .edGameTable th {
-  text-align: left;
 }
 .edGameTable td {
   cursor: pointer;

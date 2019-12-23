@@ -3,7 +3,7 @@ module Game.Footer exposing (footer)
 import Game.Types exposing (TableInfo, statusToIcon)
 import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (align, class, style)
 import Html.Events exposing (onClick)
 import Icon
 import Types exposing (Model, Msg(..))
@@ -23,16 +23,14 @@ tableOfTables model =
     table [ class "edGameTable" ]
         [ thead []
             [ tr []
-                [ th [] [ text "Table" ]
-
-                --, th [] [ text "Level" ]
-                , th [] [ text "Players" ]
-                , th [] [ text "Watching" ]
-                , th [] [ text "Status" ]
-                , th [] [ text "Size" ]
-                , th [] [ text "Stacks" ]
-                , th [] [ text "Points" ]
-                , th [] []
+                [ th [ align "left" ] [ text "Table" ]
+                , th [ align "right" ] [ text "Points" ]
+                , th [ align "right" ] [ text "Players" ]
+                , th [ align "right" ] [ text "Watching" ]
+                , th [ align "right" ] [ text "Status" ]
+                , th [ align "right" ] [ text "Size" ]
+                , th [ align "right" ] [ text "Stacks" ]
+                , th [ align "right" ] [ text "Bots" ]
                 ]
             ]
         , tbody [] <|
@@ -43,10 +41,9 @@ tableOfTables model =
                             [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                             , dataTestId <| "go-to-table-" ++ table.table
                             ]
-                            [ td [] [ text <| table.table ]
-
-                            --, td [] [ text <| String.fromInt table.points ]
-                            , td []
+                            [ td [ align "left" ] [ text <| table.table ]
+                            , td [ align "right" ] [ text <| String.fromInt table.points ]
+                            , td [ align "right" ]
                                 [ text <|
                                     String.concat
                                         [ String.fromInt table.playerCount
@@ -56,12 +53,19 @@ tableOfTables model =
                                         , String.fromInt table.playerSlots
                                         ]
                                 ]
-                            , td [] [ text <| String.fromInt table.watchCount ]
-                            , td []
+                            , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
+                            , td [ align "right" ]
                                 [ Icon.icon <| statusToIcon table.status ]
-                            , td [] [ text <| String.fromInt table.landCount ]
-                            , td [] [ text <| String.fromInt table.stackSize ]
-                            , td [] [ text <| String.fromInt table.points ++ pointsSymbol ]
+                            , td [ align "right" ] [ text <| String.fromInt table.landCount ]
+                            , td [ align "right" ] [ text <| String.fromInt table.stackSize ]
+                            , td [ align "right" ]
+                                [ text <|
+                                    if table.params.botLess then
+                                        "No"
+
+                                    else
+                                        "Yes"
+                                ]
                             ]
                 )
                 model.tableList
