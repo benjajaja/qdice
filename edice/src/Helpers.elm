@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, notification, pipeUpdates, playSound)
+port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, notification, pipeUpdates, playSound, pointsSymbol)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -18,6 +18,11 @@ type alias Synched a =
     { server : a
     , client : a
     }
+
+
+pointsSymbol : String
+pointsSymbol =
+    "✪"
 
 
 findIndex : (a -> Bool) -> List a -> Int

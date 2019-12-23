@@ -2,7 +2,7 @@ module Game.Chat exposing (chatBox, chatPlayerTag, eliminationEmoji, elimination
 
 import Board.Colors exposing (baseCssRgb, colorName)
 import Game.Types exposing (ChatLogEntry(..), PlayerAction(..), RollLog)
-import Helpers exposing (dataTestId)
+import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -111,7 +111,7 @@ gameBox lines id_ =
                                         else
                                             " finished " ++ ordinal position
                                     ]
-                                , Html.text <| " with " ++ String.fromInt score ++ " ✪"
+                                , Html.text <| " with " ++ String.fromInt score ++ " " ++ pointsSymbol
                                 , Html.text <| " " ++ eliminationReasonText reason
                                 ]
 
@@ -226,7 +226,7 @@ eliminationEmoji reason =
 eliminationReasonText reason =
     case reason of
         Game.Types.ReasonDeath player points ->
-            "(Killed by " ++ player.name ++ " for " ++ String.fromInt points ++ "✪)"
+            "(Killed by " ++ player.name ++ " for " ++ String.fromInt points ++ pointsSymbol ++ ")"
 
         Game.Types.ReasonOut turns ->
             "(Out for " ++ String.fromInt turns ++ " turns)"

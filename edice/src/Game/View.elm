@@ -7,7 +7,7 @@ import Game.Footer
 import Game.PlayerCard as PlayerCard
 import Game.State exposing (canHover)
 import Game.Types exposing (PlayerAction(..), statusToString)
-import Helpers exposing (dataTestId)
+import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (checked, class, disabled, href, style, type_)
 import Html.Events exposing (onClick, preventDefaultOn)
@@ -297,9 +297,9 @@ playerBox model =
                 Logged user ->
                     [ div [ class "edPlayerBox__Name" ] [ text user.name ]
                     , div [ class "edPlayerBox__stat" ] [ text "Level: ", text <| String.fromInt user.level ]
-                    , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ]
+                    , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ++ pointsSymbol ]
                     , div [ class "edPlayerBox__stat" ]
-                        [ text <| String.fromInt <| pointsToNextLevel user.level user.levelPoints
+                        [ text <| (String.fromInt <| pointsToNextLevel user.level user.levelPoints) ++ pointsSymbol
                         , text " points to next level"
                         ]
                     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]

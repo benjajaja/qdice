@@ -1,7 +1,7 @@
 module Game.Footer exposing (footer)
 
 import Game.Types exposing (TableInfo, statusToIcon)
-import Helpers exposing (dataTestId)
+import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
@@ -61,7 +61,7 @@ tableOfTables model =
                                 [ Icon.icon <| statusToIcon table.status ]
                             , td [] [ text <| String.fromInt table.landCount ]
                             , td [] [ text <| String.fromInt table.stackSize ]
-                            , td [] [ text <| String.fromInt table.points ]
+                            , td [] [ text <| String.fromInt table.points ++ pointsSymbol ]
                             ]
                 )
                 model.tableList
