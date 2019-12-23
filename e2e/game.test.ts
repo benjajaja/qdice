@@ -4,7 +4,7 @@ import { setInterval, clearInterval } from "timers";
 
 const hisTurn = async (page: Page, name: string) =>
   await expect(page).toMatchElement(
-    '[data-test-id="logline-turn"]:nth-child(1)',
+    '[data-test-id="logline-turn"]:nth-last-child(1)',
     {
       text: new RegExp(`^${name}'s turn`),
     }
@@ -38,7 +38,7 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
     });
   });
 
-  const newLines = lines.slice(0, lines.length - logLineCount);
+  const newLines = lines.slice(logLineCount);
 
   expect(
     newLines.some(line =>
@@ -118,13 +118,13 @@ describe("A full game", () => {
     // const lines = await attack(page, "land-🍺", "land-🐸", "A");
 
     await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-child(2)`,
+      `${testId("logline-elimination")}:nth-last-child(2)`,
       {
         text: /^☠ A finished 2nd with -?\d+ ✪ \(Killed by B for \d+✪\)/,
       }
     );
     await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-child(1)`,
+      `${testId("logline-elimination")}:nth-last-child(1)`,
       {
         text: /^🏆 B won the game! with \d+ ✪ \(Last standing player after \d+ turns\)/,
       }

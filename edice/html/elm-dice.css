@@ -500,20 +500,6 @@ button .material-icons, .edButton .material-icons {
   border-color: #FFC107;
 }
 
-.gamelogContainer {
-  flex: 1 1 50%;
-  height: 200px;
-  overflow-y: auto;
-  font-size: 12px;
-  background: #fff9f2;
-  min-width: 300px;
-}
-.gamelog {
-  background-color: inherit;
-  margin: 8px;
-}
-.chatbox--line--turn, .chatbox--line--roll {
-}
 
 .edGame__user {
   flex: 1 1 auto;
@@ -578,6 +564,23 @@ button .material-icons, .edButton .material-icons {
 }
 .chatbox--line--error {
   color: #a00;
+}
+.gamelogContainer {
+  flex: 1 1 50%;
+  height: 200px;
+  font-size: 12px;
+  background: #fff9f2;
+  min-width: 300px;
+  display: flex;
+}
+.gamelog {
+  background-color: inherit;
+  padding: 8px;
+  flex: 100 1 auto;
+  overflow: auto;
+  overflow-y: scroll;
+}
+.chatbox--line--turn, .chatbox--line--roll {
 }
 
 .footer--profile-link {

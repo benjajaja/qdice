@@ -48,6 +48,7 @@ type Msg
     | InputChat String
     | SendChat String
     | GameCmd PlayerAction
+    | GameMsg Game.Types.Msg
     | EnterGame Table
       -- backend
     | Connected Backend.Types.ClientId

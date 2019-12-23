@@ -1,6 +1,7 @@
-module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, makePlayer, statusToIcon, statusToString)
+module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, makePlayer, statusToIcon, statusToString)
 
 import Board exposing (LandUpdate)
+import Browser.Dom as Dom
 import Land exposing (Color, Emoji)
 import Tables exposing (Table)
 
@@ -24,6 +25,10 @@ type PlayerAction
     | Flag Bool
     | ToggleReady Bool
     | Heartbeat
+
+
+type Msg
+    = ScrollChat String ChatLogEntry (Result Dom.Error Dom.Viewport)
 
 
 type alias Model =

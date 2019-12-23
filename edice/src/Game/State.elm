@@ -1,4 +1,4 @@
-port module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, scrollElement, showRoll, tableMap, updateGameInfo, updateTable, updateTableStatus)
+module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, showRoll, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
 
 import Backend
 import Backend.MqttCommands exposing (attack, sendGameCommand)
@@ -6,12 +6,14 @@ import Backend.Types exposing (Topic(..))
 import Board
 import Board.State
 import Board.Types exposing (Msg(..))
+import Browser.Dom as Dom
 import Game.Types exposing (..)
 import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates, playSound)
 import Land
 import Maps exposing (load)
 import Snackbar exposing (toastMessage)
 import Tables exposing (Map, Table)
+import Task
 import Types exposing (Msg(..), User(..))
 
 
@@ -609,6 +611,22 @@ updateTable model table msg =
             ( model, Cmd.none )
 
 
+isChat : ChatLogEntry -> Bool
+isChat entry =
+    case entry of
+        LogJoin _ ->
+            True
+
+        LogLeave _ ->
+            True
+
+        LogChat _ _ _ ->
+            True
+
+        _ ->
+            False
+
+
 updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
 updateChatLog model entry =
     case model.game.table of
@@ -616,53 +634,64 @@ updateChatLog model entry =
             ( model, Cmd.none )
 
         Just table ->
-            case entry of
-                LogJoin _ ->
-                    updateChat model model.game table entry
+            ( model
+            , updateChatCmd table entry <|
+                if isChat entry then
+                    "chatLog"
 
-                LogLeave _ ->
-                    updateChat model model.game table entry
-
-                LogChat _ _ _ ->
-                    updateChat model model.game table entry
-
-                _ ->
-                    updateLog model model.game table entry
+                else
+                    "gameLog"
+            )
 
 
-updateChat : Types.Model -> Game.Types.Model -> Table -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
-updateChat model game table entry =
-    ( { model | game = { game | chatLog = List.append game.chatLog [ entry ] } }, scrollElement <| "chatLog-" ++ table )
+updateChatCmd : Table -> ChatLogEntry -> String -> Cmd Types.Msg
+updateChatCmd table entry idPrefix =
+    Dom.getViewportOf (idPrefix ++ "-" ++ table)
+        |> Task.attempt (\info -> GameMsg <| Game.Types.ScrollChat (idPrefix ++ "-" ++ table) entry info)
 
 
-updateLog : Types.Model -> Game.Types.Model -> Table -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
-updateLog model game table entry =
-    ( { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }
-    , Cmd.batch
-        [ case entry of
-            LogReceiveDice player count ->
-                case game.player of
-                    Just me ->
-                        if player.id == me.id && player.gameStats.connectedLands < player.gameStats.totalLands then
-                            toastMessage
-                                ("You missed "
-                                    ++ (String.fromInt <| player.gameStats.totalLands - player.gameStats.connectedLands)
-                                    ++ " dice because you have disconnected lands!"
-                                )
-                            <|
-                                Just 10000
+update : Types.Model -> Game.Types.Model -> Game.Types.Msg -> ( Types.Model, Cmd Types.Msg )
+update model game msg =
+    case msg of
+        ScrollChat id entry res ->
+            ( if isChat entry then
+                { model | game = { game | chatLog = List.append game.chatLog [ entry ] } }
+
+              else
+                { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }
+            , Cmd.batch
+                [ case res of
+                    Err _ ->
+                        consoleDebug "cannot scroll chat"
+
+                    Ok info ->
+                        if info.viewport.y + info.viewport.height + 10 >= info.scene.height then
+                            Dom.setViewportOf id 0 info.scene.height
+                                |> Task.attempt
+                                    (\_ -> Nop)
 
                         else
                             Cmd.none
+                , case entry of
+                    LogReceiveDice player count ->
+                        case game.player of
+                            Just me ->
+                                if player.id == me.id && player.gameStats.connectedLands < player.gameStats.totalLands then
+                                    toastMessage
+                                        ("You missed "
+                                            ++ (String.fromInt <| player.gameStats.totalLands - player.gameStats.connectedLands)
+                                            ++ " dice because you have disconnected lands!"
+                                        )
+                                    <|
+                                        Just 10000
 
-                    Nothing ->
+                                else
+                                    Cmd.none
+
+                            Nothing ->
+                                Cmd.none
+
+                    _ ->
                         Cmd.none
-
-            _ ->
-                Cmd.none
-        , scrollElement <| "gameLog-" ++ table
-        ]
-    )
-
-
-port scrollElement : String -> Cmd msg
+                ]
+            )

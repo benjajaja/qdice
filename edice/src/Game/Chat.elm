@@ -137,8 +137,7 @@ gameBox lines id_ =
                                 ]
                 )
             <|
-                List.reverse <|
-                    lines
+                lines
         ]
 
 

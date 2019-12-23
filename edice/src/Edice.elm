@@ -501,6 +501,9 @@ update msg model =
         TableMsg table tableMsg ->
             Game.State.updateTable model table tableMsg
 
+        GameMsg gameMsg ->
+            Game.State.update model model.game gameMsg
+
         Tick newTime ->
             let
                 cmd =

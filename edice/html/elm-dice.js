@@ -104,45 +104,6 @@ app.ports.saveToken.subscribe(function(token) {
   }
 });
 
-//app.ports.selectAll.subscribe(function(id) {
-//var selection = window.getSelection();
-//var range = document.createRange();
-//range.selectNodeContents(document.getElementById(id));
-//selection.removeAllRanges();
-//selection.addRange(range);
-//});
-
-var scrollObservers = [];
-app.ports.scrollElement.subscribe(function(id) {
-  var element = document.getElementById(id);
-  if (!element) {
-    return console.error("cannot autoscroll #" + id);
-  }
-  if (scrollObservers.indexOf(id) === -1) {
-    try {
-      var observer = new MutationObserver(function(mutationList) {
-        mutationList.forEach(function(mutation) {
-          var element = mutation.target;
-          element.scrollTop = element.scrollHeight;
-        });
-      });
-      if (element.scrollHeight - element.scrollTop === element.clientHeight) {
-        observer.observe(element, { attributes: false, childList: true });
-      }
-      element.addEventListener("scroll", function() {
-        if (element.scrollHeight - element.scrollTop === element.clientHeight) {
-          observer.observe(element, { attributes: false, childList: true });
-        } else {
-          observer.disconnect();
-        }
-      });
-      scrollObservers.push(id);
-    } catch (e) {
-      console.error("autoscroll setup error", e);
-    }
-  }
-});
-
 app.ports.consoleDebug.subscribe(function(string) {
   var lines = string.split("\n");
   console.groupCollapsed(lines.shift());
