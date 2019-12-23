@@ -262,8 +262,11 @@ update msg model =
 
                         backend_ =
                             { backend | jwt = Just token }
+
+                        game =
+                            Game.State.setUser model.game profile
                     in
-                    ( { model | user = Logged profile, preferences = preferences, backend = backend_ }
+                    ( { model | user = Logged profile, preferences = preferences, backend = backend_, game = game }
                     , ga [ "send", "event", "auth", "GetProfile" ]
                     )
 

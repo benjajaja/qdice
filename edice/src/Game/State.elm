@@ -1,4 +1,4 @@
-module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, showRoll, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
+module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, setUser, showRoll, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
 
 import Backend
 import Backend.MqttCommands exposing (attack, sendGameCommand)
@@ -135,10 +135,15 @@ findUserPlayer user players =
         Types.Anonymous ->
             Nothing
 
-        Types.Logged user_ ->
-            players
-                |> List.filter (.id >> (==) user_.id)
-                |> List.head
+        Types.Logged logged ->
+            findLoggedUserPlayer logged players
+
+
+findLoggedUserPlayer : Types.LoggedUser -> List Player -> Maybe Player
+findLoggedUserPlayer logged players =
+    players
+        |> List.filter (.id >> (==) logged.id)
+        |> List.head
 
 
 updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
@@ -695,3 +700,8 @@ update model game msg =
                         Cmd.none
                 ]
             )
+
+
+setUser : Model -> Types.LoggedUser -> Model
+setUser model user =
+    { model | player = findLoggedUserPlayer user model.players }
