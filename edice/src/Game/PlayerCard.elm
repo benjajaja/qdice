@@ -5,10 +5,9 @@ import Color
 import Color.Accessibility
 import Color.Interpolate
 import Game.Types exposing (GameStatus(..), Player)
-import Helpers exposing (dataTestId)
+import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (class, style)
-import Icon
 import Ordinal exposing (ordinal)
 import Svg
 import Svg.Attributes
@@ -89,6 +88,9 @@ gameStats model player =
                                     ""
                                )
                         )
+                    ]
+              , Html.div [ class "edPlayerChip__gameStats__item" ]
+                    [ Html.text <| String.fromInt player.gameStats.score ++ pointsSymbol
                     ]
               ]
             ]
