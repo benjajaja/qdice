@@ -232,3 +232,21 @@ export const sigint = async () =>
       }
     );
   });
+
+export const userMessage = async (clientId: string, message: string) =>
+  new Promise(resolve => {
+    client.publish(
+      `clients/${clientId}`,
+      JSON.stringify({
+        type: "message",
+        payload: message,
+      }),
+      resolve,
+      err => {
+        if (err) {
+          console.log(err, "clients tables");
+        }
+        resolve();
+      }
+    );
+  });

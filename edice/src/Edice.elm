@@ -361,6 +361,11 @@ update msg model =
             , toastError message debugMessage
             )
 
+        MessageToast message ms ->
+            ( model
+            , toastMessage message ms
+            )
+
         Animate animateMsg ->
             let
                 game =

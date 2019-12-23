@@ -22,6 +22,7 @@ type Msg
     | Animate Animation.Msg
     | MyProfileMsg MyProfile.Types.MyProfileMsg
     | ErrorToast String String
+    | MessageToast String (Maybe Int)
     | RequestFullscreen
     | RequestNotifications
     | RenounceNotifications

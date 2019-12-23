@@ -177,8 +177,16 @@ decodeClientMessage message =
                         Err err ->
                             Ok <| ErrorToast "💣 Server-client error" <| errorToString err
 
+                "message" ->
+                    case decodeString (field "payload" Dec.string) message of
+                        Ok messageString ->
+                            Ok <| MessageToast messageString <| Nothing
+
+                        Err err ->
+                            Ok <| ErrorToast "Error parsing message" <| errorToString err
+
                 _ ->
-                    Err <| "unkown client message type: " ++ mtype
+                    Err <| "unknown client message type: " ++ mtype
 
 
 encodeTopic : Topic -> String
