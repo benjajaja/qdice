@@ -24,7 +24,7 @@ import MyOauth
 import MyProfile.MyProfile
 import MyProfile.Types
 import Routing exposing (navigateTo, parseLocation)
-import Snackbar exposing (toastError)
+import Snackbar exposing (toastError, toastMessage)
 import Static.View
 import Tables exposing (Map(..), Table)
 import Time
@@ -487,6 +487,9 @@ update msg model =
                     ( { model | tableList = tables, game = game_ }
                     , Cmd.none
                     )
+
+                Backend.Types.SigInt ->
+                    ( model, toastMessage "Server is restarting..." <| Just 3000 )
 
         TableMsg table tableMsg ->
             Game.State.updateTable model table tableMsg

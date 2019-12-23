@@ -215,3 +215,20 @@ export const receivedDice = (table, count, player) => {
     }
   );
 };
+
+export const sigint = async () =>
+  new Promise(resolve => {
+    client.publish(
+      "clients",
+      JSON.stringify({
+        type: "sigint",
+      }),
+      resolve,
+      err => {
+        if (err) {
+          console.log(err, "clients tables");
+        }
+        resolve();
+      }
+    );
+  });

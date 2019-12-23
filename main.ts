@@ -240,4 +240,10 @@ export const server = async () => {
   server.del(`${root}/push/register`, user.addPushSubscription(false));
   server.post(`${root}/push/register/events`, user.addPushEvent(true));
   server.del(`${root}/push/register/events`, user.addPushEvent(false));
+
+  process.on("SIGINT", async function() {
+    logger.info("SIGINT");
+    await publish.sigint();
+    process.exit();
+  });
 };

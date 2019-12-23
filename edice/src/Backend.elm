@@ -320,10 +320,6 @@ decodeTopic clientId string =
                 Just AllClients
 
             _ ->
-                --let
-                --_ =
-                --Debug.log "Cannot decode topic" string
-                --in
                 Nothing
 
 

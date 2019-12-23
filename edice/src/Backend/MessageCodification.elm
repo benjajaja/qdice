@@ -50,6 +50,9 @@ decodeTopicMessage userTable topic message =
                                 Err err ->
                                     Err <| errorToString err
 
+                        "sigint" ->
+                            Ok <| AllClientsMsg <| SigInt
+
                         _ ->
                             Err <| "unknown global message type \"" ++ mtype ++ "\""
 
