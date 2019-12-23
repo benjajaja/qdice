@@ -334,7 +334,10 @@ update msg model =
 
         NavigateTo route ->
             ( model
-            , navigateTo model.key route
+            , Cmd.batch
+                [ navigateTo model.key route
+                , Task.perform (\_ -> Nop) (Browser.Dom.setViewport 0 0)
+                ]
             )
 
         OnUrlRequest urlRequest ->
