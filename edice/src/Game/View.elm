@@ -296,7 +296,12 @@ playerBox model =
             case model.user of
                 Logged user ->
                     [ div [ class "edPlayerBox__Name" ] [ text user.name ]
+                    , div [ class "edPlayerBox__stat" ] [ text "Level: ", text <| String.fromInt user.level ]
                     , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ]
+                    , div [ class "edPlayerBox__stat" ]
+                        [ text <| String.fromInt <| pointsToNextLevel user.level user.levelPoints
+                        , text " points to next level"
+                        ]
                     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
                     , div [ class "edPlayerBox__settings" ] <|
                         if not model.sessionPreferences.notificationsEnabled then
@@ -363,3 +368,8 @@ leaderboardBox model =
             [ LeaderBoard.View.view 10 model ]
         ]
     ]
+
+
+pointsToNextLevel : Int -> Int -> Int
+pointsToNextLevel level points =
+    (((toFloat level + 1 + 10) ^ 3) * 0.1 |> ceiling) - points

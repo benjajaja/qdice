@@ -121,6 +121,7 @@ type alias LoggedUser =
     , points : Int
     , rank : Int
     , level : Int
+    , levelPoints : Int
     , claimed : Bool
     , networks : List AuthNetwork
     }

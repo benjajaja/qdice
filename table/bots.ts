@@ -61,6 +61,7 @@ export const addBots = (table: Table): CommandResult => {
     name: persona.name,
     picture: persona.picture,
     level: 1,
+    levelPoints: 0,
     points: 100,
     rank: 0,
     email: "bot@skynet",

@@ -648,6 +648,13 @@ button .material-icons, .edButton .material-icons {
   margin-top: 10px;
 }
 
+.edLeaderboard {
+  width: 100%;
+}
+.edLeaderboard > table {
+  width: 100%;
+}
+
 .edLoginBackdrop {
   background: rgba(0, 0, 0, 0.25);
   position: fixed;

@@ -1,13 +1,13 @@
 module LeaderBoard.View exposing (view)
 
 import Html exposing (..)
-import Html.Attributes exposing (align, href)
+import Html.Attributes exposing (align, class, href)
 import Types exposing (..)
 
 
 view : Int -> Model -> Html Msg
 view limit model =
-    div []
+    div [ class "edLeaderboard" ]
         [ div []
             [ a
                 [ href "/leaderboard"
@@ -18,9 +18,10 @@ view limit model =
         , table []
             [ thead []
                 [ tr []
-                    [ th [] [ text "Rank" ]
-                    , th [ align "right" ] [ text "Name" ]
+                    [ th [ align "right" ] [ text "Rank" ]
+                    , th [ align "left" ] [ text "Name" ]
                     , th [ align "right" ] [ text "Points" ]
+                    , th [ align "right" ] [ text "Level" ]
                     ]
                 ]
             , model.leaderBoard.top
@@ -28,9 +29,10 @@ view limit model =
                 |> List.map
                     (\profile ->
                         tr []
-                            [ td [] [ text <| String.fromInt profile.rank ]
-                            , td [ align "right" ] [ text profile.name ]
+                            [ td [ align "right" ] [ text <| String.fromInt profile.rank ]
+                            , td [ align "left" ] [ text profile.name ]
                             , td [ align "right" ] [ text <| String.fromInt profile.points ]
+                            , td [ align "right" ] [ text <| String.fromInt profile.level ]
                             ]
                     )
                 |> tbody []

@@ -92,6 +92,7 @@ login model name =
             , points = 0
             , rank = 0
             , level = 0
+            , levelPoints = 0
             , claimed = False
             , networks = [ Password ]
             }

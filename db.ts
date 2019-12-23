@@ -120,7 +120,6 @@ export const getPreferences = async (id: UserId) => {
     [id]
   );
   const preferences = res.rows[0]?.preferences ?? {};
-  logger.debug("prefs", id, res.rows);
   return {
     pushSubscribed: res.rows.filter(row => row.event).map(row => row.event),
     ...preferences,
@@ -247,13 +246,41 @@ export const deleteUser = async (id: UserId) => {
 
 export const addScore = async (id: UserId, score: number) => {
   logger.debug("addScore", id, score);
-  const res = await client.query(
-    `
-UPDATE users
-SET points = GREATEST(points + $1, 0)
-WHERE id = $2`,
-    [score, id]
-  );
+  try {
+    await client.query("BEGIN");
+    const res = await client.query(
+      `
+      UPDATE users
+      SET points = GREATEST(points + $1, 0),
+          level_points = GREATEST(level_points + $1, 0)
+      WHERE id = $2
+      RETURNING level, level_points`,
+      [score, id]
+    );
+    const { level, level_points } = res.rows[0];
+    logger.debug("setLevel", level, level_points);
+    if (level_points > 0) {
+      const nextLevelPoints = Math.ceil(Math.pow(level + 1 + 10, 3) * 0.1);
+      logger.debug("nextLevelPoints", nextLevelPoints);
+      if (level_points > nextLevelPoints) {
+        const newLevelPoints = Math.max(0, level_points - nextLevelPoints);
+        const newLevel = level + 1;
+        logger.debug("new level", newLevel, newLevelPoints);
+        await client.query(
+          `
+          UPDATE users
+          SET level = $1,
+              level_points = $2
+          WHERE id = $3`,
+          [newLevel, newLevelPoints, id]
+        );
+      }
+    }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  }
   return await getUser(id);
 };
 
@@ -266,14 +293,14 @@ ORDER BY points DESC
 LIMIT $1 OFFSET $2`,
     [limit, limit * Math.max(0, page - 1)]
   );
-  return result.rows.map(row =>
-    Object.assign(row, {
-      id: row.id.toString(),
-      points: parseInt(row.points, 10),
-      rank: parseInt(row.rank, 10),
-      picture: row.picture || "",
-    })
-  );
+  return result.rows.map(row => ({
+    ...row,
+    id: row.id.toString(),
+    points: parseInt(row.points, 10),
+    rank: parseInt(row.rank, 10),
+    level: Math.max(1, row.level),
+    picture: row.picture || "",
+  }));
 };
 
 export const userProfile = (rows: any[]): User => {
@@ -283,6 +310,7 @@ export const userProfile = (rows: any[]): User => {
     email,
     picture,
     level,
+    level_points,
     points,
     rank,
     preferences,
@@ -293,6 +321,7 @@ export const userProfile = (rows: any[]): User => {
     email,
     picture: picture || "assets/empty_profile_picture.svg",
     level,
+    levelPoints: level_points,
     claimed: rows.some(
       row => row.network !== NETWORK_PASSWORD || row.network_id !== null
     ),

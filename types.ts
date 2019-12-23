@@ -83,6 +83,7 @@ export type User = UserLike & {
   readonly email: string;
   readonly networks: ReadonlyArray<string>;
   readonly claimed: boolean;
+  readonly levelPoints: number;
 };
 
 export type Player = UserLike & {

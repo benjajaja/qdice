@@ -24,6 +24,7 @@ userDecoder =
         |> required "points" int
         |> required "rank" int
         |> required "level" int
+        |> required "levelPoints" int
         |> required "claimed" bool
         |> required "networks" (list authNetworkDecoder)
 
