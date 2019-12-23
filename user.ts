@@ -3,8 +3,10 @@ import * as errs from "restify-errors";
 import * as request from "request";
 import * as jwt from "jsonwebtoken";
 import * as db from "./db";
+import * as publish from "./table/publish"; // avoid or refactor
 import logger from "./logger";
 import { Preferences, PushNotificationEvents, User } from "./types";
+import { Request } from "restify";
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 
@@ -224,21 +226,26 @@ export const addPushEvent = (add: boolean) => (req, res, next) => {
 };
 
 export const registerVote = (source: "topwebgames") => async (
-  req,
+  req: Request,
   res,
   next
 ) => {
-  const { ID, uid, votecounted } = req.body;
-  logger.debug("register vote", source, ID, uid, votecounted);
-  const user = await db.getUser(uid);
-  if (user.voted.indexOf(source) !== -1) {
-    return next(new Error(`user ${user.id} already voted "${source}"`));
-  }
   try {
+    const { ID, uid, votecounted, client_id } = req.query;
+    logger.debug("register vote", source, ID, uid, votecounted, client_id);
+    const user = await db.getUser(uid);
+    if (user.voted.indexOf(source) !== -1) {
+      return next(new Error(`user ${user.id} already voted "${source}"`));
+    }
     await db.registerVote(user, source);
-    const profile = await db.addScore(user.id, 500);
-    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
-    res.sendRaw(200, token);
+    const profile = await db.addScore(user.id, 1000);
+    if (client_id) {
+      const preferences = await db.getPreferences(profile.id);
+      publish.userUpdate(client_id)(profile, preferences);
+      publish.userMessage(client_id, "You received 1000✪!");
+    }
+    logger.debug("voted", profile, user);
+    res.sendRaw(200, "ok");
   } catch (e) {
     console.error(e);
     next(e);

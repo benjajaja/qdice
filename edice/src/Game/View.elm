@@ -353,12 +353,19 @@ playerBox model =
                     ]
                         ++ (if not <| List.member "topwebgames" user.voted then
                                 [ div [ class "edPlayerBox__settings" ]
-                                    [ div [] [ text <| "You can get 500" ++ pointsSymbol ++ " by voting for qdice.wtf" ]
+                                    [ div [] [ text <| "You can get 1000" ++ pointsSymbol ++ " by voting for qdice.wtf" ]
                                     , div []
                                         [ a
                                             [ href <|
                                                 "http://topwebgames.com/in.aspx?ID=11959&uid="
                                                     ++ user.id
+                                                    ++ (case model.backend.clientId of
+                                                            Just clientId ->
+                                                                "&client_id=" ++ clientId
+
+                                                            Nothing ->
+                                                                ""
+                                                       )
                                             , target
                                                 "_blank"
                                             ]
