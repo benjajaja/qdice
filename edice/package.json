@@ -5,7 +5,7 @@
   "main": "electron.js",
   "scripts": {
     "build": "rm -rf dist/* ; webpack --progress -p --env.production",
-    "build_zip": "rm -rf dist/* ; build_id=$(git rev-parse HEAD) git_log='$(git log --pretty=format:%ad%n%      h%n%s%n%b---)' webpack --progress -p --env.production --env.zip=true && cd dist && zip -r ~/edice.zip .",
+    "build_zip": "rm -rf dist/* ; rm ~/edice.zip ; build_id=$(git rev-parse HEAD) git_log='$(git log --pretty=format:%ad%n%      h%n%s%n%b---)' webpack --progress -p --env.production --env.zip=true && cd dist && zip -r ~/edice.zip .",
     "watch": "webpack --watch",
     "start": "webpack-dev-server",
     "heroku-postbuild": "yarn build",

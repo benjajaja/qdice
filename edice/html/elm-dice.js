@@ -32,7 +32,7 @@ if (window.navigator.standalone === true) {
 
 var ga = function() {};
 
-var Elm = require("../src/Edice").Elm;
+var Elm = require("../src/App").Elm;
 
 var isTelegram = typeof TelegramWebviewProxy === "object";
 var token =
@@ -46,7 +46,7 @@ if ("Notification" in window) {
     localStorage.getItem("notifications") === "2";
 }
 
-var app = Elm.Edice.init({
+var app = Elm.App.init({
   node: document.body,
   flags: {
     version: version ? version.substr(0, 7) : "dev",
@@ -54,6 +54,7 @@ var app = Elm.Edice.init({
     isTelegram: isTelegram,
     screenshot: /[?&]screenshot/.test(window.location.search),
     notificationsEnabled: notificationsEnabled,
+    zip: !!zip,
   },
 });
 

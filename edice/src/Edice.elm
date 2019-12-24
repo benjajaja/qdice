@@ -1,4 +1,4 @@
-port module Edice exposing (pushSubscribe, started, subscriptions)
+port module Edice exposing (init, pushSubscribe, started, subscriptions, updateWrapper, view)
 
 import Animation
 import Backend
@@ -34,27 +34,6 @@ import Types exposing (..)
 import Url exposing (Url)
 
 
-type alias Flags =
-    { version : String
-    , token : Maybe String
-    , isTelegram : Bool
-    , screenshot : Bool
-    , notificationsEnabled : Bool
-    }
-
-
-main : Program Flags Model Msg
-main =
-    Browser.application
-        { init = init
-        , view = view
-        , update = updateWrapper
-        , subscriptions = subscriptions
-        , onUrlRequest = OnUrlRequest
-        , onUrlChange = OnLocationChange
-        }
-
-
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
 init flags location key =
     let
@@ -83,7 +62,7 @@ init flags location key =
                     ( loadBackend
                     , [ MyOauth.saveToken <| Just token
                       , loadMe loadBackend
-                      , navigateTo key <| GameRoute ""
+                      , navigateTo flags.zip key <| GameRoute ""
                       ]
                     )
 
@@ -105,6 +84,7 @@ init flags location key =
             , time = Time.millisToPosix 0
             , isTelegram = flags.isTelegram
             , screenshot = flags.screenshot
+            , zip = flags.zip
             , loginName = ""
             , showLoginDialog = LoginHide
             , settings =
@@ -313,7 +293,7 @@ update msg model =
 
                     Nothing ->
                         Cmd.none
-                , navigateTo model.key HomeRoute
+                , navigateTo model.zip model.key HomeRoute
                 , renounceNotifications <| model.backend.jwt
                 , ga [ "send", "event", "auth", "Logout" ]
                 ]
@@ -335,17 +315,30 @@ update msg model =
         NavigateTo route ->
             ( model
             , Cmd.batch
-                [ navigateTo model.key route
+                [ navigateTo model.zip model.key route
                 , Task.perform (\_ -> Nop) (Browser.Dom.setViewport 0 0)
                 ]
             )
 
         OnUrlRequest urlRequest ->
             case urlRequest of
-                Browser.Internal location ->
+                Browser.Internal url ->
                     ( model
                     , Cmd.batch
-                        [ Browser.Navigation.pushUrl model.key <| Url.toString location
+                        [ Browser.Navigation.pushUrl model.key <|
+                            Url.toString <|
+                                if not model.zip then
+                                    url
+
+                                else
+                                    Url.Url url.protocol
+                                        url.host
+                                        url.port_
+                                        ""
+                                        url.query
+                                    <|
+                                        Just <|
+                                            String.dropLeft 1 url.path
                         , Task.perform (\_ -> Nop) (Browser.Dom.setViewport 0 0)
                         ]
                     )
@@ -353,8 +346,13 @@ update msg model =
                 Browser.External urlString ->
                     ( model, Browser.Navigation.load urlString )
 
-        OnLocationChange location ->
-            onLocationChange model location
+        OnLocationChange url ->
+            onLocationChange model <|
+                if model.zip then
+                    Routing.fragmentUrl url
+
+                else
+                    url
 
         ErrorToast message debugMessage ->
             ( model

@@ -1,4 +1,4 @@
-module Types exposing (AuthNetwork(..), AuthState, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, Flags, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
 
 import Animation
 import Backend.Types
@@ -100,6 +100,7 @@ type alias Model =
     , tableList : List TableInfo
     , time : Time.Posix
     , isTelegram : Bool
+    , zip : Bool
     , screenshot : Bool
     , loginName : String
     , showLoginDialog : LoginDialogStatus
@@ -107,6 +108,16 @@ type alias Model =
     , leaderBoard : LeaderBoardModel
     , preferences : Preferences
     , sessionPreferences : SessionPreferences
+    }
+
+
+type alias Flags =
+    { version : String
+    , token : Maybe String
+    , isTelegram : Bool
+    , screenshot : Bool
+    , notificationsEnabled : Bool
+    , zip : Bool
     }
 
 

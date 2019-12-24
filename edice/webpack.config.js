@@ -6,7 +6,7 @@ var CopyWebpackPlugin = require("copy-webpack-plugin");
 var HtmlWebpackPlugin = require("html-webpack-plugin");
 
 function logEnv(env) {
-  console.log("Parse webpack.config.js env: " + env);
+  console.log("Parse webpack.config.js env: " + JSON.stringify(env));
   return env;
 }
 
@@ -80,6 +80,7 @@ module.exports = env => ({
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": '"production"',
       version: JSON.stringify(process.env.build_id),
+      zip: env && env.zip,
     }),
     new ExtractTextPlugin("elm-dice.[hash].css"),
     new CopyWebpackPlugin([
