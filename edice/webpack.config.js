@@ -6,7 +6,7 @@ var CopyWebpackPlugin = require("copy-webpack-plugin");
 var HtmlWebpackPlugin = require("html-webpack-plugin");
 
 function logEnv(env) {
-  console.log("Parse webpack.config.js env.production: " + env);
+  console.log("Parse webpack.config.js env: " + env);
   return env;
 }
 
@@ -99,10 +99,17 @@ module.exports = env => ({
     ]),
     new HtmlWebpackPlugin({
       template: "html/index.html",
+      templateParameters: function(compilation, assets, assetTags, options) {
+        return {
+          css: assets.css[0],
+          script: assets.js[0],
+          zip: env && env.zip,
+        };
+      },
       inject: false,
     }),
   ].concat(
-    env && logEnv(env.production)
+    env && logEnv(env).production
       ? new webpack.optimize.UglifyJsPlugin({
           include: "elm",
           compress: {

@@ -61,11 +61,11 @@ baseUrl location =
 
         _ ->
             case location.host of
-                "electron" ->
-                    "https://qdice.wtf/api"
+                "localhost" ->
+                    "/api"
 
                 _ ->
-                    "/api"
+                    "https://qdice.wtf/api"
 
 
 init : String -> Url -> Maybe String -> Bool -> ( Model, Cmd Msg )

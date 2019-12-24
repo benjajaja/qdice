@@ -102,6 +102,8 @@ export const server = async () => {
       "https://elm-dice.herokuapp.com",
       "https://*.hwcdn.net",
       "http://electron",
+      "https://*.ungrounded.net",
+      "https://*.konggames.com",
     ],
     allowHeaders: ["authorization"],
     exposeHeaders: ["authorization"],

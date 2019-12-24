@@ -2,10 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <base href="/">
-    <% for (var css in htmlWebpackPlugin.files.css) { %>
-    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
-    <% } %>
+    <% if (!zip) { %><base href="/"><% } %>
+    <link href="<%= css %>" rel="stylesheet">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- fullscreen mode -->
@@ -32,8 +30,6 @@ body{background-color:#38d6ff}
   </head>
   <body>
     <div id="loading-indicator">Loading...</div>
-    <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-    <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>" charset="utf-8"></script>
-    <% } %>
+    <script src="<%= script %>" charset="utf-8"></script>
   </body>
 </html>

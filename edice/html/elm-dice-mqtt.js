@@ -15,16 +15,11 @@ function getMqttConfig() {
       protocol: "ws",
       path: "mqtt",
     };
-  } else if (self.location.hostname === "electron") {
-    return {
-      protocol: "wss",
-      path: "mqtt",
-      hostname: "qdice.wtf",
-    };
   } else {
     return {
       protocol: "wss",
       path: "mqtt",
+      hostname: "qdice.wtf",
     };
   }
 }

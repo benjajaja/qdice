@@ -5,6 +5,7 @@
   "main": "electron.js",
   "scripts": {
     "build": "rm -rf dist/* ; webpack --progress -p --env.production",
+    "build_zip": "rm -rf dist/* ; build_id=$(git rev-parse HEAD) git_log='$(git log --pretty=format:%ad%n%      h%n%s%n%b---)' webpack --progress -p --env.production --env.zip=true && cd dist && zip -r ~/edice.zip .",
     "watch": "webpack --watch",
     "start": "webpack-dev-server",
     "heroku-postbuild": "yarn build",
@@ -57,7 +58,7 @@
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "0.9.0",
     "ga-lite": "^2.0.1",
-    "html-webpack-plugin": "^2.30.1",
+    "html-webpack-plugin": "^3.2.0",
     "materialize-css": "0.97.7",
     "mime-db": "^1.42.0",
     "mime-type": "^3.0.7",
