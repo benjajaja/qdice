@@ -165,7 +165,6 @@ update msg model =
                                 _ ->
                                     Game.State.changeTable model_ table
 
-                        --( model_, Cmd.none )
                         HomeRoute ->
                             ( model_, Routing.goToBestTable model_ )
 

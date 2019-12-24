@@ -110,9 +110,6 @@ routeEnterCmd model route =
         LeaderBoardRoute ->
             leaderBoard model.backend
 
-        HomeRoute ->
-            goToBestTable model
-
         _ ->
             Cmd.none
 
