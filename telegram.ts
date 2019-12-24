@@ -11,8 +11,10 @@ import * as R from "ramda";
 import * as puppeteer from "puppeteer";
 import * as mqtt from "mqtt";
 import * as webPush from "web-push";
+import * as Twitter from "twitter";
 import { rand } from "./rand";
 import * as db from "./db";
+import logger from "./logger";
 
 webPush.setVapidDetails(
   process.env.VAPID_URL!,
@@ -21,6 +23,12 @@ webPush.setVapidDetails(
 );
 
 const telegram = new Telegram(process.env.BOT_TOKEN);
+var twitter = new Twitter({
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+});
 const uid = new ShortUniqueId();
 
 const officialGroups = process.env.BOT_OFFICIAL_GROUPS
@@ -56,7 +64,7 @@ client.on("message", async (topic, message) => {
       lastJoinPlayer = event.player.id;
       // push notifications
       const subscriptions = await db.getPushSubscriptions("player-join");
-      const text = `A player joined table "${event.table}"`;
+      const text = `${event.player.name} joined table "${event.table}"`;
       subscriptions.forEach(async row => {
         if (row.subscription && event.player.id !== row.id) {
           console.log("PN", row.id, event.player.id);
@@ -71,6 +79,17 @@ client.on("message", async (topic, message) => {
           }
         }
       });
+
+      if (process.env.TWITTER_CONSUMER_KEY) {
+        try {
+          await twitter.post("statuses/update", {
+            status: `A game with "${event.player.name}" is about to start at https://qdice.wtf/${event.table}. Play now!`,
+          });
+        } catch (e) {
+          logger.error(e);
+        }
+      }
+
       //if (officialGroups.length) {
       //const { table, players } = event;
       //officialGroups.forEach(id => {
@@ -274,7 +293,7 @@ bot.gameQuery(ctx => {
 
 bot.startPolling();
 
-const subscribed = [208216602] as number[];
+const subscribed = [] as number[];
 bot.command("notifyme", ctx => {
   const index = subscribed.indexOf(ctx.chat.id);
   if (index === -1) {
