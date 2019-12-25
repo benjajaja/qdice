@@ -30,24 +30,22 @@
   "dependencies": {
     "@sentry/node": "5.10.2",
     "@types/async-lock": "^1.1.1",
-    "@types/jest": "^24.0.23",
+    "@types/jest": "24.0.23",
     "@types/jsonwebtoken": "^8.3.5",
-    "@types/node": "^10.12.18",
-    "@types/pg": "^7.4.11",
-    "@types/ramda": "^0.25.46",
-    "@types/restify": "^7.2.7",
+    "@types/node": "10.12.18",
+    "@types/pg": "7.4.11",
+    "@types/ramda": "0.25.46",
+    "@types/restify": "7.2.7",
     "@types/seedrandom": "^2.4.28",
     "@types/web-push": "^3.3.0",
     "async-lock": "^1.2.2",
     "camelize": "^1.0.0",
     "decamelize": "^2.0.0",
-    "jest": "^24.9.0",
     "jsonwebtoken": "^8.1.0",
     "mqtt": "^2.9.1",
     "pg": "^7.4.0",
     "pino": "^5.10.6",
     "pino-pretty": "^2.5.0",
-    "prettier": "1.19.1",
     "puppeteer": "^2.0.0",
     "ramda": "^0.25.0",
     "request": "^2.83.0",
@@ -59,13 +57,14 @@
     "short-unique-id": "^1.1.0",
     "sleep-promise": "^8.0.1",
     "telegraf": "^3.17.2",
-    "ts-jest": "^24.2.0",
     "ts-node": "^7.0.1",
     "twitter": "^1.7.1",
     "typescript": "^3.7.2",
     "web-push": "^3.4.3"
   },
   "devDependencies": {
-    "mocha": "^4.0.1"
+    "jest": "^24.9.0",
+    "prettier": "^1.19.1",
+    "ts-jest": "^24.2.0"
   }
 }
