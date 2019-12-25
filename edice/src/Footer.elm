@@ -17,6 +17,8 @@ footer model =
                     links1 model.user
                 , div [ class "edFooter--box edFooter--box__links" ] <|
                     links2 model.user
+                , div [ class "edFooter--box edFooter--box__links" ] <|
+                    links3 model.user
                 ]
             , div [ class "edFooter--row" ]
                 [ statusMessage model.backend.version model.backend.status
@@ -27,31 +29,44 @@ footer model =
 
 links1 : User -> List (Html Msg)
 links1 user =
-    [ link "/" "Play" "play_arrow"
+    [ link "/" "Play!" "casino"
     , case user of
         Anonymous ->
             span [ onClick <| ShowLogin LoginShow, class "edFooter--box__link" ] [ i [ class "material-icons" ] [ text "account_circle" ], text "Login" ]
 
         Logged _ ->
-            link "/me" "Account" "account_circle"
+            link "/me" "Account & Settings" "account_circle"
     , link "/leaderboard" "Leaderboard" "list"
     ]
 
 
 links2 : User -> List (Html Msg)
 links2 user =
+    [ link "/static/help" "Gameplay & Rules" "help"
+    , link "/static/about" "About qdice" "info"
+    , link "/static/changelog" "Changelog" "call_merge"
+    ]
+
+
+links3 : User -> List (Html Msg)
+links3 user =
     [ a [ href "https://www.reddit.com/r/Qdice/", class "edFooter--box__link" ]
         [ i [ class "material-icons" ] [ text "group_work" ]
-        , text "Community"
+        , text "Reddit"
         ]
 
     --, a [ href "https://t.me/joinchat/DGkiGhEYyjf8bauoWkAGNA", class "edFooter--box__link" ]
     --[ i [ class "material-icons" ] [ text "chat" ]
     --, text "Telegram group"
     --]
-    , link "/static/help" "Rules" "help"
-    , link "/static/about" "About" "info"
-    , link "/static/changelog" "Changelog" "new_releases"
+    , a [ href "https://twitter.com/qdicewtf", class "edFooter--box__link" ]
+        [ i [ class "material-icons" ] [ text "receipt" ]
+        , text "Twitter"
+        ]
+    , a [ href "mailto:ste3ls+qdicewtf@gmail.com", class "edFooter--box__link" ]
+        [ i [ class "material-icons" ] [ text "email" ]
+        , text "Email"
+        ]
     ]
 
 

@@ -441,7 +441,6 @@ RETURNING *`;
     );
     throw new Error("got undefined db value, use null");
   }
-  logger.debug(`${name.length < 64 ? "cached" : "uncached"} query: ${name}`);
   const result =
     name.length < 64
       ? await client.query({ name, text, values })
