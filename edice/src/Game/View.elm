@@ -380,11 +380,8 @@ playerBox model =
 
                 Anonymous ->
                     [ div [] [ text "You're not logged in." ]
-                    , a
-                        [ href "#"
-                        , preventDefaultOn "click" <|
-                            succeed <|
-                                ( ShowLogin Types.LoginShow, False )
+                    , button
+                        [ onClick <| ShowLogin Types.LoginShow
                         ]
                         [ text "Pick a username" ]
                     ]

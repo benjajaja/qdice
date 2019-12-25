@@ -110,6 +110,13 @@ routeEnterCmd model route =
         LeaderBoardRoute ->
             leaderBoard model.backend
 
+        HomeRoute ->
+            if List.length model.tableList > 0 then
+                goToBestTable model
+
+            else
+                Cmd.none
+
         _ ->
             Cmd.none
 
