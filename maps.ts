@@ -1,15 +1,9 @@
 import * as R from "ramda";
-import { Grid, HEX_ORIENTATIONS } from "honeycomb-grid";
 import logger from "./logger";
 import { Adjacency, Land, Emoji, Color } from "./types";
 import { COLOR_NEUTRAL } from "./constants";
 
 import * as mapJson from "./map-sources.json";
-
-const grid = Grid({
-  size: 100,
-  orientation: HEX_ORIENTATIONS.POINTY,
-});
 
 export const loadMap = (mapName: string): [Land[], Adjacency, string] => {
   const { lands, adjacency, name } = mapJson.maps[mapName];
