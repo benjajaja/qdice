@@ -79,15 +79,16 @@ export const getUser = async (id: UserId): Promise<User> => {
 };
 
 export const getUserRows = async (id: UserId) => {
-  const user = await client.query(
-    `
+  const user = await client.query({
+    name: "user-rows",
+    text: `
 SELECT a.*, (SELECT COUNT(*) + 1 FROM users b WHERE b.points > a.points) AS rank
 FROM users a
 LEFT JOIN authorizations ON authorizations.user_id = a.id
 WHERE a.id = $1
 `,
-    [id]
-  );
+    values: [id],
+  });
   return user.rows;
 };
 
@@ -96,10 +97,12 @@ export const getUserFromAuthorization = async (
   id: UserId
 ) => {
   try {
-    const res = await client.query(
-      "SELECT * FROM authorizations WHERE network = $1 AND network_id = $2",
-      [network, id]
-    );
+    const res = await client.query({
+      name: "authorizations",
+      text:
+        "SELECT * FROM authorizations WHERE network = $1 AND network_id = $2",
+      values: [network, id],
+    });
     if (res.rows.length === 0) {
       return undefined;
     }
@@ -111,14 +114,15 @@ export const getUserFromAuthorization = async (
 };
 
 export const getPreferences = async (id: UserId) => {
-  const res = await client.query(
-    `SELECT users.preferences, push_subscribed_events."event" AS "event"
+  const res = await client.query({
+    name: "preferences",
+    text: `SELECT users.preferences, push_subscribed_events."event" AS "event"
     FROM users
     LEFT JOIN push_subscribed_events
     ON push_subscribed_events.user_id = users.id
     WHERE users.id = $1`,
-    [id]
-  );
+    values: [id],
+  });
   const preferences = res.rows[0]?.preferences ?? {};
   return {
     pushSubscribed: res.rows.filter(row => row.event).map(row => row.event),
@@ -294,14 +298,15 @@ export const addScore = async (id: UserId, score: number) => {
 };
 
 export const leaderBoardTop = async (limit = 100, page = 1) => {
-  const result = await client.query(
-    `
+  const result = await client.query({
+    name: "leaderboard",
+    text: `
 SELECT id, name, picture, points, level, ROW_NUMBER () OVER (ORDER BY points DESC) AS rank
 FROM users
 ORDER BY points DESC
 LIMIT $1 OFFSET $2`,
-    [limit, limit * Math.max(0, page - 1)]
-  );
+    values: [limit, limit * Math.max(0, page - 1)],
+  });
   return result.rows.map(row => ({
     ...row,
     id: row.id.toString(),
@@ -343,14 +348,15 @@ export const userProfile = (rows: any[]): User => {
 };
 
 export const getTable = async (tag: string) => {
-  const result = await client.query(
-    `
+  const result = await client.query({
+    name: "table",
+    text: `
 SELECT *
 FROM tables
 WHERE tag = $1
 LIMIT 1`,
-    [tag]
-  );
+    values: [tag],
+  });
   const row = camelize(result.rows.pop());
   if (!row) {
     return null;
@@ -419,10 +425,11 @@ export const saveTable = async (
     .concat(lands ? ["lands"] : [])
     .concat(watching ? ["watching"] : []);
   const columns = propColumns.concat(extra);
-
-  const query = `
+  const decamelizedColumns = columns.map(column => decamelize(column));
+  const name = "W" + decamelizedColumns.join("-");
+  const text = `
 UPDATE tables
-SET (${columns.map(column => decamelize(column)).join(", ")})
+SET (${decamelizedColumns.join(", ")})
   = (${columns.map((_, i) => `$${i + 2}`).join(", ")})
 WHERE tag = $1
 RETURNING *`;
@@ -434,15 +441,22 @@ RETURNING *`;
     );
     throw new Error("got undefined db value, use null");
   }
-  const result = await client.query(query, values);
+  logger.debug(`${name.length < 64 ? "cached" : "uncached"} query: ${name}`);
+  const result =
+    name.length < 64
+      ? await client.query({ name, text, values })
+      : await client.query(text, values);
   return camelize(result.rows.pop());
 };
 
 export const getTablesStatus = async (): Promise<any> => {
-  const result = await client.query(`
+  const result = await client.query({
+    name: "tables-status",
+    text: `
 SELECT tag, name, map_name, stack_size, status, player_slots, start_slots, points, players, watching, params
 FROM tables
-LIMIT 100`);
+LIMIT 100`,
+  });
   return result.rows.map(camelize);
 };
 
@@ -450,15 +464,16 @@ export const deleteTable = async (tag: string): Promise<any> =>
   await client.query("DELETE FROM tables WHERE tag = $1", [tag]);
 
 export const getPushSubscriptions = async (event: string) => {
-  const res = await client.query(
-    `SELECT users.id, users.name, push_subscribed_events."event" AS "event", push_subscriptions.subscription
+  const res = await client.query({
+    name: "push-subscriptions",
+    text: `SELECT users.id, users.name, push_subscribed_events."event" AS "event", push_subscriptions.subscription
     FROM users
     LEFT JOIN push_subscribed_events
     ON push_subscribed_events.user_id = users.id
     LEFT JOIN push_subscriptions
     ON push_subscriptions.user_id = users.id
     WHERE push_subscribed_events."event" = $1`,
-    [event]
-  );
+    values: [event],
+  });
   return res.rows;
 };
