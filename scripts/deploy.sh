@@ -8,5 +8,6 @@ ssh -tt gipsy@qdice.wtf <<'ENDSSH'
 cd nodice
 docker-compose pull nodice
 ./scripts/restart.sh
+docker image prune -f &
 exit 0
 ENDSSH
