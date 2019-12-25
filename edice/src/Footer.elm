@@ -63,9 +63,9 @@ links3 user =
         [ i [ class "material-icons" ] [ text "receipt" ]
         , text "Twitter"
         ]
-    , a [ href "mailto:ste3ls+qdicewtf@gmail.com", class "edFooter--box__link" ]
-        [ i [ class "material-icons" ] [ text "email" ]
-        , text "Email"
+    , a [ href "https://discord.gg/E2m3Gra", class "edFooter--box__link" ]
+        [ i [ class "material-icons" ] [ text "headset_mic" ]
+        , text "Discord"
         ]
     ]
 
