@@ -68,6 +68,7 @@ export const addBots = (table: Table): CommandResult => {
     networks: [],
     claimed: true,
     voted: [],
+    awards: [],
   };
   const players = table.players.concat([
     {

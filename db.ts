@@ -329,6 +329,7 @@ export const userProfile = (rows: any[]): User => {
     rank,
     preferences,
     voted,
+    awards,
   } = rows[0];
   return {
     id: id.toString(),
@@ -344,6 +345,7 @@ export const userProfile = (rows: any[]): User => {
     rank: parseInt(rank, 10),
     networks: rows.map(row => row.network || "password"),
     voted,
+    awards,
   };
 };
 

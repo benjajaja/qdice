@@ -81,10 +81,11 @@ export type UserLike = {
 
 export type User = UserLike & {
   readonly email: string;
-  readonly networks: ReadonlyArray<string>;
+  readonly networks: readonly string[];
   readonly claimed: boolean;
   readonly levelPoints: number;
   readonly voted: string[];
+  readonly awards: readonly Award[];
 };
 
 export type Player = UserLike & {
@@ -106,6 +107,12 @@ export type Player = UserLike & {
 export type Preferences = {};
 
 export type PushNotificationEvents = "game-start";
+
+export type Award = {
+  type: "monthly_rank" | "early_adopter";
+  position: number;
+  timestamp: Date;
+};
 
 export type Watcher = {
   clientId: any;
