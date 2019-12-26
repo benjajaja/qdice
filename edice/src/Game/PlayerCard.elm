@@ -1,5 +1,6 @@
 module Game.PlayerCard exposing (view)
 
+import Awards
 import Board.Colors
 import Color
 import Color.Accessibility
@@ -37,6 +38,18 @@ view model offset i player =
                     )
                 ]
                 [ text player.name ]
+            , div
+                [ class "edPlayerChip__playerStats"
+                , style "background-color" <| Board.Colors.baseCssRgb player.color
+                , style "color" <|
+                    (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
+                        [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
+                        |> Maybe.withDefault (Color.rgb255 0 0 0)
+                        |> Board.Colors.cssRgb
+                    )
+                ]
+              <|
+                playerStats player
             , div [ class "edPlayerChip__gameStats" ] <|
                 gameStats
                     model
@@ -96,19 +109,16 @@ gameStats model player =
             ]
 
 
-
---[ Html.div [ class "edPlayerChip__gameStats__item" ]
---[ Html.text <| "✪ " ++ String.fromInt player.points ]
---, Html.div [ class "edPlayerChip__gameStats__item" ]
---[ Html.text <|
---(if player.gameStats.score >= 0 then
---"✪+"
---else
---"✪"
---)
---++ String.fromInt player.gameStats.score
---]
---]
+playerStats : Player -> List (Html Msg)
+playerStats player =
+    [ Html.div [ class "edPlayerChip__gameStats__item" ]
+        [ Html.text <| String.fromInt player.level ++ "▲"
+        ]
+    , Html.div [ class "edPlayerChip__gameStats__item" ]
+        [ Html.text <| String.fromInt player.points ++ pointsSymbol
+        ]
+    ]
+        ++ Awards.awardsShortList 10 player.awards
 
 
 playerContainer player hasTurn =

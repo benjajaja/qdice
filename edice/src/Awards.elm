@@ -1,28 +1,30 @@
 module Awards exposing (awardsShortList)
 
+import Game.Types exposing (Award)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Svg exposing (svg, use)
 import Svg.Attributes
-import Types exposing (Award, LoggedUser, Msg(..))
+import Types exposing (Msg(..))
 
 
-awardsShortList : LoggedUser -> List (Html Msg)
-awardsShortList user =
-    if List.length user.awards > 0 then
-        List.map awardIcon user.awards
+awardsShortList : Int -> List Award -> List (Html Msg)
+awardsShortList size awards =
+    if List.length awards > 0 then
+        List.map (awardIcon size) awards
 
     else
         []
 
 
-awardIcon : Award -> Html Msg
-awardIcon award =
+awardIcon : Int -> Award -> Html Msg
+awardIcon size award =
     svg
         [ Svg.Attributes.viewBox "0 0 100 100"
         , Svg.Attributes.fill "currentColor"
-        , Svg.Attributes.width "20"
-        , Svg.Attributes.height "20"
+        , Svg.Attributes.width <| String.fromInt size
+        , Svg.Attributes.height <| String.fromInt size
+        , Svg.Attributes.style "background:white;border-radius:50%; color: black"
         ]
     <|
         [ Svg.use
@@ -52,7 +54,7 @@ awardFill award =
                     "darkgrey"
 
         _ ->
-            "black"
+            "#222222"
 
 
 awardSvgId : Award -> String
@@ -77,7 +79,7 @@ awardText award =
                 , Svg.Attributes.y "50%"
                 , Svg.Attributes.textAnchor "middle"
                 , Svg.Attributes.alignmentBaseline "middle"
-                , Svg.Attributes.fontSize "3.5em"
+                , Svg.Attributes.fontSize "5em"
                 ]
                 [ Svg.text <| String.fromInt <| award.position
                 ]

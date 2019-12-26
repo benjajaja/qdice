@@ -312,8 +312,8 @@ button .material-icons, .edButton .material-icons {
   justify-content: flex-start;
   flex-wrap: nowrap;
   flex-grow: 2;
-  height: 38px;
-  padding-right: 38px; /* hack */
+  height: 48px;
+  padding-right: 48px; /* hack */
   transform: translate(0,0); /* z-index hack */
 }
 .edPlayerChip {
@@ -331,7 +331,7 @@ button .material-icons, .edButton .material-icons {
 .edPlayerChip__info {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   background: #ffffff;
   flex: 1 1;
   white-space: nowrap;
@@ -343,8 +343,8 @@ button .material-icons, .edButton .material-icons {
   background-color: darkred;
 }
 .edPlayerChip__picture {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   position: relative;
   background: #ffffff;
@@ -353,10 +353,10 @@ button .material-icons, .edButton .material-icons {
 }
 .edPlayerChip__picture__image {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  bottom: 3px;
-  right: 3px;
+  top: 4px;
+  left: 4px;
+  bottom: 4px;
+  right: 4px;
   border: none;
   border-radius: 50%;
   white-space: nowrap;
@@ -388,6 +388,7 @@ button .material-icons, .edButton .material-icons {
 }
 .edPlayerChip__gameStats {
   display: flex;
+  margin-top: auto;
   flex-direction: row;
   flex-wrap: no-wrap;
   align-items: flex-start;
@@ -400,6 +401,19 @@ button .material-icons, .edButton .material-icons {
 }
 .edPlayerChip_clock {
 }
+.edPlayerChip__playerStats {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: no-wrap;
+  align-items: flex-start;
+  padding: 0 4px;
+  font-size: 0.55rem;
+  background: #ffffff;
+}
+.edPlayerChip__playerStats > * {
+  margin-right: 4px;
+}
+
 
 .edPlayerChip--out .edPlayerChip__picture__image {
   filter: grayscale(100%);

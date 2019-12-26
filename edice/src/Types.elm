@@ -1,11 +1,11 @@
-module Types exposing (AuthNetwork(..), AuthState, Award, Flags, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, Flags, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
 
 import Animation
 import Backend.Types
 import Board
 import Browser
 import Browser.Navigation exposing (Key)
-import Game.Types exposing (PlayerAction, TableInfo)
+import Game.Types exposing (Award, PlayerAction, TableInfo)
 import Http exposing (Error)
 import MyProfile.Types
 import OAuth
@@ -144,13 +144,6 @@ type alias LoggedUser =
 
 type alias UserPreferences =
     {}
-
-
-type alias Award =
-    { type_ : String
-    , position : Int
-    , timestamp : String
-    }
 
 
 type AuthNetwork

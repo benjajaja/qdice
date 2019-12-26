@@ -1,12 +1,12 @@
 module Backend.Decoding exposing (accknowledgeDecoder, authStateDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, singleRollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, userDecoder)
 
 import Board.Types
-import Game.Types exposing (Player, PlayerGameStats, TableParams, TableStatus)
+import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus)
 import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, int, list, map, map2, map3, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, Award, LoggedUser, Preferences, Profile, PushEvent(..), SessionPreferences)
+import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Preferences, Profile, PushEvent(..), SessionPreferences)
 
 
 stringDecoder : Decoder String
@@ -140,6 +140,7 @@ playersDecoder =
         |> required "reserveDice" int
         |> required "points" int
         |> required "level" int
+        |> required "awards" (list awardDecoder)
         |> required "flag" (nullable int)
         |> required "ready" bool
 

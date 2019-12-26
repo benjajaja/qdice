@@ -95,6 +95,7 @@ export type Player = UserLike & {
   readonly out: boolean;
   readonly outTurns: number;
   readonly points: number;
+  readonly awards: readonly Award[];
   readonly position: number;
   readonly score: number;
   readonly flag: number | null;

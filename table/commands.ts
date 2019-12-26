@@ -114,6 +114,7 @@ export const makePlayer = (
   out: false,
   outTurns: 0,
   points: user.points,
+  awards: user.awards,
   rank: user.rank,
   level: user.level,
   position: 0,

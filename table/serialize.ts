@@ -53,6 +53,7 @@ export const serializePlayer = (table: Table) => {
         "score",
         "flag",
         "ready",
+        "awards",
       ])(player),
       { derived: derived(player) }
     );

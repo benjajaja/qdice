@@ -302,9 +302,9 @@ playerBox model =
             case model.user of
                 Logged user ->
                     [ div [ class "edPlayerBox__Name" ] [ text user.name ]
-                    , div [ class "edPlayerBox__stat" ] [ text "Level: ", text <| String.fromInt user.level ]
+                    , div [ class "edPlayerBox__stat" ] [ text "Level: ", text <| String.fromInt user.level ++ "▲" ]
                     , if List.length user.awards > 0 then
-                        div [ class "edPlayerBox__awards" ] <| Awards.awardsShortList user
+                        div [ class "edPlayerBox__awards" ] <| Awards.awardsShortList 20 user.awards
 
                       else
                         text ""

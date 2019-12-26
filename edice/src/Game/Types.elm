@@ -1,4 +1,4 @@
-module Game.Types exposing (ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, makePlayer, statusToIcon, statusToString)
+module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, makePlayer, statusToIcon, statusToString)
 
 import Board exposing (LandUpdate)
 import Browser.Dom as Dom
@@ -67,6 +67,7 @@ type alias Player =
     , reserveDice : Int
     , points : Int
     , level : Int
+    , awards : List Award
     , flag : Maybe Int
     , ready : Bool
     }
@@ -191,6 +192,13 @@ type EliminationReason
     | ReasonFlag Int
 
 
+type alias Award =
+    { type_ : String
+    , position : Int
+    , timestamp : String
+    }
+
+
 makePlayer : String -> Player
 makePlayer name =
     { id = ""
@@ -200,6 +208,7 @@ makePlayer name =
     , out = False
     , points = 0
     , level = 0
+    , awards = []
     , gameStats =
         { totalLands = 0
         , connectedLands = 0
