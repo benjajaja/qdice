@@ -35,15 +35,24 @@ var ga = function() {};
 var Elm = require("../src/App").Elm;
 
 var isTelegram = typeof TelegramWebviewProxy === "object";
-var token =
-  window.location.hash.indexOf("#access_token=") !== 0
-    ? localStorage.getItem("jwt_token")
-    : null;
+var token = null;
+try {
+  if (window.location.hash.indexOf("#access_token=") !== 0) {
+    token = localStorage.getItem("jwt_token");
+  }
+} catch (e) {
+  Sentry.captureException(e);
+}
+
 var notificationsEnabled = false;
 if ("Notification" in window) {
-  notificationsEnabled =
-    Notification.permission === "granted" &&
-    localStorage.getItem("notifications") === "2";
+  try {
+    notificationsEnabled =
+      Notification.permission === "granted" &&
+      localStorage.getItem("notifications") === "2";
+  } catch (e) {
+    Sentry.captureException(e);
+  }
 }
 
 var app = Elm.App.init({
@@ -342,11 +351,15 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-if (localStorage.getItem("notifications") === "1") {
-  // this was a hotfix in production
-  snackbar.show({
-    text: 'Please click "Enable notifications" one more time',
-    pos: "bottom-center",
-    actionTextColor: "#38d6ff",
-  });
+try {
+  if (localStorage.getItem("notifications") === "1") {
+    // this was a hotfix in production
+    snackbar.show({
+      text: 'Please click "Enable notifications" one more time',
+      pos: "bottom-center",
+      actionTextColor: "#38d6ff",
+    });
+  }
+} catch (e) {
+  Sentry.captureException(e);
 }
