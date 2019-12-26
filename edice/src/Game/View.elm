@@ -1,5 +1,6 @@
 module Game.View exposing (view)
 
+import Awards
 import Backend.Types exposing (ConnectionStatus(..))
 import Board
 import Game.Chat
@@ -302,6 +303,11 @@ playerBox model =
                 Logged user ->
                     [ div [ class "edPlayerBox__Name" ] [ text user.name ]
                     , div [ class "edPlayerBox__stat" ] [ text "Level: ", text <| String.fromInt user.level ]
+                    , if List.length user.awards > 0 then
+                        div [ class "edPlayerBox__awards" ] <| Awards.awardsShortList user
+
+                      else
+                        text ""
                     , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ++ pointsSymbol ]
                     , div [ class "edPlayerBox__stat" ]
                         [ text <| (String.fromInt <| pointsToNextLevel user.level user.levelPoints) ++ pointsSymbol

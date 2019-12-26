@@ -1,4 +1,4 @@
-module Types exposing (AuthNetwork(..), AuthState, Flags, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, Award, Flags, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
 
 import Animation
 import Backend.Types
@@ -138,11 +138,19 @@ type alias LoggedUser =
     , claimed : Bool
     , networks : List AuthNetwork
     , voted : List String
+    , awards : List Award
     }
 
 
 type alias UserPreferences =
     {}
+
+
+type alias Award =
+    { type_ : String
+    , position : Int
+    , timestamp : String
+    }
 
 
 type AuthNetwork

@@ -6,7 +6,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, 
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Preferences, Profile, PushEvent(..), SessionPreferences)
+import Types exposing (AuthNetwork(..), AuthState, Award, LoggedUser, Preferences, Profile, PushEvent(..), SessionPreferences)
 
 
 stringDecoder : Decoder String
@@ -28,6 +28,7 @@ userDecoder =
         |> required "claimed" bool
         |> required "networks" (list authNetworkDecoder)
         |> required "voted" (list string)
+        |> required "awards" (list awardDecoder)
 
 
 authNetworkDecoder : Decoder AuthNetwork
@@ -62,6 +63,14 @@ preferencesDecoder : Decoder Preferences
 preferencesDecoder =
     succeed Preferences
         |> required "pushSubscribed" (list pushEventDecoder)
+
+
+awardDecoder : Decoder Award
+awardDecoder =
+    succeed Award
+        |> required "type" string
+        |> required "position" int
+        |> required "timestamp" string
 
 
 pushEventDecoder : Decoder PushEvent

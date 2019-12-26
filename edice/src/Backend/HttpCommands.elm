@@ -96,6 +96,7 @@ login model name =
             , claimed = False
             , networks = [ Password ]
             , voted = []
+            , awards = []
             }
 
         state =
