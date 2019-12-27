@@ -5,10 +5,7 @@ import {
   User,
   Persona,
   Player,
-  Land,
-  BotStrategy,
   BotPlayer,
-  Color,
   BotState,
   IllegalMoveError,
 } from "../types";
@@ -21,7 +18,7 @@ import { makePlayer, flag } from "./commands";
 import nextTurn from "./turn";
 import { isBorder } from "../maps";
 import { findLand, groupedPlayerPositions } from "../helpers";
-import { defaultPreferences } from "../user";
+import { move, Source } from "./bot_strategies";
 
 const defaultPersona: Persona = {
   name: "Personality",
@@ -131,7 +128,7 @@ export const tickBotTurn = (table: Table): CommandResult => {
     return botNextTurn(table, player);
   }
 
-  const attack = strategies(player.bot.strategy)(sources, player, table);
+  const attack = move(player.bot.strategy)(sources, player, table);
 
   if (attack === null) {
     return botNextTurn(table, player);
@@ -204,9 +201,6 @@ export const botsNotifyAttack = (table: Table): readonly Player[] =>
     return player;
   });
 
-type Source = { source: Land; targets: Land[] };
-type Attack = { from: Land; to: Land; wheight: number };
-
 const botSources = (table: Table, player: Player): Source[] => {
   const otherLands = table.lands.filter(other => other.color !== player.color);
   return shuffle(
@@ -220,85 +214,3 @@ const botSources = (table: Table, player: Player): Source[] => {
     }))
     .filter(attack => attack.targets.length > 0);
 };
-
-const strategies = (strategy: BotStrategy) => {
-  switch (strategy) {
-    default:
-    case "RandomCareful":
-      return (sources: Source[], _: BotPlayer, __: Table) =>
-        sources.reduce<Attack | null>(
-          (attack, { source, targets }) =>
-            targets.reduce((attack, target) => {
-              const bestChance = attack ? attack.wheight : -Infinity;
-              // >
-              const thisChance = source.points - target.points;
-              if (thisChance > bestChance) {
-                if (thisChance > 0) {
-                  if (canAttackSucceed(source, target)) {
-                    return { from: source, to: target, wheight: thisChance };
-                  }
-                }
-              }
-              // <
-              return attack;
-            }, attack),
-          null
-        );
-
-    case "RandomCareless":
-      return (sources: Source[], _: BotPlayer, __: Table) =>
-        sources.reduce<Attack | null>(
-          (attack, { source, targets }) =>
-            targets.reduce((attack, target) => {
-              const bestChance = attack ? attack.wheight : -Infinity;
-              // >
-              const thisChance = source.points - target.points;
-              if (thisChance > bestChance) {
-                return { from: source, to: target, wheight: thisChance };
-              }
-              // <
-              return attack;
-            }, attack),
-          null
-        );
-
-    case "Revengeful":
-      return (sources: Source[], player: BotPlayer, table: Table) =>
-        sources.reduce<Attack | null>(
-          (attack, { source, targets }) =>
-            targets.reduce((attack, target) => {
-              const bestChance = attack ? attack.wheight : -Infinity;
-              // >
-              const lastAgressorColor =
-                table.players.find(p => p.id === player.bot.state.lastAgressor)
-                  ?.color ?? null;
-
-              if (lastAgressorColor) {
-                if (target.color === lastAgressorColor) {
-                  const thisChance = source.points - target.points;
-                  if (thisChance > bestChance) {
-                    if (canAttackSucceed(source, target)) {
-                      return { from: source, to: target, wheight: thisChance };
-                    }
-                  }
-                }
-              } else if (target.color === Color.Neutral) {
-                const thisChance = source.points - target.points;
-                if (thisChance > bestChance) {
-                  if (thisChance > 1) {
-                    if (canAttackSucceed(source, target)) {
-                      return { from: source, to: target, wheight: thisChance };
-                    }
-                  }
-                }
-              }
-              // <
-              return attack;
-            }, attack),
-          null
-        );
-  }
-};
-
-const canAttackSucceed = (from: Land, to: Land) =>
-  from.points * 6 > to.points * 1;
