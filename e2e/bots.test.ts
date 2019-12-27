@@ -78,6 +78,18 @@ describe("A game with bots", () => {
     await attack(page, "land-🌙", "land-👑", "A");
     await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
+    await hisTurn(page, "A");
+    await attack(page, "land-👑", "land-🏰", "A");
+    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page, "A");
+    await attack(page, "land-👑", "land-🏰", "A");
+    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page, "A");
+    await attack(page, "land-👑", "land-🏰", "A");
+    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+
     // await hisTurn(page, "A");
     // await attack(page, "land-🍷", "land-🐸", "A");
     // await attack(page, "land-🏰", "land-🎩", "A");
