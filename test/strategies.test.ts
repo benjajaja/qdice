@@ -57,7 +57,13 @@ describe("Move tactics", function() {
       assert.deepEqual(attack.to, sources[0].targets[0]);
     });
     it("Revengeful should not attack", () => {
-      const attack = move("Revengeful")(sources, mkBotPlayer(), mkTable())!;
+      const attack = move("Revengeful")(
+        sources,
+        mkBotPlayer(),
+        mkTable({
+          lands: [mkLand(4, Color.Red)],
+        })
+      )!;
       assert.strictEqual(null, attack);
     });
   });
@@ -79,7 +85,13 @@ describe("Move tactics", function() {
       assert.deepEqual(attack.to, sources[0].targets[0]);
     });
     it("Revengeful should not attack", () => {
-      const attack = move("Revengeful")(sources, mkBotPlayer(), mkTable())!;
+      const attack = move("Revengeful")(
+        sources,
+        mkBotPlayer(),
+        mkTable({
+          lands: [mkLand(4, Color.Red)],
+        })
+      )!;
       assert.strictEqual(null, attack);
     });
   });
@@ -91,6 +103,7 @@ describe("Pick tactic from strategy", () => {
       const bot = mkBotPlayer();
       const table = mkTable({
         players: [bot, mkPlayer(Color.Blue), mkPlayer(Color.Green)],
+        lands: [mkLand(4, bot.color)],
       });
       bot.bot.state.lastAgressor = table.players[1].id;
       const tactic = pickTactic("Revengeful", bot, table);
@@ -101,16 +114,16 @@ describe("Pick tactic from strategy", () => {
       const bot = mkBotPlayer();
       const table = mkTable({
         players: [bot, mkPlayer(Color.Blue), mkPlayer(Color.Green)],
+        lands: [mkLand(4, bot.color)],
       });
       const tactic = pickTactic("Revengeful", bot, table);
-      console.debug(tactic);
       assert.strictEqual(tactic.name, "focusColor");
       assert.strictEqual(
-        tactic(-Infinity, mkLand(8, Color.Red), mkLand(1, Color.Blue)),
+        tactic(-Infinity, mkLand(4, Color.Red), mkLand(1, Color.Blue)),
         undefined
       );
       assert.ok(
-        tactic(-Infinity, mkLand(8, Color.Red), mkLand(1, Color.Neutral)) !==
+        tactic(-Infinity, mkLand(4, Color.Red), mkLand(1, Color.Neutral)) !==
           undefined
       );
     });

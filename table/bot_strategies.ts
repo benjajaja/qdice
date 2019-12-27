@@ -61,6 +61,14 @@ export const pickTactic = (
       const lastAgressorColor =
         table.players.find(p => p.id === player.bot.state.lastAgressor)
           ?.color ?? null;
+
+      if (
+        table.lands
+          .filter(l => l.color === player.color)
+          .every(l => l.points === table.stackSize)
+      ) {
+        return tactics.careless;
+      }
       if (table.players.length > 2) {
         return tactics.focusColor(lastAgressorColor ?? Color.Neutral);
       }
