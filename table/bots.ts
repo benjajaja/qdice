@@ -102,13 +102,33 @@ export const tickBotTurn = (table: Table): CommandResult => {
     throw new Error("cannot tick non-bot");
   }
 
+  const positions = groupedPlayerPositions(table);
+  const position = positions(player);
   if (
     table.players.every(p => p.bot !== null) ||
     player.bot.state.deadlockCount > BOT_DEADLOCK_MAX
   ) {
-    const positions = groupedPlayerPositions(table);
-    const position = positions(player);
     if (position > 1) {
+      try {
+        return flag(player, table);
+      } catch (e) {
+        logger.error("could not flag bot:", e);
+        if (e instanceof IllegalMoveError) {
+          return botNextTurn(table, player);
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+  if (table.roundCount >= 10 && table.players.length === 2 && position === 2) {
+    const otherPlayer = table.players.find(
+      other => other.color !== player.color
+    )!;
+    if (
+      table.lands.filter(land => land.color === otherPlayer.color) >=
+      table.lands.filter(land => land.color === player.color)
+    ) {
       try {
         return flag(player, table);
       } catch (e) {
