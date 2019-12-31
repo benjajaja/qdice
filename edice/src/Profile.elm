@@ -10,7 +10,7 @@ import Types exposing (..)
 
 view : Model -> UserId -> String -> Html Msg
 view model id name =
-    div [ class "edPlayerBox" ]
+    div [ class "" ]
         [ div [ class "edPlayerBox__inner" ] <|
             playerBox <|
                 Maybe.withDefault

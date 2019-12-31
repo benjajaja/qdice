@@ -371,6 +371,7 @@ button .material-icons, .edButton .material-icons {
   justify-content: center;
 }
 .edPlayerChip__name {
+  text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

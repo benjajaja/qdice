@@ -40,7 +40,7 @@ export const login = (req, res, next) => {
     })
     .catch(e => {
       logger.error("login error", e.toString());
-      next(errs.InternalError("could not load profile"));
+      next(new errs.InternalError("could not load profile"));
     });
 };
 

@@ -18,6 +18,7 @@ import Game.View
 import Helpers exposing (httpErrorToString, pipeUpdates)
 import Html
 import Html.Attributes
+import Http exposing (Error(..))
 import LeaderBoard.State
 import LeaderBoard.View
 import LoginDialog exposing (loginDialog)
@@ -257,9 +258,23 @@ update msg model =
         GetOtherProfile res ->
             case res of
                 Err err ->
-                    ( model
-                    , toastError "Could fetch profile" <| httpErrorToString err
-                    )
+                    case err of
+                        BadStatus status ->
+                            case status of
+                                409 ->
+                                    ( model
+                                    , toastError "This is a bot, nothing to see here." <| httpErrorToString err
+                                    )
+
+                                _ ->
+                                    ( model
+                                    , toastError "Could not fetch profile" <| httpErrorToString err
+                                    )
+
+                        _ ->
+                            ( model
+                            , toastError "Could not fetch profile" <| httpErrorToString err
+                            )
 
                 Ok profile ->
                     ( { model | otherProfile = Just profile }
@@ -659,7 +674,7 @@ mainView model =
                         Html.text "You are not logged in."
 
                     Logged user ->
-                        MyProfile.MyProfile.view model.myProfile user
+                        MyProfile.MyProfile.view model.myProfile user model.preferences model.sessionPreferences
                 ]
 
         TokenRoute token ->

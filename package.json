@@ -36,6 +36,7 @@
     "@types/pg": "7.4.11",
     "@types/ramda": "0.25.46",
     "@types/restify": "7.2.7",
+    "@types/restify-errors": "^4.3.3",
     "@types/seedrandom": "^2.4.28",
     "@types/web-push": "^3.3.0",
     "async-lock": "^1.2.2",

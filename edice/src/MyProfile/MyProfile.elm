@@ -4,32 +4,32 @@ import Backend.HttpCommands
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Icon
 import MyOauth exposing (saveToken)
 import MyProfile.Types exposing (..)
 import Routing exposing (navigateTo)
 import Snackbar exposing (toastError)
-import Types exposing (AuthNetwork(..), LoggedUser, Model, Msg(..), Route(..), User(..))
+import Types exposing (AuthNetwork(..), LoggedUser, Model, Msg(..), PushEvent(..), Route(..), User(..))
 
 
-view : MyProfileModel -> LoggedUser -> Html Msg
-view model user =
+view : MyProfileModel -> LoggedUser -> Types.Preferences -> Types.SessionPreferences -> Html Msg
+view model user preferences sessionPreferences =
     div [ class "edPage" ]
         [ div [ class "edPageSection" ]
             [ h2 [] [ text "My profile" ]
             , profileForm model user
             ]
-        , div [ class "edPageSection" ]
-            [ h2 [] [ text "Notifications" ]
-            , p [] [ text "You can get a notification when it's your turn or the game starts." ]
-            , button [ onClick RequestNotifications ] [ text "Enable notifications" ]
-            , p []
-                [ text "This feature is "
-                , strong
-                    []
-                    [ text "not available on iOS. " ]
-                , text "It exists since 2013 in Chrome and Firefox for Android."
-                ]
-            ]
+        , div [ class "edPageSection" ] <|
+            [ h2 [] [ text "Notifications" ] ]
+                ++ notifications model user preferences sessionPreferences
+                ++ [ p []
+                        [ text "This feature is "
+                        , strong
+                            []
+                            [ text "not available on iOS. " ]
+                        , text "It exists since 2013 in Chrome and Firefox for Android."
+                        ]
+                   ]
         , div [ class "edPageSection" ]
             [ h2 [] [ text "Access" ]
             , h5 [] [ text "Connected login methods or networks:" ]
@@ -39,15 +39,62 @@ view model user =
             , div [] <|
                 addNetworks
                     user
-            , h5 [] [ text "Log out now:" ]
-            , button [ onClick Logout ] [ text "Logout" ]
             ]
-        , div [ class "edPageSection" ]
-            (h5
-                []
-                [ text "Delete account:" ]
-                :: deleteAccount model
-            )
+        , div [ class "edPageSection" ] <|
+            [ h2 [] [ text "Danger zone" ]
+            , h5 [] [ text "Log out now:" ]
+            , p [] [ text "If you don't have any login method or network, then you can never recover this account!" ]
+            , button [ onClick Logout ] [ text "Logout" ]
+            , h5 [] [ text "Delete account:" ]
+            ]
+                ++ deleteAccount model
+        ]
+
+
+notifications : MyProfileModel -> LoggedUser -> Types.Preferences -> Types.SessionPreferences -> List (Html Msg)
+notifications model user preferences sessionPreferences =
+    if not sessionPreferences.notificationsEnabled then
+        [ div [] [ text "You can enable some notifications like when it's your turn, or when the game starts:" ]
+        , div [] [ button [ onClick RequestNotifications ] [ text "Enable notifications" ] ]
+        ]
+
+    else
+        [ div [] [ text "You have notifications enabled on this device/browser." ]
+        , div [] [ text "You will get a notification when the tab is in background and it's your turn." ]
+        , div [] [ button [ onClick RenounceNotifications ] [ text "Disable notifications" ] ]
+        , div [] [ text "You can also receive a push notification even if you're not in any hame and don't even have the website opened." ]
+        , div [] [ em [] [ text "This is an experimental feature, if in doubt leave all unchecked." ] ]
+        , div [] [ text "Get a notification when:" ]
+        , div []
+            [ label
+                [ class "edCheckbox--checkbox"
+                , onClick <|
+                    PushRegisterEvent ( GameStart, not <| List.member GameStart preferences.pushEvents )
+                ]
+                [ Icon.icon <|
+                    if List.member GameStart preferences.pushEvents then
+                        "check_box"
+
+                    else
+                        "check_box_outline_blank"
+                , text "a game countdown starts"
+                ]
+            ]
+        , div []
+            [ label
+                [ class "edCheckbox--checkbox"
+                , onClick <|
+                    PushRegisterEvent ( PlayerJoin, not <| List.member PlayerJoin preferences.pushEvents )
+                ]
+                [ Icon.icon <|
+                    if List.member PlayerJoin preferences.pushEvents then
+                        "check_box"
+
+                    else
+                        "check_box_outline_blank"
+                , text "anybody joins any table"
+                ]
+            ]
         ]
 
 

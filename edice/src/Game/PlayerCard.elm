@@ -8,12 +8,13 @@ import Color.Interpolate
 import Game.Types exposing (GameStatus(..), Player)
 import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, href, style)
 import Ordinal exposing (ordinal)
+import Routing exposing (routeToString)
 import Svg
 import Svg.Attributes
 import Time exposing (posixToMillis)
-import Types exposing (Model, Msg(..))
+import Types exposing (Model, Msg(..), Route(..))
 
 
 view : Model -> Int -> Int -> Player -> Html.Html Types.Msg
@@ -26,8 +27,9 @@ view model offset i player =
         (index == model.game.turnIndex)
         [ playerImageProgress model index player
         , div [ class "edPlayerChip__info" ]
-            [ div
+            [ a
                 [ class "edPlayerChip__name"
+                , href <| routeToString False <| ProfileRoute player.id player.name
                 , dataTestId <| "player-name-" ++ String.fromInt index
                 , style "background-color" <| Board.Colors.baseCssRgb player.color
                 , style "color" <|
