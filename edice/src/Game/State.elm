@@ -631,7 +631,9 @@ updateTable model table msg =
                                 )
 
                     Backend.Types.Elimination elimination ->
-                        updateChatLog model <|
+                        updateChatLog
+                            { model | game = removePlayer model.game elimination.player }
+                        <|
                             Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
 
                     Backend.Types.ReceiveDice player count ->
@@ -736,3 +738,8 @@ update model game msg =
 setUser : Model -> Types.LoggedUser -> Model
 setUser model user =
     { model | player = findLoggedUserPlayer user model.players }
+
+
+removePlayer : Model -> Player -> Model
+removePlayer model player =
+    { model | players = List.filter (.id >> (==) player.id >> not) model.players }
