@@ -15,7 +15,7 @@ import Types exposing (Model, Msg(..))
 
 footer : Model -> Html.Html Types.Msg
 footer model =
-    div [ class "edTables" ] [ tableOfTables model ]
+    div [ class "edTables cartonCard" ] [ tableOfTables model ]
 
 
 tableOfTables : Model -> Html.Html Types.Msg

@@ -48,11 +48,11 @@ view model =
             , boardFooter model
             , tableDetails model
             ]
-        , div [ class "edGame__meta" ]
+        , div [ class "edGame__meta cartonCard" ]
             [ gameChat model
             , gameLog model
             ]
-        , div [ class "edPlayerBoxes" ] <|
+        , div [ class "edPlayerBoxes cartonCard" ] <|
             playerBox model
                 ++ leaderboardBox model
         , Game.Footer.footer model
