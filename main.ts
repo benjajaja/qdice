@@ -18,6 +18,7 @@ import { leaderboard } from "./leaderboard";
 import { screenshot } from "./screenshot";
 import * as publish from "./table/publish";
 import * as user from "./user";
+import { profile } from "./profile";
 import { resetGenerator } from "./rand";
 
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
@@ -139,6 +140,7 @@ export const server = async () => {
           (req: any) => req.path() === `${root}/e2e`,
           (req: any) => req.path() === `${root}/push/key`,
           (req: any) => req.path().indexOf(`${root}/screenshot`) === 0,
+          (req: any) => req.path().indexOf(`${root}/profile`) === 0,
           (req: any) => req.path() === `${root}/topwebgames`,
         ])(req);
         return ok;
@@ -166,12 +168,13 @@ export const server = async () => {
   server.post(`${root}/add-login/:network`, user.addLogin);
   server.get(`${root}/me`, user.me);
   server.del(`${root}/me`, user.del);
-  server.put(`${root}/profile`, user.profile);
+  server.put(`${root}/profile`, user.profile); // TODO change to /me
   server.post(`${root}/register`, user.register);
 
   server.get(`${root}/global`, globalServer.global);
   server.get(`${root}/findtable`, globalServer.findtable);
   server.get(`${root}/leaderboard`, leaderboard);
+  server.get(`${root}/profile/:id`, profile);
   server.get(
     `${root}/screenshot/:table`,
     restify.plugins.throttle({

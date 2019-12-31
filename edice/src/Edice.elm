@@ -24,6 +24,7 @@ import LoginDialog exposing (loginDialog)
 import MyOauth
 import MyProfile.MyProfile
 import MyProfile.Types
+import Profile
 import Routing exposing (navigateTo, parseLocation)
 import Snackbar exposing (toastError, toastMessage)
 import Static.View
@@ -102,6 +103,7 @@ init flags location key =
                 { month = "this month"
                 , top = []
                 }
+            , otherProfile = Nothing
             }
 
         cmds =
@@ -251,6 +253,18 @@ update msg model =
 
         GetLeaderBoard res ->
             LeaderBoard.State.setLeaderBoard model res
+
+        GetOtherProfile res ->
+            case res of
+                Err err ->
+                    ( model
+                    , toastError "Could fetch profile" <| httpErrorToString err
+                    )
+
+                Ok profile ->
+                    ( { model | otherProfile = Just profile }
+                    , Cmd.none
+                    )
 
         UpdateUser profile token preferences ->
             let
@@ -652,9 +666,9 @@ mainView model =
             viewWrapper
                 [ Html.text "Getting user ready..." ]
 
-        ProfileRoute id ->
+        ProfileRoute id name ->
             viewWrapper
-                [ Html.text "WIP" ]
+                [ Profile.view model id name ]
 
         LeaderBoardRoute ->
             viewWrapper

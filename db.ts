@@ -301,7 +301,9 @@ export const leaderBoardTop = async (limit = 100, page = 1) => {
   const result = await client.query({
     name: "leaderboard",
     text: `
-SELECT id, name, picture, points, level, ROW_NUMBER () OVER (ORDER BY points DESC) AS rank
+SELECT id, name, picture, points, level,
+  ROW_NUMBER () OVER (ORDER BY points DESC) AS rank,
+  level_points, awards
 FROM users
 ORDER BY points DESC
 LIMIT $1 OFFSET $2`,
@@ -313,6 +315,8 @@ LIMIT $1 OFFSET $2`,
     points: parseInt(row.points, 10),
     rank: parseInt(row.rank, 10),
     level: Math.max(1, row.level),
+    levelPoints: Math.max(1, row.level_points),
+    awards: row.awards,
     picture: row.picture || "",
   }));
 };

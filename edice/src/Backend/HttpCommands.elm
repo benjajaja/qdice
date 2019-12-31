@@ -1,4 +1,4 @@
-module Backend.HttpCommands exposing (authenticate, deleteAccount, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, registerPush, registerPushEvent, toastHttpError, updateAccount)
+module Backend.HttpCommands exposing (authenticate, deleteAccount, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, profile, registerPush, registerPushEvent, toastHttpError, updateAccount)
 
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -9,7 +9,7 @@ import Helpers exposing (httpErrorToString)
 import Http exposing (Error, emptyBody, expectJson, expectString, expectWhatever, header, jsonBody, stringBody)
 import Land exposing (Color(..))
 import Snackbar exposing (toastError)
-import Types exposing (AuthNetwork(..), AuthState, LoggedUser, LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..))
+import Types exposing (AuthNetwork(..), AuthState, LoggedUser, LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
 
 
 toastHttpError : Error -> Cmd Msg
@@ -81,10 +81,18 @@ leaderBoard model =
         }
 
 
+profile : Model -> UserId -> Cmd Msg
+profile model id =
+    Http.get
+        { url = model.baseUrl ++ "/profile/" ++ id
+        , expect = expectJson GetOtherProfile profileDecoder
+        }
+
+
 login : Types.Model -> String -> ( Types.Model, Cmd Msg )
 login model name =
     let
-        profile =
+        loginProfile =
             { name = name
             , id = "💩"
             , email = Nothing
@@ -106,7 +114,7 @@ login model name =
     , Http.post
         { url = model.backend.baseUrl ++ "/register"
         , body =
-            jsonBody <| profileEncoder profile
+            jsonBody <| profileEncoder loginProfile
         , expect =
             expectString (GetToken <| Just state)
         }
@@ -114,7 +122,7 @@ login model name =
 
 
 updateAccount : Model -> LoggedUser -> Cmd Msg
-updateAccount model profile =
+updateAccount model newProfile =
     Http.request
         { method = "PUT"
         , headers =
@@ -126,7 +134,7 @@ updateAccount model profile =
                     []
         , url = model.baseUrl ++ "/profile"
         , body =
-            jsonBody <| profileEncoder profile
+            jsonBody <| profileEncoder newProfile
         , expect =
             expectString (GetToken Nothing)
         , timeout = Nothing

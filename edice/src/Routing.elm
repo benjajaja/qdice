@@ -1,9 +1,11 @@
-module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, replaceNavigateTo, routeEnterCmd)
+module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, replaceNavigateTo, routeEnterCmd, routeToString)
 
-import Backend.HttpCommands exposing (leaderBoard)
+import Backend.HttpCommands exposing (leaderBoard, profile)
 import Browser.Navigation exposing (Key)
+import String.Normalize exposing (slug)
 import Types exposing (Model, Msg, Route(..), StaticPage(..))
 import Url exposing (Url, percentDecode)
+import Url.Builder
 import Url.Parser exposing (..)
 
 
@@ -20,7 +22,7 @@ matchers =
         , map StaticPageRoute (s "static" </> staticPageMatcher)
         , map MyProfileRoute (s "me")
         , map TokenRoute (s "token" </> string)
-        , map ProfileRoute (s "profile" </> string)
+        , map ProfileRoute (s "profile" </> string </> string)
         , map LeaderBoardRoute (s "leaderboard")
         , tableMatcher
         ]
@@ -96,8 +98,8 @@ routeToString useHash route =
                 TokenRoute token ->
                     "token/" ++ token
 
-                ProfileRoute id ->
-                    "profile/" ++ id
+                ProfileRoute id name ->
+                    Url.Builder.relative [ "profile", id, slug name ] []
 
                 LeaderBoardRoute ->
                     "leaderboard"
@@ -109,6 +111,9 @@ routeEnterCmd model route =
     case route of
         LeaderBoardRoute ->
             leaderBoard model.backend
+
+        ProfileRoute id _ ->
+            profile model.backend id
 
         HomeRoute ->
             if List.length model.tableList > 0 then

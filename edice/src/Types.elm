@@ -38,6 +38,7 @@ type Msg
     | Authenticate String AuthState
     | GetToken (Maybe AuthState) (Result Error String)
     | GetProfile (Result Error ( LoggedUser, String, Preferences ))
+    | GetOtherProfile (Result Error Profile)
     | GetLeaderBoard (Result Error ( String, List Profile ))
     | Logout
     | ShowLogin LoginDialogStatus
@@ -85,7 +86,7 @@ type Route
     | NotFoundRoute
     | MyProfileRoute
     | TokenRoute String
-    | ProfileRoute String
+    | ProfileRoute UserId String
     | LeaderBoardRoute
 
 
@@ -106,6 +107,7 @@ type alias Model =
     , showLoginDialog : LoginDialogStatus
     , settings : GlobalSettings
     , leaderBoard : LeaderBoardModel
+    , otherProfile : Maybe Profile
     , preferences : Preferences
     , sessionPreferences : SessionPreferences
     }
@@ -199,6 +201,8 @@ type alias Profile =
     , picture : String
     , points : Int
     , level : Int
+    , levelPoints : Int
+    , awards : List Award
     }
 
 

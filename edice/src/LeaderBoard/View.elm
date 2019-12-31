@@ -3,6 +3,7 @@ module LeaderBoard.View exposing (view)
 import Helpers exposing (pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (align, class, href)
+import Routing exposing (routeToString)
 import Types exposing (..)
 
 
@@ -31,7 +32,11 @@ view limit model =
                     (\profile ->
                         tr []
                             [ td [ align "right" ] [ text <| String.fromInt profile.rank ]
-                            , td [ align "left" ] [ text profile.name ]
+                            , td [ align "left" ]
+                                [ a [ href <| routeToString False <| ProfileRoute profile.id profile.name ]
+                                    [ text profile.name
+                                    ]
+                                ]
                             , td [ align "right" ] [ text <| String.fromInt profile.points ++ pointsSymbol ]
                             , td [ align "right" ] [ text <| String.fromInt profile.level ]
                             ]

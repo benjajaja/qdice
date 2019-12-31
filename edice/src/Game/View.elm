@@ -8,16 +8,16 @@ import Game.Footer
 import Game.PlayerCard as PlayerCard
 import Game.State exposing (canHover)
 import Game.Types exposing (PlayerAction(..), statusToString)
-import Helpers exposing (dataTestId, pointsSymbol)
+import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
-import Html.Attributes exposing (checked, class, disabled, href, style, target, type_)
-import Html.Events exposing (onClick, preventDefaultOn)
+import Html.Attributes exposing (class, disabled, href, style, target, type_)
+import Html.Events exposing (onClick)
 import Icon
-import Json.Decode exposing (succeed)
 import LeaderBoard.View
 import Ordinal exposing (ordinal)
+import Routing exposing (routeToString)
 import Time exposing (posixToMillis)
-import Types exposing (Model, Msg(..), PushEvent(..), User(..))
+import Types exposing (Model, Msg(..), PushEvent(..), Route(..), User(..))
 
 
 view : Model -> Html Types.Msg
@@ -301,7 +301,11 @@ playerBox model =
         [ div [ class "edPlayerBox__inner" ] <|
             case model.user of
                 Logged user ->
-                    [ div [ class "edPlayerBox__Name" ] [ text user.name ]
+                    [ div [ class "edPlayerBox__Name" ]
+                        [ a [ href <| routeToString False <| ProfileRoute user.id user.name ]
+                            [ text user.name
+                            ]
+                        ]
                     , div [ class "edPlayerBox__stat" ] [ text "Level: ", text <| String.fromInt user.level ++ "▲" ]
                     , if List.length user.awards > 0 then
                         div [ class "edPlayerBox__awards" ] <| Awards.awardsShortList 20 user.awards
@@ -402,8 +406,3 @@ leaderboardBox model =
             [ LeaderBoard.View.view 10 model ]
         ]
     ]
-
-
-pointsToNextLevel : Int -> Int -> Int
-pointsToNextLevel level points =
-    (((toFloat level + 1 + 10) ^ 3) * 0.1 |> ceiling) - points

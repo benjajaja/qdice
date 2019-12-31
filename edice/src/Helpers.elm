@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, notification, pipeUpdates, playSound, pointsSymbol)
+port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -90,3 +90,8 @@ dataTestId id =
 dataTestValue : String -> String -> Attribute msg
 dataTestValue key value =
     attribute ("data-test-" ++ key) value
+
+
+pointsToNextLevel : Int -> Int -> Int
+pointsToNextLevel level points =
+    (((toFloat level + 1 + 10) ^ 3) * 0.1 |> ceiling) - points

@@ -329,6 +329,8 @@ profileDecoder =
         |> required "picture" string
         |> required "points" int
         |> required "level" int
+        |> required "levelPoints" int
+        |> required "awards" (list awardDecoder)
 
 
 leaderBoardDecoder : Decoder ( String, List Profile )

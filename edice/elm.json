@@ -20,6 +20,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm-explorations/markdown": "1.0.0",
+            "kuon/elm-string-normalize": "1.0.1",
             "mdgriffith/elm-style-animation": "4.0.0",
             "mthadley/elm-hash-routing": "1.0.1",
             "noahzgordon/elm-color-extra": "1.0.2",
