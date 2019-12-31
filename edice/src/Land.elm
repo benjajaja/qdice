@@ -1,4 +1,4 @@
-module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
+module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
 
 import Helpers exposing (find, findIndex)
 import Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
@@ -527,3 +527,8 @@ isBorderOnSideCube coord side other =
 
             else
                 x_ == x + 1 && y_ == y + 1
+
+
+findLand : Emoji -> List Land -> Maybe Land
+findLand emoji lands =
+    find (\l -> l.emoji == emoji) lands

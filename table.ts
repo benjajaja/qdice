@@ -222,7 +222,9 @@ export const processComandResult = async (
       if (eliminations) {
         await processEliminations(newTable, eliminations);
       }
-      if (["Heartbeat", "Enter", "Exit"].indexOf(type) === -1) {
+      if (
+        ["Heartbeat", "Enter", "Exit", "Attack", "Roll"].indexOf(type) === -1
+      ) {
         publish.tableStatus(newTable);
       }
     }

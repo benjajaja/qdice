@@ -347,8 +347,44 @@ updateGameInfo model tableList =
 showRoll : Types.Model -> Roll -> ( Types.Model, Cmd Msg )
 showRoll model roll =
     let
+        fromLand =
+            Land.findLand roll.from.emoji model.game.board.map.lands
+
+        toLand =
+            Land.findLand roll.to.emoji model.game.board.map.lands
+
+        tuple : Maybe ( Land.Land, Land.Land )
+        tuple =
+            Maybe.map2 Tuple.pair fromLand toLand
+
+        updates : List Board.Types.LandUpdate
+        updates =
+            case tuple of
+                Just ( from, to ) ->
+                    let
+                        success =
+                            List.sum roll.from.roll > List.sum roll.to.roll
+                    in
+                    { emoji = from.emoji
+                    , color = from.color
+                    , points = 1
+                    }
+                        :: (if success then
+                                [ { emoji = to.emoji
+                                  , color = from.color
+                                  , points = from.points - 1
+                                  }
+                                ]
+
+                            else
+                                []
+                           )
+
+                Nothing ->
+                    []
+
         board_ =
-            Board.State.updateLands model.game.board [] (Just Board.Types.Idle) AnimationDone
+            Board.State.updateLands model.game.board updates (Just Board.Types.Idle) AnimationDone
 
         game =
             model.game
@@ -451,14 +487,7 @@ canHover game emoji =
                 False
 
             else
-                let
-                    findLand =
-                        \e -> find (.emoji >> (==) e)
-
-                    foundLand =
-                        findLand emoji game.board.map.lands
-                in
-                case foundLand of
+                case Land.findLand emoji game.board.map.lands of
                     Just land ->
                         case game.board.move of
                             Board.Types.Idle ->
