@@ -2,6 +2,7 @@ import * as R from "ramda";
 import { BotStrategy, BotPlayer, Table, Land, Color, Player } from "../types";
 import logger from "../logger";
 import { landMasses } from "../maps";
+import { rand } from "../rand";
 
 export type Source = { source: Land; targets: Land[] };
 export type Attack = { from: Land; to: Land; wheight: number };
@@ -56,7 +57,11 @@ export const pickTactic = (
 ): Tactic => {
   switch (strategy) {
     case "RandomCareless":
-      return tactics.careless;
+      if (rand(0, 100) > 75) {
+        return tactics.careful;
+      } else {
+        return tactics.careless;
+      }
     case "Revengeful":
       const lastAgressorColor =
         table.players.find(p => p.id === player.bot.state.lastAgressor)
@@ -73,7 +78,7 @@ export const pickTactic = (
         return tactics.focusColor(lastAgressorColor ?? Color.Neutral);
       }
     case "RandomCareful":
-      if (wouldRefillAll(player, table)) {
+      if (rand(0, 100) > 95 || wouldRefillAll(player, table)) {
         return tactics.careless;
       }
     default:

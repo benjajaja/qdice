@@ -46,7 +46,7 @@ const mkTable = (props?: Partial<Table>): Table =>
     ...props,
   } as any);
 
-describe("Move tactics", function() {
+describe.skip("Move tactics", function() {
   describe("move with probable defeat", () => {
     const sources: Source[] = [
       {
