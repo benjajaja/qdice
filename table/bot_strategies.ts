@@ -73,6 +73,9 @@ export const pickTactic = (
         return tactics.focusColor(lastAgressorColor ?? Color.Neutral);
       }
     case "RandomCareful":
+      if (wouldRefillAll(player, table)) {
+        return tactics.careless;
+      }
     default:
       return tactics.careful;
   }
@@ -135,4 +138,13 @@ export const tactics = {
 
 export const hasDisconnectedLands = (player: Player, table: Table): boolean => {
   return landMasses(table)(player.color).length > 1;
+};
+
+export const wouldRefillAll = (player: Player, table: Table): boolean => {
+  const lands = table.lands.filter(land => land.color === player.color);
+
+  const necessaryDice = lands.reduce((count, land) => {
+    return count + (8 - land.points);
+  }, 0);
+  return lands.length + player.reserveDice >= necessaryDice + 7;
 };

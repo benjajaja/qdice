@@ -1,6 +1,12 @@
 import * as assert from "assert";
 import { Table, Color, Land, Player, BotPlayer, UserId } from "../types";
-import { Source, move, pickTactic, tactics } from "../table/bot_strategies";
+import {
+  Source,
+  move,
+  pickTactic,
+  tactics,
+  wouldRefillAll,
+} from "../table/bot_strategies";
 
 const mkLand = (
   points: number,
@@ -16,6 +22,7 @@ const mkPlayer = (color: Color = Color.Red): Player =>
   ({
     id: Math.random(),
     color,
+    reserveDice: 0,
   } as any);
 
 const mkBotPlayer = (
@@ -107,7 +114,6 @@ describe("Pick tactic from strategy", () => {
       });
       bot.bot.state.lastAgressor = table.players[1].id;
       const tactic = pickTactic("Revengeful", bot, table);
-      console.debug(tactic);
       assert.strictEqual(tactic.name, "focusColor");
     });
     it("focus on neutral if no agressor", () => {
@@ -176,5 +182,126 @@ describe("Tactics", () => {
       );
       assert.strictEqual(attack, undefined);
     });
+  });
+});
+
+describe("Refill all", () => {
+  const player = mkPlayer(Color.Red);
+  const fullLand = () => mkLand(8, Color.Red);
+  it("detects would-refill-all", () => {
+    assert.strictEqual(wouldRefillAll(player, mkTable()), false);
+
+    assert.strictEqual(
+      wouldRefillAll(
+        mkPlayer(),
+        mkTable({
+          lands: [
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+          ],
+        })
+      ),
+      true
+    );
+  });
+
+  it("detects would-refill-all with some lands not full", () => {
+    assert.strictEqual(
+      wouldRefillAll(
+        mkPlayer(),
+        mkTable({
+          lands: [
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            mkLand(7, Color.Red),
+          ],
+        })
+      ),
+      true
+    );
+    assert.strictEqual(
+      wouldRefillAll(
+        mkPlayer(),
+        mkTable({
+          lands: [
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            mkLand(1, Color.Red),
+
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            mkLand(1, Color.Red),
+
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+          ],
+        })
+      ),
+      true
+    );
+  });
+
+  it("detects would-not-refill-all with some lands not full", () => {
+    assert.strictEqual(
+      wouldRefillAll(
+        mkPlayer(),
+        mkTable({
+          lands: [
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            mkLand(1, Color.Red),
+
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            mkLand(1, Color.Red),
+
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            fullLand(),
+            mkLand(4, Color.Red),
+          ],
+        })
+      ),
+      false
+    );
   });
 });
