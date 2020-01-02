@@ -1,5 +1,5 @@
 import * as R from "ramda";
-import { Pool } from "pg";
+import { native } from "pg";
 import * as camelize from "camelize";
 import * as decamelize from "decamelize";
 
@@ -20,7 +20,7 @@ import * as sleep from "sleep-promise";
 import * as config from "./tables.config"; // for e2e only
 import AsyncLock = require("async-lock");
 
-const pool = new Pool({
+const pool = new native!.Pool({
   host: process.env.PGHOST,
   port: parseInt(process.env.PGPORT!, 10),
 });
