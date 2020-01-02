@@ -1,5 +1,5 @@
 import * as R from "ramda";
-import { Client } from "pg";
+import { Pool } from "pg";
 import * as camelize from "camelize";
 import * as decamelize from "decamelize";
 
@@ -10,40 +10,23 @@ import {
   Table,
   Player,
   User,
-  Land,
   Emoji,
   Color,
   Watcher,
-  Preferences,
   PushNotificationEvents,
 } from "./types";
 import { date } from "./timestamp";
-import { setTimeout } from "timers";
 import * as sleep from "sleep-promise";
 import * as config from "./tables.config"; // for e2e only
-import { defaultPreferences } from "./user";
 import AsyncLock = require("async-lock");
 
-let client: Client;
+const pool = new Pool({
+  host: process.env.PGHOST,
+  port: parseInt(process.env.PGPORT!, 10),
+});
 
 export const connect = async function db() {
-  if (client) {
-    return client;
-  }
-
-  client = new Client({
-    host: process.env.PGHOST,
-    port: parseInt(process.env.PGPORT!, 10),
-  });
-
-  try {
-    await client.connect();
-  } catch (e) {
-    client = undefined!;
-    throw e;
-  }
-
-  return client;
+  return await pool.connect();
 };
 
 export const retry = async function retry() {
@@ -58,7 +41,7 @@ export const retry = async function retry() {
 
 export const clearGames = async (lock: AsyncLock): Promise<void> => {
   lock.acquire([config.tables.map(table => table.name)], async done => {
-    await client.query(`DELETE FROM tables`);
+    await pool.query(`DELETE FROM tables`);
     for (const table of config.tables) {
       const newTable = await require("./table/get").getTable(table.name);
       require("./table/publish").tableStatus(newTable);
@@ -79,7 +62,7 @@ export const getUser = async (id: UserId): Promise<User> => {
 };
 
 export const getUserRows = async (id: UserId) => {
-  const user = await client.query({
+  const user = await pool.query({
     name: "user-rows",
     text: `
 SELECT a.*, (SELECT COUNT(*) + 1 FROM users b WHERE b.points > a.points) AS rank
@@ -97,7 +80,7 @@ export const getUserFromAuthorization = async (
   id: UserId
 ) => {
   try {
-    const res = await client.query({
+    const res = await pool.query({
       name: "authorizations",
       text:
         "SELECT * FROM authorizations WHERE network = $1 AND network_id = $2",
@@ -114,7 +97,7 @@ export const getUserFromAuthorization = async (
 };
 
 export const getPreferences = async (id: UserId) => {
-  const res = await client.query({
+  const res = await pool.query({
     name: "preferences",
     text: `SELECT users.preferences, push_subscribed_events."event" AS "event"
     FROM users
@@ -140,14 +123,14 @@ export const createUser = async (
 ) => {
   const {
     rows: [user],
-  } = await client.query(
+  } = await pool.query(
     "INSERT INTO users (name,email,picture,registration_time,points) VALUES ($1, $2, $3, current_timestamp, 100) RETURNING *",
     [name, email, picture]
   );
   logger.info("created user", user.name);
   if (network !== NETWORK_PASSWORD) {
     /*const { rows: [ auth ] } =*/
-    await client.query(
+    await pool.query(
       "INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *",
       [user.id, network, network_id, profileJson]
     );
@@ -161,7 +144,7 @@ export const addNetwork = async (
   network_id: string | null,
   profileJson: any | null
 ) => {
-  await client.query(
+  await pool.query(
     "INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *",
     [userId, network, network_id, profileJson]
   );
@@ -173,10 +156,11 @@ export const updateUser = async (
   name: string,
   email: string | null
 ) => {
-  const res = await client.query(
-    "UPDATE users SET name = $2, email = $3 WHERE id = $1",
-    [id, name, email]
-  );
+  await pool.query("UPDATE users SET name = $2, email = $3 WHERE id = $1", [
+    id,
+    name,
+    email,
+  ]);
   return await getUser(id);
 };
 
@@ -197,12 +181,12 @@ export const addPushSubscription = async (
   add: boolean
 ) => {
   if (add) {
-    await client.query(
+    await pool.query(
       "INSERT INTO push_subscriptions (user_id, subscription) VALUES ($1, $2)",
       [id, subscription]
     );
   } else {
-    await client.query(
+    await pool.query(
       `DELETE FROM push_subscriptions WHERE user_id = $1 AND subscription = $2`,
       [id, subscription]
     );
@@ -216,12 +200,12 @@ export const addPushEvent = async (
   add: boolean
 ) => {
   if (add) {
-    await client.query(
+    await pool.query(
       `INSERT INTO push_subscribed_events (user_id, "event") VALUES ($1, $2)`,
       [id, event]
     );
   } else {
-    await client.query(
+    await pool.query(
       `DELETE FROM push_subscribed_events WHERE user_id = $1 AND "event" = $2`,
       [id, event]
     );
@@ -230,7 +214,7 @@ export const addPushEvent = async (
 };
 
 export const registerVote = async (user: User, source: "topwebgames") => {
-  await client.query(
+  await pool.query(
     `
       UPDATE users SET voted = $1 WHERE id = $2`,
     [JSON.stringify(user.voted.concat([source])), user.id]
@@ -239,6 +223,7 @@ export const registerVote = async (user: User, source: "topwebgames") => {
 };
 
 export const deleteUser = async (id: UserId) => {
+  const client = await pool.connect();
   try {
     await client.query("BEGIN");
     await client.query("DELETE FROM authorizations WHERE user_id = $1", [id]);
@@ -254,11 +239,14 @@ export const deleteUser = async (id: UserId) => {
   } catch (e) {
     await client.query("ROLLBACK");
     throw e;
+  } finally {
+    client.release();
   }
 };
 
 export const addScore = async (id: UserId, score: number) => {
   logger.debug("addScore", id, score);
+  const client = await pool.connect();
   try {
     await client.query("BEGIN");
     const res = await client.query(
@@ -293,12 +281,14 @@ export const addScore = async (id: UserId, score: number) => {
   } catch (e) {
     await client.query("ROLLBACK");
     throw e;
+  } finally {
+    client.release();
   }
   return await getUser(id);
 };
 
 export const leaderBoardTop = async (limit = 100, page = 1) => {
-  const result = await client.query({
+  const result = await pool.query({
     name: "leaderboard",
     text: `
 SELECT id, name, picture, points, level,
@@ -354,7 +344,7 @@ export const userProfile = (rows: any[]): User => {
 };
 
 export const getTable = async (tag: string) => {
-  const result = await client.query({
+  const result = await pool.query({
     name: "table",
     text: `
 SELECT *
@@ -375,7 +365,7 @@ LIMIT 1`,
 };
 
 export const createTable = async (table: Table) => {
-  const result = await client.query(
+  const result = await pool.query(
     `
 INSERT INTO tables
 (tag, name, map_name, stack_size, player_slots, start_slots, points, players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start, params)
@@ -449,13 +439,13 @@ RETURNING *`;
   }
   const result =
     name.length < 64
-      ? await client.query({ name, text, values })
-      : await client.query(text, values);
+      ? await pool.query({ name, text, values })
+      : await pool.query(text, values);
   return camelize(result.rows.pop());
 };
 
 export const getTablesStatus = async (): Promise<any> => {
-  const result = await client.query({
+  const result = await pool.query({
     name: "tables-status",
     text: `
 SELECT tag, name, map_name, stack_size, status, player_slots, start_slots, points, players, watching, params
@@ -466,10 +456,10 @@ LIMIT 100`,
 };
 
 export const deleteTable = async (tag: string): Promise<any> =>
-  await client.query("DELETE FROM tables WHERE tag = $1", [tag]);
+  await pool.query("DELETE FROM tables WHERE tag = $1", [tag]);
 
 export const getPushSubscriptions = async (event: string) => {
-  const res = await client.query({
+  const res = await pool.query({
     name: "push-subscriptions",
     text: `SELECT users.id, users.name, push_subscribed_events."event" AS "event", push_subscriptions.subscription
     FROM users
