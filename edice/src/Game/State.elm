@@ -1,4 +1,4 @@
-module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, setUser, showRoll, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
+module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, setUser, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
 
 import Backend
 import Backend.MqttCommands exposing (attack, sendGameCommand)
@@ -99,7 +99,15 @@ gameCommand model playerAction =
 
         _ ->
             model
-    , sendGameCommand model.backend model.game.table playerAction
+    , Cmd.batch <|
+        sendGameCommand model.backend model.game.table playerAction
+            :: (case playerAction of
+                    Join ->
+                        [ Helpers.playSound "kick" ]
+
+                    _ ->
+                        []
+               )
     )
 
 
@@ -627,7 +635,7 @@ updateTable model table msg =
                                             --}
                                         }
                                   }
-                                , Cmd.none
+                                , Helpers.playSound "kick"
                                 )
 
                     Backend.Types.Elimination elimination ->
