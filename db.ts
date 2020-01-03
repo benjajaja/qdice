@@ -65,7 +65,7 @@ export const getUserRows = async (id: UserId) => {
   const user = await pool.query({
     name: "user-rows",
     text: `
-SELECT a.*, (SELECT COUNT(*) + 1 FROM users b WHERE b.points > a.points) AS rank
+SELECT a.*, authorizations.*, (SELECT COUNT(*) + 1 FROM users b WHERE b.points > a.points) AS rank
 FROM users a
 LEFT JOIN authorizations ON authorizations.user_id = a.id
 WHERE a.id = $1
