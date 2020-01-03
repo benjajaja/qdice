@@ -11,6 +11,7 @@ self.addEventListener("activate", function(event) {
 
 // PUSH
 function getEndpoint() {
+  // TODO what is the purpose of this?
   return self.registration.pushManager
     .getSubscription()
     .then(function(subscription) {
@@ -22,21 +23,33 @@ function getEndpoint() {
     });
 }
 
+/**
+ * Try to only show the last push as a notification.
+ * Otherwise user might get like 10 notifications at the same time,
+ * e.g. when he reconnects or the browser does its SW throttling magic.
+ */
+var queue = [];
+function pushQueue(json) {
+  return new Promise(function(resolve) {
+    queue.push(json);
+    setTimeout(resolve, 1000);
+  }).then(function() {
+    var json = queue.pop();
+    if (json) {
+      self.registration.showNotification(json.text, {
+        icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
+        badge: "https://qdice.wtf/assets/monochrome.png",
+        vibrate: [50, 100, 50],
+        data: json,
+      });
+      queue = [];
+    }
+  });
+}
+
 self.addEventListener("push", function(event) {
-  event.waitUntil(
-    getEndpoint().then(function(endpoint) {
-      console.log("SW endpoint", endpoint, event.data);
-      if (event.data) {
-        var json = JSON.parse(event.data.text());
-        self.registration.showNotification(json.text, {
-          icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
-          badge: "https://qdice.wtf/assets/monochrome.png",
-          vibrate: [50, 100, 50],
-          data: json,
-        });
-      }
-    })
-  );
+  var json = JSON.parse(event.data.text());
+  event.waitUntil(pushQueue(json));
 });
 
 // CACHE
