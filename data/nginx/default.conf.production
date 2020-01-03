@@ -26,6 +26,8 @@ server {
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     server_name localhost qdice.wtf;
+    access_log  /var/log/nginx/access.log;
+    error_log  /var/log/nginx/error.log;
     root /var/www/qdice.wtf/;
 
     ##
@@ -59,19 +61,10 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "Upgrade";
     }
-    location /ackee/ {
-        add_header          Access-Control-Allow-Origin "*" always;
-        add_header          Access-Control-Allow-Methods "GET, POST, PATCH, OPTIONS" always;
-        add_header          Access-Control-Allow-Headers "Content-Type" always;
-        add_header          Strict-Transport-Security "max-age=31536000" always;
-        add_header          X-Frame-Options deny;
-        proxy_pass          http://ackee:3000/;
-        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
-        proxy_redirect      off;
-        proxy_buffering     off;
-        proxy_set_header    Host $host;
-        proxy_set_header    X-Real-IP $remote_addr;
-        proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+    location /goaccess {
+        auth_basic "web stats";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+        alias /var/www/goaccess;
     }
 }
 

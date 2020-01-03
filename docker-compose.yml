@@ -60,30 +60,30 @@ services:
       - ./data/certbot/www:/var/www/certbot
       - statics:/var/www/qdice.wtf
       - ~/data-avatars:/var/www/qdice.wtf/pictures
+      - ./data/logs/nginx:/var/log/nginx
+      - ./data/goaccess/html:/var/www/goaccess
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
     depends_on:
       - emqx
       - nodice
       - certbot
-  mongo:
-    image: mongo
-    container_name: mongo
+  goaccess:
+    # build:
+      # context: .
+      # dockerfile: ./Dockerfile.goaccess
+    image: allinurl/goaccess
     restart: always
     volumes:
-      - ~/data-mongo:/data/db
-  ackee:
-    image: electerious/ackee
-    container_name: ackee
-    restart: always
+      - ./data/goaccess/goaccess.conf:/srv/data/goaccess.conf
+      - ./data/goaccess/html:/srv/report
+      - ./data/logs/nginx:/srv/logs
+    command: "--no-global-config --config-file=/srv/data/goaccess.conf"
     ports:
-      - "3000:3000"
-    environment:
-      - WAIT_HOSTS=mongo:27017
-      - ACKEE_MONGODB=mongodb://mongo:27017/ackee
-    env_file:
-      - .env
+      - "7890:7890"
+    cap_drop:
+      - all
     depends_on:
-      - mongo
+      - nginx
 
 networks:
   default:

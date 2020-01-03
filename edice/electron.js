@@ -22,7 +22,7 @@ function createWindow() {
 function createElmWindow() {
   protocol.interceptBufferProtocol("http", function(req, callback) {
     const split = req.url.split("http://electron/")[1];
-    if (split.indexOf("ackee/") === 0 || /.*\.svg$/.test(req.url) === true) {
+    if (/.*\.svg$/.test(req.url) === true) {
       const resource = {
         url: "https://qdice.wtf/" + split,
         method: req.method,

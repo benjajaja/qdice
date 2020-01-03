@@ -4,3 +4,5 @@ node_modules/
 npm-debug.log
 map-sources.json
 chromeapp.zip
+data/goaccess/html/
+data/logs/nginx/

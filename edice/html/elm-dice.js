@@ -68,42 +68,7 @@ var app = Elm.App.init({
 });
 
 app.ports.started.subscribe(function(msg) {
-  //document.getElementById('loading-indicator').remove();
-  // window.onerror = function(messageOrEvent, source, lineno, colno, error) {
-  // ga("send", "exception", { exDescription: error.toString() });
-  //
-  // if (snackbar) {
-  // snackbar.show({
-  // text: messageOrEvent.toString(),
-  // pos: "bottom-center",
-  // actionTextColor: "#38d6ff",
-  // });
-  // } else {
-  // window.alert(messageOrEvent.toString());
-  // }
-  // return false; // let built in handler log it too
-  // };
   window.dialogPolyfill = require("dialog-polyfill");
-
-  if (location.hostname !== "localhost") {
-    const ackee = require("ackee-tracker");
-    ackee
-      .create(
-        {
-          server:
-            window.location.protocol +
-            "//" +
-            window.location.hostname +
-            "/ackee",
-          domainId: "6f3492e2-9780-45a6-85ee-550777943d24",
-        },
-        { ignoreLocalhost: true }
-      )
-      .record();
-  }
-  // ga = require('ga-lite');
-  // ga('create', 'UA-111861514-1', 'auto');
-  // ga('send', 'pageview');
 });
 
 app.ports.saveToken.subscribe(function(token) {

@@ -112,7 +112,7 @@ self.addEventListener("fetch_DISABLED", function(event) {
   }
 
   var basePath = matches ? matches[0] : undefined;
-  if (["api", "mqtt", "ackee"].indexOf(basePath) === -1) {
+  if (["api", "mqtt"].indexOf(basePath) === -1) {
     event.waitUntil(update(event.request));
   }
 });
