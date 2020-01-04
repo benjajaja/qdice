@@ -575,7 +575,7 @@ button .material-icons, .edButton .material-icons {
 .chatbox--actions-predefined {
 }
 .chatbox--line--chat {}
-.chatbox--line--join {
+.chatbox--line--enter, .chatbox--line--exit {
   color: #666;
 }
 .chatbox--line--error {

@@ -416,7 +416,17 @@ toRollLog model roll =
                     Nothing
     in
     { attacker = Maybe.withDefault errorPlayer attacker |> .name
+    , attackerColor = Maybe.withDefault errorPlayer attacker |> .color
     , defender = Maybe.withDefault errorPlayer defender |> .name
+    , defenderColor =
+        Maybe.map .color defender |> Maybe.withDefault Black
+            |> (\color ->
+                    if color == Neutral then
+                        Black
+
+                    else
+                        color
+               )
     , attackRoll = List.sum roll.from.roll
     , attackDiesEmojis = toDiesEmojis roll.from.roll
     , attackDiceCount = List.length roll.from.roll

@@ -659,15 +659,6 @@ updateTable model table msg =
             ( model, Cmd.none )
 
 
-userColor : List Player -> String -> Land.Color
-userColor players name =
-    players
-        |> List.filter (\p -> p.name == name)
-        |> List.head
-        |> Maybe.map .color
-        |> Maybe.withDefault Land.Black
-
-
 isChat : ChatLogEntry -> Bool
 isChat entry =
     case entry of

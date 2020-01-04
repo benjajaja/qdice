@@ -1,7 +1,7 @@
 module Game.Chat exposing (chatBox, chatPlayerTag, eliminationEmoji, eliminationReasonText, gameBox, input, maybeUserChatTag, playerTag, rollLine)
 
 import Board.Colors exposing (baseCssRgb, colorName)
-import Game.Types exposing (ChatLogEntry(..), PlayerAction(..), RollLog)
+import Game.Types exposing (ChatLogEntry(..), Player, PlayerAction(..), RollLog, userColor)
 import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -29,13 +29,13 @@ chatBox inputValue colors lines id_ =
                                 ]
 
                         LogEnter user ->
-                            div [ class "chatbox--line--join" ]
-                                [ Html.text <| maybeUserChatTag user ++ " joined"
+                            div [ class "chatbox--line--enter" ]
+                                [ Html.text <| maybeUserChatTag user ++ " is here"
                                 ]
 
                         LogExit user ->
-                            div [ class "chatbox--line--leave" ]
-                                [ Html.text <| maybeUserChatTag user ++ " left"
+                            div [ class "chatbox--line--exit" ]
+                                [ Html.text <| maybeUserChatTag user ++ " is gone"
                                 ]
 
                         _ ->
@@ -186,16 +186,16 @@ rollLine : RollLog -> Html Types.Msg
 rollLine roll =
     let
         text =
-            [ Html.text <|
-                roll.attacker
-                    ++ (if roll.success then
-                            " won over "
+            [ playerTag roll.attacker roll.attackerColor
+            , Html.text <|
+                if roll.success then
+                    " won over "
 
-                        else
-                            " lost against "
-                       )
-                    ++ roll.defender
-                    ++ " "
+                else
+                    " lost against "
+            , playerTag roll.defender roll.defenderColor
+            , Html.text <|
+                " "
                     ++ String.fromInt roll.attackRoll
                     ++ (if roll.success then
                             " → "

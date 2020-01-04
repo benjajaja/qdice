@@ -1,4 +1,4 @@
-module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, isBot, makePlayer, statusToIcon, statusToString)
+module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, isBot, makePlayer, statusToIcon, statusToString, userColor)
 
 import Board exposing (LandUpdate)
 import Browser.Dom as Dom
@@ -168,6 +168,8 @@ type ChatLogEntry
 
 type alias RollLog =
     { attacker : User
+    , attackerColor : Color
+    , defenderColor : Color
     , defender : User
     , attackRoll : Int
     , attackDiesEmojis : String
@@ -293,3 +295,12 @@ actionToString action =
 isBot : Player -> Bool
 isBot =
     .id >> String.startsWith "bot_"
+
+
+userColor : List Player -> String -> Land.Color
+userColor players name =
+    players
+        |> List.filter (\p -> p.name == name)
+        |> List.head
+        |> Maybe.map .color
+        |> Maybe.withDefault Land.Black
