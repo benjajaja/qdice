@@ -10,6 +10,8 @@ import {
   IllegalMoveError,
   Elimination,
   UserLike,
+  BotPlayer,
+  Color,
 } from "../types";
 import * as publish from "./publish";
 import { addSeconds, now } from "../timestamp";
@@ -32,6 +34,7 @@ import {
 } from "../constants";
 import logger from "../logger";
 import endGame from "./endGame";
+import { isBot } from "./bots";
 
 export const heartbeat = (
   user: User,
@@ -103,13 +106,14 @@ export const exit = (user, table, clientId): CommandResult | undefined => {
 export const makePlayer = (
   user: User,
   clientId,
-  playerCount: number
+  playerCount: number,
+  color?: Color
 ): Player => ({
   id: user.id,
   clientId,
   name: user.name,
   picture: user.picture || "",
-  color: playerCount + 1,
+  color: color ?? playerCount + 1,
   reserveDice: 0,
   out: false,
   outTurns: 0,
@@ -128,6 +132,9 @@ export const makePlayer = (
 
 export const join = (user: User, table: Table, clientId): CommandResult => {
   if (table.status === STATUS_PLAYING) {
+    if (table.players.some(isBot)) {
+      return takeover(user, table, clientId);
+    }
     throw new IllegalMoveError("join while STATUS_PLAYING", user.id);
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
@@ -183,6 +190,55 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
     table: { status, turnCount, gameStart },
     players,
     lands,
+  };
+};
+
+const takeover = (user: User, table: Table, clientId): CommandResult => {
+  const existing = table.players.filter(p => p.id === user.id).pop();
+  if (existing) {
+    throw new IllegalMoveError("already joined", user.id);
+  }
+
+  if (user.points < table.points) {
+    throw new IllegalMoveError("not enough points to join", user.id);
+  }
+
+  logger.debug("takeover", typeof user.id);
+
+  const bestBot = table.players
+    .filter(isBot)
+    .reduce((best: BotPlayer | null, bot) => {
+      if (
+        best === null ||
+        table.lands.filter(land => land.color === bot.color).length >
+          table.lands.filter(land => land.color === best.color).length
+      ) {
+        return bot;
+      }
+      return best;
+    }, null);
+
+  if (bestBot === null) {
+    throw new IllegalMoveError("could not find a bot to takeover", user.id);
+  }
+
+  const player = makePlayer(
+    user,
+    clientId,
+    table.players.length,
+    bestBot.color
+  );
+  const players = table.players.map(p => (p === bestBot ? player : p));
+
+  publish.event({
+    type: "join",
+    table: table.name,
+    player,
+  });
+
+  return {
+    type: "Takeover",
+    players,
   };
 };
 

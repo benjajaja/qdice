@@ -1,4 +1,4 @@
-module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, makePlayer, statusToIcon, statusToString)
+module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, isBot, makePlayer, statusToIcon, statusToString)
 
 import Board exposing (LandUpdate)
 import Browser.Dom as Dom
@@ -286,3 +286,8 @@ actionToString action =
 
         Heartbeat ->
             "Heartbeat"
+
+
+isBot : Player -> Bool
+isBot =
+    .id >> String.startsWith "bot_"

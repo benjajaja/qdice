@@ -7,7 +7,7 @@ import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard
 import Game.State exposing (canHover)
-import Game.Types exposing (PlayerAction(..), statusToString)
+import Game.Types exposing (PlayerAction(..), isBot, statusToString)
 import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, style, target, type_)
@@ -177,8 +177,8 @@ setButtonStates model =
                     }
 
         Nothing ->
-            if model.game.status /= Game.Types.Playing then
-                Just <|
+            let
+                record =
                     case model.user of
                         Types.Anonymous ->
                             { buttonLabel = "Join"
@@ -196,6 +196,12 @@ setButtonStates model =
                                     ErrorToast ("Table has minimum points of " ++ String.fromInt model.game.points) "not enough points"
                             , checkReady = Nothing
                             }
+            in
+            if model.game.status /= Game.Types.Playing then
+                Just record
+
+            else if model.game.players |> List.any isBot then
+                Just { record | buttonLabel = "Join & Take over a bot" }
 
             else
                 Nothing

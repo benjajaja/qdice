@@ -163,6 +163,7 @@ export type CommandType =
   | "Enter"
   | "Exit"
   | "Join"
+  | "Takeover"
   | "Leave"
   | "Attack"
   | "EndTurn"
