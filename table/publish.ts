@@ -1,4 +1,4 @@
-import { Table } from "../types";
+import { Table, Player } from "../types";
 import { serializeTable, serializePlayer } from "./serialize";
 import logger from "../logger";
 import * as jwt from "jsonwebtoken";
@@ -20,6 +20,42 @@ export const tableStatus = (table: Table, clientId?) => {
     err => {
       if (err) {
         console.log(err, "tables/" + table.name + "/clients update", table);
+      }
+    }
+  );
+};
+
+export const join = (table: Table, player: Player) => {
+  client.publish(
+    "tables/" + table.name + "/clients",
+    JSON.stringify({
+      type: "join",
+      payload: serializePlayer(table)(player),
+    }),
+    undefined,
+    err => {
+      if (err) {
+        console.log(err, "tables/" + table.name + "/clients join", player.name);
+      }
+    }
+  );
+};
+
+export const leave = (table: Table, player: Player) => {
+  client.publish(
+    "tables/" + table.name + "/clients",
+    JSON.stringify({
+      type: "leave",
+      payload: serializePlayer(table)(player),
+    }),
+    undefined,
+    err => {
+      if (err) {
+        console.log(
+          err,
+          "tables/" + table.name + "/clients leave",
+          player.name
+        );
       }
     }
   );

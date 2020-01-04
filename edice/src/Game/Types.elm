@@ -156,6 +156,8 @@ type ChatLogEntry
     = LogEnter (Maybe User)
     | LogExit (Maybe User)
     | LogChat (Maybe User) Color String
+    | LogJoin Player
+    | LogLeave Player
     | LogError String
     | LogRoll RollLog
     | LogTurn User Color

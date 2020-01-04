@@ -67,13 +67,12 @@ export const addBots = (table: Table): CommandResult => {
     voted: [],
     awards: [],
   };
-  const players = table.players.concat([
-    {
-      ...makePlayer(botUser, "bot", table.players.length),
-      bot: persona,
-      ready: process.env.NODE_ENV === "local",
-    },
-  ]);
+  const player = {
+    ...makePlayer(botUser, "bot", table.players.length),
+    bot: persona,
+    ready: process.env.NODE_ENV === "local",
+  };
+  const players = table.players.concat([player]);
 
   let gameStart = table.gameStart;
   if (players.length >= table.startSlots) {
@@ -85,6 +84,7 @@ export const addBots = (table: Table): CommandResult => {
       players: players,
     });
   }
+  publish.join(table, player);
   return {
     type: "Join",
     players,

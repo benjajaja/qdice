@@ -149,6 +149,22 @@ decodeTableMessage table message =
                         Err err ->
                             Err <| errorToString err
 
+                "join" ->
+                    case decodeString (field "payload" playersDecoder) message of
+                        Ok player ->
+                            Ok <| TableMsg table <| Join player
+
+                        Err err ->
+                            Err <| errorToString err
+
+                "leave" ->
+                    case decodeString (field "payload" playersDecoder) message of
+                        Ok player ->
+                            Ok <| TableMsg table <| Leave player
+
+                        Err err ->
+                            Err <| errorToString err
+
                 _ ->
                     Err <| "unknown table message type \"" ++ mtype ++ "\""
 

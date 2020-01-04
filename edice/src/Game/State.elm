@@ -14,7 +14,7 @@ import Maps exposing (load)
 import Snackbar exposing (toastMessage)
 import Tables exposing (Map, Table)
 import Task
-import Types exposing (Msg(..), User(..))
+import Types exposing (LoggedUser, Msg(..), User(..))
 
 
 init : Maybe Table -> Maybe Map -> Game.Types.Model
@@ -544,6 +544,12 @@ updateTable model table msg =
                     Backend.Types.Error error ->
                         updateChatLog model <| LogError error
 
+                    Backend.Types.Join player ->
+                        updateChatLog model <| LogJoin player
+
+                    Backend.Types.Leave player ->
+                        updateChatLog model <| LogLeave player
+
                     Backend.Types.Enter user ->
                         updateChatLog model <| LogEnter user
 
@@ -558,11 +564,7 @@ updateTable model table msg =
                                         Land.Black
 
                                     Just name ->
-                                        model.game.players
-                                            |> List.filter (\p -> p.name == name)
-                                            |> List.head
-                                            |> Maybe.map .color
-                                            |> Maybe.withDefault Land.Black
+                                        userColor model.game.players name
                         in
                         updateChatLog model <| LogChat user color text
 
@@ -655,6 +657,15 @@ updateTable model table msg =
 
         Nothing ->
             ( model, Cmd.none )
+
+
+userColor : List Player -> String -> Land.Color
+userColor players name =
+    players
+        |> List.filter (\p -> p.name == name)
+        |> List.head
+        |> Maybe.map .color
+        |> Maybe.withDefault Land.Black
 
 
 isChat : ChatLogEntry -> Bool

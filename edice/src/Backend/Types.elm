@@ -54,6 +54,8 @@ type TableMessage
     = Enter (Maybe Game.Types.User)
     | Chat (Maybe Game.Types.User) String
     | Exit (Maybe Game.Types.User)
+    | Join Game.Types.Player
+    | Leave Game.Types.Player
     | Update Game.Types.TableStatus
     | Roll Game.Types.Roll
     | Move Game.Types.Move

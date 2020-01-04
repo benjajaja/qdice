@@ -166,6 +166,8 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
 
   let gameStart = table.gameStart;
 
+  publish.join(table, player);
+
   if (table.players.length === table.playerSlots) {
     gameStart = now();
   } else {
@@ -230,6 +232,9 @@ const takeover = (user: User, table: Table, clientId): CommandResult => {
   );
   const players = table.players.map(p => (p === bestBot ? player : p));
 
+  publish.leave(table, bestBot);
+  publish.join(table, player);
+
   publish.event({
     type: "join",
     table: table.name,
@@ -243,7 +248,7 @@ const takeover = (user: User, table: Table, clientId): CommandResult => {
 };
 
 export const leave = (
-  user: { id: UserId },
+  user: { id: UserId; name: string },
   table: Table,
   clientId?
 ): CommandResult => {
@@ -269,6 +274,7 @@ export const leave = (
     Object.assign(player, { color: index + 1 })
   );
 
+  publish.leave(table, existing);
   publish.event({
     type: "join",
     table: table.name,

@@ -77,17 +77,29 @@ gameBox lines id_ =
                 (\c ->
                     case c of
                         LogChat _ _ _ ->
-                            Html.text "\u{0000}"
+                            Html.text "ERRchat"
 
                         LogEnter _ ->
-                            Html.text "\u{0001}"
+                            Html.text "ERRenter"
 
                         LogExit _ ->
-                            Html.text "\u{0002}"
+                            Html.text "ERRexit"
 
                         LogError error ->
                             div [ class "chatbox--line--error" ]
                                 [ Html.text <| error ]
+
+                        LogJoin player ->
+                            div [ class "chatbox--line--join", dataTestId "logline-join" ]
+                                [ playerTag player.name player.color
+                                , Html.text " joined the game"
+                                ]
+
+                        LogLeave player ->
+                            div [ class "chatbox--line--leave", dataTestId "logline-leave" ]
+                                [ playerTag player.name player.color
+                                , Html.text " left the game"
+                                ]
 
                         LogRoll roll ->
                             rollLine roll
