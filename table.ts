@@ -3,8 +3,9 @@ import * as R from "ramda";
 import * as mqtt from "mqtt";
 import * as jwt from "jsonwebtoken";
 import * as AsyncLock from "async-lock";
-import * as maps from "./maps";
+import * as Sentry from "@sentry/node";
 
+import * as maps from "./maps";
 import { Table, CommandResult, Elimination, IllegalMoveError } from "./types";
 import * as db from "./db";
 import * as publish from "./table/publish";
@@ -124,8 +125,10 @@ export const start = async (
         publish.clientError(clientId, e);
         if (e instanceof IllegalMoveError) {
           logger.error(e, "illegal move caught gracefully");
+          Sentry.captureException(e);
         } else if (e instanceof jwt.JsonWebTokenError) {
           logger.error(e, "bad JWT token");
+          Sentry.captureException(e);
         } else {
           throw e;
         }
