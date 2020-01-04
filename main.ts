@@ -168,7 +168,7 @@ export const server = async () => {
   server.post(`${root}/add-login/:network`, user.addLogin);
   server.get(`${root}/me`, user.me);
   server.del(`${root}/me`, user.del);
-  server.put(`${root}/profile`, user.profile); // TODO change to /me
+  server.put(`${root}/me`, user.profile);
   server.post(`${root}/register`, user.register);
 
   server.get(`${root}/global`, globalServer.global);

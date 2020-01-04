@@ -1,3 +1,5 @@
+import * as fs from "fs";
+import * as path from "path";
 import * as R from "ramda";
 import * as errs from "restify-errors";
 import * as request from "request";
@@ -5,8 +7,16 @@ import * as jwt from "jsonwebtoken";
 import * as db from "./db";
 import * as publish from "./table/publish"; // avoid or refactor
 import logger from "./logger";
-import { Preferences, PushNotificationEvents, User } from "./types";
+import { Preferences, PushNotificationEvents, User, UserId } from "./types";
 import { Request } from "restify";
+import * as dataUrlStream from "data-url-stream";
+import * as resize from "resizer-stream";
+import * as pics from "pics";
+import * as ps from "promise-streams";
+
+pics.use(require("gif-stream"));
+pics.use(require("jpg-stream"));
+pics.use(require("png-stream"));
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 
@@ -160,18 +170,20 @@ export const me = async function(req, res, next) {
   }
 };
 
-export const profile = function(req, res, next) {
-  db.updateUser(req.user.id, req.body.name, req.body.email)
-    .then(profile => {
-      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
-      res.sendRaw(200, token);
-      next();
-    })
-    .catch(e => {
-      console.error(e);
-      return Promise.reject(e);
-    })
-    .catch(e => next(e));
+export const profile = async function(req, res, next) {
+  try {
+    const picture = req.body.picture
+      ? await saveAvatar(req.user.id, req.body.picture)
+      : null;
+    logger.debug("saved", picture);
+    const profile = await db.updateUser(req.user.id, { ...req.body, picture });
+    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
+    res.sendRaw(200, token);
+    next();
+  } catch (e) {
+    logger.error(e);
+    next(e);
+  }
 };
 
 export const register = function(req, res, next) {
@@ -250,4 +262,24 @@ export const registerVote = (source: "topwebgames") => async (
     console.error(e);
     next(e);
   }
+};
+
+const saveAvatar = (id: UserId, url: string): Promise<string> => {
+  logger.debug("picture:", url.slice(0, 20));
+  const filename = `user_${id}.gif`;
+  const file = fs.createWriteStream(
+    path.join(process.env.AVATAR_PATH!, filename)
+  );
+  const stream: fs.ReadStream = dataUrlStream(url);
+  return ps
+    .wait(
+      stream
+        .pipe(pics.decode())
+        .pipe(
+          resize({ width: 100, height: 100, fit: true, allowUpscale: true })
+        )
+        .pipe(pics.encode("image/gif"))
+        .pipe(file)
+    )
+    .then(() => `${process.env.PICTURE_URL_PREFIX}/${filename}`);
 };

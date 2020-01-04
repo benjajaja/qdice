@@ -79,7 +79,7 @@ init flags location key =
             , key = key
             , oauth = oauth
             , game = game
-            , myProfile = { name = Nothing, email = Nothing, deleteAccount = MyProfile.Types.None }
+            , myProfile = { name = Nothing, email = Nothing, picture = Nothing, deleteAccount = MyProfile.Types.None }
             , backend = backend_
             , user = Types.Anonymous
             , tableList = []

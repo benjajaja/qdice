@@ -1,6 +1,9 @@
 module MyProfile.MyProfile exposing (update, view)
 
 import Backend.HttpCommands
+import File
+import File.Select as Select
+import Helpers exposing (consoleDebug)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -9,6 +12,7 @@ import MyOauth exposing (saveToken)
 import MyProfile.Types exposing (..)
 import Routing exposing (navigateTo)
 import Snackbar exposing (toastError)
+import Task
 import Types exposing (AuthNetwork(..), LoggedUser, Model, Msg(..), PushEvent(..), Route(..), User(..))
 
 
@@ -157,21 +161,33 @@ profileForm model user =
                 ]
                 []
             ]
-        , label [ class "edFormLabel" ]
-            [ text "Email"
-            , input
-                [ type_ "email"
-                , value <| Maybe.withDefault (Maybe.withDefault "" user.email) model.email
-                , onInput <| MyProfileMsg << ChangeEmail
-                ]
-                []
-            ]
+        , avatarUpload model user
         , div []
             [ button
                 []
                 [ text "Save" ]
             ]
         , span [] [ text "Your email may be used to recover your access. You will not receive spam. If in the future we add some email features, they will be opt-in." ]
+        ]
+
+
+avatarUpload : MyProfileModel -> LoggedUser -> Html Msg
+avatarUpload model user =
+    div []
+        [ label [ class "edFormLabel" ]
+            [ text "Avatar"
+            , div []
+                [ img
+                    [ src <| Maybe.withDefault user.picture model.picture
+                    , width 100
+                    , height 100
+                    ]
+                    []
+                ]
+            , button
+                [ type_ "button", onClick <| MyProfileMsg AvatarRequested ]
+                [ text "Set picture..." ]
+            ]
         ]
 
 
@@ -249,20 +265,25 @@ update model msg =
             case model.user of
                 Logged user ->
                     let
-                        profile =
-                            { user
-                                | name = Maybe.withDefault user.name model.myProfile.name
-                                , email =
-                                    case model.myProfile.email of
-                                        Just email ->
-                                            Just email
-
-                                        Nothing ->
-                                            user.email
+                        profileUpdate =
+                            { name = model.myProfile.name
+                            , email = model.myProfile.email
+                            , picture = model.myProfile.picture
                             }
                     in
                     ( model
-                    , Backend.HttpCommands.updateAccount model.backend profile
+                    , if
+                        profileUpdate.name
+                            /= Nothing
+                            || profileUpdate.email
+                            /= Nothing
+                            || profileUpdate.picture
+                            /= Nothing
+                      then
+                        Backend.HttpCommands.updateAccount model.backend profileUpdate
+
+                      else
+                        Cmd.none
                     )
 
                 Anonymous ->
@@ -313,3 +334,26 @@ update model msg =
                             ( model_
                             , Backend.HttpCommands.toastHttpError err
                             )
+
+        AvatarRequested ->
+            ( model, Select.file [ "image/*" ] (AvatarSelected >> MyProfileMsg) )
+
+        AvatarSelected file ->
+            ( model
+            , Task.perform
+                (AvatarLoaded
+                    >> MyProfileMsg
+                )
+              <|
+                File.toUrl file
+            )
+
+        AvatarLoaded url ->
+            let
+                p =
+                    model.myProfile
+
+                p_ =
+                    { p | picture = Just url }
+            in
+            ( { model | myProfile = p_ }, Cmd.none )

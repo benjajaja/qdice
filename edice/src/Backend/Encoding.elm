@@ -1,8 +1,19 @@
-module Backend.Encoding exposing (actionPayload, authStateEncoder, encodeAuthNetwork, encodeJwt, encodePlayerAction, playerEncoder, profileEncoder)
+module Backend.Encoding exposing (actionPayload, authStateEncoder, encodeAuthNetwork, encodeJwt, encodePlayerAction, myProfileUpdateEncoder, playerEncoder, profileEncoder)
 
 import Game.Types exposing (Player, PlayerAction(..), actionToString)
 import Json.Encode exposing (Value, bool, encode, list, null, object, string)
+import MyProfile.Types exposing (MyProfileUpdate)
 import Types exposing (..)
+
+
+stringOrNull : Maybe String -> Value
+stringOrNull s =
+    case s of
+        Just s_ ->
+            string s_
+
+        Nothing ->
+            null
 
 
 playerEncoder : Player -> Value
@@ -17,14 +28,7 @@ profileEncoder user =
     object
         [ ( "id", string user.id )
         , ( "name", string user.name )
-        , ( "email"
-          , case user.email of
-                Just email ->
-                    string email
-
-                Nothing ->
-                    null
-          )
+        , ( "email", stringOrNull user.email )
         , ( "picture", string user.picture )
         ]
 
@@ -96,19 +100,18 @@ authStateEncoder state =
           , string <| encodeAuthNetwork state.network
           )
         , ( "table"
-          , case state.table of
-                Just table ->
-                    string table
-
-                Nothing ->
-                    null
+          , stringOrNull state.table
           )
         , ( "addTo"
-          , case state.addTo of
-                Just userId ->
-                    string userId
-
-                Nothing ->
-                    null
+          , stringOrNull state.addTo
           )
+        ]
+
+
+myProfileUpdateEncoder : MyProfileUpdate -> Value
+myProfileUpdateEncoder update =
+    object
+        [ ( "name", stringOrNull update.name )
+        , ( "email", stringOrNull update.email )
+        , ( "picture", stringOrNull update.picture )
         ]

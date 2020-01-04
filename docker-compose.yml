@@ -25,6 +25,7 @@ services:
     env_file: .env
     volumes:
       - statics:/usr/src/edice/dist
+      - ~/data-avatars:/avatars
     depends_on:
       - postgres
       - emqx
@@ -59,7 +60,7 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - statics:/var/www/qdice.wtf
-      - ~/data-avatars:/var/www/qdice.wtf/pictures
+      - ~/data-avatars:/var/www/qdice.wtf/pictures:ro
       - ./data/logs/nginx:/var/log/nginx
       - goaccess:/var/www/goaccess:ro
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"

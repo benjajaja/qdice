@@ -153,14 +153,25 @@ export const addNetwork = async (
 
 export const updateUser = async (
   id: UserId,
-  name: string,
-  email: string | null
+  fields: {
+    name: string | null;
+    email: string | null;
+    picture: string | null;
+  }
 ) => {
-  await pool.query("UPDATE users SET name = $2, email = $3 WHERE id = $1", [
-    id,
-    name,
-    email,
-  ]);
+  const columns = Object.keys(fields).filter(k => fields[k] !== null);
+  if (columns.length === 0) {
+    throw new Error("user update needs some fields");
+  }
+  const values = [id].concat(columns.map(k => fields[k]));
+
+  const text = `
+UPDATE users
+SET (${columns.join(", ")})
+  = (${columns.map((_, i) => `$${i + 2}`).join(", ")})
+WHERE id = $1
+RETURNING *`;
+  await pool.query(text, values);
   return await getUser(id);
 };
 

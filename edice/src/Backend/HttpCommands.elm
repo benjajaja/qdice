@@ -8,6 +8,7 @@ import Game.Types exposing (PlayerAction(..))
 import Helpers exposing (httpErrorToString)
 import Http exposing (Error, emptyBody, expectJson, expectString, expectWhatever, header, jsonBody, stringBody)
 import Land exposing (Color(..))
+import MyProfile.Types exposing (MyProfileUpdate)
 import Snackbar exposing (toastError)
 import Types exposing (AuthNetwork(..), AuthState, LoggedUser, LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
 
@@ -121,7 +122,7 @@ login model name =
     )
 
 
-updateAccount : Model -> LoggedUser -> Cmd Msg
+updateAccount : Model -> MyProfileUpdate -> Cmd Msg
 updateAccount model newProfile =
     Http.request
         { method = "PUT"
@@ -132,9 +133,9 @@ updateAccount model newProfile =
 
                 Nothing ->
                     []
-        , url = model.baseUrl ++ "/profile"
+        , url = model.baseUrl ++ "/me"
         , body =
-            jsonBody <| profileEncoder newProfile
+            jsonBody <| myProfileUpdateEncoder newProfile
         , expect =
             expectString (GetToken Nothing)
         , timeout = Nothing
