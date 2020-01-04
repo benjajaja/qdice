@@ -28,12 +28,12 @@ chatBox inputValue colors lines id_ =
                                     [ Html.text message ]
                                 ]
 
-                        LogJoin user ->
+                        LogEnter user ->
                             div [ class "chatbox--line--join" ]
                                 [ Html.text <| maybeUserChatTag user ++ " joined"
                                 ]
 
-                        LogLeave user ->
+                        LogExit user ->
                             div [ class "chatbox--line--leave" ]
                                 [ Html.text <| maybeUserChatTag user ++ " left"
                                 ]
@@ -79,10 +79,10 @@ gameBox lines id_ =
                         LogChat _ _ _ ->
                             Html.text "\u{0000}"
 
-                        LogJoin _ ->
+                        LogEnter _ ->
                             Html.text "\u{0001}"
 
-                        LogLeave _ ->
+                        LogExit _ ->
                             Html.text "\u{0002}"
 
                         LogError error ->

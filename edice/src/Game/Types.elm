@@ -153,8 +153,8 @@ type alias User =
 
 
 type ChatLogEntry
-    = LogJoin (Maybe User)
-    | LogLeave (Maybe User)
+    = LogEnter (Maybe User)
+    | LogExit (Maybe User)
     | LogChat (Maybe User) Color String
     | LogError String
     | LogRoll RollLog

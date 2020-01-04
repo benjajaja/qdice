@@ -88,18 +88,18 @@ decodeTableMessage table message =
                 "enter" ->
                     case decodeString (field "payload" Dec.string) message of
                         Ok user ->
-                            Ok <| TableMsg table <| Join <| Just user
+                            Ok <| TableMsg table <| Enter <| Just user
 
                         Err err ->
-                            Ok <| TableMsg table <| Join Nothing
+                            Ok <| TableMsg table <| Enter Nothing
 
                 "exit" ->
                     case decodeString (field "payload" Dec.string) message of
                         Ok user ->
-                            Ok <| TableMsg table <| Leave <| Just user
+                            Ok <| TableMsg table <| Exit <| Just user
 
                         Err err ->
-                            Ok <| TableMsg table <| Leave Nothing
+                            Ok <| TableMsg table <| Exit Nothing
 
                 "update" ->
                     case decodeString (field "payload" tableDecoder) message of

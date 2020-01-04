@@ -544,11 +544,11 @@ updateTable model table msg =
                     Backend.Types.Error error ->
                         updateChatLog model <| LogError error
 
-                    Backend.Types.Join user ->
-                        updateChatLog model <| LogJoin user
+                    Backend.Types.Enter user ->
+                        updateChatLog model <| LogEnter user
 
-                    Backend.Types.Leave user ->
-                        updateChatLog model <| LogLeave user
+                    Backend.Types.Exit user ->
+                        updateChatLog model <| LogExit user
 
                     Backend.Types.Chat user text ->
                         let
@@ -660,10 +660,10 @@ updateTable model table msg =
 isChat : ChatLogEntry -> Bool
 isChat entry =
     case entry of
-        LogJoin _ ->
+        LogEnter _ ->
             True
 
-        LogLeave _ ->
+        LogExit _ ->
             True
 
         LogChat _ _ _ ->
