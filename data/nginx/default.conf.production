@@ -66,5 +66,12 @@ server {
         auth_basic_user_file /etc/nginx/.htpasswd;
         alias /var/www/goaccess;
     }
+    location /goaccess-ws {
+        proxy_pass http://goaccess:7890;
+        include /etc/nginx/proxy_params;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+    }
 }
 
