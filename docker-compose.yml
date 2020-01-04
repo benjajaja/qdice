@@ -61,7 +61,7 @@ services:
       - statics:/var/www/qdice.wtf
       - ~/data-avatars:/var/www/qdice.wtf/pictures
       - ./data/logs/nginx:/var/log/nginx
-      - ./data/goaccess/html:/var/www/goaccess
+      - goaccess:/var/www/goaccess:ro
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
     depends_on:
       - emqx
@@ -74,9 +74,9 @@ services:
     image: allinurl/goaccess
     restart: always
     volumes:
-      - ./data/goaccess/goaccess.conf:/srv/data/goaccess.conf
-      - ./data/goaccess/html:/srv/report
-      - ./data/logs/nginx:/srv/logs
+      - ./data/goaccess/goaccess.conf:/srv/data/goaccess.conf:ro
+      - goaccess:/srv/report:rw
+      - ./data/logs/nginx:/srv/logs:ro
     command: "--no-global-config --config-file=/srv/data/goaccess.conf"
     ports:
       - "7890:7890"
@@ -92,4 +92,5 @@ networks:
 
 volumes:
   statics:
+  goaccess:
 

@@ -62,11 +62,15 @@ server {
         proxy_set_header Connection "Upgrade";
     }
     location /goaccess {
+        access_log off;
+        log_not_found off;
         auth_basic "web stats";
         auth_basic_user_file /etc/nginx/.htpasswd;
         alias /var/www/goaccess;
     }
     location /goaccess-ws {
+        access_log off;
+        log_not_found off;
         proxy_pass http://goaccess:7890;
         include /etc/nginx/proxy_params;
         proxy_http_version 1.1;
