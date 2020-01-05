@@ -10,14 +10,7 @@ import Types exposing (..)
 view : Int -> Model -> Html Msg
 view limit model =
     div [ class "edLeaderboard" ]
-        [ div []
-            [ a
-                [ href "/leaderboard"
-                ]
-                [ text "Leaderboard" ]
-            , text <| " for " ++ model.leaderBoard.month
-            ]
-        , table []
+        [ table []
             [ thead []
                 [ tr []
                     [ th [ align "right" ] [ text "Rank" ]

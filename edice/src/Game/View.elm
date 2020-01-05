@@ -52,7 +52,7 @@ view model =
             [ gameChat model
             , gameLog model
             ]
-        , div [ class "edPlayerBoxes cartonCard" ] <|
+        , div [ class "edBoxes cartonCard" ] <|
             playerBox model
                 ++ leaderboardBox model
         , Game.Footer.footer model
@@ -107,7 +107,14 @@ seatButtons model =
                     [ case checkReady of
                         Just ready ->
                             [ label
-                                [ class "edCheckbox"
+                                [ class <|
+                                    "edCheckbox edGameHeader__checkbox"
+                                        ++ (if Maybe.withDefault ready model.game.isReady then
+                                                " edGameHeader__checkbox--checked"
+
+                                            else
+                                                ""
+                                           )
                                 , onClick <| GameCmd <| ToggleReady <| not <| Maybe.withDefault ready model.game.isReady
                                 , dataTestId "check-ready"
                                 ]
@@ -125,7 +132,7 @@ seatButtons model =
                             []
                     , if model.game.canFlag then
                         [ label
-                            [ class "edCheckbox"
+                            [ class "edCheckbox edGameHeader__checkbox"
                             , onClick <| GameCmd <| Flag <| not <| Maybe.withDefault False model.game.flag
                             , dataTestId "check-flag"
                             ]
@@ -303,8 +310,9 @@ tableDetails model =
 
 playerBox : Model -> List (Html Msg)
 playerBox model =
-    [ div [ class "edPlayerBox" ]
-        [ div [ class "edPlayerBox__inner" ] <|
+    [ div [ class "edBox edPlayerBox" ]
+        [ div [ class "edBox__header" ] [ text "Profile " ]
+        , div [ class "edBox__inner" ] <|
             case model.user of
                 Logged user ->
                     [ div [ class "edPlayerBox__Name" ]
@@ -380,8 +388,15 @@ playerBox model =
 
 leaderboardBox : Model -> List (Html Msg)
 leaderboardBox model =
-    [ div [ class "edLeaderboardBox" ]
-        [ div [ class "edLeaderboardBox__inner" ]
+    [ div [ class "edBox edLeaderboardBox" ]
+        [ div [ class "edBox__header" ]
+            [ a
+                [ href "/leaderboard"
+                ]
+                [ text "Leaderboard" ]
+            , text <| " for " ++ model.leaderBoard.month
+            ]
+        , div [ class "edBox__inner" ]
             [ LeaderBoard.View.view 10 model ]
         ]
     ]
