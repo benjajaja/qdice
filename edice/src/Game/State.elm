@@ -398,7 +398,7 @@ showRoll model roll =
             model.game
 
         game_ =
-            { game | board = board_ }
+            { game | board = board_, turnStart = roll.turnStart }
 
         soundName =
             if List.sum roll.from.roll > List.sum roll.to.roll then

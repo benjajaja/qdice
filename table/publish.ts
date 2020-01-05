@@ -1,4 +1,4 @@
-import { Table, Player } from "../types";
+import { Table, Player, Emoji } from "../types";
 import { serializeTable, serializePlayer } from "./serialize";
 import logger from "../logger";
 import * as jwt from "jsonwebtoken";
@@ -93,7 +93,12 @@ export const exit = (table, name) => {
   );
 };
 
-export const roll = (table, roll) => {
+type Roll = {
+  from: { emoji: Emoji, roll: number[] };
+  to: { emoji: Emoji, roll: number[] };
+  turnStart: number;
+}
+export const roll = (table, roll: Roll) => {
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({

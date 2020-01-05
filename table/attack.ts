@@ -27,10 +27,6 @@ export const rollResult = (table: Table): CommandResult => {
       fromLand.points,
       toLand.points
     );
-    publish.roll(table, {
-      from: { emoji: table.attack.from, roll: fromRoll },
-      to: { emoji: table.attack.to, roll: toRoll },
-    });
     let lands = table.lands;
     let players = botsNotifyAttack(table);
     let eliminations: ReadonlyArray<Elimination> | undefined = undefined;
@@ -81,6 +77,11 @@ export const rollResult = (table: Table): CommandResult => {
       { turnStart: now(), attack: null },
       turnIndex !== undefined ? { turnIndex } : {}
     );
+    publish.roll(table, {
+      from: { emoji: table.attack.from, roll: fromRoll },
+      to: { emoji: table.attack.to, roll: toRoll },
+      turnStart: Math.floor(props.turnStart / 1000),
+    });
     const result: CommandResult = {
       type: "Roll",
       table: props,

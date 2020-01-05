@@ -108,6 +108,7 @@ type alias TableStatus =
 type alias Roll =
     { from : RollPart
     , to : RollPart
+    , turnStart : Int
     }
 
 

@@ -195,6 +195,7 @@ rollDecoder =
     succeed Game.Types.Roll
         |> required "from" singleRollDecoder
         |> required "to" singleRollDecoder
+        |> required "turnStart" int
 
 
 singleRollDecoder : Decoder Game.Types.RollPart
