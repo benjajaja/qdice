@@ -5,7 +5,7 @@ import Backend.Types exposing (ConnectionStatus(..))
 import Board
 import Game.Chat
 import Game.Footer
-import Game.PlayerCard as PlayerCard
+import Game.PlayerCard as PlayerCard exposing (playerPicture)
 import Game.State exposing (canHover)
 import Game.Types exposing (PlayerAction(..), isBot, statusToString)
 import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
@@ -315,7 +315,8 @@ playerBox model =
         , div [ class "edBox__inner" ] <|
             case model.user of
                 Logged user ->
-                    [ div [ class "edPlayerBox__Name" ]
+                    [ div [ class "edPlayerBox__Picture" ] [ playerPicture "medium" user.picture ]
+                    , div [ class "edPlayerBox__Name" ]
                         [ a [ href <| routeToString False <| ProfileRoute user.id user.name ]
                             [ text user.name
                             ]

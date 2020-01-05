@@ -700,6 +700,9 @@ button .material-icons, .edButton .material-icons {
   font-size: 0.875rem;
   font-weight: bold;
 }
+.edPlayerBox__Picture {
+  float: right;
+}
 .edPlayerBox__settings {
   margin-top: 10px;
 }
@@ -899,6 +902,24 @@ button .material-icons, .edButton .material-icons {
 /* box-shadow: 5px 5px 10px #2796b3,  */
             /* -5px -5px 10px #49ffff; */
   /* overflow: hidden; */
+}
+
+.edPlayerPicture {
+  flex-shrink: 0;
+  position: relative;
+  border-radius: 50%;
+}
+.edPlayerPicture--small {
+  width: 14px;
+  height: 14px;
+}
+.edPlayerPicture--medium {
+  width: 30px;
+  height: 30px;
+}
+.edPlayerPicture--large {
+  width: 100px;
+  height: 100px;
 }
 
 @import "./css/myprofile.css";

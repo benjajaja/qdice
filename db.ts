@@ -318,7 +318,7 @@ LIMIT $1 OFFSET $2`,
     level: Math.max(1, row.level),
     levelPoints: Math.max(1, row.level_points),
     awards: row.awards,
-    picture: row.picture || "",
+    picture: row.picture || "assets/empty_profile_picture.svg",
   }));
 };
 

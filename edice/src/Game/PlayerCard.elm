@@ -1,4 +1,4 @@
-module Game.PlayerCard exposing (view)
+module Game.PlayerCard exposing (playerPicture, view)
 
 import Awards
 import Board.Colors
@@ -8,7 +8,7 @@ import Color.Interpolate
 import Game.Types exposing (GameStatus(..), Player)
 import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, style)
+import Html.Attributes exposing (class, href, src, style)
 import Ordinal exposing (ordinal)
 import Routing exposing (routeToString)
 import Svg
@@ -257,3 +257,12 @@ turnProgress model =
         min 1 <|
             (turnTime - (timestamp - turnStart))
                 / turnTime
+
+
+playerPicture : String -> String -> Html Msg
+playerPicture size picture =
+    Html.img
+        [ class <| "edPlayerPicture edPlayerPicture--" ++ size
+        , src picture
+        ]
+        []
