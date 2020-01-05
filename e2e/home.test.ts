@@ -5,7 +5,7 @@ describe("Home", () => {
   });
 
   test('should display "Table..." text on page', async () => {
-    await expect(page).toMatch("Table España");
+    await expect(page).toMatch("Table Planeta");
   });
 
   test('should display "join" button on page', async () => {

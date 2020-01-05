@@ -133,7 +133,7 @@ goToBestTable model =
             replaceNavigateTo model.zip model.key <| GameRoute bestTable.table
 
         Nothing ->
-            replaceNavigateTo model.zip model.key <| GameRoute "España"
+            replaceNavigateTo model.zip model.key <| GameRoute "Planeta"
 
 
 hasSomePlayers table =
