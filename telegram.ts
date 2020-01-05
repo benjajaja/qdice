@@ -15,6 +15,8 @@ import * as Twitter from "twitter";
 import { rand } from "./rand";
 import * as db from "./db";
 import logger from "./logger";
+import {GAME_START_COUNTDOWN} from "./constants";
+import {now} from "./timestamp";
 
 webPush.setVapidDetails(
   process.env.VAPID_URL!,
@@ -73,10 +75,14 @@ client.on("message", async (topic, message) => {
               row.subscription,
               JSON.stringify({
                 type: event.type,
+                timestamp: now(),
                 table: event.table,
                 text,
                 link: `https://qdice.wtf/${event.table}`,
-              })
+              }),
+              {
+                TTL: GAME_START_COUNTDOWN,
+              },
             );
           } catch (e) {
             console.error(e);
@@ -122,7 +128,16 @@ client.on("message", async (topic, message) => {
           try {
             const request = await webPush.sendNotification(
               row.subscription,
-              JSON.stringify({ text, link: `https://qdice.wtf/${table}` })
+              JSON.stringify({
+                type: event.type,
+                timestamp: now(),
+                table: event.table,
+                text,
+                link: `https://qdice.wtf/${event.table}`,
+              }),
+              {
+                TTL: GAME_START_COUNTDOWN,
+              },
             );
             console.log("PN", row.name, request);
           } catch (e) {
