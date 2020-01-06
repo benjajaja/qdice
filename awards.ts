@@ -27,7 +27,7 @@ const monthly = async () => {
 
   const timestamp = date(now());
   try {
-    client.query("BEGIN");
+    await client.query("BEGIN");
     await Promise.all(
       leaderboard.map(async entry => {
         const user = await db.getUser(entry.id);

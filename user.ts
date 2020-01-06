@@ -10,48 +10,49 @@ import logger from "./logger";
 import { Preferences, PushNotificationEvents, User, UserId } from "./types";
 import { Request } from "restify";
 import * as dataUrlStream from "data-url-stream";
-import * as resize from "resizer-stream";
-import * as pics from "pics";
-import * as ps from "promise-streams";
-
-pics.use(require("gif-stream"));
-pics.use(require("jpg-stream"));
-pics.use(require("png-stream"));
+import { savePicture, downloadPicture } from "./helpers";
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 
 export const defaultPreferences = (): Preferences => ({});
 
-export const login = (req, res, next) => {
-  const network = req.params.network;
-  getProfile(network, req.body, req.headers.origin + "/")
-    .then(profile => {
-      logger.debug("login", profile.id);
-      return db
-        .getUserFromAuthorization(network, profile.id)
-        .then(user => {
-          if (user) {
-            return user;
-          }
-          return db.createUser(
-            network,
-            profile.id,
-            profile.name,
-            profile.email,
-            profile.picture,
-            profile
-          );
-        })
-        .then(user => {
-          const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET!);
-          res.sendRaw(200, token);
-          next();
-        });
-    })
-    .catch(e => {
-      logger.error("login error", e.toString());
-      next(new errs.InternalError("could not load profile"));
-    });
+export const login = async (req, res, next) => {
+  try {
+    const network = req.params.network;
+    const profile = await getProfile(
+      network,
+      req.body,
+      req.headers.origin + "/"
+    );
+    logger.debug("login", profile.id);
+
+    let user = await db.getUserFromAuthorization(network, profile.id);
+    if (!user) {
+      user = await db.createUser(
+        network,
+        profile.id, // network-id, not user-id
+        profile.name,
+        profile.email,
+        "",
+        {} // GDPR friendly: don't save everything
+      );
+
+      // TODO move this into db.createUser somehow
+      const picture = await downloadPicture(user.id, profile.picture);
+      user = await db.updateUser(user.id, {
+        name: null,
+        email: null,
+        picture,
+      });
+    }
+
+    const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET!);
+    res.sendRaw(200, token);
+    next();
+  } catch (e) {
+    logger.error("login error", e.toString());
+    next(new errs.InternalError("could not log in"));
+  }
 };
 
 export const addLogin = (req, res, next) => {
@@ -66,7 +67,12 @@ export const addLogin = (req, res, next) => {
             throw new Error("already registered");
           }
           db.getUser(req.user.id);
-          return db.addNetwork(req.user.id, network, profile.id, profile);
+          return db.addNetwork(
+            req.user.id,
+            network,
+            profile.id,
+            {} // GDPR friendly: don't save everything
+          );
         })
         .then(user => {
           const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET!);
@@ -267,19 +273,6 @@ export const registerVote = (source: "topwebgames") => async (
 const saveAvatar = (id: UserId, url: string): Promise<string> => {
   logger.debug("picture:", url.slice(0, 20));
   const filename = `user_${id}.gif`;
-  const file = fs.createWriteStream(
-    path.join(process.env.AVATAR_PATH!, filename)
-  );
   const stream: fs.ReadStream = dataUrlStream(url);
-  return ps
-    .wait(
-      stream
-        .pipe(pics.decode())
-        .pipe(
-          resize({ width: 100, height: 100, fit: true, allowUpscale: true })
-        )
-        .pipe(pics.encode("image/gif"))
-        .pipe(file)
-    )
-    .then(() => `${process.env.PICTURE_URL_PREFIX}/${filename}`);
+  return savePicture(filename, stream);
 };

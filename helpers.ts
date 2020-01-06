@@ -1,7 +1,19 @@
+import { createWriteStream, ReadStream } from "fs";
+import { pipeline } from "stream";
+import * as path from "path";
+import * as request from "request";
+import * as ps from "promise-streams";
+import * as pics from "pics";
+import * as resize from "resizer-stream";
+
 import * as R from "ramda";
 import { Table, Land, UserId, Player, Elimination } from "./types";
 import logger from "./logger";
 import { COLOR_NEUTRAL, ELIMINATION_REASON_SURRENDER } from "./constants";
+
+pics.use(require("gif-stream"));
+pics.use(require("jpg-stream"));
+pics.use(require("png-stream"));
 
 export const findTable = (tables: Table[]) => (name: string): Table =>
   tables.filter(table => table.name === name).pop()!;
@@ -152,4 +164,31 @@ const removeNext = ([players, lands, turnIndex, eliminations]: [
     ]);
   }
   return [players, lands, turnIndex, eliminations];
+};
+
+export const savePicture = async (filename: string, stream: ReadStream) => {
+  const file = createWriteStream(path.join(process.env.AVATAR_PATH!, filename));
+  await new Promise((resolve, reject) =>
+    pipeline(
+      stream,
+      pics.decode(),
+      resize({ width: 100, height: 100, fit: true, allowUpscale: true }),
+      pics.encode("image/gif"),
+      file,
+      err => (err ? reject(err) : resolve())
+    )
+  );
+  return `${process.env.PICTURE_URL_PREFIX}/${filename}`;
+};
+
+export const downloadPicture = async (
+  id: UserId,
+  url: string | null
+): Promise<string | null> => {
+  if (url === null) {
+    return url;
+  }
+  const filename = `user_${id}.gif`;
+  const stream = request(url);
+  return savePicture(filename, stream);
 };
