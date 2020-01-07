@@ -32,7 +32,6 @@ var client;
 
 module.exports.connect = function(jwt) {
   var mqttConfig = getMqttConfig(jwt);
-  console.log("connect", mqttConfig.username, mqttConfig.password);
   var url = [mqttConfig.protocol, "://", mqttConfig.hostname]
     .concat(mqttConfig.port ? [":", mqttConfig.port] : [])
     .concat(["/", mqttConfig.path])
@@ -109,7 +108,6 @@ module.exports.subscribe = function(payload) {
         postMessage({ type: "mqttOnSubscribed", payload: granted.topic });
       });
     }
-    //console.log('sub', granted[0].topic);
   });
 };
 

@@ -201,6 +201,7 @@ export const server = async () => {
 
   logger.info("connecting to mqtt: " + process.env.MQTT_URL);
   var client = mqtt.connect(process.env.MQTT_URL, {
+    clientId: "nodice",
     username: process.env.MQTT_USERNAME,
     password: process.env.MQTT_PASSWORD,
   });
