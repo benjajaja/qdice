@@ -214,7 +214,6 @@ update msg model =
                                 List.append
                                     [ MyOauth.saveToken <| Just token
                                     , loadMe backend_
-                                    , Backend.connect token
                                     ]
                                 <|
                                     case Maybe.andThen .table authState of
@@ -483,9 +482,9 @@ update msg model =
             , cmds
             )
 
-        UnknownTopicMessage error topic message ->
+        UnknownTopicMessage error topic message clientId ->
             ( model
-            , toastError "I/O Error" <| "UnknownTopicMessage \"" ++ error ++ "\" in topic " ++ topic
+            , toastError "I/O Error" <| "UnknownTopicMessage \"" ++ error ++ "\" in topic " ++ topic ++ " with clientId " ++ clientId
             )
 
         StatusConnect _ ->

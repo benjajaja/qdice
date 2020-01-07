@@ -250,7 +250,7 @@ decodeSubscribed : Maybe ClientId -> String -> Msg
 decodeSubscribed clientId stringTopic =
     case clientId of
         Nothing ->
-            UnknownTopicMessage "no client id yet" stringTopic "-"
+            UnknownTopicMessage "no client id yet" stringTopic "-" "null"
 
         Just clientId_ ->
             case decodeTopic clientId_ stringTopic of
@@ -258,14 +258,14 @@ decodeSubscribed clientId stringTopic =
                     Subscribed topic
 
                 Nothing ->
-                    UnknownTopicMessage "unknown topic" stringTopic "*subscribed"
+                    UnknownTopicMessage "unknown topic" stringTopic "*subscribed" clientId_
 
 
 decodeMessage : Maybe ClientId -> Maybe Table -> ( String, String ) -> Msg
 decodeMessage clientId table ( stringTopic, message ) =
     case clientId of
         Nothing ->
-            UnknownTopicMessage "no client id yet" stringTopic "-"
+            UnknownTopicMessage "no client id yet" stringTopic "-" "null"
 
         Just clientId_ ->
             case decodeTopic clientId_ stringTopic of
@@ -278,7 +278,7 @@ decodeMessage clientId table ( stringTopic, message ) =
                             ErrorToast "Failed to parse an update" <| err ++ "/" ++ stringTopic ++ "/" ++ message
 
                 Nothing ->
-                    UnknownTopicMessage "unrecognized topic" stringTopic message
+                    UnknownTopicMessage "unrecognized topic" stringTopic message clientId_
 
 
 decodeTopic : ClientId -> String -> Maybe Topic
