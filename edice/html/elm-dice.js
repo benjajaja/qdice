@@ -116,7 +116,7 @@ app.ports.notification.subscribe(function(event) {
   }
 });
 
-app.ports.mqttConnect.subscribe(function() {
+app.ports.mqttConnect.subscribe(function(jwt) {
   var mqtt = require("./elm-dice-mqtt.js");
 
   mqtt.onmessage = function(action) {
@@ -126,7 +126,7 @@ app.ports.mqttConnect.subscribe(function() {
       app.ports[action.type].send(action.payload);
     }
   };
-  mqtt.connect(location.href);
+  mqtt.connect(jwt);
   app.ports.mqttSubscribe.subscribe(mqtt.subscribe);
   app.ports.mqttUnsubscribe.subscribe(mqtt.unsubscribe);
   app.ports.mqttPublish.subscribe(mqtt.publish);

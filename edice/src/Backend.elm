@@ -48,9 +48,9 @@ port mqttOnMessage : (( String, String ) -> msg) -> Sub msg
 port mqttOnError : (String -> msg) -> Sub msg
 
 
-connect : Cmd msg
-connect =
-    mqttConnect ""
+connect : String -> Cmd msg
+connect jwt =
+    mqttConnect jwt
 
 
 baseUrl : Url -> String
@@ -89,11 +89,11 @@ init version location token isTelegram =
     in
     ( model
     , case token of
-        Just _ ->
-            Cmd.batch [ connect, loadMe model ]
+        Just jwt ->
+            Cmd.batch [ connect jwt, loadMe model ]
 
         Nothing ->
-            connect
+            connect ""
     )
 
 
@@ -419,7 +419,8 @@ toRollLog model roll =
     , attackerColor = Maybe.withDefault errorPlayer attacker |> .color
     , defender = Maybe.withDefault errorPlayer defender |> .name
     , defenderColor =
-        Maybe.map .color defender |> Maybe.withDefault Black
+        Maybe.map .color defender
+            |> Maybe.withDefault Black
             |> (\color ->
                     if color == Neutral then
                         Black

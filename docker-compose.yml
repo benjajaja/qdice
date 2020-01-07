@@ -11,13 +11,21 @@ services:
     volumes:
       - ~/data-postgres:/var/lib/postgresql/data
   emqx:
-    image: emqx/emqx:v3.0.0
+    image: emqx/emqx:v3.2.7
+    environment:
+      EMQX_LOADED_PLUGINS: "emqx_management,emqx_auth_jwt,emqx_auth_username,emqx_recon,emqx_retainer,emqx_dashboard"
+      EMQX_DASHBOARD__DEFAULT_USER__PASSWORD: ${EMQX_DASHBOARD_PASSWORD}
+      # EMQX_ALLOW_ANONYMOUS: "true"
+      EMQX_AUTH__JWT__SECRET: ${JWT_SECRET}
+      EMQX_AUTH__JWT__FROM: "password"
+      EMQX_AUTH__USER__1__USERNAME: ${MQTT_USERNAME}
+      EMQX_AUTH__USER__1__PASSWORD: ${MQTT_PASSWORD}
     ports:
-      - "8083:8083"
-      - "8081:8080"
-      - "18083:18083"
-      - "11883:11883"
-      - "1883:1883"
+      - "8083:8083" # http for clients
+      - "1883:1883" # tcp for nodejs
+      - "8081:8080" # API mgmnt
+      - "18666:18083" # dashboard
+      - "11883:11883" # ???
   nodice:
     restart: always
     image: bgrosse/qdice:latest

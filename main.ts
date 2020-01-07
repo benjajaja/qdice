@@ -251,7 +251,12 @@ export const server = async () => {
 
   process.on("SIGINT", async function() {
     logger.info("SIGINT");
-    await publish.sigint();
+    await new Promise(async resolve => {
+      const t = setTimeout(resolve, 1000);
+      await publish.sigint();
+      clearTimeout(t);
+      resolve();
+    });
     process.exit();
   });
 };

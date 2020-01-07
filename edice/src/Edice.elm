@@ -214,6 +214,7 @@ update msg model =
                                 List.append
                                     [ MyOauth.saveToken <| Just token
                                     , loadMe backend_
+                                    , Backend.connect token
                                     ]
                                 <|
                                     case Maybe.andThen .table authState of

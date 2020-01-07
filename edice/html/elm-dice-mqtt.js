@@ -1,33 +1,38 @@
 var mqtt = require("mqtt");
 
-function getMqttConfig() {
+function getMqttConfig(jwt) {
   if (["localhost", "lvh.me"].indexOf(self.location.hostname) !== -1) {
     return {
       protocol: "ws",
       hostname: self.location.hostname,
       port: 8083,
       path: "mqtt",
-      username: "client",
-      password: "client",
+      username: "elm",
+      password: jwt,
     };
   } else if (self.location.hostname === "nginx") {
     return {
       protocol: "ws",
       path: "mqtt",
+      username: "elm",
+      password: jwt,
     };
   } else {
     return {
       protocol: "wss",
       path: "mqtt",
       hostname: "qdice.wtf",
+      username: "elm",
+      password: jwt,
     };
   }
 }
 
 var client;
 
-module.exports.connect = function() {
-  var mqttConfig = getMqttConfig();
+module.exports.connect = function(jwt) {
+  var mqttConfig = getMqttConfig(jwt);
+  console.log("connect", mqttConfig.username, mqttConfig.password);
   var url = [mqttConfig.protocol, "://", mqttConfig.hostname]
     .concat(mqttConfig.port ? [":", mqttConfig.port] : [])
     .concat(["/", mqttConfig.path])
