@@ -398,6 +398,6 @@ leaderboardBox model =
             , text <| " for " ++ model.leaderBoard.month
             ]
         , div [ class "edBox__inner" ]
-            [ LeaderBoard.View.view 10 model ]
+            [ LeaderBoard.View.table 10 model.leaderBoard.top ]
         ]
     ]

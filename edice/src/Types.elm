@@ -1,4 +1,4 @@
-module Types exposing (AuthNetwork(..), AuthState, Flags, GlobalSettings, LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, Flags, GlobalSettings, LeaderBoardModel, LeaderBoardResponse, LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
 
 import Animation
 import Backend.Types
@@ -31,6 +31,7 @@ type Msg
     | PushKey (Result Error String)
     | PushRegister PushSubscription
     | PushRegisterEvent ( PushEvent, Bool )
+    | LeaderboardMsg LeaderboardMsg
       -- oauth
     | Nop
     | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))
@@ -39,7 +40,6 @@ type Msg
     | GetToken (Maybe AuthState) (Result Error String)
     | GetProfile (Result Error ( LoggedUser, String, Preferences ))
     | GetOtherProfile (Result Error Profile)
-    | GetLeaderBoard (Result Error ( String, List Profile ))
     | Logout
     | ShowLogin LoginDialogStatus
     | Login String
@@ -207,8 +207,18 @@ type alias Profile =
 
 
 type alias LeaderBoardModel =
-    { month : String
+    { loading : Bool
+    , month : String
     , top : List Profile
+    , board : List Profile
+    , page : Int
+    }
+
+
+type alias LeaderBoardResponse =
+    { month : String
+    , board : List Profile
+    , page : Int
     }
 
 
@@ -229,3 +239,8 @@ type alias PushSubscription =
 type PushEvent
     = GameStart
     | PlayerJoin
+
+
+type LeaderboardMsg
+    = GetLeaderboard (Result Error LeaderBoardResponse)
+    | GotoPage Int

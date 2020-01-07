@@ -17,7 +17,7 @@ import logger from "./logger";
 
 export const global = async (req, res, next) => {
   const tables = await getTablesStatus();
-  const top = await db.leaderBoardTop(20);
+  const top = await db.leaderBoardTop(10);
   res.send(200, {
     settings: {
       turnSeconds: TURN_SECONDS,

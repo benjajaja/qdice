@@ -10,7 +10,8 @@ import Http exposing (Error, emptyBody, expectJson, expectString, expectWhatever
 import Land exposing (Color(..))
 import MyProfile.Types exposing (MyProfileUpdate)
 import Snackbar exposing (toastError)
-import Types exposing (AuthNetwork(..), AuthState, LoggedUser, LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
+import Types exposing (AuthNetwork(..), AuthState, LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
+import Url.Builder
 
 
 toastHttpError : Error -> Cmd Msg
@@ -74,11 +75,11 @@ loadMe model =
         }
 
 
-leaderBoard : Model -> Cmd Msg
-leaderBoard model =
+leaderBoard : Model -> Int -> Cmd Msg
+leaderBoard model page =
     Http.get
-        { url = model.baseUrl ++ "/leaderboard"
-        , expect = expectJson GetLeaderBoard leaderBoardDecoder
+        { url = Url.Builder.relative [ model.baseUrl, "leaderboard" ] [ Url.Builder.int "page" page ]
+        , expect = expectJson (LeaderboardMsg << GetLeaderboard) leaderBoardDecoder
         }
 
 

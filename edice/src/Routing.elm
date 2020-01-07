@@ -2,6 +2,7 @@ module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, 
 
 import Backend.HttpCommands exposing (leaderBoard, profile)
 import Browser.Navigation exposing (Key)
+import LeaderBoard.State exposing (fetchLeaderboard)
 import String.Normalize exposing (slug)
 import Types exposing (Model, Msg, Route(..), StaticPage(..))
 import Url exposing (Url, percentDecode)
@@ -106,24 +107,30 @@ routeToString useHash route =
            )
 
 
-routeEnterCmd : Model -> Route -> Cmd Msg
+routeEnterCmd : Model -> Route -> ( Model, Cmd Msg )
 routeEnterCmd model route =
     case route of
         LeaderBoardRoute ->
-            leaderBoard model.backend
+            fetchLeaderboard model model.leaderBoard.page
 
         ProfileRoute id _ ->
-            profile model.backend id
+            ( model
+            , profile model.backend id
+            )
 
         HomeRoute ->
-            if List.length model.tableList > 0 then
+            ( model
+            , if List.length model.tableList > 0 then
                 goToBestTable model
 
-            else
+              else
                 Cmd.none
+            )
 
         _ ->
-            Cmd.none
+            ( model
+            , Cmd.none
+            )
 
 
 goToBestTable : Model -> Cmd Msg

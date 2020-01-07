@@ -101,11 +101,17 @@ init flags location key =
                 { notificationsEnabled = flags.notificationsEnabled
                 }
             , leaderBoard =
-                { month = "this month"
+                { loading = False
+                , month = "this month"
                 , top = []
+                , board = []
+                , page = 1
                 }
             , otherProfile = Nothing
             }
+
+        ( model_, routeCmd ) =
+            Routing.routeEnterCmd model route
 
         cmds =
             Cmd.batch <|
@@ -116,10 +122,10 @@ init flags location key =
                       ]
                     , oauthCmds
                     , [ loadGlobalSettings backend ]
-                    , [ Routing.routeEnterCmd model route ]
+                    , [ routeCmd ]
                     ]
     in
-    ( model, cmds )
+    ( model_, cmds )
 
 
 updateWrapper : Msg -> Model -> ( Model, Cmd Msg )
@@ -142,6 +148,9 @@ update msg model =
         MyProfileMsg myProfileMsg ->
             MyProfile.MyProfile.update model myProfileMsg
 
+        LeaderboardMsg lMsg ->
+            LeaderBoard.State.update model lMsg
+
         GetGlobalSettings res ->
             case res of
                 Err err ->
@@ -154,8 +163,11 @@ update msg model =
                                 | settings = settings
                                 , tableList = tables
                                 , leaderBoard =
-                                    { month = month
+                                    { loading = model.leaderBoard.loading
+                                    , month = month
                                     , top = top
+                                    , board = model.leaderBoard.board
+                                    , page = model.leaderBoard.page
                                     }
                             }
                     in
@@ -251,9 +263,6 @@ update msg model =
                     ( { model | user = Logged profile, preferences = preferences, backend = backend_, game = game }
                     , ga [ "send", "event", "auth", "GetProfile" ]
                     )
-
-        GetLeaderBoard res ->
-            LeaderBoard.State.setLeaderBoard model res
 
         GetOtherProfile res ->
             case res of
@@ -687,7 +696,7 @@ mainView model =
 
         LeaderBoardRoute ->
             viewWrapper
-                [ LeaderBoard.View.view 1000 model ]
+                [ LeaderBoard.View.view model ]
 
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg
@@ -715,11 +724,8 @@ onLocationChange model location =
         newRoute =
             parseLocation location
 
-        model_ =
-            { model | route = newRoute }
-
-        cmd =
-            Routing.routeEnterCmd model_ newRoute
+        ( model_, cmd ) =
+            Routing.routeEnterCmd { model | route = newRoute } newRoute
     in
     if newRoute == model.route then
         ( model

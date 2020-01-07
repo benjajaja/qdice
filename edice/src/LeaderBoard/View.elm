@@ -1,17 +1,50 @@
-module LeaderBoard.View exposing (view)
+module LeaderBoard.View exposing (table, view)
 
 import Game.PlayerCard exposing (playerPicture)
 import Helpers exposing (pointsSymbol)
 import Html exposing (..)
-import Html.Attributes exposing (align, class, href)
+import Html.Attributes exposing (align, class, disabled, href)
+import Html.Events exposing (onClick)
 import Routing exposing (routeToString)
 import Types exposing (..)
 
 
-view : Int -> Model -> Html Msg
-view limit model =
+view : Model -> Html Msg
+view model =
+    div []
+        [ div
+            [ class <|
+                if model.leaderBoard.loading then
+                    "overlay-loading"
+
+                else
+                    "overlay-loaded"
+            ]
+            [ table 100 model.leaderBoard.board ]
+        , div [] <| pageButtons model
+        ]
+
+
+pageButtons : Model -> List (Html Msg)
+pageButtons model =
+    [ button
+        [ onClick <| Types.LeaderboardMsg <| GotoPage <| model.leaderBoard.page - 1
+        , disabled <| model.leaderBoard.page <= 1
+        ]
+        [ text "<" ]
+    , span [ class "edButton" ] [ text <| "Page " ++ String.fromInt model.leaderBoard.page ]
+    , button
+        [ onClick <| Types.LeaderboardMsg <| GotoPage <| model.leaderBoard.page + 1
+        , disabled <| List.length model.leaderBoard.board < 100
+        ]
+        [ text ">" ]
+    ]
+
+
+table : Int -> List Profile -> Html Msg
+table limit list =
     div [ class "edLeaderboard" ]
-        [ table []
+        [ Html.table []
             [ thead []
                 [ tr []
                     [ th [ align "right" ] [ text "Rank" ]
@@ -21,7 +54,7 @@ view limit model =
                     , th [ align "right" ] [ text "Level" ]
                     ]
                 ]
-            , model.leaderBoard.top
+            , list
                 |> List.take limit
                 |> List.map
                     (\profile ->

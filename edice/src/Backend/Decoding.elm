@@ -6,7 +6,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, 
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Preferences, Profile, PushEvent(..), SessionPreferences)
+import Types exposing (AuthNetwork(..), AuthState, LeaderBoardResponse, LoggedUser, Preferences, Profile, PushEvent(..), SessionPreferences)
 
 
 stringDecoder : Decoder String
@@ -258,7 +258,7 @@ globalDecoder =
     map3 (\a b c -> ( a, b, c ))
         (field "settings" globalSettingsDecoder)
         (field "tables" (list tableInfoDecoder))
-        (field "leaderboard" leaderBoardDecoder)
+        (field "leaderboard" leaderBoardTopDecoder)
 
 
 globalSettingsDecoder : Decoder Types.GlobalSettings
@@ -334,8 +334,16 @@ profileDecoder =
         |> required "awards" (list awardDecoder)
 
 
-leaderBoardDecoder : Decoder ( String, List Profile )
-leaderBoardDecoder =
+leaderBoardTopDecoder : Decoder ( String, List Profile )
+leaderBoardTopDecoder =
     map2 (\a b -> ( a, b ))
         (field "month" string)
         (field "top" (list profileDecoder))
+
+
+leaderBoardDecoder : Decoder LeaderBoardResponse
+leaderBoardDecoder =
+    succeed LeaderBoardResponse
+        |> required "month" string
+        |> required "board" (list profileDecoder)
+        |> required "page" int

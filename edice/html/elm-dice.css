@@ -147,6 +147,10 @@ button, .edButton {
   background: #101010;
   color: #efefef;
 }
+button:disabled, .edButton:disabled {
+  background: #666;
+  color: #888;
+}
 
 
 
@@ -224,25 +228,14 @@ button .material-icons, .edButton .material-icons {
   vertical-align: middle;
 }
 
-
-.GLOBAL_ERROR {
-  background-color: #ffcccc;
-  padding: 2em;
-  font-weight: bold;
-  white-space: pre;
+.overlay-loading {
+  opacity: 0.25;
+  transition: opacity 0.25s;
+}
+.overlay-loaded {
+  opacity: 1;
 }
 
-.edDrawer__login {
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.edDrawer__login__avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-}
 
 .edBoard {
 }
