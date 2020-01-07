@@ -206,4 +206,8 @@ export type BotState = {
   lastAgressor: UserId | null;
 };
 
-export type BotStrategy = "RandomCareful" | "RandomCareless" | "Revengeful";
+export type BotStrategy =
+  | "RandomCareful"
+  | "RandomCareless"
+  | "Revengeful"
+  | "ExtraCareful";

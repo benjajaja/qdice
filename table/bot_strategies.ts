@@ -1,7 +1,7 @@
 import * as R from "ramda";
 import { BotStrategy, BotPlayer, Table, Land, Color, Player } from "../types";
 import logger from "../logger";
-import { landMasses } from "../maps";
+import { landMasses, neighbours } from "../maps";
 import { rand } from "../rand";
 
 export type Source = { source: Land; targets: Land[] };
@@ -77,10 +77,16 @@ export const pickTactic = (
       if (table.players.length > 2) {
         return tactics.focusColor(lastAgressorColor ?? Color.Neutral);
       }
+    case "ExtraCareful":
+      if (rand(0, 100) > 95 || wouldRefillAll(player, table)) {
+        return tactics.careless;
+      }
+      return tactics.extraCareful;
     case "RandomCareful":
       if (rand(0, 100) > 95 || wouldRefillAll(player, table)) {
         return tactics.careless;
       }
+      return tactics.careful;
     default:
       return tactics.careful;
   }
@@ -135,6 +141,43 @@ export const tactics = {
     if (landMasses(newTable)(player.color).length < currentCount) {
       const thisChance = source.points - target.points;
       if (thisChance > bestChance) {
+        return { from: source, to: target, wheight: thisChance };
+      }
+    }
+  },
+
+  extraCareful: (
+    bestChance: number,
+    source: Land,
+    target: Land,
+    player: BotPlayer,
+    table: Table
+  ) => {
+    const remainingPoints = source.points - 1;
+    const targetNeighbours = neighbours(table, target).filter(
+      land => land.color !== player.color && land.color != Color.Neutral
+    );
+    if (
+      targetNeighbours.length > 0 &&
+      targetNeighbours.some(land => land.points > remainingPoints)
+    ) {
+      return;
+    }
+    const sourceNeighbours = neighbours(table, target).filter(
+      land => land.color !== player.color && land.color != Color.Neutral
+    );
+    if (
+      sourceNeighbours.length > 0 &&
+      sourceNeighbours.some(land => land.points > 2)
+    ) {
+      return;
+    }
+    const thisChance = source.points - target.points;
+    if (thisChance > bestChance) {
+      if (
+        thisChance > 0 ||
+        (target.color === Color.Neutral && thisChance == 0)
+      ) {
         return { from: source, to: target, wheight: thisChance };
       }
     }

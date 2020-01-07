@@ -5,6 +5,11 @@ import { COLOR_NEUTRAL } from "./constants";
 
 import * as mapJson from "./map-sources.json";
 
+type LimitedTable = {
+  lands: ReadonlyArray<Land>;
+  adjacency: Adjacency;
+};
+
 export const loadMap = (mapName: string): [Land[], Adjacency, string] => {
   const { lands, adjacency, name } = mapJson.maps[mapName];
   return [
@@ -22,10 +27,9 @@ export const isBorder = (
   return matrix[indexes[from]][indexes[to]];
 };
 
-export const landMasses = (table: {
-  lands: ReadonlyArray<Land>;
-  adjacency: Adjacency;
-}) => (color: Color): Emoji[][] => {
+export const landMasses = (table: LimitedTable) => (
+  color: Color
+): Emoji[][] => {
   const colorLands: Land[] = table.lands.filter(R.propEq("color", color));
 
   const landMasses: Land[][] = colorLands.reduce(
@@ -101,4 +105,12 @@ export const hasChanged = (
       }
     });
   }
+};
+
+export const neighbours = (table: LimitedTable, land: Land): Land[] => {
+  return table.lands.filter(
+    other =>
+      other.emoji !== land.emoji &&
+      isBorder(table.adjacency, other.emoji, land.emoji)
+  );
 };

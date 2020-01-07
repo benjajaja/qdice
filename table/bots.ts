@@ -34,7 +34,7 @@ const personas: Persona[] = [
   { ...defaultPersona, name: "Mono", strategy: "Revengeful" },
   { ...defaultPersona, name: "Oliva", strategy: "RandomCareless" },
   { ...defaultPersona, name: "Cohete" },
-  { ...defaultPersona, name: "Chiqui" },
+  { ...defaultPersona, name: "Chiqui", strategy: "ExtraCareful" },
   { ...defaultPersona, name: "Patata", strategy: "RandomCareless" },
   { ...defaultPersona, name: "Paleto" },
   { ...defaultPersona, name: "Cañón", strategy: "RandomCareless" },
