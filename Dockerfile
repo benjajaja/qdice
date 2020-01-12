@@ -32,10 +32,7 @@ RUN yarn build
 RUN rm -rf node_modules src html scripts package.json yarn.lock elm.json webpack.config.js
 
 WORKDIR /usr/src/nodice
-RUN apk add --update postgresql-dev
-RUN apk add --update --no-cache --virtual .gyp python make g++
 RUN yarn install --frozen-lockfile --production
-RUN apk del .gyp
 RUN node scripts/build.js /usr/src/edice/maps
 
 EXPOSE 5001
