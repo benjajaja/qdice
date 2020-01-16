@@ -3,6 +3,7 @@ import { BotStrategy, BotPlayer, Table, Land, Color, Player } from "../types";
 import logger from "../logger";
 import { landMasses, neighbours } from "../maps";
 import { rand } from "../rand";
+import { groupedPlayerPositions } from "../helpers";
 
 export type Source = { source: Land; targets: Land[] };
 export type Attack = { from: Land; to: Land; wheight: number };
@@ -55,6 +56,15 @@ export const pickTactic = (
   player: BotPlayer,
   table: Table
 ): Tactic => {
+  const wouldRefill = wouldRefillAll(player, table);
+
+  const positions = groupedPlayerPositions(table);
+  const position = positions(player);
+  if (table.roundCount > 3 && !wouldRefill && position === 1) {
+    logger.debug(`${player.name} is 1st and extraCareful`);
+    return tactics.extraCareful;
+  }
+
   switch (strategy) {
     case "RandomCareless":
       if (rand(0, 100) > 75) {
@@ -78,12 +88,12 @@ export const pickTactic = (
         return tactics.focusColor(lastAgressorColor ?? Color.Neutral);
       }
     case "ExtraCareful":
-      if (rand(0, 100) > 95 || wouldRefillAll(player, table)) {
+      if (rand(0, 100) > 95 || wouldRefill) {
         return tactics.careless;
       }
       return tactics.extraCareful;
     case "RandomCareful":
-      if (rand(0, 100) > 95 || wouldRefillAll(player, table)) {
+      if (rand(0, 100) > 95 || wouldRefill) {
         return tactics.careless;
       }
       return tactics.careful;
