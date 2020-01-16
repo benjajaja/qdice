@@ -153,13 +153,16 @@ export const tactics = {
     player: BotPlayer,
     table: Table
   ) => {
+    const targetNeighboursCarefulness = table.roundCount < 5 ? 1 : 0;
     const remainingPoints = source.points - 1;
     const targetNeighbours = neighbours(table, target).filter(
       land => land.color !== player.color && land.color != Color.Neutral
     );
     if (
       targetNeighbours.length > 0 &&
-      targetNeighbours.some(land => land.points > remainingPoints)
+      targetNeighbours.some(
+        land => land.points > remainingPoints + targetNeighboursCarefulness
+      )
     ) {
       return;
     }
