@@ -23,7 +23,7 @@ services:
     ports:
       - "8083:8083" # http for clients
       - "1883:1883" # tcp for nodejs
-      - "8081:8080" # API mgmnt
+      - "8082:8080" # API mgmnt
       - "18666:18083" # dashboard
       - "11883:11883" # ???
     volumes:

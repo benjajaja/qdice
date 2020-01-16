@@ -146,6 +146,10 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
     throw new IllegalMoveError("not enough points to join", user.id);
   }
 
+  if (!table.players.some(isBot) && table.players.length >= table.startSlots) {
+    throw new IllegalMoveError("table already full", user.id);
+  }
+
   logger.debug("join", typeof user.id);
   const player = makePlayer(user, clientId, table.players.length);
   const players = table.players.concat([player]);
@@ -162,31 +166,24 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
       : table.lands;
   const turnCount = table.status === STATUS_FINISHED ? 1 : table.turnCount;
 
-  //table.players = table.players.map((player, index) => Object.assign(player, { color: index + 1}));
-
   let gameStart = table.gameStart;
 
   publish.join(table, player);
 
-  if (table.players.length === table.playerSlots) {
-    gameStart = now();
-  } else {
-    if (players.length >= table.startSlots) {
-      gameStart = addSeconds(GAME_START_COUNTDOWN);
+  gameStart = addSeconds(GAME_START_COUNTDOWN);
 
-      publish.event({
-        type: "countdown",
-        table: table.name,
-        players: players,
-      });
-    } else {
-      publish.event({
-        type: "join",
-        table: table.name,
-        player,
-      });
-    }
-  }
+  publish.event({
+    type: "countdown",
+    table: table.name,
+    players: players,
+  });
+
+  publish.event({
+    type: "join",
+    table: table.name,
+    player,
+  });
+
   return {
     type: "Join",
     table: { status, turnCount, gameStart },

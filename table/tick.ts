@@ -99,10 +99,18 @@ const tick = async (tableTag: string, lock) => {
   });
 };
 
-const shouldStart = (table: Table) =>
-  table.players.length >= table.startSlots &&
-  (countdownFinished(table.gameStart) ||
-    table.players.every(player => player.ready));
+const shouldStart = (table: Table) => {
+  if (table.players.filter(isBot).length >= table.startSlots) {
+    return true;
+  }
+  if (table.players.every(player => player.ready)) {
+    return true;
+  }
+  if (countdownFinished(table.gameStart)) {
+    return true;
+  }
+  return false;
+};
 
 const countdownFinished = (gameStart: number) =>
   gameStart !== 0 && havePassed(0, gameStart);
@@ -141,6 +149,10 @@ const cleanPlayers = (table: Table): CommandResult | undefined => {
     return leave(stoppedWatching[0], table);
   }
 
+  return removeBots(table);
+};
+
+const removeBots = (table: Table): CommandResult | undefined => {
   if (table.players.length > 0) {
     const bots = table.players.filter(isBot);
     if (bots.length > 0) {
@@ -152,7 +164,6 @@ const cleanPlayers = (table: Table): CommandResult | undefined => {
       }
     }
   }
-  return undefined;
 };
 
 const lastJoined = (players: ReadonlyArray<Player>): Timestamp => {
