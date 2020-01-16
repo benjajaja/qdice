@@ -103,7 +103,11 @@ const shouldStart = (table: Table) => {
   if (table.players.filter(isBot).length >= table.startSlots) {
     return true;
   }
-  if (table.players.every(player => player.ready)) {
+  if (
+    table.players.filter(R.complement(isBot)).length >= table.startSlots ||
+    (table.players.length >= table.startSlots &&
+      table.players.every(player => player.ready))
+  ) {
     return true;
   }
   if (countdownFinished(table.gameStart)) {
@@ -160,7 +164,7 @@ const removeBots = (table: Table): CommandResult | undefined => {
         bots.length === table.players.length ||
         table.players.length > table.startSlots
       ) {
-        return leave(bots[0], table);
+        return leave(R.last(bots)!, table);
       }
     }
   }

@@ -14,6 +14,7 @@ cd ..
 ./scripts/restart.sh
 
 cd e2e
+yarn
 yarn test
 cd ..
 

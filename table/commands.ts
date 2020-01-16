@@ -151,8 +151,9 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
   }
 
   logger.debug("join", typeof user.id);
-  const player = makePlayer(user, clientId, table.players.length);
-  const players = table.players.concat([player]);
+  const madePlayer = makePlayer(user, clientId, table.players.length);
+  const [players, player] = insertPlayer(table.players, madePlayer);
+
   const status =
     table.status === STATUS_FINISHED ? STATUS_PAUSED : table.status;
   const lands =
@@ -190,6 +191,23 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
     players,
     lands,
   };
+};
+
+const insertPlayer = (
+  players: readonly Player[],
+  player: Player
+): [readonly Player[], Player] => {
+  const [heads, tail] = R.splitWhen(isBot, players);
+  const newPlayer = { ...player, color: heads.length + 1 };
+  return [
+    heads.concat([newPlayer]).concat(
+      tail.map((p, i) => ({
+        ...p,
+        color: heads.length + i + 2,
+      }))
+    ),
+    newPlayer,
+  ];
 };
 
 const takeover = (user: User, table: Table, clientId): CommandResult => {
