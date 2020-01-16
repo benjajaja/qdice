@@ -43,6 +43,7 @@ export type Table = TableProps & {
   readonly players: readonly Player[];
   readonly lands: readonly Land[];
   readonly watching: readonly Watcher[];
+  readonly retired: readonly Player[];
 };
 
 export type TableParams = {

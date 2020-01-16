@@ -150,6 +150,10 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
     throw new IllegalMoveError("table already full", user.id);
   }
 
+  if (table.retired.some(retiree => retiree.id === user.id)) {
+    throw new IllegalMoveError("cannot join again", user.id);
+  }
+
   logger.debug("join", typeof user.id);
   const madePlayer = makePlayer(user, clientId, table.players.length);
   const [players, player] = insertPlayer(table.players, madePlayer);
@@ -219,6 +223,18 @@ const takeover = (user: User, table: Table, clientId): CommandResult => {
   if (user.points < table.points) {
     throw new IllegalMoveError("not enough points to join", user.id);
   }
+
+  if (!table.players.some(isBot) && table.players.length >= table.startSlots) {
+    throw new IllegalMoveError("table already full", user.id);
+  }
+
+  if (table.retired.some(retiree => retiree.id === user.id)) {
+    throw new IllegalMoveError("cannot join again", user.id);
+  }
+  logger.debug(
+    table.retired.map(r => r.id),
+    user.id
+  );
 
   logger.debug("takeover", typeof user.id);
 

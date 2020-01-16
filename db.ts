@@ -379,8 +379,8 @@ export const createTable = async (table: Table) => {
   const result = await pool.query(
     `
 INSERT INTO tables
-(tag, name, map_name, stack_size, player_slots, start_slots, points, players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start, params)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+(tag, name, map_name, stack_size, player_slots, start_slots, points, players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start, params, retired)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
 RETURNING *`,
     [
       table.tag,
@@ -402,6 +402,7 @@ RETURNING *`,
       date(table.gameStart),
       date(table.turnStart),
       JSON.stringify(table.params),
+      JSON.stringify(table.retired),
     ]
   );
   const row = result.rows.pop();
@@ -413,7 +414,8 @@ export const saveTable = async (
   props: Partial<Table> = {},
   players?: ReadonlyArray<Player>,
   lands?: ReadonlyArray<{ emoji: Emoji; color: Color; points: number }>,
-  watching?: ReadonlyArray<Watcher>
+  watching?: ReadonlyArray<Watcher>,
+  retired?: ReadonlyArray<Player>
 ) => {
   const propColumns = Object.keys(props);
   const propValues = propColumns.map(column => {
@@ -426,11 +428,16 @@ export const saveTable = async (
     .concat(propValues)
     .concat(players ? [JSON.stringify(players)] : [])
     .concat(lands ? [JSON.stringify(lands)] : [])
-    .concat(watching ? [JSON.stringify(watching)] : []);
+    .concat(watching ? [JSON.stringify(watching)] : [])
+    .concat(retired ? [JSON.stringify(retired)] : []);
+  if (retired) {
+    logger.warn("adding retired", retired);
+  }
 
   const extra = (players ? ["players"] : [])
     .concat(lands ? ["lands"] : [])
-    .concat(watching ? ["watching"] : []);
+    .concat(watching ? ["watching"] : [])
+    .concat(retired ? ["retired"] : []);
   const columns = propColumns.concat(extra);
   const decamelizedColumns = columns.map(column => decamelize(column));
   const name = "W" + decamelizedColumns.join("-");

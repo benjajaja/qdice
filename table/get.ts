@@ -41,6 +41,7 @@ const makeTable = (config: any): Table => {
     watching: config.watching || [],
     attack: null,
     params: config.params ?? {},
+    retired: config.retired || [],
   };
 };
 
@@ -71,7 +72,8 @@ export const save = async (
   props?: Partial<Table>,
   players?: readonly Player[],
   lands?: readonly Land[],
-  watching?: readonly Watcher[]
+  watching?: readonly Watcher[],
+  retired?: readonly Player[]
 ): Promise<Table> => {
   if (props && (props as any).table) {
     throw new Error("bad save");
@@ -86,6 +88,9 @@ export const save = async (
     console.trace();
     throw new Error("cannot save nothing to table");
   }
+  if (retired) {
+    logger.debug("retired:", retired);
+  }
   const saved = await db.saveTable(
     table.tag,
     props,
@@ -97,7 +102,8 @@ export const save = async (
           points: land.points,
         }))
       : undefined,
-    watching
+    watching,
+    retired
   );
   return {
     ...table,

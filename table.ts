@@ -75,7 +75,9 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
               params,
             },
             undefined,
-            lands
+            lands,
+            undefined,
+            table.retired ?? [] // migration
           );
           await start(table.tag, lock, client, index, config.tables.length);
         }
@@ -217,15 +219,22 @@ export const processComandResult = async (
       watchers,
       eliminations,
     } = result;
-    // if (type !== 'Heartbeat') {
-    // logger.debug(`Command ${type} modified ${Object.keys(props || {})}, lands:${(lands || []).length}, players:${(players || []).length}, watchers:${(watchers || []).length}, eliminations:${(eliminations || []).length}`);
-    // }
     if (type !== "Heartbeat" || (watchers && watchers.length > 0)) {
-      const newTable = await save(table, props, players, lands, watchers);
+      const newTable = await save(
+        table,
+        props,
+        players,
+        lands,
+        watchers,
+        eliminations
+          ? table.retired.concat(eliminations.map(e => e.player))
+          : undefined
+      );
       if (eliminations) {
         await processEliminations(newTable, eliminations);
       }
       if (
+        eliminations ||
         ["Heartbeat", "Enter", "Exit", "Attack", "Roll"].indexOf(type) === -1
       ) {
         publish.tableStatus(newTable);
