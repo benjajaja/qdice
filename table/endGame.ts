@@ -40,6 +40,7 @@ const endGame = (table: Table, result: CommandResult): CommandResult => {
     eliminations: (
       result.eliminations || ([] as ReadonlyArray<Elimination>)
     ).concat([elimination]),
+    retired: [],
   };
 };
 

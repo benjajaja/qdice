@@ -150,10 +150,6 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
     throw new IllegalMoveError("table already full", user.id);
   }
 
-  if (table.retired.some(retiree => retiree.id === user.id)) {
-    throw new IllegalMoveError("cannot join again", user.id);
-  }
-
   logger.debug("join", typeof user.id);
   const madePlayer = makePlayer(user, clientId, table.players.length);
   const [players, player] = insertPlayer(table.players, madePlayer);

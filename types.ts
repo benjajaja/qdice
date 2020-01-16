@@ -189,6 +189,7 @@ export type CommandResult = {
   readonly players?: ReadonlyArray<Player>;
   readonly watchers?: ReadonlyArray<Watcher>;
   readonly eliminations?: ReadonlyArray<Elimination>;
+  readonly retired?: ReadonlyArray<Player>;
 };
 
 export type BotPlayer = Player & {

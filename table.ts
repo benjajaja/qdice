@@ -218,6 +218,7 @@ export const processComandResult = async (
       players,
       watchers,
       eliminations,
+      retired, // only from endGame
     } = result;
     if (type !== "Heartbeat" || (watchers && watchers.length > 0)) {
       const newTable = await save(
@@ -228,7 +229,7 @@ export const processComandResult = async (
         watchers,
         eliminations
           ? table.retired.concat(eliminations.map(e => e.player))
-          : undefined
+          : retired
       );
       if (eliminations) {
         await processEliminations(newTable, eliminations);
