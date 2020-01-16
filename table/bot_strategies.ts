@@ -153,7 +153,7 @@ export const tactics = {
     player: BotPlayer,
     table: Table
   ) => {
-    const targetNeighboursCarefulness = table.roundCount < 5 ? 1 : 0;
+    const targetNeighboursCarefulness = table.roundCount < 5 ? -1 : 0;
     const remainingPoints = source.points - 1;
     const targetNeighbours = neighbours(table, target).filter(
       land => land.color !== player.color && land.color != Color.Neutral
@@ -167,7 +167,10 @@ export const tactics = {
       return;
     }
     const sourceNeighbours = neighbours(table, target).filter(
-      land => land.color !== player.color && land.color != Color.Neutral
+      land =>
+        land.color !== player.color &&
+        land.color != Color.Neutral &&
+        land.emoji !== target.emoji
     );
     if (
       sourceNeighbours.length > 0 &&
@@ -177,12 +180,7 @@ export const tactics = {
     }
     const thisChance = source.points - target.points;
     if (thisChance > bestChance) {
-      if (
-        thisChance > 0 ||
-        (target.color === Color.Neutral && thisChance == 0)
-      ) {
-        return { from: source, to: target, wheight: thisChance };
-      }
+      return { from: source, to: target, wheight: thisChance };
     }
   },
 };
