@@ -858,7 +858,6 @@ button .material-icons, .edButton .material-icons {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: 0;
   }
   .edBoard--svg {
   }
