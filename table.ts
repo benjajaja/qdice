@@ -77,7 +77,7 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
             undefined,
             lands,
             undefined,
-            table.retired ?? [] // migration
+            undefined
           );
           await start(table.tag, lock, client, index, config.tables.length);
         }

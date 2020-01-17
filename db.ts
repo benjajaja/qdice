@@ -431,7 +431,7 @@ export const saveTable = async (
     .concat(watching ? [JSON.stringify(watching)] : [])
     .concat(retired ? [JSON.stringify(retired)] : []);
   if (retired) {
-    logger.warn("adding retired", retired);
+    logger.warn("setting retired:", retired);
   }
 
   const extra = (players ? ["players"] : [])

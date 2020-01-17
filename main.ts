@@ -1,5 +1,5 @@
 import logger from "./logger";
-logger.info("Qdice server started");
+logger.info("Qdice server starting");
 
 import * as db from "./db";
 import * as table from "./table";
@@ -191,6 +191,7 @@ export const server = async () => {
     screenshot
   );
 
+  logger.info("connecting to postgres...");
   await db.retry();
 
   logger.info("connected to postgres.");
