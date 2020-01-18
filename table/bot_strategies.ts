@@ -72,6 +72,7 @@ export const pickTactic = (
       } else {
         return tactics.careless;
       }
+
     case "Revengeful":
       const lastAgressorColor =
         table.players.find(p => p.id === player.bot.state.lastAgressor)
@@ -87,16 +88,26 @@ export const pickTactic = (
       if (table.players.length > 2) {
         return tactics.focusColor(lastAgressorColor ?? Color.Neutral);
       }
+      return tactics.careful;
+
     case "ExtraCareful":
       if (rand(0, 100) > 95 || wouldRefill) {
         return tactics.careless;
       }
       return tactics.extraCareful;
+
+    case "TargetCareful":
+      if (rand(0, 100) > 95 || wouldRefill) {
+        return tactics.careless;
+      }
+      return tactics.extraCareful;
+
     case "RandomCareful":
       if (rand(0, 100) > 95 || wouldRefill) {
         return tactics.careless;
       }
       return tactics.careful;
+
     default:
       return tactics.careful;
   }
@@ -153,6 +164,33 @@ export const tactics = {
       if (thisChance > bestChance) {
         return { from: source, to: target, wheight: thisChance };
       }
+    }
+  },
+
+  targetCareful: (
+    bestChance: number,
+    source: Land,
+    target: Land,
+    player: BotPlayer,
+    table: Table
+  ) => {
+    const targetNeighboursCarefulness = table.roundCount < 5 ? -1 : 0;
+    const remainingPoints = source.points - 1;
+    const targetNeighbours = neighbours(table, target).filter(
+      land => land.color !== player.color && land.color != Color.Neutral
+    );
+    if (
+      targetNeighbours.length > 0 &&
+      targetNeighbours.some(
+        land => land.points > remainingPoints + targetNeighboursCarefulness
+      )
+    ) {
+      return;
+    }
+
+    const thisChance = source.points - target.points;
+    if (thisChance > bestChance) {
+      return { from: source, to: target, wheight: thisChance };
     }
   },
 

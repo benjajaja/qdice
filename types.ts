@@ -212,4 +212,5 @@ export type BotStrategy =
   | "RandomCareful"
   | "RandomCareless"
   | "Revengeful"
-  | "ExtraCareful";
+  | "ExtraCareful"
+  | "TargetCareful";
