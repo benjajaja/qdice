@@ -86,10 +86,10 @@ describe("A game with bots", () => {
     // await attack(page, "land-👑", "land-🏰", "A");
     // await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
-    await hisTurn(page, "A");
-    await attack(page, "land-🏰", "land-🍷", "A");
-    await attack(page, "land-🍷", "land-💰", "A");
-    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+    // await hisTurn(page, "A");
+    // await attack(page, "land-🏰", "land-🍷", "A");
+    // await attack(page, "land-🍷", "land-💰", "A");
+    // await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
     // await hisTurn(page, "A");
     // await attack(page, "land-👑", "land-🏰", "A");
@@ -102,12 +102,12 @@ describe("A game with bots", () => {
     // await attack(page, "land-🐸", "land-🐙", "A");
     // await attack(page, "land-🎩", "land-👙", "A");
 
-    await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-last-child(1)`,
-      {
-        text: /^☠ A finished 4th with -?\d+ ✪ \(Killed by Mono for \d+✪\)/,
-      }
-    );
+    // await expect(page).toMatchElement(
+    // `${testId("logline-elimination")}:nth-last-child(1)`,
+    // {
+    // text: /^☠ A finished 4th with -?\d+ ✪ \(Killed by \w for \d+✪\)/,
+    // }
+    // );
     // await expect(page).toMatchElement(
     // `${testId("logline-elimination")}:nth-child(3)`,
     // {

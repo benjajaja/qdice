@@ -8,6 +8,7 @@ import {
   BotPlayer,
   BotState,
   IllegalMoveError,
+  BotStrategy,
 } from "../types";
 import { now, addSeconds, havePassed } from "../timestamp";
 import * as publish from "./publish";
@@ -22,7 +23,7 @@ import { move, Source } from "./bot_strategies";
 
 const defaultPersona: Persona = {
   name: "Personality",
-  picture: "assets/bot_profile_picture.svg",
+  picture: "assets/bots/bot_profile_picture.svg",
   strategy: "RandomCareful",
   state: {
     deadlockCount: 0,
@@ -30,15 +31,35 @@ const defaultPersona: Persona = {
   },
 };
 
+const mkBot = (
+  name: string,
+  strategy: BotStrategy,
+  picture?: string
+): Persona => ({
+  ...defaultPersona,
+  name,
+  strategy,
+  picture: picture ?? defaultPersona.picture,
+});
 const personas: Persona[] = [
-  { ...defaultPersona, name: "Mono", strategy: "Revengeful" },
-  { ...defaultPersona, name: "Oliva", strategy: "RandomCareless" },
-  { ...defaultPersona, name: "Cohete" },
-  { ...defaultPersona, name: "Chiqui", strategy: "ExtraCareful" },
-  { ...defaultPersona, name: "Patata", strategy: "RandomCareless" },
-  { ...defaultPersona, name: "Paleto" },
-  { ...defaultPersona, name: "Cañón", strategy: "RandomCareless" },
-  { ...defaultPersona, name: "Cuqui" },
+  mkBot("Alexander", "Revengeful", "assets/bots/bot_alexander.png"),
+  mkBot("Augustus", "TargetCareful", "assets/bots/bot_caesar.png"),
+  mkBot("Ioseb", "RandomCareless", "assets/bots/bot_ioseb.png"),
+  mkBot("Napoleon", "ExtraCareful", "assets/bots/bot_napoleon.png"),
+  mkBot("Franco", "ExtraCareful", "assets/bots/bot_franco.png"),
+  mkBot("Adolf", "RandomCareless", "assets/bots/bot_adolf.png"),
+  mkBot("Benito", "RandomCareless", "assets/bots/bot_benito.png"),
+  mkBot("Nikolae", "TargetCareful", "assets/bots/bot_nikolae.png"),
+  mkBot("Mao", "TargetCareful", "assets/bots/bot_mao.png"),
+  mkBot("Winston", "RandomCareful", "assets/bots/bot_winston.png"),
+  mkBot("Genghis", "RandomCareless", "assets/bots/bot_genkhis.png"),
+  mkBot("HiroHito", "TargetCareful", "assets/bots/bot_hirohito.png"),
+  mkBot("Trump", "RandomCareful", "assets/bots/bot_trump.png"),
+  mkBot("Fidel", "ExtraCareful", "assets/bots/bot_fidel.png"),
+  mkBot("Vladimir", "RandomCareful", "assets/bots/bot_vladimir.png"),
+  mkBot("Kim", "ExtraCareful", "assets/bots/bot_kim.png"),
+  mkBot("Idi", "RandomCareful", "assets/bots/bot_idi.png"),
+  mkBot("Ramses II", "RandomCareless", "assets/bots/bot_ramses.png"),
 ];
 
 export const isBot = (player: Player): player is BotPlayer =>
