@@ -195,6 +195,7 @@ rollDecoder =
         |> required "from" singleRollDecoder
         |> required "to" singleRollDecoder
         |> required "turnStart" int
+        |> required "players" (list playersDecoder)
 
 
 singleRollDecoder : Decoder Game.Types.RollPart

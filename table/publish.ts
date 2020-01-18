@@ -94,16 +94,17 @@ export const exit = (table, name) => {
 };
 
 type Roll = {
-  from: { emoji: Emoji, roll: number[] };
-  to: { emoji: Emoji, roll: number[] };
+  from: { emoji: Emoji; roll: number[] };
+  to: { emoji: Emoji; roll: number[] };
   turnStart: number;
-}
+  players: readonly Player[];
+};
 export const roll = (table, roll: Roll) => {
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
       type: "roll",
-      payload: roll,
+      payload: { ...roll, players: roll.players.map(serializePlayer(table)) },
     }),
     undefined,
     err => {

@@ -108,6 +108,7 @@ type alias Roll =
     { from : RollPart
     , to : RollPart
     , turnStart : Int
+    , players : List Player
     }
 
 

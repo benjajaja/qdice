@@ -81,6 +81,7 @@ export const rollResult = (table: Table): CommandResult => {
       from: { emoji: table.attack.from, roll: fromRoll },
       to: { emoji: table.attack.to, roll: toRoll },
       turnStart: Math.floor(props.turnStart / 1000),
+      players: players,
     });
     const result: CommandResult = {
       type: "Roll",
