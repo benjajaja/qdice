@@ -29,7 +29,6 @@ export const serializeTable = (table: Table) => {
     roundCount: table.roundCount,
     players: players,
     lands: lands,
-    canFlag: table.roundCount > table.params.noFlagRounds,
     watchCount: table.watching.length,
     params: table.params,
   };

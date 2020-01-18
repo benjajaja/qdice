@@ -124,7 +124,6 @@ tableDecoder =
         |> required "turnStart" int
         |> required "lands" (list landsUpdateDecoder)
         |> required "roundCount" int
-        |> required "canFlag" bool
         |> required "watchCount" int
 
 

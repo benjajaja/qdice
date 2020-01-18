@@ -100,7 +100,6 @@ type alias TableStatus =
     , turnStart : Int
     , lands : List LandUpdate
     , roundCount : Int
-    , canFlag : Bool
     , watchCount : Int
     }
 

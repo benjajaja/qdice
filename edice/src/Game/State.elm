@@ -248,12 +248,12 @@ updateTableStatus model status =
                     False
 
                 Just canFlagPlayer ->
-                    status.canFlag
+                    (status.roundCount > game.params.noFlagRounds)
                         && canFlagPlayer.gameStats.position
                         > 1
                         && (case canFlagPlayer.flag of
                                 Just f ->
-                                    False
+                                    f < canFlagPlayer.gameStats.position
 
                                 Nothing ->
                                     True
