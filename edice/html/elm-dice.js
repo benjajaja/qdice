@@ -147,11 +147,13 @@ app.ports.requestFullscreen.subscribe(function() {
     }
   }
 });
-window.addEventListener("orientationchange", function() {
-  if (screen.orientation.angle !== 90 && document.fullscreenElement) {
-    document.exitFullscreen();
-  }
-});
+if (screen && screen.orientation) {
+  window.addEventListener("orientationchange", function() {
+    if (screen.orientation.angle !== 90 && document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  });
+}
 
 var logPublish = function(args) {
   try {
