@@ -11,6 +11,7 @@ import * as db from "./db";
 import * as publish from "./table/publish";
 import * as tick from "./table/tick";
 import { getTable } from "./table/get";
+import { addGameEvent } from "./table/games";
 import { positionScore, tablePoints } from "./helpers";
 import logger from "./logger";
 import * as config from "./tables.config";
@@ -220,6 +221,9 @@ export const processComandResult = async (
       eliminations,
       retired, // only from endGame
     } = result;
+
+    await addGameEvent(table, result);
+
     if (type !== "Heartbeat" || (watchers && watchers.length > 0)) {
       const newTable = await save(
         table,

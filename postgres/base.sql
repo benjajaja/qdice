@@ -87,7 +87,8 @@ CREATE TABLE tables (
     watching json,
     attack json,
     params json,
-    retired json
+    retired json,
+    current_game integer
 );
 
 
@@ -230,4 +231,37 @@ CREATE TABLE push_subscribed_events (
   CONSTRAINT push_subscribed_events_pk PRIMARY KEY (user_id,"event"),
   CONSTRAINT push_subscribed_events_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
 );
+
+
+
+CREATE TABLE games (
+    id integer NOT NULL,
+    tag character varying(100) NOT NULL,
+    name character varying(100) NOT NULL,
+    map_name character varying(100) NOT NULL,
+    stack_size integer NOT NULL,
+    player_slots integer NOT NULL,
+    start_slots integer NOT NULL,
+    points integer NOT NULL,
+    game_start timestamp with time zone,
+    params json,
+    players json
+);
+
+
+ALTER TABLE games OWNER TO bgrosse;
+CREATE SEQUENCE games_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE games_id_seq OWNER TO bgrosse;
+
+ALTER SEQUENCE games_id_seq OWNED BY games.id;
+
+ALTER TABLE ONLY games ALTER COLUMN id SET DEFAULT nextval('games_id_seq'::regclass);
+
 

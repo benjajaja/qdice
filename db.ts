@@ -490,3 +490,26 @@ export const getPushSubscriptions = async (event: string) => {
   });
   return res.rows;
 };
+
+export const addGame = async (table: Table) => {
+  const {
+    rows: [game],
+  } = await pool.query(
+    `INSERT INTO games (tag, name, map_name, stack_size, player_slots, start_slots, points, game_start, params, players)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    RETURNING *`,
+    [
+      table.tag,
+      table.name,
+      table.mapName,
+      table.stackSize,
+      table.playerSlots,
+      table.startSlots,
+      table.points,
+      date(table.gameStart),
+      JSON.stringify(table.params),
+      JSON.stringify(table.players),
+    ]
+  );
+  logger.info("created game", game);
+};
