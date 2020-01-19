@@ -54,14 +54,18 @@ const tick = async (tableTag: string, lock) => {
   lock.acquire(tableTag, async done => {
     const table = await getTable(tableTag);
     let result: CommandResult | void = undefined;
-    if (table.turnIndex >= table.players.length) {
-      logger.error("turnIndex out of bounds!");
-      result = nextTurn("TickTurnOver", {
-        ...table,
-        turnIndex: table.players.length - 1,
-      });
-    } else if (table.status === STATUS_PLAYING) {
-      if (table.attack) {
+    if (table.status === STATUS_PLAYING) {
+      if (table.turnIndex >= table.players.length) {
+        logger.error(
+          "turnIndex out of bounds!",
+          table.turnIndex,
+          table.players
+        );
+        result = nextTurn("TickTurnOver", {
+          ...table,
+          turnIndex: table.players.length - 1,
+        });
+      } else if (table.attack) {
         if (havePassed(ROLL_SECONDS, table.attack.start)) {
           result = rollResult(table);
         }
