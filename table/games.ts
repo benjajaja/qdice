@@ -10,5 +10,6 @@ export const addGameEvent = async (table: Table, result: CommandResult) => {
     logger.warn("addGameEvent but table has no currentGame");
     return;
   }
-  await db.addGameEvent(table.currentGame, result);
+
+  setImmediate(() => db.addGameEvent(table.currentGame, result));
 };
