@@ -230,7 +230,9 @@ export const processComandResult = async (
         retired
           ? retired
           : eliminations
-          ? table.retired.concat(eliminations.map(e => e.player))
+          ? table.retired.concat(
+              eliminations.filter(e => !e.player.bot).map(e => e.player)
+            )
           : undefined
       );
       if (eliminations) {
