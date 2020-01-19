@@ -69,11 +69,10 @@ const turn = (
       },
     };
     const [players_, lands_, turnIndex, eliminations] = removePlayerCascade(
-      table,
       table.players,
       table.lands,
       newPlayer,
-      table.turnIndex,
+      props.turnIndex,
       elimination
     );
 
@@ -115,7 +114,6 @@ const turn = (
       },
     };
     const [players_, lands_, turnIndex, eliminations] = removePlayerCascade(
-      table,
       table.players,
       table.lands,
       newPlayer,

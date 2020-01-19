@@ -110,15 +110,14 @@ export const removePlayer = (
       )
     ),
     turnPlayer !== player
-      ? players_.indexOf(turnPlayer)
-      : turnIndex === players_.length
+      ? players.indexOf(turnPlayer)
+      : turnIndex >= players.length
       ? 0
       : turnIndex,
   ];
 };
 
 export const removePlayerCascade = (
-  table: Table,
   players: readonly Player[],
   lands: readonly Land[],
   player: Player,

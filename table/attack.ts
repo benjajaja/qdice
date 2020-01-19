@@ -43,7 +43,6 @@ export const rollResult = (table: Table): CommandResult => {
       ) {
         const attacker = players[table.turnIndex];
         [players, lands, turnIndex, eliminations] = removePlayerCascade(
-          table,
           players,
           lands,
           loser,

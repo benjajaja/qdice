@@ -545,7 +545,6 @@ export const flag = (
     };
 
     const [players, lands, turnIndex, eliminations] = removePlayerCascade(
-      table,
       table.players,
       table.lands,
       player,
