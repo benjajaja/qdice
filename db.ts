@@ -14,6 +14,7 @@ import {
   Color,
   Watcher,
   PushNotificationEvents,
+  CommandResult,
 } from "./types";
 import { date } from "./timestamp";
 import * as sleep from "sleep-promise";
@@ -491,7 +492,7 @@ export const getPushSubscriptions = async (event: string) => {
   return res.rows;
 };
 
-export const addGame = async (table: Table) => {
+export const addGame = async (table: Table): Promise<{ id: number }> => {
   const {
     rows: [game],
   } = await pool.query(
@@ -512,4 +513,22 @@ export const addGame = async (table: Table) => {
     ]
   );
   logger.info("created game", game);
+  return game;
+};
+
+export const addGameEvent = async (
+  gameId: number,
+  result: CommandResult
+): Promise<void> => {
+  const {
+    rows: [event],
+  } = await pool.query({
+    name: "game-event",
+    text: `INSERT INTO game_events (game_id, command, params, result)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *`,
+    values: [gameId, result.type, "{}", JSON.stringify(result)],
+  });
+  // logger.info("created game event", event.id, event.game_id, event.command);
+  return event;
 };

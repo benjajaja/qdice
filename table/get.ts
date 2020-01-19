@@ -42,6 +42,7 @@ const makeTable = (config: any): Table => {
     attack: null,
     params: config.params ?? {},
     retired: config.retired || [],
+    currentGame: 0,
   };
 };
 

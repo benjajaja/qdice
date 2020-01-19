@@ -31,6 +31,7 @@ import {
   flag,
 } from "./table/commands";
 import { save } from "./table/get";
+import { STATUS_FINISHED } from "./constants";
 
 const verifyJwt = promisify(jwt.verify);
 
@@ -222,12 +223,20 @@ export const processComandResult = async (
       retired, // only from endGame
     } = result;
 
-    await addGameEvent(table, result);
+    let game;
+    if (type !== "Heartbeat") {
+      game = await addGameEvent(table, result);
+    } else if (
+      table.status !== STATUS_FINISHED &&
+      props?.status === STATUS_FINISHED
+    ) {
+      game = { id: 0 };
+    }
 
     if (type !== "Heartbeat" || (watchers && watchers.length > 0)) {
       const newTable = await save(
         table,
-        props,
+        game ? { ...props, currentGame: game.id } : props,
         players,
         lands,
         watchers,

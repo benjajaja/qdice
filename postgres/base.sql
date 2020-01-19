@@ -256,12 +256,33 @@ CREATE SEQUENCE games_id_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-
-
 ALTER TABLE games_id_seq OWNER TO bgrosse;
-
 ALTER SEQUENCE games_id_seq OWNED BY games.id;
-
 ALTER TABLE ONLY games ALTER COLUMN id SET DEFAULT nextval('games_id_seq'::regclass);
+ALTER TABLE ONLY games
+    ADD CONSTRAINT games_pkey PRIMARY KEY (id);
+
+
+CREATE TABLE game_events (
+    id integer NOT NULL,
+    game_id integer NOT NULL,
+    command character varying(100) NOT NULL,
+    params json,
+    result json
+);
+
+ALTER TABLE game_events OWNER TO bgrosse;
+CREATE SEQUENCE game_events_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER TABLE game_events_id_seq OWNER TO bgrosse;
+ALTER SEQUENCE game_events_id_seq OWNED BY game_events.id;
+ALTER TABLE ONLY game_events ALTER COLUMN id SET DEFAULT nextval('game_events_id_seq'::regclass);
+ALTER TABLE ONLY game_events
+    ADD CONSTRAINT game_events_game_fkey FOREIGN KEY (game_id) REFERENCES games(id);
+
 
 
