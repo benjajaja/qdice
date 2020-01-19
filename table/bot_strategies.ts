@@ -119,7 +119,7 @@ export const tactics = {
     if (thisChance > bestChance) {
       if (
         thisChance > 0 ||
-        (target.color === Color.Neutral && thisChance == 0)
+        (target.color === Color.Neutral && thisChance >= 0)
       ) {
         return { from: source, to: target, wheight: thisChance };
       }
@@ -127,6 +127,9 @@ export const tactics = {
   },
 
   careless: (bestChance: number, source: Land, target: Land) => {
+    if (isHighRisk(source, target)) {
+      return;
+    }
     const thisChance = source.points - target.points;
     if (thisChance > bestChance) {
       return { from: source, to: target, wheight: thisChance };
@@ -135,6 +138,9 @@ export const tactics = {
 
   focusColor: (color: Color) =>
     function focusColor(bestChance: number, source: Land, target: Land) {
+      if (isHighRisk(source, target)) {
+        return;
+      }
       if (target.color === color) {
         if (color === Color.Neutral) {
           return tactics.careful(bestChance, source, target);
@@ -150,6 +156,9 @@ export const tactics = {
     player: BotPlayer,
     table: Table
   ) => {
+    if (isHighRisk(source, target, 2)) {
+      return;
+    }
     const currentCount = landMasses(table)(player.color).length;
 
     const newTable = {
@@ -244,4 +253,16 @@ export const wouldRefillAll = (player: Player, table: Table): boolean => {
     return count + (8 - land.points);
   }, 0);
   return lands.length + player.reserveDice >= necessaryDice + 7;
+};
+
+export const isHighRisk = (
+  source: Land,
+  target: Land,
+  increase = 0
+): boolean => {
+  if (source.points <= 4) {
+    return target.points > source.points + 1 + increase;
+  } else {
+    return target.points > source.points + 2 + increase;
+  }
 };
