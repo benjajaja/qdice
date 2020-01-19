@@ -227,9 +227,11 @@ export const processComandResult = async (
         players,
         lands,
         watchers,
-        eliminations
+        retired
+          ? retired
+          : eliminations
           ? table.retired.concat(eliminations.map(e => e.player))
-          : retired
+          : undefined
       );
       if (eliminations) {
         await processEliminations(newTable, eliminations);
