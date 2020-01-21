@@ -18,6 +18,7 @@ import { addBots, tickBotTurn, isBot } from "./bots";
 import { leave } from "./commands";
 import logger from "../logger";
 import { setTimeout } from "timers";
+import endGame from "./endGame";
 
 const intervalIds: { [tableTag: string]: any } = {};
 
@@ -55,7 +56,10 @@ const tick = async (tableTag: string, lock) => {
     const table = await getTable(tableTag);
     let result: CommandResult | void = undefined;
     if (table.status === STATUS_PLAYING) {
-      if (table.turnIndex >= table.players.length) {
+      if (table.players.length === 0) {
+        logger.error("STATUS_PLAYING but no players!");
+        result = endGame(table, { type: "TickTurnOver" });
+      } else if (!table.players[table.turnIndex]) {
         logger.error(
           "turnIndex out of bounds!",
           table.turnIndex,

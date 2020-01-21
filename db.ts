@@ -376,6 +376,7 @@ LIMIT 1`,
     ...row,
     gameStart: row.gameStart ? row.gameStart.getTime() : 0,
     turnStart: row.turnStart ? row.turnStart.getTime() : 0,
+    retired: row.retired ?? [],
   };
 };
 
@@ -515,7 +516,13 @@ export const addGame = async (table: Table): Promise<{ id: number }> => {
       JSON.stringify(table.players),
     ]
   );
-  logger.info("created game", game);
+  logger.info(
+    "db created game",
+    game.id,
+    game.tag,
+    game.gameStart,
+    game.players.map(p => p.name)
+  );
   return game;
 };
 

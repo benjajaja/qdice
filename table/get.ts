@@ -112,6 +112,7 @@ export const save = async (
     lands: lands ?? table.lands,
     players: players ?? table.players,
     watching: watching ?? table.watching,
+    retired: retired ?? table.retired,
   };
 };
 
