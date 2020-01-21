@@ -6,4 +6,5 @@ node_modules
 Procfile
 yarn-error.log
 data/certbot
+data/logs
 
