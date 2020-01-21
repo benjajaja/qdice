@@ -24,6 +24,9 @@ import AsyncLock = require("async-lock");
 const pool = new Pool({
   host: process.env.PGHOST,
   port: parseInt(process.env.PGPORT!, 10),
+  database: process.env.PGDATABASE,
+  user: process.env.PGUSER,
+  password: process.env.POSTGRES_PASSWORD,
 });
 
 export const connect = async function db() {
