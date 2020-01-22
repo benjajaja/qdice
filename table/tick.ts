@@ -1,4 +1,5 @@
 import * as R from "ramda";
+import * as Sentry from "@sentry/node";
 import { getTable } from "./get";
 import { Table, Player, CommandResult, Timestamp } from "../types";
 import { processComandResult } from "../table";
@@ -58,12 +59,20 @@ const tick = async (tableTag: string, lock) => {
     if (table.status === STATUS_PLAYING) {
       if (table.players.length === 0) {
         logger.error("STATUS_PLAYING but no players!");
+        Sentry.captureException(new Error("STATUS_PLAYING but no players!"));
         result = endGame(table, { type: "TickTurnOver" });
       } else if (!table.players[table.turnIndex]) {
         logger.error(
           "turnIndex out of bounds!",
           table.turnIndex,
           table.players
+        );
+        Sentry.captureException(
+          new Error(
+            `STATUS_PLAYING and no turn player: ${
+              table.turnIndex
+            }, ${table.players.map(p => p.name).join()}`
+          )
         );
         result = nextTurn("TickTurnOver", {
           ...table,
