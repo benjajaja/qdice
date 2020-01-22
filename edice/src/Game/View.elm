@@ -98,120 +98,137 @@ seatButtons model =
         ]
 
     else
-        case setButtonStates model of
-            Nothing ->
-                []
+        onlineButtons model
 
-            Just { buttonLabel, msg, checkReady } ->
-                List.concat
-                    [ case checkReady of
-                        Just ready ->
-                            [ label
-                                [ class <|
-                                    "edCheckbox edGameHeader__checkbox"
-                                        ++ (if Maybe.withDefault ready model.game.isReady then
-                                                " edGameHeader__checkbox--checked"
 
-                                            else
-                                                ""
-                                           )
-                                , onClick <| GameCmd <| ToggleReady <| not <| Maybe.withDefault ready model.game.isReady
-                                , dataTestId "check-ready"
-                                ]
-                                [ Icon.icon <|
-                                    if Maybe.withDefault ready model.game.isReady then
-                                        "check_box"
+joinButton : String -> Types.Msg -> Html.Html Types.Msg
+joinButton label msg =
+    button
+        [ class "edButton edGameHeader__button"
+        , onClick msg
+        , dataTestId "button-seat"
+        ]
+        [ text label ]
 
-                                    else
-                                        "check_box_outline_blank"
-                                , text "Ready"
-                                ]
-                            ]
 
-                        Nothing ->
-                            []
-                    , if model.game.canFlag then
-                        [ label
-                            [ class "edCheckbox edGameHeader__checkbox"
-                            , onClick <| GameCmd <| Flag <| not <| Maybe.withDefault False model.game.flag
-                            , dataTestId "check-flag"
-                            ]
-                            [ Icon.icon "flag"
-                            , text <|
-                                if model.game.playerPosition == List.length model.game.players then
-                                    "Surrender"
+onlineButtons : Model -> List (Html.Html Types.Msg)
+onlineButtons model =
+    if model.game.status /= Game.Types.Playing then
+        case model.game.player of
+            Just player ->
+                [ label
+                    [ class <|
+                        "edCheckbox edGameHeader__checkbox"
+                            ++ (if Maybe.withDefault player.ready model.game.isReady then
+                                    " edGameHeader__checkbox--checked"
 
                                 else
-                                    ordinal model.game.playerPosition
-                            ]
-                        ]
-
-                      else
-                        []
-                    , [ button [ class "edButton edGameHeader__button", onClick msg, dataTestId "button-seat" ] [ text buttonLabel ]
-                      ]
+                                    ""
+                               )
+                    , onClick <| GameCmd <| ToggleReady <| not <| Maybe.withDefault player.ready model.game.isReady
+                    , dataTestId "check-ready"
                     ]
+                    [ Icon.icon <|
+                        if Maybe.withDefault player.ready model.game.isReady then
+                            "check_box"
 
+                        else
+                            "check_box_outline_blank"
+                    , text "Ready"
+                    ]
+                , joinButton "Leave" <| GameCmd Leave
+                ]
 
-setButtonStates : Model -> Maybe { buttonLabel : String, msg : Msg, checkReady : Maybe Bool }
-setButtonStates model =
-    case model.game.player of
-        Just player ->
-            Just <|
-                if model.game.status == Game.Types.Playing then
-                    if player.out then
-                        { buttonLabel = "Sit in"
-                        , msg = GameCmd SitIn
-                        , checkReady = Nothing
-                        }
+            Nothing ->
+                [ case model.user of
+                    Types.Anonymous ->
+                        joinButton "Join" <| ShowLogin Types.LoginShowJoin
 
-                    else if model.game.hasTurn then
-                        { buttonLabel = "End turn"
-                        , msg = GameCmd EndTurn
-                        , checkReady = Nothing
-                        }
+                    Types.Logged user ->
+                        if user.points >= model.game.points then
+                            joinButton "Join" <| GameCmd Join
 
-                    else
-                        { buttonLabel = "Sit out"
-                        , msg = GameCmd SitOut
-                        , checkReady = Nothing
-                        }
+                        else
+                            text <| "Table has minimum points of " ++ String.fromInt model.game.points
+                ]
 
-                else
-                    { buttonLabel = "Leave"
-                    , msg = GameCmd Leave
-                    , checkReady = Just player.ready
-                    }
-
-        Nothing ->
-            let
-                record =
+    else
+        case model.game.player of
+            Nothing ->
+                if model.game.players |> List.any isBot then
                     case model.user of
                         Types.Anonymous ->
-                            { buttonLabel = "Join"
-                            , msg = ShowLogin Types.LoginShowJoin
-                            , checkReady = Nothing
-                            }
+                            [ joinButton "Join & Take over a bot" <| ShowLogin Types.LoginShowJoin ]
 
+                        -- TODO: check if newly registered users will be able to play by points
                         Types.Logged user ->
-                            { buttonLabel = "Join"
-                            , msg =
-                                if model.game.points <= user.points then
-                                    GameCmd Join
+                            if user.points >= model.game.points then
+                                [ joinButton "Join & Take over a bot" <| GameCmd Join ]
 
-                                else
-                                    ErrorToast ("Table has minimum points of " ++ String.fromInt model.game.points) "not enough points"
-                            , checkReady = Nothing
-                            }
-            in
-            if model.game.status /= Game.Types.Playing then
-                Just record
+                            else
+                                [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]
 
-            else if model.game.players |> List.any isBot then
-                Just { record | buttonLabel = "Join & Take over a bot" }
+                else
+                    []
 
-            else
-                Nothing
+            Just player ->
+                let
+                    sitButton =
+                        if player.out then
+                            [ button
+                                [ class "edButton edGameHeader__button edGameHeader__button--left"
+                                , onClick <| GameCmd SitIn
+                                , dataTestId "button-seat"
+                                ]
+                                [ text "Sit in!" ]
+                            ]
+
+                        else if not model.game.hasTurn then
+                            [ button
+                                [ class "edButton edGameHeader__button edGameHeader__button--left"
+                                , onClick <| GameCmd SitOut
+                                , dataTestId "button-seat"
+                                ]
+                                [ text "Sit out" ]
+                            ]
+
+                        else
+                            []
+
+                    checkbox =
+                        if model.game.canFlag then
+                            [ label
+                                [ class "edCheckbox edGameHeader__checkbox"
+                                , onClick <| GameCmd <| Flag <| not <| Maybe.withDefault False model.game.flag
+                                , dataTestId "check-flag"
+                                ]
+                                [ Icon.icon "flag"
+                                , text <|
+                                    if model.game.playerPosition == List.length model.game.players then
+                                        "Surrender"
+
+                                    else
+                                        ordinal model.game.playerPosition
+                                ]
+                            ]
+
+                        else
+                            []
+
+                    turnButton =
+                        if model.game.hasTurn then
+                            [ button
+                                [ class "edButton edGameHeader__button"
+                                , onClick <| GameCmd EndTurn
+                                , dataTestId "button-seat"
+                                ]
+                                [ text "End turn" ]
+                            ]
+
+                        else
+                            []
+                in
+                sitButton ++ checkbox ++ turnButton
 
 
 gameLog : Model -> Html.Html Types.Msg

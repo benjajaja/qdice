@@ -309,6 +309,9 @@ button .material-icons, .edButton .material-icons {
   min-width: 0;
   padding: 0;
 }
+.edGameHeader__button--left {
+  margin-right: auto;
+}
 
 .edGameBoardFooter {
 }
