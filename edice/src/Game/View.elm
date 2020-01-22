@@ -17,7 +17,7 @@ import LeaderBoard.View
 import Ordinal exposing (ordinal)
 import Routing exposing (routeToString)
 import Time exposing (posixToMillis)
-import Types exposing (Model, Msg(..), PushEvent(..), Route(..), User(..))
+import Types exposing (AuthNetwork(..), Model, Msg(..), PushEvent(..), Route(..), User(..))
 
 
 view : Model -> Html Types.Msg
@@ -351,14 +351,25 @@ playerBox model =
                         ]
                     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
                     , div [ class "edPlayerBox__settings" ] <|
-                        [ div []
-                            [ a [ href "/me" ]
-                                [ text "Account & Settings"
+                        (case user.networks of
+                            [ Password ] ->
+                                [ div []
+                                    [ h3 [ style "color" "red" ] [ text "Account has no login" ]
+                                    , p [] [ text "You should add a login to this account, or you could lose it." ]
+                                    ]
                                 ]
-                            ]
-                        ]
+
+                            _ ->
+                                []
+                        )
+                            ++ [ div []
+                                    [ a [ href "/me" ]
+                                        [ text "Account & Settings"
+                                        ]
+                                    ]
+                               ]
                             ++ (if not model.sessionPreferences.notificationsEnabled then
-                                    [ div [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
+                                    [ p [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
                                     , div [] [ button [ onClick RequestNotifications ] [ text "Enable notifications" ] ]
                                     ]
 

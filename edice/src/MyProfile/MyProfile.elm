@@ -39,7 +39,17 @@ view model user preferences sessionPreferences =
             , h5 [] [ text "Connected login methods or networks:" ]
             , div [] <|
                 List.map (\n -> div [] [ text <| networkDisplay n ]) user.networks
-            , h5 [] [ text "Add login network to this account:" ]
+            , div [] <|
+                case user.networks of
+                    [ Password ] ->
+                        [ h2 [ style "color" "red" ] [ text "Warning!" ]
+                        , p [] [ text "You will not be able to access this account on another device, ever, until you add a login network." ]
+                        , p [] [ text "The same way, if you clear this browser's history/cookies/data, you won't be able to recover this user." ]
+                        ]
+
+                    _ ->
+                        []
+            , h5 [] [ text "Add a login network to this account:" ]
             , div [] <|
                 addNetworks
                     user
