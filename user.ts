@@ -166,7 +166,7 @@ const getProfile = (network, code, referer): Promise<any> => {
 
 export const me = async function(req, res, next) {
   try {
-    const profile = await getOrCreateUserFromToken(req.user);
+    const profile = await db.getUser(req.user.id);
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
     const preferences = await db.getPreferences(req.user.id);
     res.send(200, [profile, token, preferences]);
@@ -174,25 +174,6 @@ export const me = async function(req, res, next) {
   } catch (e) {
     logger.error(e);
     next(new errs.InternalError("could not get profile, JWT, or preferences"));
-  }
-};
-
-const getOrCreateUserFromToken = async (user: User | undefined) => {
-  if (!user) {
-    throw new Error("Corrupt token");
-  }
-  try {
-    return await db.getUser(user.id);
-  } catch (e) {
-    logger.warn("Could not find DB user from JWT, recreating: ", user);
-    return await db.createUser(
-      NETWORK_PASSWORD,
-      null,
-      user.name,
-      user.email,
-      user.picture,
-      null
-    );
   }
 };
 
