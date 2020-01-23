@@ -221,7 +221,7 @@ updateTableStatus model status =
             model.game.board
 
         board_ =
-            Board.State.updateLands oldBoard status.lands move AnimationDone
+            Board.State.updateLands oldBoard model.time status.lands move AnimationDone
 
         hasStarted =
             game.status /= Playing && status.status == Playing
@@ -392,7 +392,7 @@ showRoll model roll =
                     []
 
         board_ =
-            Board.State.updateLands model.game.board updates (Just Board.Types.Idle) AnimationDone
+            Board.State.updateLands model.game.board model.time updates (Just Board.Types.Idle) AnimationDone
 
         game =
             model.game
@@ -618,6 +618,7 @@ updateTable model table msg =
                                             | board =
                                                 Board.State.updateLands
                                                     board
+                                                    model.time
                                                     (case move_ of
                                                         Board.Types.FromTo from to ->
                                                             [ { color = from.color

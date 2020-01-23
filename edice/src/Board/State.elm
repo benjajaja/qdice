@@ -76,8 +76,8 @@ update msg model =
             )
 
 
-updateLands : Model -> List LandUpdate -> Maybe BoardMove -> (String -> Msg) -> Model
-updateLands model updates mMove msg =
+updateLands : Model -> Time.Posix -> List LandUpdate -> Maybe BoardMove -> (String -> Msg) -> Model
+updateLands model posix updates mMove msg =
     if List.length updates == 0 then
         let
             ( layout, _, _ ) =
@@ -104,7 +104,7 @@ updateLands model updates mMove msg =
 
             landUpdates : List ( Land.Land, List ( Int, AnimationState ) )
             landUpdates =
-                List.map (updateLand layout updates) map.lands
+                List.map (updateLand layout posix updates) map.lands
 
             map_ =
                 { map
@@ -150,8 +150,8 @@ animationsDict landUpdates =
         landUpdates
 
 
-updateLand : Land.Layout -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, AnimationState ) )
-updateLand layout updates land =
+updateLand : Land.Layout -> Time.Posix -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, AnimationState ) )
+updateLand layout posix updates land =
     let
         match =
             List.filter (\l -> l.emoji == land.emoji) updates
@@ -163,7 +163,7 @@ updateLand layout updates land =
                     | color = landUpdate.color
                     , points = landUpdate.points
                   }
-                , updateLandAnimations layout land landUpdate
+                , updateLandAnimations layout posix land landUpdate
                 )
 
             else
@@ -173,32 +173,13 @@ updateLand layout updates land =
             ( land, [] )
 
 
-updateLandAnimations : Land.Layout -> Land.Land -> LandUpdate -> List ( Int, AnimationState )
-updateLandAnimations layout land landUpdate =
+updateLandAnimations : Land.Layout -> Time.Posix -> Land.Land -> LandUpdate -> List ( Int, AnimationState )
+updateLandAnimations layout posix land landUpdate =
     if landUpdate.color == land.color && landUpdate.points > land.points then
-        let
-            ( cx, cy ) =
-                Land.landCenter
-                    layout
-                    land.cells
-        in
         List.map
             (\index ->
                 ( index
-                , Animation.queue
-                    [ Animation.wait <| millisToPosix <| 2 * index
-                    , Animation.toWith
-                        (Animation.easing
-                            { duration = 100
-                            , ease = \x -> x ^ 0.5
-                            }
-                        )
-                        [ Animation.translate (px 0) (px 0) ]
-                    , Animation.Messenger.send <| AnimationDone <| getLandDieKey land index
-                    ]
-                  <|
-                    Animation.style
-                        [ Animation.translate (px 0) (px <| 0 - (toFloat <| 10 * (index + 1))) ]
+                , CssAnimation posix
                 )
             )
         <|
@@ -218,10 +199,6 @@ attackAnimations layout move oldMove msg =
                 [ ( "attack_" ++ from.emoji
                   , translateStack False layout from to <| msg <| "attack_" ++ from.emoji
                   )
-
-                -- , ( "attack_" ++ to.emoji
-                -- , translateStack False layout to from
-                -- )
                 ]
 
         Idle ->
@@ -274,26 +251,27 @@ translateStack reverse layout from to doneMsg =
                 , Animation.translate (Animation.px x) (Animation.px y)
                 )
     in
-    Animation.queue
-        ([ Animation.toWith
-            (Animation.easing
-                { duration =
-                    if not reverse then
-                        100
+    Animation <|
+        Animation.queue
+            ([ Animation.toWith
+                (Animation.easing
+                    { duration =
+                        if not reverse then
+                            100
+
+                        else
+                            100
+                    , ease = \z -> z ^ 2
+                    }
+                )
+                [ toAnimation ]
+             ]
+                ++ (if reverse == True then
+                        [ Animation.Messenger.send doneMsg ]
 
                     else
-                        100
-                , ease = \z -> z ^ 2
-                }
+                        []
+                   )
             )
-            [ toAnimation ]
-         ]
-            ++ (if reverse == True then
-                    [ Animation.Messenger.send doneMsg ]
-
-                else
-                    []
-               )
-        )
-    <|
-        Animation.style [ fromAnimation ]
+        <|
+            Animation.style [ fromAnimation ]

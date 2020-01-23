@@ -262,7 +262,21 @@ button .material-icons, .edButton .material-icons {
   pointer-events: none;
   fill: currentColor;
   will-change: transform;
+  will-change: opacity;
   /*transform: translate(-0.25vw, -0.25vw);*/
+}
+.edBoard--dies__animated {
+  animation: dies-drop 0.5s;
+}
+@keyframes dies-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .edLand {
   /*stroke: #222;*/

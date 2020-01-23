@@ -1,9 +1,10 @@
-module Board.Types exposing (AnimationState, Animations, BoardMove(..), LandUpdate, Model, Msg(..), PathCache, getLandDieKey, getLayout)
+module Board.Types exposing (AnimationState(..), Animations, BoardMove(..), LandUpdate, Model, Msg(..), PathCache, getLandDieKey, getLayout)
 
 import Animation exposing (px)
 import Animation.Messenger
 import Dict
 import Land exposing (Land, Layout, Map)
+import Time exposing (Posix)
 
 
 type Msg
@@ -27,8 +28,9 @@ type alias PathCache =
     Dict.Dict String String
 
 
-type alias AnimationState =
-    Animation.Messenger.State Msg
+type AnimationState
+    = Animation (Animation.Messenger.State Msg)
+    | CssAnimation Posix
 
 
 type alias Animations =

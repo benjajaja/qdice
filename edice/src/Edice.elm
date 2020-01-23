@@ -569,7 +569,18 @@ update msg model =
                         _ ->
                             Cmd.none
             in
-            ( { model | time = newTime }, cmd )
+            if Time.posixToMillis newTime |> toFloat |> (*) 0.001 |> floor |> remainderBy 5 |> (==) 0 then
+                let
+                    game =
+                        model.game
+
+                    board =
+                        game.board
+                in
+                ( { model | time = newTime, game = { game | board = Board.clearCssAnimations board newTime } }, cmd )
+
+            else
+                ( model, cmd )
 
         SetLastHeartbeat time ->
             let
@@ -755,7 +766,7 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
-        , Time.every 250 Tick
+        , Time.every 1000 Tick
         , notificationsChange NotificationsChange
         , pushGetKey (\_ -> PushGetKey)
         , pushRegister PushRegister

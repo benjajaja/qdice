@@ -1,4 +1,4 @@
-module Board exposing (LandUpdate, Model, Msg, animations, init, update, updateAnimations, view)
+module Board exposing (LandUpdate, Model, Msg, animations, clearCssAnimations, init, update, updateAnimations, view)
 
 import Animation
 import Animation.Messenger
@@ -7,6 +7,7 @@ import Board.Types
 import Board.View
 import Dict
 import Html.Lazy
+import Time
 
 
 type alias Msg =
@@ -33,9 +34,37 @@ view =
     Html.Lazy.lazy2 Board.View.view
 
 
-animations : Model -> List Board.Types.AnimationState
+animations : Model -> List (Animation.Messenger.State Msg)
 animations model =
     Dict.values model.animations
+        |> List.map
+            (\v ->
+                case v of
+                    Board.Types.Animation anim ->
+                        [ anim ]
+
+                    Board.Types.CssAnimation posix ->
+                        []
+            )
+        |> List.concat
+
+
+clearCssAnimations : Model -> Time.Posix -> Model
+clearCssAnimations model posix =
+    { model
+        | animations =
+            Dict.filter
+                (\k ->
+                    \v ->
+                        case v of
+                            Board.Types.Animation _ ->
+                                True
+
+                            Board.Types.CssAnimation time ->
+                                Time.posixToMillis posix - Time.posixToMillis time < 600
+                )
+                model.animations
+    }
 
 
 updateAnimations : Model -> Animation.Msg -> ( Model, Cmd Msg )
@@ -64,8 +93,13 @@ updateAnimations model animMsg =
 
 updateAnimation : Animation.Msg -> ( String, Board.Types.AnimationState ) -> ( String, Board.Types.AnimationState, Cmd Msg )
 updateAnimation msg ( k, v ) =
-    let
-        ( new, cmd ) =
-            Animation.Messenger.update msg v
-    in
-    ( k, new, cmd )
+    case v of
+        Board.Types.Animation anim ->
+            let
+                ( new, cmd ) =
+                    Animation.Messenger.update msg anim
+            in
+            ( k, Board.Types.Animation new, cmd )
+
+        Board.Types.CssAnimation _ ->
+            ( k, v, Cmd.none )

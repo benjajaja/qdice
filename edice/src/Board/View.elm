@@ -45,12 +45,6 @@ view model hovered =
 
 board : Land.Map -> ( Layout, String, String ) -> PathCache -> Animations -> List Land -> Maybe Land.Emoji -> Svg Msg
 board map ( layout, sWidth, sHeight ) pathCache animations selected hovered =
-    let
-        -- massShapeF =
-        -- Html.Lazy.lazy <| massElement layout pathCache
-        landDiesF =
-            Html.Lazy.lazy <| lazyLandDies layout animations
-    in
     Html.div [ class "edBoard" ]
         [ Svg.svg
             --[ width "100%"
@@ -71,7 +65,7 @@ board map ( layout, sWidth, sHeight ) pathCache animations selected hovered =
                 selected
                 hovered
                 map.lands
-            , g [] <| List.map landDiesF map.lands
+            , g [] <| List.map (lazyLandDies layout animations) map.lands
             ]
         ]
 
@@ -222,7 +216,12 @@ landDies layout stackAnimation diceAnimations land =
         (class "edBoard--stack"
             :: (case stackAnimation of
                     Just animation ->
-                        Animation.render animation
+                        case animation of
+                            Animation anim ->
+                                Animation.render anim
+
+                            CssAnimation _ ->
+                                []
 
                     Nothing ->
                         []
@@ -267,24 +266,25 @@ landDie animations ( cx, cy ) points index =
             Array.get index animations |> Maybe.andThen identity
     in
     Svg.use
-        (List.concat
-            [ case animation of
-                Just a ->
-                    Animation.render a
+        [ animation
+            |> Maybe.andThen
+                (\anim ->
+                    case anim of
+                        Animation _ ->
+                            Nothing
 
-                Nothing ->
-                    []
-            , [ y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2)
-              , x <| String.fromFloat <| cx - xOffset
-              , textAnchor "middle"
-              , alignmentBaseline "central"
-              , class "edBoard--dies"
-              , xlinkHref "#die"
-              , height "3"
-              , width "3"
-              ]
-            ]
-        )
+                        CssAnimation _ ->
+                            Just <| class "edBoard--dies edBoard--dies__animated"
+                )
+            |> Maybe.withDefault (class "edBoard--dies")
+        , y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2)
+        , x <| String.fromFloat <| cx - xOffset
+        , textAnchor "middle"
+        , alignmentBaseline "central"
+        , xlinkHref "#die"
+        , height "3"
+        , width "3"
+        ]
         []
 
 
