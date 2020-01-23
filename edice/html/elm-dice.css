@@ -266,7 +266,10 @@ button .material-icons, .edButton .material-icons {
   /*transform: translate(-0.25vw, -0.25vw);*/
 }
 .edBoard--dies__animated {
-  animation: dies-drop 0.5s;
+  animation-name: dies-drop;
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: backwards;
 }
 @keyframes dies-drop {
   0% {

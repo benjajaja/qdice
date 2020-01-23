@@ -580,7 +580,7 @@ update msg model =
                 ( { model | time = newTime, game = { game | board = Board.clearCssAnimations board newTime } }, cmd )
 
             else
-                ( model, cmd )
+                ( { model | time = newTime }, cmd )
 
         SetLastHeartbeat time ->
             let
@@ -766,7 +766,7 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
-        , Time.every 1000 Tick
+        , Time.every 250 Tick
         , notificationsChange NotificationsChange
         , pushGetKey (\_ -> PushGetKey)
         , pushRegister PushRegister

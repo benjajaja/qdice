@@ -266,7 +266,7 @@ landDie animations ( cx, cy ) points index =
             Array.get index animations |> Maybe.andThen identity
     in
     Svg.use
-        [ animation
+        ((animation
             |> Maybe.andThen
                 (\anim ->
                     case anim of
@@ -274,17 +274,22 @@ landDie animations ( cx, cy ) points index =
                             Nothing
 
                         CssAnimation _ ->
-                            Just <| class "edBoard--dies edBoard--dies__animated"
+                            Just
+                                [ class "edBoard--dies edBoard--dies__animated"
+                                , Svg.Attributes.style <| "animation-delay: " ++ (String.fromFloat <| (*) 0.1 <| toFloat index) ++ "s"
+                                ]
                 )
-            |> Maybe.withDefault (class "edBoard--dies")
-        , y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2)
-        , x <| String.fromFloat <| cx - xOffset
-        , textAnchor "middle"
-        , alignmentBaseline "central"
-        , xlinkHref "#die"
-        , height "3"
-        , width "3"
-        ]
+            |> Maybe.withDefault [ class "edBoard--dies" ]
+         )
+            ++ [ y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2)
+               , x <| String.fromFloat <| cx - xOffset
+               , textAnchor "middle"
+               , alignmentBaseline "central"
+               , xlinkHref "#die"
+               , height "3"
+               , width "3"
+               ]
+        )
         []
 
 
