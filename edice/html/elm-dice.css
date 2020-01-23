@@ -448,14 +448,17 @@ button .material-icons, .edButton .material-icons {
 }
 
 
-.edPlayerChip--out .edPlayerChip__picture__image {
+.edPlayerChip--out .edPlayerChip__picture__image, .edPlayerChip--flag .edPlayerChip__picture__image {
   filter: grayscale(100%);
 }
-.edPlayerChip--out .edPlayerChip__picture__image:after {
+.edPlayerChip--out .edPlayerChip__picture__image:after, .edPlayerChip--flag .edPlayerChip__picture__image:after {
   display: block;
   color: white;
   background: black;
   content: '-';
+}
+.edPlayerChip--flag .edPlayerChip__picture__image:after {
+  content: '🏳 ';
 }
 
 .edPlayerChip--turn {

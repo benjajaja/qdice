@@ -132,6 +132,9 @@ playerContainer player hasTurn =
                     , if player.out then
                         [ "edPlayerChip--out" ]
 
+                      else if player.flag /= Nothing then
+                        [ "edPlayerChip--flag" ]
+
                       else
                         []
                     , if hasTurn then
