@@ -1,4 +1,6 @@
 #!/bin/bash
+
+cd ~/nodice
 export $(cat .env | xargs)
 export $(cat .local_env | xargs)
 
