@@ -61,7 +61,6 @@ export const pickTactic = (
   const positions = groupedPlayerPositions(table);
   const position = positions(player);
   if (table.roundCount > 3 && !wouldRefill && position === 1) {
-    logger.debug(`${player.name} is 1st and extraCareful`);
     return tactics.extraCareful;
   }
 

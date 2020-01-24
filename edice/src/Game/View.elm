@@ -183,7 +183,7 @@ onlineButtons model =
                                 [ text "Sit in!" ]
                             ]
 
-                        else if not model.game.hasTurn then
+                        else
                             [ button
                                 [ class "edButton edGameHeader__button edGameHeader__button--left"
                                 , onClick <| GameCmd SitOut
@@ -191,9 +191,6 @@ onlineButtons model =
                                 ]
                                 [ text "Sit out" ]
                             ]
-
-                        else
-                            []
 
                     checkbox =
                         if model.game.canFlag then
@@ -216,17 +213,14 @@ onlineButtons model =
                             []
 
                     turnButton =
-                        if model.game.hasTurn then
-                            [ button
-                                [ class "edButton edGameHeader__button"
-                                , onClick <| GameCmd EndTurn
-                                , dataTestId "button-seat"
-                                ]
-                                [ text "End turn" ]
+                        [ button
+                            [ class "edButton edGameHeader__button"
+                            , onClick <| GameCmd EndTurn
+                            , dataTestId "button-seat"
+                            , disabled <| not model.game.hasTurn
                             ]
-
-                        else
-                            []
+                            [ text "End turn" ]
+                        ]
                 in
                 sitButton ++ checkbox ++ turnButton
 
