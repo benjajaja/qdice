@@ -31,8 +31,8 @@ module.exports = {
       name: "Lagos",
       mapName: "DeLucía",
       playerSlots: 8,
-      startSlots: 6,
-      points: 500,
+      startSlots: 2,
+      points: 0,
       stackSize: 8,
       params: {
         noFlagRounds: 5,
@@ -49,7 +49,7 @@ module.exports = {
       stackSize: 8,
       params: {
         noFlagRounds: 1,
-        botLess: false,
+        botLess: true,
       },
     },
     // {
@@ -70,12 +70,12 @@ module.exports = {
       name: "Arabia",
       mapName: "Sabicas",
       playerSlots: 8,
-      startSlots: 6,
-      points: 200,
+      startSlots: 8,
+      points: 500,
       stackSize: 8,
       params: {
         noFlagRounds: 5,
-        botLess: true,
+        botLess: false,
       },
     },
   ],
