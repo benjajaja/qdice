@@ -171,13 +171,15 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
 
   publish.join(table, player);
 
-  gameStart = addSeconds(GAME_START_COUNTDOWN);
+  if (players.length >= table.startSlots) {
+    gameStart = addSeconds(GAME_START_COUNTDOWN);
 
-  publish.event({
-    type: "countdown",
-    table: table.name,
-    players: players,
-  });
+    publish.event({
+      type: "countdown",
+      table: table.name,
+      players: players,
+    });
+  }
 
   publish.event({
     type: "join",
