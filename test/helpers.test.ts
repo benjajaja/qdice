@@ -137,6 +137,35 @@ describe("Helpers", function() {
   });
 
   describe("removePlayerCascade", () => {
+    it("kill", () => {
+      const players: Player[] = [
+        { id: "a" } as any,
+        { id: "b" } as any,
+        { id: "c" } as any,
+      ];
+
+      const player = players[0];
+      const elimination: Elimination = {
+        player,
+        position: players.length,
+        reason: ELIMINATION_REASON_DIE,
+        source: {
+          player: players[2],
+          points: 10,
+        },
+      };
+      const [
+        players_,
+        lands_,
+        turnIndex,
+        eliminations,
+      ] = helpers.removePlayerCascade(players, [], player, 2, elimination);
+
+      assert.deepEqual(turnIndex, 1);
+      assert.deepEqual(players_, [players[1], players[2]]);
+      assert.deepEqual(eliminations, [elimination]);
+    });
+
     it("surrender current turn", () => {
       const players: Player[] = [
         { id: "a" } as any,
@@ -164,6 +193,7 @@ describe("Helpers", function() {
       assert.deepEqual(players_, [players[0], players[2]]);
       assert.deepEqual(eliminations, [elimination]);
     });
+
     it("surrender current turn wraps turnIndex", () => {
       const players: Player[] = [
         { id: "a" } as any,
@@ -192,7 +222,7 @@ describe("Helpers", function() {
       assert.deepEqual(eliminations, [elimination]);
     });
 
-    it.only("surrender current turn wraps turnIndex next", () => {
+    it("surrender current turn wraps turnIndex next", () => {
       const players: Player[] = [
         { id: "a", flag: 3 } as any,
         { id: "b" } as any,
@@ -215,8 +245,9 @@ describe("Helpers", function() {
         eliminations,
       ] = helpers.removePlayerCascade(players, [], player, 2, elimination);
 
-      assert.deepEqual(turnIndex, 2);
+      assert.deepEqual(turnIndex, 1);
       assert.deepEqual(players_, [players[1], players[2]]);
+      assert.deepEqual(players_[turnIndex].id, "c");
       assert.deepEqual(eliminations, [elimination]);
     });
 

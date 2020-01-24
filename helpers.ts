@@ -100,8 +100,20 @@ export const removePlayer = (
   player: Player,
   turnIndex: number
 ): [readonly Player[], readonly Land[], number] => {
-  const turnPlayer = players[turnIndex];
+  const removedPlayerIndex = players.indexOf(player);
   const players_ = players.filter(R.complement(R.equals(player)));
+  let newTurnIndex: number;
+  if (removedPlayerIndex > turnIndex) {
+    newTurnIndex = turnIndex;
+  } else if (removedPlayerIndex === turnIndex) {
+    if (turnIndex >= players_.length) {
+      newTurnIndex = 0;
+    } else {
+      newTurnIndex = turnIndex; // next player
+    }
+  } else {
+    newTurnIndex = turnIndex - 1;
+  }
   return [
     players_,
     lands.map(
@@ -109,11 +121,7 @@ export const removePlayer = (
         Object.assign(land, { color: COLOR_NEUTRAL })
       )
     ),
-    turnPlayer !== player
-      ? players.indexOf(turnPlayer)
-      : turnIndex >= players.length
-      ? 0
-      : turnIndex,
+    newTurnIndex,
   ];
 };
 
