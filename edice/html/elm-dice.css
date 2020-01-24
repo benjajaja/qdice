@@ -875,16 +875,22 @@ button .material-icons, .edButton .material-icons {
     display: flex;
     flex-direction: column;
     flex-grow: 2;
+    height: 1vh !important;
+  }
+  .edGameBoardWrapper {
+    overflow: auto;
   }
   .edBoard {
-    flex-grow: 2;
+    flex: 2 2;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
   .edBoard--svg {
+    max-height: 100%;
   }
-  .edGame__meta, .edGame__meta2, .edTables, .edPlayerBoxes {
+  .edGame__meta, .edBoxes, .edGame__meta2, .edTables, .edPlayerBoxes, .edGameDetails {
     display: none !important;
   }
   .edGameBoardFooter {
