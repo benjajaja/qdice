@@ -89,11 +89,11 @@ export const addBots = (table: Table): CommandResult => {
     awards: [],
   };
   const player = {
-    ...makePlayer(botUser, "bot", table.players.length),
+    ...makePlayer(botUser, "bot", table.players),
     bot: persona,
     ready: process.env.NODE_ENV === "local",
   };
-  const players = table.players.concat([player]);
+  const players = R.sortBy(R.prop("color"), table.players.concat([player]));
 
   let gameStart = table.gameStart;
   if (players.length >= table.startSlots) {

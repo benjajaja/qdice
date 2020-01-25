@@ -106,29 +106,43 @@ export const exit = (user, table, clientId): CommandResult | undefined => {
 export const makePlayer = (
   user: User,
   clientId,
-  playerCount: number,
-  color?: Color
-): Player => ({
-  id: user.id,
-  clientId,
-  name: user.name,
-  picture: user.picture || "",
-  color: color ?? playerCount + 1,
-  reserveDice: 0,
-  out: false,
-  outTurns: 0,
-  points: user.points,
-  awards: user.awards,
-  rank: user.rank,
-  level: user.level,
-  position: 0,
-  score: 0,
-  flag: null,
-  lastBeat: now(),
-  joined: now(),
-  ready: false,
-  bot: null,
-});
+  players: readonly Player[],
+  forceColor?: Color
+): Player => {
+  const taken = R.complement(
+    R.contains(
+      R.__,
+      players.map(p => p.color)
+    )
+  );
+  const color = forceColor ?? R.head(R.range(1, 9).filter(taken));
+  if (color === undefined) {
+    logger.error("cannot find untaken color", players);
+    throw new Error("cannot find unused color on join");
+  }
+
+  return {
+    id: user.id,
+    clientId,
+    name: user.name,
+    picture: user.picture || "",
+    color,
+    reserveDice: 0,
+    out: false,
+    outTurns: 0,
+    points: user.points,
+    awards: user.awards,
+    rank: user.rank,
+    level: user.level,
+    position: 0,
+    score: 0,
+    flag: null,
+    lastBeat: now(),
+    joined: now(),
+    ready: false,
+    bot: null,
+  };
+};
 
 export const join = (user: User, table: Table, clientId): CommandResult => {
   if (table.status === STATUS_PLAYING) {
@@ -146,13 +160,27 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
     throw new IllegalMoveError("not enough points to join", user.id);
   }
 
-  if (!table.players.some(isBot) && table.players.length >= table.startSlots) {
+  if (!table.players.some(isBot) && table.players.length >= table.playerSlots) {
     throw new IllegalMoveError("table already full", user.id);
   }
 
   logger.debug("join", typeof user.id);
-  const madePlayer = makePlayer(user, clientId, table.players.length);
-  const [players, player] = insertPlayer(table.players, madePlayer);
+  const [players, player, removed] = insertPlayer(
+    table.players,
+    user,
+    clientId
+  );
+  if (!R.equals(players, R.sortBy(R.prop("color"), players))) {
+    logger.error(
+      "bad sort",
+      table.players.map(p => [p.name, p.color]),
+      players.map(p => [p.name, p.color])
+    );
+  }
+
+  if (removed) {
+    publish.leave(table, removed);
+  }
 
   const status =
     table.status === STATUS_FINISHED ? STATUS_PAUSED : table.status;
@@ -197,19 +225,12 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
 
 const insertPlayer = (
   players: readonly Player[],
-  player: Player
-): [readonly Player[], Player] => {
+  user: User,
+  clientId: any
+): [readonly Player[], Player, Player?] => {
   const [heads, tail] = R.splitWhen(isBot, players);
-  const newPlayer = { ...player, color: heads.length + 1 };
-  return [
-    heads.concat([newPlayer]).concat(
-      tail.map((p, i) => ({
-        ...p,
-        color: heads.length + i + 2,
-      }))
-    ),
-    newPlayer,
-  ];
+  const newPlayer = makePlayer(user, clientId, heads);
+  return [heads.concat([newPlayer]).concat(tail.slice(1)), newPlayer, tail[0]];
 };
 
 const takeover = (user: User, table: Table, clientId): CommandResult => {
@@ -253,12 +274,7 @@ const takeover = (user: User, table: Table, clientId): CommandResult => {
     throw new IllegalMoveError("could not find a bot to takeover", user.id);
   }
 
-  const player = makePlayer(
-    user,
-    clientId,
-    table.players.length,
-    bestBot.color
-  );
+  const player = makePlayer(user, clientId, table.players, bestBot.color);
   const players = table.players.map(p => (p === bestBot ? player : p));
 
   publish.leave(table, bestBot);
@@ -299,10 +315,6 @@ export const leave = (
       ? STATUS_FINISHED
       : table.status;
 
-  const coloredPlayers = players.map((player, index) =>
-    Object.assign(player, { color: index + 1 })
-  );
-
   publish.leave(table, existing);
   publish.event({
     type: "join",
@@ -311,7 +323,7 @@ export const leave = (
   return {
     type: "Leave",
     table: { gameStart, status },
-    players: coloredPlayers,
+    players,
   };
 };
 

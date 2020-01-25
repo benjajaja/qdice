@@ -117,13 +117,12 @@ const tick = async (tableTag: string, lock) => {
 };
 
 const shouldStart = (table: Table) => {
-  if (table.players.filter(isBot).length >= table.startSlots) {
+  if (table.players.filter(isBot).length >= table.playerSlots) {
     return true;
   }
   if (
-    table.players.filter(R.complement(isBot)).length >= table.startSlots ||
-    (table.players.length >= table.startSlots &&
-      table.players.every(player => player.ready))
+    table.players.length >= table.startSlots &&
+    table.players.every(player => player.ready)
   ) {
     return true;
   }
