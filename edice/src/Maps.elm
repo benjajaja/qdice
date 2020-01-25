@@ -173,8 +173,7 @@ toCharList : Land.Map -> List (List String)
 toCharList map =
     let
         lands =
-            List.filter (\l -> l.color /= Land.Editor) map.lands
-                |> List.reverse
+            map.lands |> List.reverse
     in
     case lands of
         [] ->

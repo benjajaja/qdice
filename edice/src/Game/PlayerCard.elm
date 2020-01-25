@@ -1,4 +1,4 @@
-module Game.PlayerCard exposing (playerPicture, view)
+module Game.PlayerCard exposing (TurnPlayer, playerPicture, view)
 
 import Awards
 import Board.Colors
@@ -17,47 +17,52 @@ import Time exposing (posixToMillis)
 import Types exposing (Model, Msg(..), Route(..))
 
 
-view : Model -> Int -> Int -> Player -> Html.Html Types.Msg
-view model offset i player =
-    let
-        index =
-            offset + i
-    in
-    playerContainer player
-        (index == model.game.turnIndex)
-        [ playerImageProgress model index player
-        , div [ class "edPlayerChip__info" ]
-            [ a
-                [ class "edPlayerChip__name"
-                , href <| routeToString False <| ProfileRoute player.id player.name
-                , dataTestId <| "player-name-" ++ String.fromInt index
-                , style "background-color" <| Board.Colors.baseCssRgb player.color
-                , style "color" <|
-                    (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
-                        [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
-                        |> Maybe.withDefault (Color.rgb255 0 0 0)
-                        |> Board.Colors.cssRgb
-                    )
+type alias TurnPlayer =
+    ( Maybe Player, Int )
+
+
+view : Model -> TurnPlayer -> Html.Html Types.Msg
+view model ( maybePlayer, index ) =
+    case maybePlayer of
+        Just player ->
+            playerContainer player
+                (index == model.game.turnIndex)
+                [ playerImageProgress model index player
+                , div [ class "edPlayerChip__info" ]
+                    [ a
+                        [ class "edPlayerChip__name"
+                        , href <| routeToString False <| ProfileRoute player.id player.name
+                        , dataTestId <| "player-name-" ++ String.fromInt index
+                        , style "background-color" <| Board.Colors.baseCssRgb player.color
+                        , style "color" <|
+                            (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
+                                [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
+                                |> Maybe.withDefault (Color.rgb255 0 0 0)
+                                |> Board.Colors.cssRgb
+                            )
+                        ]
+                        [ text player.name ]
+                    , div
+                        [ class "edPlayerChip__playerStats"
+                        , style "background-color" <| Board.Colors.baseCssRgb player.color
+                        , style "color" <|
+                            (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
+                                [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
+                                |> Maybe.withDefault (Color.rgb255 0 0 0)
+                                |> Board.Colors.cssRgb
+                            )
+                        ]
+                      <|
+                        playerStats player
+                    , div [ class "edPlayerChip__gameStats" ] <|
+                        gameStats
+                            model
+                            player
+                    ]
                 ]
-                [ text player.name ]
-            , div
-                [ class "edPlayerChip__playerStats"
-                , style "background-color" <| Board.Colors.baseCssRgb player.color
-                , style "color" <|
-                    (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
-                        [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
-                        |> Maybe.withDefault (Color.rgb255 0 0 0)
-                        |> Board.Colors.cssRgb
-                    )
-                ]
-              <|
-                playerStats player
-            , div [ class "edPlayerChip__gameStats" ] <|
-                gameStats
-                    model
-                    player
-            ]
-        ]
+
+        Nothing ->
+            div [ class "edPlayerChip edPlayerChip--empty" ] []
 
 
 gameStats : Model -> Player -> List (Html Msg)

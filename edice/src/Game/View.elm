@@ -1,13 +1,15 @@
 module Game.View exposing (view)
 
+import Array
 import Awards
 import Backend.Types exposing (ConnectionStatus(..))
 import Board
+import Board.Colors
 import Game.Chat
 import Game.Footer
-import Game.PlayerCard as PlayerCard exposing (playerPicture)
+import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
 import Game.State exposing (canHover)
-import Game.Types exposing (PlayerAction(..), isBot, statusToString)
+import Game.Types exposing (Player, PlayerAction(..), isBot, statusToString)
 import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, style, target, type_)
@@ -85,10 +87,31 @@ boardFooter model =
 playerBar : Int -> Model -> Html Msg
 playerBar dropCount model =
     div [ class "edPlayerChips" ] <|
-        List.indexedMap (PlayerCard.view model dropCount) <|
+        List.map (PlayerCard.view model) <|
             List.take 4 <|
                 List.drop dropCount <|
-                    model.game.players
+                    sortedPlayers <|
+                        model.game.players
+
+
+sortedPlayers : List Player -> List TurnPlayer
+sortedPlayers players =
+    let
+        acc : Array.Array TurnPlayer
+        acc =
+            Array.initialize 8 (always ( Nothing, -1 ))
+
+        fold : ( Int, Player ) -> Array.Array TurnPlayer -> Array.Array TurnPlayer
+        fold =
+            \( i, p ) ->
+                \a ->
+                    Array.set (Board.Colors.colorIndex p.color - 1) ( Just p, i ) a
+    in
+    List.foldl
+        fold
+        acc
+        (List.indexedMap Tuple.pair players)
+        |> Array.toList
 
 
 seatButtons : Model -> List (Html.Html Types.Msg)

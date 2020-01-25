@@ -1,51 +1,45 @@
-module Board.Colors exposing (animationColor, base, baseCssRgb, colorName, cssRgb, highlight, hover)
+module Board.Colors exposing (animationColor, base, baseCssRgb, colorIndex, colorName, cssRgb, highlight, hover)
 
 import Animation
 import Color
 import Color.Convert exposing (colorToHex)
 import Color.Manipulate exposing (darken, lighten)
-import Land exposing (Color)
+import Land exposing (Color(..))
 
 
 base : Color -> Color.Color
 base color =
     case color of
-        Land.Neutral ->
+        Neutral ->
             Color.rgb255 240 240 240
 
-        Land.Black ->
+        Black ->
             Color.rgb255 52 52 52
 
-        Land.Red ->
+        Red ->
             Color.rgb255 196 2 51
 
-        Land.Green ->
+        Green ->
             Color.rgb255 0 159 107
 
-        Land.Blue ->
+        Blue ->
             Color.rgb255 0 135 189
 
-        Land.Yellow ->
+        Yellow ->
             Color.rgb255 255 211 0
 
-        Land.Magenta ->
+        Magenta ->
             Color.rgb255 187 86 149
 
-        Land.Cyan ->
+        Cyan ->
             Color.rgb255 64 224 208
 
         -- 103 189 170
-        Land.Orange ->
+        Orange ->
             Color.rgb255 245 130 48
 
-        Land.Brown ->
+        Brown ->
             Color.rgb255 255 250 200
-
-        Land.Editor ->
-            Color.rgb255 255 128 0
-
-        Land.EditorSelected ->
-            Color.rgb255 255 0 255
 
 
 highlight : Color.Color -> Color.Color
@@ -71,41 +65,35 @@ baseCssRgb =
 colorName : Color -> String
 colorName color =
     case color of
-        Land.Neutral ->
+        Neutral ->
             "neutral"
 
-        Land.Black ->
+        Black ->
             "black"
 
-        Land.Red ->
+        Red ->
             "red"
 
-        Land.Green ->
+        Green ->
             "green"
 
-        Land.Blue ->
+        Blue ->
             "blue"
 
-        Land.Yellow ->
+        Yellow ->
             "yellow"
 
-        Land.Magenta ->
+        Magenta ->
             "magenta"
 
-        Land.Cyan ->
+        Cyan ->
             "cyan"
 
-        Land.Orange ->
+        Orange ->
             "orange"
 
-        Land.Brown ->
+        Brown ->
             "brown"
-
-        Land.Editor ->
-            "editor"
-
-        Land.EditorSelected ->
-            "editor-selected"
 
 
 animationColor : Color -> Animation.Color
@@ -119,3 +107,37 @@ animationColor c =
     , blue = round color.blue
     , alpha = color.alpha
     }
+
+
+colorIndex : Color -> Int
+colorIndex color =
+    case color of
+        Red ->
+            1
+
+        Blue ->
+            2
+
+        Green ->
+            3
+
+        Yellow ->
+            4
+
+        Magenta ->
+            5
+
+        Cyan ->
+            6
+
+        Orange ->
+            7
+
+        Brown ->
+            8
+
+        Black ->
+            9
+
+        Neutral ->
+            0

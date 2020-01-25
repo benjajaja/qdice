@@ -343,25 +343,20 @@ waterConnection layout pathCache lands ( from, to ) =
 
 landColor : Bool -> Bool -> Land.Color -> String
 landColor selected hovered color =
-    case color of
-        Land.EditorSelected ->
-            "url(#editorGradient)"
+    Board.Colors.base color
+        |> (if selected then
+                Board.Colors.highlight
 
-        _ ->
-            Board.Colors.base color
-                |> (if selected then
-                        Board.Colors.highlight
+            else
+                identity
+           )
+        |> (if hovered then
+                Board.Colors.hover
 
-                    else
-                        identity
-                   )
-                |> (if hovered then
-                        Board.Colors.hover
-
-                    else
-                        identity
-                   )
-                |> Board.Colors.cssRgb
+            else
+                identity
+           )
+        |> Board.Colors.cssRgb
 
 
 die : Svg Msg

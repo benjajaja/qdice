@@ -57,10 +57,8 @@ type Color
     | Magenta
     | Cyan
     | Orange {- 7 -}
-    | Brown {- 8 -}
-    | Black {- 9 -}
-    | Editor
-    | EditorSelected
+    | Brown
+    | Black
 
 
 playerColors : List Color
@@ -281,9 +279,6 @@ playerColor i =
 
             9 ->
                 Black
-
-            0 ->
-                Editor
 
             _ ->
                 Neutral
