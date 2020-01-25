@@ -222,7 +222,7 @@ export const tactics = {
     ) {
       return;
     }
-    const sourceNeighbours = neighbours(table, target).filter(
+    const sourceNeighbours = neighbours(table, source).filter(
       land =>
         land.color !== player.color &&
         land.color != Color.Neutral &&
@@ -230,7 +230,9 @@ export const tactics = {
     );
     if (
       sourceNeighbours.length > 0 &&
-      sourceNeighbours.some(land => land.points > 2)
+      sourceNeighbours.some(
+        land => land.points > (remainingPoints >= 6 ? 3 : 2)
+      )
     ) {
       return;
     }
