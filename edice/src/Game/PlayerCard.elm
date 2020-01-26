@@ -166,7 +166,7 @@ playerImageProgress model index player =
                 0.0
         , Html.div
             [ class "edPlayerChip__picture__image"
-            , style "background-image" ("url(" ++ player.picture ++ ")")
+            , style "background-image" ("url('" ++ player.picture ++ "')")
             , style "background-size" "cover"
             ]
             []

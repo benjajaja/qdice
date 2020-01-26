@@ -9,6 +9,7 @@ import {
   BotState,
   IllegalMoveError,
   BotStrategy,
+  Color,
 } from "../types";
 import { now, addSeconds, havePassed } from "../timestamp";
 import * as publish from "./publish";
@@ -88,11 +89,13 @@ export const addBots = (table: Table): CommandResult => {
     voted: [],
     awards: [],
   };
+
   const player = {
-    ...makePlayer(botUser, "bot", table.players),
+    ...tableThemed(table, makePlayer(botUser, "bot", table.players)),
     bot: persona,
     ready: process.env.NODE_ENV === "local",
   };
+
   const players = R.sortBy(R.prop("color"), table.players.concat([player]));
 
   let gameStart = table.gameStart;
@@ -254,4 +257,44 @@ const botSources = (table: Table, player: Player): Source[] => {
       ),
     }))
     .filter(attack => attack.targets.length > 0);
+};
+
+const tableThemed = (table: Table, player: Player): Player => {
+  if (table.tag === "España") {
+    return { ...player, ...spanishPersona(player.color) };
+  }
+  return player;
+};
+
+const spanishPersona = (color: Color): { name: string; picture: string } => {
+  const name = spanishName(color);
+  return {
+    name,
+    picture: `assets/bots/bot_${name}.png`,
+  };
+};
+
+const spanishName = (color: Color): string => {
+  switch (color) {
+    case Color.Red:
+      return "Sánchez";
+    case Color.Blue:
+      return "Casado";
+    case Color.Green:
+      return "Abascal";
+    case Color.Yellow:
+      return "Junqueras";
+    case Color.Magenta:
+      return "Iglesias";
+    case Color.Cyan:
+      return "Fantasma de Franco";
+    case Color.Orange:
+      return "Arrimadas";
+    case Color.Beige:
+      return "Felipe VI";
+    case Color.Black:
+      return "N";
+    case Color.Neutral:
+      return "Neutral";
+  }
 };

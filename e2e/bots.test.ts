@@ -49,7 +49,7 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
   return newLines;
 };
 
-describe("A game with bots", () => {
+describe.skip("A game with bots", () => {
   test("should play a full game", async () => {
     await expect(page).toClick(testId("go-to-table-España"));
 
