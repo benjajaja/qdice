@@ -315,5 +315,4 @@ fullCellMap w h color =
 
 emptyMap : Land.Map
 emptyMap =
-    -- Land.Map [] 40 40
-    load Serrano
+    Land.Map "empty" [] 40 40 []
