@@ -19,7 +19,7 @@ import LeaderBoard.View
 import Ordinal exposing (ordinal)
 import Routing exposing (routeToString)
 import Time exposing (posixToMillis)
-import Types exposing (AuthNetwork(..), Model, Msg(..), PushEvent(..), Route(..), User(..))
+import Types exposing (AuthNetwork(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), User(..))
 
 
 view : Model -> Html Types.Msg
@@ -296,7 +296,7 @@ tableInfo model =
                 [ text "Table "
                 , text <| table
                 , text " is"
-                , span [ class "edGameStatus__chip--strong", dataTestId "game-status" ]
+                , span [ class "edGameStatus__chip", dataTestId "game-status" ]
                     [ text <| "\u{00A0}" ++ statusToString model.game.status ++ "\u{00A0}" ]
                 ]
                     ++ (case model.game.gameStart of
@@ -307,6 +307,18 @@ tableInfo model =
                                 [ text "starting in"
                                 , span [ class "edGameStatus__chip--strong" ]
                                     [ text <| "\u{00A0}" ++ String.fromInt (round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) ++ "s" ]
+                                ]
+                       )
+                    ++ (case model.game.currentGame of
+                            Just id ->
+                                [ a [ class "edGameStatus__chip--right", href <| routeToString False <| GamesRoute <| GameId id ]
+                                    [ text <| "Game " ++ String.fromInt id ]
+                                ]
+
+                            Nothing ->
+                                [ a [ class "edGameStatus__chip--right", href <| routeToString False <| GamesRoute <| GamesOfTable table ]
+                                    [ text "Games"
+                                    ]
                                 ]
                        )
 

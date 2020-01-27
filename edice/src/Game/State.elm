@@ -61,6 +61,7 @@ init table tableMap_ =
         { noFlagRounds = 0
         , botLess = True
         }
+    , currentGame = Nothing
     }
 
 
@@ -273,6 +274,7 @@ updateTableStatus model status =
                 , roundCount = status.roundCount
                 , canFlag = canFlag
                 , playerPosition = Maybe.withDefault 0 <| Maybe.map (.gameStats >> .position) player
+                , currentGame = status.currentGame
             }
 
         ( model_, turnChangeCmd ) =

@@ -1,4 +1,4 @@
-module Backend.HttpCommands exposing (authenticate, deleteAccount, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, profile, registerPush, registerPushEvent, toastHttpError, updateAccount)
+module Backend.HttpCommands exposing (authenticate, deleteAccount, games, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, profile, registerPush, registerPushEvent, toastHttpError, updateAccount)
 
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -10,8 +10,8 @@ import Http exposing (Error, emptyBody, expectJson, expectString, expectWhatever
 import Land exposing (Color(..))
 import MyProfile.Types exposing (MyProfileUpdate)
 import Snackbar exposing (toastError)
-import Types exposing (AuthNetwork(..), AuthState, LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
-import Url.Builder
+import Types exposing (AuthNetwork(..), AuthState, GamesMsg(..), GamesSubRoute(..), LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
+import Url.Builder exposing (int, string)
 
 
 toastHttpError : Error -> Cmd Msg
@@ -239,4 +239,30 @@ registerPushEvent model ( event, enable ) =
             expectString (GetToken Nothing)
         , timeout = Nothing
         , tracker = Nothing
+        }
+
+
+games : Model -> GamesSubRoute -> Cmd Msg
+games model sub =
+    Http.get
+        { url =
+            Url.Builder.relative
+                (List.concat
+                    [ [ model.baseUrl, "games" ]
+                    , case sub of
+                        GameId id ->
+                            [ String.fromInt id ]
+
+                        _ ->
+                            []
+                    ]
+                )
+            <|
+                case sub of
+                    GamesOfTable table ->
+                        [ string "table" table ]
+
+                    _ ->
+                        []
+        , expect = expectJson (GamesMsg << GetGames sub) gamesDecoder
         }

@@ -1,8 +1,10 @@
-module Backend.Decoding exposing (accknowledgeDecoder, authStateDecoder, colorDecoder, eliminationDecoder, eliminationReasonDecoder, gameStatusDecoder, globalDecoder, globalSettingsDecoder, landsUpdateDecoder, leaderBoardDecoder, mapNameDecoder, meDecoder, moveDecoder, playerGameStatsDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, singleRollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, tableNameDecoder, userDecoder)
+module Backend.Decoding exposing (..)
 
 import Board.Types
 import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus)
-import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, int, list, map, map2, map3, nullable, oneOf, string, succeed)
+import Games.Types exposing (..)
+import Iso8601
+import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, int, list, map, map2, map3, maybe, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, optional, required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
@@ -125,6 +127,7 @@ tableDecoder =
         |> required "lands" (list landsUpdateDecoder)
         |> required "roundCount" int
         |> required "watchCount" int
+        |> required "currentGame" (maybe int)
 
 
 playersDecoder : Decoder Player
@@ -347,3 +350,26 @@ leaderBoardDecoder =
         |> required "month" string
         |> required "board" (list profileDecoder)
         |> required "page" int
+
+
+gamesDecoder : Decoder (List Game)
+gamesDecoder =
+    list gameDecoder
+
+
+gameDecoder : Decoder Game
+gameDecoder =
+    succeed Game
+        |> required "id" int
+        |> required "tag" string
+        |> required "gameStart" Iso8601.decoder
+        |> required "players" (list gamePlayerDecoder)
+
+
+gamePlayerDecoder : Decoder GamePlayer
+gamePlayerDecoder =
+    succeed GamePlayer
+        |> required "id" string
+        |> required "name" string
+        |> required "picture" string
+        |> required "color" colorDecoder

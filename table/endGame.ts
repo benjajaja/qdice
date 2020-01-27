@@ -35,6 +35,7 @@ const endGame = (table: Table, result: CommandResult): CommandResult => {
       gameStart: 0,
       turnCount: 1,
       roundCount: 0,
+      currentGame: null,
     },
     players: [] as ReadonlyArray<Player>,
     eliminations: (

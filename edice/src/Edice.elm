@@ -10,11 +10,13 @@ import Board.Types
 import Browser
 import Browser.Dom
 import Browser.Navigation exposing (Key)
+import Dict
 import Footer exposing (footer)
 import GA exposing (ga)
 import Game.State exposing (gameCommand)
 import Game.Types exposing (PlayerAction(..))
 import Game.View
+import Games
 import Helpers exposing (httpErrorToString, pipeUpdates)
 import Html
 import Html.Attributes
@@ -84,6 +86,7 @@ init flags location key =
             , user = Types.Anonymous
             , tableList = []
             , time = Time.millisToPosix 0
+            , zone = Time.utc
             , isTelegram = flags.isTelegram
             , screenshot = flags.screenshot
             , zip = flags.zip
@@ -108,6 +111,10 @@ init flags location key =
                 , page = 1
                 }
             , otherProfile = Nothing
+            , games =
+                { tables = Dict.empty
+                , all = []
+                }
             }
 
         ( model_, routeCmd ) =
@@ -116,13 +123,14 @@ init flags location key =
         cmds =
             Cmd.batch <|
                 List.concat
-                    [ routeCmds
+                    [ routeCmds -- token
                     , [ started "peekaboo"
                       , backendCmd
                       ]
                     , oauthCmds
                     , [ loadGlobalSettings backend ]
                     , [ routeCmd ]
+                    , [ Task.perform UserZone Time.here ]
                     ]
     in
     ( model_, cmds )
@@ -150,6 +158,9 @@ update msg model =
 
         LeaderboardMsg lMsg ->
             LeaderBoard.State.update model lMsg
+
+        GamesMsg aMsg ->
+            Games.update model aMsg
 
         GetGlobalSettings res ->
             case res of
@@ -582,6 +593,9 @@ update msg model =
             else
                 ( { model | time = newTime }, cmd )
 
+        UserZone zone ->
+            ( { model | zone = zone }, Cmd.none )
+
         SetLastHeartbeat time ->
             let
                 backend =
@@ -708,6 +722,10 @@ mainView model =
         LeaderBoardRoute ->
             viewWrapper
                 [ LeaderBoard.View.view model ]
+
+        GamesRoute sub ->
+            viewWrapper
+                [ Games.view model sub ]
 
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg

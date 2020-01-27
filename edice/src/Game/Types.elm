@@ -54,6 +54,7 @@ type alias Model =
     , isReady : Maybe Bool
     , flag : Maybe Bool
     , params : TableParams
+    , currentGame : Maybe Int
     }
 
 
@@ -101,6 +102,7 @@ type alias TableStatus =
     , lands : List LandUpdate
     , roundCount : Int
     , watchCount : Int
+    , currentGame : Maybe Int
     }
 
 

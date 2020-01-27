@@ -31,6 +31,7 @@ export const serializeTable = (table: Table) => {
     lands: lands,
     watchCount: table.watching.length,
     params: table.params,
+    currentGame: table.currentGame,
   };
 };
 

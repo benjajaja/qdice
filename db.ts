@@ -542,3 +542,31 @@ export const addGameEvent = async (
   // logger.info("created game event", event.id, event.game_id, event.command);
   return event;
 };
+
+const validTableTags: string[] = config.tables.map(table => table.tag);
+export const games = async (table?: string) => {
+  if (table && validTableTags.indexOf(table) === -1) {
+    throw new Error(`bad table tag: ${table}`);
+  }
+  const { rows: games } = await (table
+    ? pool.query({
+        name: `games-${table}`,
+        text: `SELECT * FROM games WHERE tag = $1 LIMIT 1000`,
+        values: [table],
+      })
+    : pool.query({
+        name: "games-all",
+        text: `SELECT * FROM games LIMIT 1000`,
+        values: [],
+      }));
+  return games.map(camelize);
+};
+
+export const game = async (id: string) => {
+  const { rows: games } = await pool.query({
+    name: "games-id",
+    text: `SELECT * FROM games WHERE id = $1`,
+    values: [id],
+  });
+  return camelize(games[0]);
+};

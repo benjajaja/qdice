@@ -2,9 +2,10 @@ module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, 
 
 import Backend.HttpCommands exposing (leaderBoard, profile)
 import Browser.Navigation exposing (Key)
+import Games exposing (fetchGames)
 import LeaderBoard.State exposing (fetchLeaderboard)
 import String.Normalize exposing (slug)
-import Types exposing (Model, Msg, Route(..), StaticPage(..))
+import Types exposing (GamesSubRoute(..), Model, Msg, Route(..), StaticPage(..))
 import Url exposing (Url, percentDecode)
 import Url.Builder
 import Url.Parser exposing (..)
@@ -25,6 +26,14 @@ matchers =
         , map TokenRoute (s "token" </> string)
         , map ProfileRoute (s "profile" </> string </> string)
         , map LeaderBoardRoute (s "leaderboard")
+        , map GamesRoute
+            (s "games"
+                </> oneOf
+                        [ map AllGames top
+                        , map GameId int
+                        , map GamesOfTable string
+                        ]
+            )
         , tableMatcher
         ]
 
@@ -104,6 +113,19 @@ routeToString useHash route =
 
                 LeaderBoardRoute ->
                     "leaderboard"
+
+                GamesRoute sub ->
+                    "games"
+                        ++ (case sub of
+                                GamesOfTable table ->
+                                    "/" ++ table
+
+                                GameId id ->
+                                    "/" ++ String.fromInt id
+
+                                AllGames ->
+                                    ""
+                           )
            )
 
 
@@ -126,6 +148,9 @@ routeEnterCmd model route =
               else
                 Cmd.none
             )
+
+        GamesRoute sub ->
+            fetchGames model sub
 
         _ ->
             ( model

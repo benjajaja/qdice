@@ -26,6 +26,7 @@ export type TableProps = {
   readonly turnCount: number;
   readonly roundCount: number;
   readonly attack: Attack | null;
+  readonly currentGame: number | null;
 };
 
 export type Table = TableProps & {
@@ -44,7 +45,6 @@ export type Table = TableProps & {
   readonly lands: readonly Land[];
   readonly watching: readonly Watcher[];
   readonly retired: readonly Player[];
-  readonly currentGame: number;
 };
 
 export type TableParams = {

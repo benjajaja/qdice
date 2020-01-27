@@ -1,11 +1,13 @@
-module Types exposing (AuthNetwork(..), AuthState, Flags, GlobalSettings, LeaderBoardModel, LeaderBoardResponse, LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, Flags, GamesMsg(..), GamesSubRoute(..), GlobalSettings, LeaderBoardModel, LeaderBoardResponse, LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
 
 import Animation
 import Backend.Types
 import Board
 import Browser
 import Browser.Navigation exposing (Key)
+import Dict exposing (Dict)
 import Game.Types exposing (Award, PlayerAction, TableInfo)
+import Games.Types exposing (Game)
 import Http exposing (Error)
 import MyProfile.Types
 import OAuth
@@ -19,6 +21,7 @@ type Msg
     | OnLocationChange Url
     | OnUrlRequest Browser.UrlRequest
     | Tick Time.Posix
+    | UserZone Time.Zone
     | Animate Animation.Msg
     | MyProfileMsg MyProfile.Types.MyProfileMsg
     | ErrorToast String String
@@ -32,6 +35,7 @@ type Msg
     | PushRegister PushSubscription
     | PushRegisterEvent ( PushEvent, Bool )
     | LeaderboardMsg LeaderboardMsg
+    | GamesMsg GamesMsg
       -- oauth
     | Nop
     | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))
@@ -88,6 +92,13 @@ type Route
     | TokenRoute String
     | ProfileRoute UserId String
     | LeaderBoardRoute
+    | GamesRoute GamesSubRoute
+
+
+type GamesSubRoute
+    = AllGames
+    | GamesOfTable Table
+    | GameId Int
 
 
 type alias Model =
@@ -100,6 +111,7 @@ type alias Model =
     , user : User
     , tableList : List TableInfo
     , time : Time.Posix
+    , zone : Time.Zone
     , isTelegram : Bool
     , zip : Bool
     , screenshot : Bool
@@ -110,6 +122,10 @@ type alias Model =
     , otherProfile : Maybe Profile
     , preferences : Preferences
     , sessionPreferences : SessionPreferences
+    , games :
+        { tables : Dict String (List Game)
+        , all : List Game
+        }
     }
 
 
@@ -244,3 +260,7 @@ type PushEvent
 type LeaderboardMsg
     = GetLeaderboard (Result Error LeaderBoardResponse)
     | GotoPage Int
+
+
+type GamesMsg
+    = GetGames GamesSubRoute (Result Error (List Game))

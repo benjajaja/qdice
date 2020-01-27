@@ -19,6 +19,7 @@ import { screenshot } from "./screenshot";
 import * as publish from "./table/publish";
 import * as user from "./user";
 import { profile } from "./profile";
+import * as games from "./games";
 import { resetGenerator } from "./rand";
 
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
@@ -142,6 +143,7 @@ export const server = async () => {
           (req: any) => req.path().indexOf(`${root}/screenshot`) === 0,
           (req: any) => req.path().indexOf(`${root}/profile`) === 0,
           (req: any) => req.path() === `${root}/topwebgames`,
+          (req: any) => req.path().indexOf(`${root}/games`) === 0,
         ])(req);
         return ok;
       },
@@ -250,6 +252,8 @@ export const server = async () => {
   server.del(`${root}/push/register/events`, user.addPushEvent(false));
 
   server.get(`${root}/topwebgames`, user.registerVote("topwebgames"));
+  server.get(`${root}/games`, games.games);
+  server.get(`${root}/games/:id`, games.game);
 
   process.on("SIGINT", async function() {
     logger.info("SIGINT");

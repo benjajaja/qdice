@@ -490,7 +490,10 @@ button .material-icons, .edButton .material-icons {
 .edGameStatus__chip {
 }
 .edGameStatus__chip--strong {
-  /* font-weight: bold; */
+  font-weight: bold;
+}
+.edGameStatus__chip--right {
+  margin-left: auto;
 }
 
 
