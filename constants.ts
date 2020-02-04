@@ -4,9 +4,9 @@ export const STATUS_PAUSED: TableStatus = "PAUSED";
 export const STATUS_PLAYING: TableStatus = "PLAYING";
 export const STATUS_FINISHED: TableStatus = "FINISHED";
 
-export const TURN_SECONDS = 30;
+export const TURN_SECONDS = 20;
 export const ROLL_SECONDS = 0.5;
-export const GAME_START_COUNTDOWN = 45;
+export const GAME_START_COUNTDOWN = 5;
 
 export const COLOR_NEUTRAL = -1;
 export const COLOR_RED = 1;
