@@ -98,7 +98,7 @@ type Route
 type GamesSubRoute
     = AllGames
     | GamesOfTable Table
-    | GameId Int
+    | GameId Table Int
 
 
 type alias Model =
@@ -125,6 +125,7 @@ type alias Model =
     , games :
         { tables : Dict String (List Game)
         , all : List Game
+        , fetching : Maybe GamesSubRoute
         }
     }
 

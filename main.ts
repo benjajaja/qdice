@@ -253,7 +253,8 @@ export const server = async () => {
 
   server.get(`${root}/topwebgames`, user.registerVote("topwebgames"));
   server.get(`${root}/games`, games.games);
-  server.get(`${root}/games/:id`, games.game);
+  server.get(`${root}/games/:table`, games.games);
+  server.get(`${root}/games/:table/:id`, games.game);
 
   process.on("SIGINT", async function() {
     logger.info("SIGINT");

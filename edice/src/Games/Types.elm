@@ -18,4 +18,5 @@ type alias GamePlayer =
     , name : String
     , picture : String
     , color : Color
+    , isBot : Bool
     }

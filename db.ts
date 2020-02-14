@@ -551,12 +551,12 @@ export const games = async (table?: string) => {
   const { rows: games } = await (table
     ? pool.query({
         name: `games-${table}`,
-        text: `SELECT * FROM games WHERE tag = $1 LIMIT 1000`,
+        text: `SELECT * FROM games WHERE tag = $1 ORDER BY game_start DESC LIMIT 200`,
         values: [table],
       })
     : pool.query({
         name: "games-all",
-        text: `SELECT * FROM games LIMIT 1000`,
+        text: `SELECT * FROM games ORDER BY game_start DESC LIMIT 200`,
         values: [],
       }));
   return games.map(camelize);
@@ -565,8 +565,15 @@ export const games = async (table?: string) => {
 export const game = async (id: string) => {
   const { rows: games } = await pool.query({
     name: "games-id",
-    text: `SELECT * FROM games WHERE id = $1`,
+    text: `SELECT * FROM games WHERE games.id = $1`,
     values: [id],
   });
-  return camelize(games[0]);
+
+  const { rows: gameEvents } = await pool.query({
+    name: "games-id-events",
+    text: `SELECT * FROM game_events WHERE game_events.game_id = $1`,
+    values: [id],
+  });
+  const game = { ...games[0], events: gameEvents };
+  return camelize(game);
 };

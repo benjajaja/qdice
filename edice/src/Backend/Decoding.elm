@@ -373,3 +373,4 @@ gamePlayerDecoder =
         |> required "name" string
         |> required "picture" string
         |> required "color" colorDecoder
+        |> required "bot" bool

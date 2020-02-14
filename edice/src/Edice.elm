@@ -114,6 +114,7 @@ init flags location key =
             , games =
                 { tables = Dict.empty
                 , all = []
+                , fetching = Nothing
                 }
             }
 

@@ -311,7 +311,13 @@ tableInfo model =
                        )
                     ++ (case model.game.currentGame of
                             Just id ->
-                                [ a [ class "edGameStatus__chip--right", href <| routeToString False <| GamesRoute <| GameId id ]
+                                [ a
+                                    [ class "edGameStatus__chip--right"
+                                    , href <|
+                                        routeToString False <|
+                                            GamesRoute <|
+                                                GameId table id
+                                    ]
                                     [ text <| "Game " ++ String.fromInt id ]
                                 ]
 

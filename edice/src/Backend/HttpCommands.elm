@@ -250,19 +250,16 @@ games model sub =
                 (List.concat
                     [ [ model.baseUrl, "games" ]
                     , case sub of
-                        GameId id ->
-                            [ String.fromInt id ]
+                        GamesOfTable table ->
+                            [ table ]
 
-                        _ ->
+                        GameId table id ->
+                            [ table, String.fromInt id ]
+
+                        AllGames ->
                             []
                     ]
                 )
-            <|
-                case sub of
-                    GamesOfTable table ->
-                        [ string "table" table ]
-
-                    _ ->
-                        []
+                []
         , expect = expectJson (GamesMsg << GetGames sub) gamesDecoder
         }
