@@ -8,7 +8,6 @@ services:
       POSTGRES_DB: "nodice"
       POSTGRES_USER: "bgrosse"
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports: [ "5433:5432" ]
     volumes:
       - ~/data-postgres:/var/lib/postgresql/data
   emqx:
@@ -21,18 +20,11 @@ services:
       # EMQX_AUTH__JWT__FROM: "password"
       EMQX_AUTH__USER__1__USERNAME: ${MQTT_USERNAME}
       EMQX_AUTH__USER__1__PASSWORD: ${MQTT_PASSWORD}
-    ports:
-      - "8083:8083" # http for clients
-      - "1883:1883" # tcp for nodejs
-      - "8082:8080" # API mgmnt
-      - "18666:18083" # dashboard
-      - "11883:11883" # ???
     volumes:
       - ./data/emqx/acl.conf:/opt/emqx/etc/acl.conf:ro
   nodice:
     restart: always
     image: bgrosse/qdice:latest
-    ports: ["5001:5001"]
     env_file: .env
     volumes:
       - statics:/usr/src/edice/dist
@@ -90,8 +82,6 @@ services:
       - goaccess:/srv/report:rw
       - ./data/logs/nginx:/srv/logs:ro
     command: "--no-global-config --config-file=/srv/data/goaccess.conf"
-    ports:
-      - "7890:7890"
     cap_drop:
       - all
     depends_on:

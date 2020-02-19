@@ -1,7 +1,11 @@
 var mqtt = require("mqtt");
 
 function getMqttConfig(jwt) {
-  if (["localhost", "lvh.me"].indexOf(self.location.hostname) !== -1) {
+  if (
+    (self.location.hostname === "localhost" && self.location.port === "5000") ||
+    self.location.hostname === "lvh.me"
+  ) {
+    // local env
     return {
       protocol: "ws",
       hostname: self.location.hostname,
@@ -10,7 +14,11 @@ function getMqttConfig(jwt) {
       username: "elm",
       password: jwt,
     };
-  } else if (self.location.hostname === "nginx") {
+  } else if (
+    self.location.hostname === "nginx" ||
+    self.location.hostname === "localhost"
+  ) {
+    // e2e tests
     return {
       protocol: "ws",
       path: "mqtt",
