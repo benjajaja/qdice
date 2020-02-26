@@ -56,7 +56,7 @@ CREATE TABLE authorizations (
     user_id integer NOT NULL,
     profile jsonb,
     network network NOT NULL,
-    network_id character varying(100) NOT NULL
+    network_id character varying(128) NOT NULL
 );
 
 

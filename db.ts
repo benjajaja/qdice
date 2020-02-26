@@ -155,10 +155,7 @@ export const addNetwork = async (
   return await getUser(userId);
 };
 
-export const setPassword = async (
-  userId: UserId,
-  password: string
-): Promise<User> => {
+const setPassword = async (userId: UserId, password: string): Promise<User> => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -166,9 +163,9 @@ export const setPassword = async (
       "DELETE FROM authorizations WHERE user_id = $1 AND network = $2",
       [userId, NETWORK_PASSWORD]
     );
-    const authrow = await client.query(
+    await client.query(
       "INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *",
-      [userId, NETWORK_PASSWORD, "TODO: encrypt the password", {}]
+      [userId, NETWORK_PASSWORD, password, {}]
     );
     await client.query("COMMIT");
     return await getUser(userId);
@@ -180,27 +177,45 @@ export const setPassword = async (
   }
 };
 
+export const getPassword = async (userId: UserId): Promise<string> => {
+  const rows = await pool.query(
+    "SELECT network_id FROM authorizations WHERE user_id = $1 AND network = $2",
+    [userId, NETWORK_PASSWORD]
+  );
+  return rows.rows[0].network_id;
+};
+
 export const updateUser = async (
   id: UserId,
   fields: {
     name: string | null;
     email: string | null;
     picture: string | null;
+    password: string | null;
   }
 ) => {
-  const columns = Object.keys(fields).filter(k => fields[k] !== null);
-  if (columns.length === 0) {
+  const columns = Object.keys(fields).filter(
+    k => k !== "password" && fields[k] !== null
+  );
+  if (columns.length === 0 && !fields.password) {
     throw new Error("user update needs some fields");
   }
-  const values = [id].concat(columns.map(k => fields[k]));
 
-  const text = `
-UPDATE users
-SET (${columns.join(", ")})
-  = (${columns.map((_, i) => `$${i + 2}`).join(", ")})
-WHERE id = $1
-RETURNING *`;
-  await pool.query(text, values);
+  if (columns.length > 0) {
+    const values = [id].concat(columns.map(k => fields[k]));
+
+    const text = `
+  UPDATE users
+  SET (${columns.join(", ")})
+    = (${columns.map((_, i) => `$${i + 2}`).join(", ")})
+  WHERE id = $1
+  RETURNING *`;
+    await pool.query(text, values);
+  }
+
+  if (fields.password) {
+    await setPassword(id, fields.password);
+  }
   return await getUser(id);
 };
 

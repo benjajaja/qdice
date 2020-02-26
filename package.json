@@ -61,6 +61,7 @@
     "restify-cors-middleware": "^1.0.1",
     "restify-errors": "^8.0.2",
     "restify-jwt-community": "^1.0.0",
+    "scrypt-kdf": "^2.0.1",
     "seedrandom": "^3.0.5",
     "short-unique-id": "^1.1.0",
     "sleep-promise": "^8.0.1",

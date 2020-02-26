@@ -8,6 +8,7 @@ type MyProfileMsg
     = ChangeName String
     | ChangeEmail String
     | ChangePassword String
+    | ChangePasswordCheck String
     | Save
     | DeleteAccount DeleteAccountState
     | AvatarRequested
@@ -19,6 +20,7 @@ type alias MyProfileModel =
     { name : Maybe String
     , email : Maybe String
     , password : Maybe String
+    , passwordCheck : Maybe String
     , picture : Maybe String
     , deleteAccount : DeleteAccountState
     }
@@ -35,4 +37,6 @@ type alias MyProfileUpdate =
     { name : Maybe String
     , email : Maybe String
     , picture : Maybe String
+    , password : Maybe String
+    , passwordCheck : Maybe String
     }

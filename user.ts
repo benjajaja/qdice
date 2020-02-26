@@ -4,6 +4,7 @@ import * as R from "ramda";
 import * as errs from "restify-errors";
 import * as request from "request";
 import * as jwt from "jsonwebtoken";
+import * as Scrypt from "scrypt-kdf";
 import * as db from "./db";
 import * as publish from "./table/publish"; // avoid or refactor
 import logger from "./logger";
@@ -44,6 +45,7 @@ export const login = async (req, res, next) => {
         name: null,
         email: null,
         picture,
+        password: null,
       });
     }
 
@@ -180,11 +182,30 @@ export const me = async function(req, res, next) {
 
 export const profile = async function(req, res, next) {
   try {
+    let password: string | null = null;
+    if (req.body.password) {
+      const oldPassword = await db.getPassword(req.user.id);
+      const buffer = Buffer.from(oldPassword, "base64");
+      const ok = await Scrypt.verify(buffer, req.body.passwordCheck);
+
+      logger.debug("ok", ok);
+      if (!ok) {
+        return res.send(403, "bad password");
+      }
+      password = await hashPassword(req.body.password);
+    }
+
     const picture = req.body.picture
       ? await saveAvatar(req.user.id, req.body.picture)
       : null;
     logger.debug("saved", picture);
-    const profile = await db.updateUser(req.user.id, { ...req.body, picture });
+
+    const profile = await db.updateUser(req.user.id, {
+      name: req.body.name,
+      email: req.body.email,
+      password,
+      picture,
+    });
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
     res.sendRaw(200, token);
     next();
@@ -196,7 +217,13 @@ export const profile = async function(req, res, next) {
 
 export const password = async function(req, res, next) {
   try {
-    const profile = await db.setPassword(req.user.id, req.body);
+    const password = await hashPassword(req.body.password);
+    const profile = await db.updateUser(req.user.id, {
+      email: req.body.email,
+      name: null,
+      picture: null,
+      password: password,
+    });
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
     res.sendRaw(200, token);
     next();
@@ -204,6 +231,15 @@ export const password = async function(req, res, next) {
     logger.error(e);
     next(e);
   }
+};
+
+const hashPassword = async function(password: string) {
+  const buffer = await Scrypt.kdf(password, {
+    logN: 15,
+    r: 8,
+    p: 1,
+  });
+  return buffer.toString("base64");
 };
 
 export const register = function(req, res, next) {

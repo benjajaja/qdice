@@ -81,7 +81,7 @@ init flags location key =
             , key = key
             , oauth = oauth
             , game = game
-            , myProfile = { name = Nothing, email = Nothing, password = Nothing, picture = Nothing, deleteAccount = MyProfile.Types.None }
+            , myProfile = { name = Nothing, email = Nothing, password = Nothing, passwordCheck = Nothing, picture = Nothing, deleteAccount = MyProfile.Types.None }
             , backend = backend_
             , user = Types.Anonymous
             , tableList = []
@@ -353,9 +353,9 @@ update msg model =
             , Cmd.none
             )
 
-        SetPassword password ->
+        SetPassword ( email, password ) passwordCheck ->
             ( model
-            , Backend.HttpCommands.updatePassword model.backend password
+            , Backend.HttpCommands.updatePassword model.backend ( email, password ) passwordCheck
             )
 
         ShowLogin show ->

@@ -130,16 +130,33 @@ addNetworks model user =
                     case n of
                         Password ->
                             div []
-                                [ input [ type_ "password", onInput <| MyProfileMsg << ChangePassword ] []
-                                , button
-                                    (case model.password of
-                                        Nothing ->
-                                            [ disabled True ]
+                                [ div []
+                                    [ text "Email:"
+                                    , input [ type_ "email", placeholder "email@address.com", onInput <| MyProfileMsg << ChangeEmail ] []
+                                    ]
+                                , div []
+                                    [ text "Password:"
+                                    , input [ type_ "password", placeholder "********", onInput <| MyProfileMsg << ChangePassword ] []
+                                    , button
+                                        (case model.password of
+                                            Nothing ->
+                                                [ disabled True ]
 
-                                        Just p ->
-                                            [ onClick <| SetPassword p ]
-                                    )
-                                    [ text "Set password" ]
+                                            Just p ->
+                                                case model.email of
+                                                    Nothing ->
+                                                        [ disabled True ]
+
+                                                    Just e ->
+                                                        case model.passwordCheck of
+                                                            Nothing ->
+                                                                [ disabled True ]
+
+                                                            Just c ->
+                                                                [ onClick <| SetPassword ( e, p ) c ]
+                                        )
+                                        [ text "Add password" ]
+                                    ]
                                 ]
 
                         _ ->
@@ -181,7 +198,7 @@ networkIdName network =
 
 profileForm : MyProfileModel -> LoggedUser -> Html Msg
 profileForm model user =
-    Html.form [ onSubmit <| MyProfileMsg Save ]
+    Html.form [ onSubmit <| MyProfileMsg Save ] <|
         [ label [ class "edFormLabel" ]
             [ text "Player name"
             , input
@@ -192,13 +209,46 @@ profileForm model user =
                 []
             ]
         , avatarUpload model user
-        , div []
-            [ button
-                []
-                [ text "Save" ]
-            ]
-        , span [] [ text "Your email may be used to recover your access. You will not receive spam. If in the future we add some email features, they will be opt-in." ]
         ]
+            ++ (if List.member Password user.networks then
+                    [ label [ class "edFormLabel" ]
+                        [ p [] [ text "Email+Password login:" ]
+                        , text "Email"
+                        , input
+                            [ type_ "email"
+                            , value <| Maybe.withDefault (Maybe.withDefault "" user.email) model.email
+                            , placeholder "email@address.com"
+                            , onInput <| MyProfileMsg << ChangeEmail
+                            ]
+                            []
+                        , text "Current password (for security)"
+                        , input
+                            [ type_ "password"
+                            , placeholder ""
+                            , value <| Maybe.withDefault "" model.passwordCheck
+                            , onInput <| MyProfileMsg << ChangePasswordCheck
+                            ]
+                            []
+                        , text "New password"
+                        , input
+                            [ type_ "password"
+                            , placeholder "Leave unchanged"
+                            , value <| Maybe.withDefault "" model.password
+                            , onInput <| MyProfileMsg << ChangePassword
+                            ]
+                            []
+                        ]
+                    ]
+
+                else
+                    []
+               )
+            ++ [ div []
+                    [ button
+                        []
+                        [ text "Save" ]
+                    ]
+               ]
 
 
 avatarUpload : MyProfileModel -> LoggedUser -> Html Msg
@@ -314,6 +364,26 @@ update model msg =
             , Cmd.none
             )
 
+        ChangePasswordCheck value ->
+            let
+                p =
+                    model.myProfile
+
+                p_ =
+                    { p
+                        | passwordCheck =
+                            case value of
+                                "" ->
+                                    Nothing
+
+                                _ ->
+                                    Just value
+                    }
+            in
+            ( { model | myProfile = p_ }
+            , Cmd.none
+            )
+
         Save ->
             case model.user of
                 Logged user ->
@@ -322,21 +392,12 @@ update model msg =
                             { name = model.myProfile.name
                             , email = model.myProfile.email
                             , picture = model.myProfile.picture
+                            , password = model.myProfile.password
+                            , passwordCheck = model.myProfile.passwordCheck
                             }
                     in
                     ( model
-                    , if
-                        profileUpdate.name
-                            /= Nothing
-                            || profileUpdate.email
-                            /= Nothing
-                            || profileUpdate.picture
-                            /= Nothing
-                      then
-                        Backend.HttpCommands.updateAccount model.backend profileUpdate
-
-                      else
-                        Cmd.none
+                    , Backend.HttpCommands.updateAccount model.backend profileUpdate
                     )
 
                 Anonymous ->

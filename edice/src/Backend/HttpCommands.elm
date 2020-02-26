@@ -144,8 +144,8 @@ updateAccount model newProfile =
         }
 
 
-updatePassword : Model -> String -> Cmd Msg
-updatePassword model password =
+updatePassword : Model -> ( String, String ) -> String -> Cmd Msg
+updatePassword model ( email, password ) passwordCheck =
     Http.request
         { method = "PUT"
         , headers =
@@ -156,8 +156,7 @@ updatePassword model password =
                 Nothing ->
                     []
         , url = model.baseUrl ++ "/me/password"
-        , body =
-            stringBody "text/plain" password
+        , body = jsonBody <| passwordEncoder ( email, password ) passwordCheck
         , expect =
             expectString (GetToken Nothing)
         , timeout = Nothing

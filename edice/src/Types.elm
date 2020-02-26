@@ -48,7 +48,7 @@ type Msg
     | ShowLogin LoginDialogStatus
     | Login String
     | SetLoginName String
-    | SetPassword String
+    | SetPassword ( String, String ) String -- (email, pass) check
     | UpdateUser LoggedUser String Preferences
       -- game
     | BoardMsg Board.Msg
