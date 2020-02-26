@@ -172,6 +172,7 @@ export const me = async function(req, res, next) {
     res.send(200, [profile, token, preferences]);
     next();
   } catch (e) {
+    logger.error("/me", req.user);
     logger.error(e);
     next(new errs.InternalError("could not get profile, JWT, or preferences"));
   }
@@ -184,6 +185,18 @@ export const profile = async function(req, res, next) {
       : null;
     logger.debug("saved", picture);
     const profile = await db.updateUser(req.user.id, { ...req.body, picture });
+    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
+    res.sendRaw(200, token);
+    next();
+  } catch (e) {
+    logger.error(e);
+    next(e);
+  }
+};
+
+export const password = async function(req, res, next) {
+  try {
+    const profile = await db.setPassword(req.user.id, req.body);
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
     res.sendRaw(200, token);
     next();

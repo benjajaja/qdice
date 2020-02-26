@@ -7,6 +7,7 @@ import Http exposing (Error)
 type MyProfileMsg
     = ChangeName String
     | ChangeEmail String
+    | ChangePassword String
     | Save
     | DeleteAccount DeleteAccountState
     | AvatarRequested
@@ -17,6 +18,7 @@ type MyProfileMsg
 type alias MyProfileModel =
     { name : Maybe String
     , email : Maybe String
+    , password : Maybe String
     , picture : Maybe String
     , deleteAccount : DeleteAccountState
     }

@@ -1,4 +1,4 @@
-module Backend.HttpCommands exposing (authenticate, deleteAccount, games, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, profile, registerPush, registerPushEvent, toastHttpError, updateAccount)
+module Backend.HttpCommands exposing (authenticate, deleteAccount, games, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, profile, registerPush, registerPushEvent, toastHttpError, updateAccount, updatePassword)
 
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -137,6 +137,27 @@ updateAccount model newProfile =
         , url = model.baseUrl ++ "/me"
         , body =
             jsonBody <| myProfileUpdateEncoder newProfile
+        , expect =
+            expectString (GetToken Nothing)
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+
+updatePassword : Model -> String -> Cmd Msg
+updatePassword model password =
+    Http.request
+        { method = "PUT"
+        , headers =
+            case model.jwt of
+                Just jwt ->
+                    [ header "authorization" ("Bearer " ++ jwt) ]
+
+                Nothing ->
+                    []
+        , url = model.baseUrl ++ "/me/password"
+        , body =
+            stringBody "text/plain" password
         , expect =
             expectString (GetToken Nothing)
         , timeout = Nothing

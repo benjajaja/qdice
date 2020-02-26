@@ -48,6 +48,7 @@ type Msg
     | ShowLogin LoginDialogStatus
     | Login String
     | SetLoginName String
+    | SetPassword String
     | UpdateUser LoggedUser String Preferences
       -- game
     | BoardMsg Board.Msg
@@ -166,7 +167,8 @@ type alias UserPreferences =
 
 
 type AuthNetwork
-    = Password
+    = None
+    | Password
     | Google
     | Reddit
     | Telegram

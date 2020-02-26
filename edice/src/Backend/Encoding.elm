@@ -86,6 +86,9 @@ encodeAuthNetwork network =
         Reddit ->
             "reddit"
 
+        None ->
+            "none"
+
         Password ->
             "password"
 

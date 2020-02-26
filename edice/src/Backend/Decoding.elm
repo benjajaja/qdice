@@ -47,8 +47,11 @@ authNetworkDecoder =
                 "reddit" ->
                     Reddit
 
-                _ ->
+                "password" ->
                     Password
+
+                _ ->
+                    None
         )
         string
 

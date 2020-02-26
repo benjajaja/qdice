@@ -41,7 +41,7 @@ view model user preferences sessionPreferences =
                 List.map (\n -> div [] [ text <| networkDisplay n ]) user.networks
             , div [] <|
                 case user.networks of
-                    [ Password ] ->
+                    [ Types.None ] ->
                         [ h2 [ style "color" "red" ] [ text "Warning!" ]
                         , p [] [ text "You will not be able to access this account on another device, ever, until you add a login network." ]
                         , p [] [ text "The same way, if you clear this browser's history/cookies/data, you won't be able to recover this user." ]
@@ -52,6 +52,7 @@ view model user preferences sessionPreferences =
             , h5 [] [ text "Add a login network to this account:" ]
             , div [] <|
                 addNetworks
+                    model
                     user
             ]
         , div [ class "edPageSection" ] <|
@@ -114,31 +115,47 @@ notifications model user preferences sessionPreferences =
 
 availableNetworks : LoggedUser -> List AuthNetwork
 availableNetworks user =
-    List.filter (\i -> not <| List.member i user.networks) [ Google, Reddit ]
+    List.filter (\i -> not <| List.member i user.networks) [ Google, Reddit, Password ]
 
 
-addNetworks : LoggedUser -> List (Html Msg)
-addNetworks user =
+addNetworks : MyProfileModel -> LoggedUser -> List (Html Msg)
+addNetworks model user =
     case availableNetworks user of
         [] ->
-            [ text "Already connected to all." ]
+            [ text "Already connected to all possible auth networks. Congratulations!" ]
 
         available ->
             List.map
                 (\n ->
-                    button
-                        [ onClick <|
-                            Authorize
-                                { network = n
-                                , table =
-                                    Nothing
-                                , addTo = Just user.id
-                                }
-                        , class <| "edLoginSocial edLoginSocial--" ++ networkIdName n
-                        ]
-                        [ img [ src <| "assets/social_icons/" ++ networkIdName n ++ ".svg" ] []
-                        , text <| "Connect with " ++ networkIdName n
-                        ]
+                    case n of
+                        Password ->
+                            div []
+                                [ input [ type_ "password", onInput <| MyProfileMsg << ChangePassword ] []
+                                , button
+                                    (case model.password of
+                                        Nothing ->
+                                            [ disabled True ]
+
+                                        Just p ->
+                                            [ onClick <| SetPassword p ]
+                                    )
+                                    [ text "Set password" ]
+                                ]
+
+                        _ ->
+                            button
+                                [ onClick <|
+                                    Authorize
+                                        { network = n
+                                        , table =
+                                            Nothing
+                                        , addTo = Just user.id
+                                        }
+                                , class <| "edLoginSocial edLoginSocial--" ++ networkIdName n
+                                ]
+                                [ img [ src <| "assets/social_icons/" ++ networkIdName n ++ ".svg" ] []
+                                , text <| "Connect with " ++ networkIdName n
+                                ]
                 )
                 available
 
@@ -146,6 +163,9 @@ addNetworks user =
 networkIdName : AuthNetwork -> String
 networkIdName network =
     case network of
+        Types.None ->
+            "none"
+
         Google ->
             "google"
 
@@ -204,8 +224,11 @@ avatarUpload model user =
 networkDisplay : AuthNetwork -> String
 networkDisplay nw =
     case nw of
-        Password ->
+        Types.None ->
             "None"
+
+        Password ->
+            "Password"
 
         Google ->
             "Google"
@@ -220,7 +243,7 @@ networkDisplay nw =
 deleteAccount : MyProfileModel -> List (Html Msg)
 deleteAccount model =
     case model.deleteAccount of
-        None ->
+        MyProfile.Types.None ->
             [ button [ onClick <| MyProfileMsg <| DeleteAccount Confirm ]
                 [ text "Delete my account" ]
             ]
@@ -271,6 +294,26 @@ update model msg =
             , Cmd.none
             )
 
+        ChangePassword value ->
+            let
+                p =
+                    model.myProfile
+
+                p_ =
+                    { p
+                        | password =
+                            case value of
+                                "" ->
+                                    Nothing
+
+                                _ ->
+                                    Just value
+                    }
+            in
+            ( { model | myProfile = p_ }
+            , Cmd.none
+            )
+
         Save ->
             case model.user of
                 Logged user ->
@@ -311,7 +354,7 @@ update model msg =
                     }
             in
             case state of
-                None ->
+                MyProfile.Types.None ->
                     ( model_, Cmd.none )
 
                 Confirm ->

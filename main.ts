@@ -171,6 +171,7 @@ export const server = async () => {
   server.get(`${root}/me`, user.me);
   server.del(`${root}/me`, user.del);
   server.put(`${root}/me`, user.profile);
+  server.put(`${root}/me/password`, user.password);
   server.post(`${root}/register`, user.register);
 
   server.get(`${root}/global`, globalServer.global);

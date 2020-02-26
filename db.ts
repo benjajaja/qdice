@@ -155,6 +155,31 @@ export const addNetwork = async (
   return await getUser(userId);
 };
 
+export const setPassword = async (
+  userId: UserId,
+  password: string
+): Promise<User> => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query(
+      "DELETE FROM authorizations WHERE user_id = $1 AND network = $2",
+      [userId, NETWORK_PASSWORD]
+    );
+    const authrow = await client.query(
+      "INSERT INTO authorizations (user_id,network,network_id,profile) VALUES ($1, $2, $3, $4) RETURNING *",
+      [userId, NETWORK_PASSWORD, "TODO: encrypt the password", {}]
+    );
+    await client.query("COMMIT");
+    return await getUser(userId);
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+};
+
 export const updateUser = async (
   id: UserId,
   fields: {
@@ -352,7 +377,7 @@ export const userProfile = (rows: any[]): User => {
     ),
     points: parseInt(points, 10),
     rank: parseInt(rank, 10),
-    networks: rows.map(row => row.network || "password"),
+    networks: rows.map(row => row.network || "none"),
     voted,
     awards,
   };
