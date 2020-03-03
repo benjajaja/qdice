@@ -2,7 +2,7 @@ port module Edice exposing (init, pushSubscribe, started, subscriptions, updateW
 
 import Animation
 import Backend
-import Backend.HttpCommands exposing (authenticate, getPushKey, loadGlobalSettings, loadMe, login, registerPush, registerPushEvent)
+import Backend.HttpCommands exposing (getPushKey, loadGlobalSettings, loadMe, register, registerPush, registerPushEvent)
 import Backend.MqttCommands exposing (sendGameCommand)
 import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
@@ -53,9 +53,6 @@ init flags location key =
         ( backend, backendCmd ) =
             Backend.init flags.version location flags.token flags.isTelegram
 
-        ( oauth, oauthCmds ) =
-            MyOauth.init key location
-
         ( backend_, routeCmds ) =
             case route of
                 TokenRoute token ->
@@ -74,6 +71,9 @@ init flags location key =
                     ( backend
                     , [ Cmd.none ]
                     )
+
+        ( oauth, oauthCmds ) =
+            MyOauth.init key location backend_
 
         model : Model
         model =
@@ -198,7 +198,7 @@ update msg model =
                         _ ->
                             ( model_, Cmd.none )
 
-        GetToken authState res ->
+        GetToken joinTable res ->
             case res of
                 Err err ->
                     ( model
@@ -217,7 +217,7 @@ update msg model =
                         needsTable =
                             case model.game.table of
                                 Just currentTable ->
-                                    Maybe.andThen .table authState
+                                    joinTable
                                         |> Maybe.andThen
                                             (\t ->
                                                 if t /= currentTable then
@@ -240,7 +240,7 @@ update msg model =
                                     , loadMe backend_
                                     ]
                                 <|
-                                    case Maybe.andThen .table authState of
+                                    case joinTable of
                                         Just table ->
                                             [ sendGameCommand model_.backend (Just table) Game.Types.Join ]
 
@@ -317,14 +317,6 @@ update msg model =
         Authorize state ->
             ( model, MyOauth.authorize model.oauth state )
 
-        Authenticate code state ->
-            ( model
-            , Cmd.batch
-                [ authenticate model.backend code state
-                , ga [ "send", "event", "auth", "Authenticate" ]
-                ]
-            )
-
         Logout ->
             let
                 backend =
@@ -363,8 +355,8 @@ update msg model =
             , Cmd.none
             )
 
-        Login name ->
-            login model name
+        Register name joinTable ->
+            register model name joinTable
 
         NavigateTo route ->
             ( model

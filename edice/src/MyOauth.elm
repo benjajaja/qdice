@@ -2,16 +2,15 @@ port module MyOauth exposing (authorize, init, saveToken)
 
 import Backend.Decoding exposing (authStateDecoder)
 import Backend.Encoding exposing (authStateEncoder)
+import Backend.HttpCommands exposing (authenticate)
+import Backend.Types
 import Browser.Navigation
-import Game.Types
-import Http
 import Json.Decode exposing (decodeString, errorToString)
 import Json.Encode exposing (encode)
-import OAuth
 import OAuth.AuthorizationCode exposing (AuthorizationResult(..))
 import Snackbar exposing (toastError)
 import Task
-import Types exposing (AuthNetwork(..), AuthState, LoggedUser, Msg(..), MyOAuthModel)
+import Types exposing (AuthNetwork(..), AuthState, Msg(..), MyOAuthModel)
 import Url exposing (Protocol(..), Url)
 
 
@@ -44,8 +43,8 @@ authorizationEndpoint network =
             )
 
 
-init : Browser.Navigation.Key -> Url -> ( MyOAuthModel, List (Cmd Msg) )
-init key url =
+init : Browser.Navigation.Key -> Url -> Backend.Types.Model -> ( MyOAuthModel, List (Cmd Msg) )
+init key url backend =
     let
         oauth =
             { redirectUri = { url | query = Nothing, fragment = Nothing, path = "/" }
@@ -68,9 +67,7 @@ init key url =
                         Ok authState ->
                             ( oauth
                             , [ Browser.Navigation.replaceUrl key <| Url.toString oauth.redirectUri
-                              , Task.perform
-                                    (always <| Authenticate code authState)
-                                    (Task.succeed ())
+                              , authenticate backend code authState
                               ]
                             )
 

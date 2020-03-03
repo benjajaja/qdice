@@ -1,4 +1,4 @@
-module Backend.HttpCommands exposing (authenticate, deleteAccount, games, getPushKey, leaderBoard, loadGlobalSettings, loadMe, login, profile, registerPush, registerPushEvent, toastHttpError, updateAccount, updatePassword)
+module Backend.HttpCommands exposing (authenticate, deleteAccount, games, getPushKey, leaderBoard, loadGlobalSettings, loadMe, profile, register, registerPush, registerPushEvent, toastHttpError, updateAccount, updatePassword)
 
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -10,8 +10,9 @@ import Http exposing (Error, emptyBody, expectJson, expectString, expectWhatever
 import Land exposing (Color(..))
 import MyProfile.Types exposing (MyProfileUpdate)
 import Snackbar exposing (toastError)
-import Types exposing (AuthNetwork(..), AuthState, GamesMsg(..), GamesSubRoute(..), LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
-import Url.Builder exposing (int, string)
+import Tables exposing (Table)
+import Types exposing (AuthNetwork(..), AuthState, GamesMsg(..), GamesSubRoute(..), LeaderboardMsg(..), LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
+import Url.Builder exposing (int)
 
 
 toastHttpError : Error -> Cmd Msg
@@ -34,7 +35,7 @@ authenticate model code state =
             Http.post
                 { url = model.baseUrl ++ "/login/" ++ encodeAuthNetwork state.network
                 , body = stringBody "text/plain" code
-                , expect = expectString (GetToken <| Just state)
+                , expect = expectString <| GetToken state.table
                 }
 
         Just userId ->
@@ -49,7 +50,7 @@ authenticate model code state =
                         Nothing ->
                             []
                 , body = stringBody "text/plain" code
-                , expect = expectString (GetToken <| Just state)
+                , expect = expectString <| GetToken state.table
                 , timeout = Nothing
                 , tracker = Nothing
                 }
@@ -91,8 +92,8 @@ profile model id =
         }
 
 
-login : Types.Model -> String -> ( Types.Model, Cmd Msg )
-login model name =
+register : Types.Model -> String -> Maybe Table -> ( Types.Model, Cmd Msg )
+register model name joinTable =
     let
         loginProfile =
             { name = name
@@ -108,9 +109,6 @@ login model name =
             , voted = []
             , awards = []
             }
-
-        state =
-            { network = Password, table = model.game.table, addTo = Nothing }
     in
     ( { model | showLoginDialog = LoginHide }
     , Http.post
@@ -118,7 +116,7 @@ login model name =
         , body =
             jsonBody <| profileEncoder loginProfile
         , expect =
-            expectString (GetToken <| Just state)
+            expectString (GetToken joinTable)
         }
     )
 

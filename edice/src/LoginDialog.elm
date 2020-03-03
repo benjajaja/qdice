@@ -4,6 +4,7 @@ import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Tables exposing (Table)
 import Types exposing (AuthNetwork(..), LoginDialogStatus(..), Model, Msg(..))
 
 
@@ -13,17 +14,25 @@ loginDialog model =
         LoginHide ->
             text ""
 
-        _ ->
-            div
-                [ class "edLoginBackdrop" ]
-                [ div
-                    [ class "edLoginDialog", dataTestId "login-dialog" ]
-                    [ body model ]
-                ]
+        LoginShow ->
+            backdrop model Nothing
+
+        LoginShowJoin ->
+            backdrop model <| model.game.table
 
 
-body : Model -> Html Msg
-body model =
+backdrop : Model -> Maybe Table -> Html Msg
+backdrop model joinTable =
+    div
+        [ class "edLoginBackdrop" ]
+        [ div
+            [ class "edLoginDialog", dataTestId "login-dialog" ]
+            [ body model joinTable ]
+        ]
+
+
+body : Model -> Maybe Table -> Html Msg
+body model joinTable =
     div []
         [ div
             [ class "edLoginDialog__social" ]
@@ -69,7 +78,7 @@ body model =
         , div [ class "edLoginDialog__register" ]
             [ div []
                 [ text "... or just play for now:" ]
-            , Html.form [ onSubmit <| Login model.loginName ]
+            , Html.form [ onSubmit <| Register model.loginName joinTable ]
                 [ label []
                     [ text "Name"
                     , input
@@ -95,7 +104,7 @@ body model =
                      else
                         []
                     )
-                    [ onClick <| Login model.loginName, dataTestId "login-login" ]
+                    [ onClick <| Register model.loginName joinTable, dataTestId "login-login" ]
                 )
                 [ text "Play" ]
             ]

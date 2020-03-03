@@ -40,13 +40,12 @@ type Msg
     | Nop
     | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))
     | Authorize AuthState
-    | Authenticate String AuthState
-    | GetToken (Maybe AuthState) (Result Error String)
+    | GetToken (Maybe Table) (Result Error String)
     | GetProfile (Result Error ( LoggedUser, String, Preferences ))
     | GetOtherProfile (Result Error Profile)
     | Logout
     | ShowLogin LoginDialogStatus
-    | Login String
+    | Register String (Maybe Table)
     | SetLoginName String
     | SetPassword ( String, String ) String -- (email, pass) check
     | UpdateUser LoggedUser String Preferences
