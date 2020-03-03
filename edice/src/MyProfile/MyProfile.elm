@@ -148,12 +148,11 @@ addNetworks model user =
                                                         [ disabled True ]
 
                                                     Just e ->
-                                                        case model.passwordCheck of
-                                                            Nothing ->
-                                                                [ disabled True ]
-
-                                                            Just c ->
-                                                                [ onClick <| SetPassword ( e, p ) c ]
+                                                        -- case model.passwordCheck of
+                                                        -- Nothing ->
+                                                        -- [ disabled True ]
+                                                        -- Just c ->
+                                                        [ onClick <| SetPassword ( e, p ) Nothing ]
                                         )
                                         [ text "Add password" ]
                                     ]
@@ -245,7 +244,15 @@ profileForm model user =
                )
             ++ [ div []
                     [ button
-                        []
+                        (if model.password == Nothing && model.email == Nothing && model.passwordCheck == Nothing then
+                            []
+
+                         else if model.passwordCheck == Nothing then
+                            [ disabled True ]
+
+                         else
+                            []
+                        )
                         [ text "Save" ]
                     ]
                ]
@@ -397,7 +404,19 @@ update model msg =
                             }
                     in
                     ( model
-                    , Backend.HttpCommands.updateAccount model.backend profileUpdate
+                    , if
+                        List.all ((==) Nothing)
+                            [ model.myProfile.name
+                            , model.myProfile.email
+                            , model.myProfile.picture
+                            , model.myProfile.password
+                            , model.myProfile.passwordCheck
+                            ]
+                      then
+                        Cmd.none
+
+                      else
+                        Backend.HttpCommands.updateAccount model.backend profileUpdate
                     )
 
                 Anonymous ->

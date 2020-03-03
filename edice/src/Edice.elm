@@ -254,6 +254,32 @@ update msg model =
                         Just table ->
                             pipeUpdates Game.State.changeTable table ( model_, cmd )
 
+        GetUpdateProfile res ->
+            case res of
+                Err err ->
+                    ( model
+                    , toastError err err
+                    )
+
+                Ok token ->
+                    let
+                        backend =
+                            model.backend
+
+                        backend_ =
+                            { backend | jwt = Just token }
+
+                        model_ =
+                            { model | backend = backend_ }
+                    in
+                    ( model_
+                    , Cmd.batch
+                        [ MyOauth.saveToken <| Just token
+                        , loadMe backend_
+                        , toastMessage "Profile updated." Nothing
+                        ]
+                    )
+
         GetProfile res ->
             case res of
                 Err err ->

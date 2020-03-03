@@ -1,4 +1,4 @@
-module Backend.Types exposing (AllClientsMessage(..), ClientId, ClientMessage(..), ConnectionStatus(..), Model, TableMessage(..), Topic(..), TopicDirection(..))
+module Backend.Types exposing (..)
 
 import Game.Types
 import Tables exposing (Table)
@@ -62,3 +62,7 @@ type TableMessage
     | Elimination Game.Types.Elimination
     | Error String
     | ReceiveDice Game.Types.Player Int
+
+
+type alias HttpStringError =
+    ( Int, String )

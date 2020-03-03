@@ -6,7 +6,7 @@ import Backend.MessageCodification exposing (..)
 import Backend.Types exposing (..)
 import Game.Types exposing (PlayerAction(..))
 import Helpers exposing (httpErrorToString)
-import Http exposing (Error, emptyBody, expectJson, expectString, expectWhatever, header, jsonBody, stringBody)
+import Http exposing (Error, emptyBody, expectJson, expectString, expectStringResponse, expectWhatever, header, jsonBody, stringBody)
 import Land exposing (Color(..))
 import MyProfile.Types exposing (MyProfileUpdate)
 import Snackbar exposing (toastError)
@@ -136,13 +136,28 @@ updateAccount model newProfile =
         , body =
             jsonBody <| myProfileUpdateEncoder newProfile
         , expect =
-            expectString (GetToken Nothing)
+            expectStringWithError GetUpdateProfile
         , timeout = Nothing
         , tracker = Nothing
         }
 
 
-updatePassword : Model -> ( String, String ) -> String -> Cmd Msg
+expectStringWithError : (Result String String -> msg) -> Http.Expect msg
+expectStringWithError toMsg =
+    expectStringResponse toMsg <|
+        \response ->
+            case response of
+                Http.BadStatus_ metadata body ->
+                    Err body
+
+                Http.GoodStatus_ metadata body ->
+                    Ok body
+
+                _ ->
+                    Err "Network problem."
+
+
+updatePassword : Model -> ( String, String ) -> Maybe String -> Cmd Msg
 updatePassword model ( email, password ) passwordCheck =
     Http.request
         { method = "PUT"
@@ -156,7 +171,7 @@ updatePassword model ( email, password ) passwordCheck =
         , url = model.baseUrl ++ "/me/password"
         , body = jsonBody <| passwordEncoder ( email, password ) passwordCheck
         , expect =
-            expectString (GetToken Nothing)
+            expectStringWithError GetUpdateProfile
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -254,7 +269,7 @@ registerPushEvent model ( event, enable ) =
                     PlayerJoin ->
                         "player-join"
         , expect =
-            expectString (GetToken Nothing)
+            expectStringWithError GetUpdateProfile
         , timeout = Nothing
         , tracker = Nothing
         }

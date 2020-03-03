@@ -122,10 +122,10 @@ myProfileUpdateEncoder update =
         ]
 
 
-passwordEncoder : ( String, String ) -> String -> Value
+passwordEncoder : ( String, String ) -> Maybe String -> Value
 passwordEncoder ( email, password ) passwordCheck =
     object
         [ ( "email", string email )
-        , ( "password", string email )
-        , ( "passwordCheck", string passwordCheck )
+        , ( "password", string password )
+        , ( "passwordCheck", stringOrNull passwordCheck )
         ]

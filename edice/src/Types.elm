@@ -1,4 +1,4 @@
-module Types exposing (AuthNetwork(..), AuthState, Flags, GamesMsg(..), GamesSubRoute(..), GlobalSettings, LeaderBoardModel, LeaderBoardResponse, LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), Model, Msg(..), MyOAuthModel, Preferences, Profile, PushEvent(..), PushSubscription, Route(..), SessionPreferences, StaticPage(..), User(..), UserId, Username, getUsername)
+module Types exposing (..)
 
 import Animation
 import Backend.Types
@@ -41,13 +41,14 @@ type Msg
     | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))
     | Authorize AuthState
     | GetToken (Maybe Table) (Result Error String)
+    | GetUpdateProfile (Result String String)
     | GetProfile (Result Error ( LoggedUser, String, Preferences ))
     | GetOtherProfile (Result Error Profile)
     | Logout
     | ShowLogin LoginDialogStatus
     | Register String (Maybe Table)
     | SetLoginName String
-    | SetPassword ( String, String ) String -- (email, pass) check
+    | SetPassword ( String, String ) (Maybe String) -- (email, pass) check
     | UpdateUser LoggedUser String Preferences
       -- game
     | BoardMsg Board.Msg

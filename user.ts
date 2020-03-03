@@ -184,15 +184,18 @@ export const profile = async function(req, res, next) {
   try {
     let password: string | null = null;
     if (req.body.password) {
+      if ((req.body.passwordCheck ?? "").length === 0) {
+        return res.send(400, "missing current password");
+      }
       const oldPassword = await db.getPassword(req.user.id);
       const buffer = Buffer.from(oldPassword, "base64");
       const ok = await Scrypt.verify(buffer, req.body.passwordCheck);
 
-      logger.debug("ok", ok);
       if (!ok) {
         return res.send(403, "bad password");
       }
       password = await hashPassword(req.body.password);
+      logger.debug("changing password", ok);
     }
 
     const picture = req.body.picture
@@ -211,7 +214,7 @@ export const profile = async function(req, res, next) {
     next();
   } catch (e) {
     logger.error(e);
-    next(e);
+    res.sendRaw(500, "Something went wrong.");
   }
 };
 
