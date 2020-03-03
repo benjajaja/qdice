@@ -617,3 +617,12 @@ export const game = async (id: string) => {
   const game = { ...games[0], events: gameEvents };
   return camelize(game);
 };
+
+export const isAvailable = async (email: string) => {
+  const { rows } = await pool.query({
+    text: `SELECT email FROM users WHERE email = $1`,
+    values: [email],
+  });
+  logger.debug(rows, rows.length);
+  return rows.length === 0;
+};

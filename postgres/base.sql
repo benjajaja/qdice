@@ -135,6 +135,7 @@ ALTER TABLE users_id_seq OWNER TO bgrosse;
 
 ALTER SEQUENCE users_id_seq OWNED BY users.id;
 
+ALTER TABLE ONLY users ADD CONSTRAINT users_uniq UNIQUE (email);
 
 --
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: bgrosse

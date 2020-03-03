@@ -216,6 +216,11 @@ export const profile = async function(req, res, next) {
 };
 
 export const password = async function(req, res, next) {
+  if (!(await db.isAvailable(req.body.email))) {
+    res.sendRaw(400, "Email already exists");
+    return next();
+  }
+  logger.debug("email did not exist");
   try {
     const password = await hashPassword(req.body.password);
     const profile = await db.updateUser(req.user.id, {
