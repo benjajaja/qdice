@@ -125,6 +125,11 @@ export const createUser = async (
   picture: string | null,
   profileJson: any | null
 ) => {
+  if (network !== NETWORK_PASSWORD) {
+    // Don't let other networks eat up emails, this would confuse users if their email has been taken
+    // by themself. A user can manually set his email to a federated login, though.
+    email = null;
+  }
   const {
     rows: [user],
   } = await pool.query(
@@ -183,6 +188,13 @@ export const getPassword = async (userId: UserId): Promise<string> => {
     [userId, NETWORK_PASSWORD]
   );
   return rows.rows[0].network_id;
+};
+
+export const getUserId = async (email: string): Promise<UserId> => {
+  const rows = await pool.query("SELECT id FROM users WHERE email = $1", [
+    email,
+  ]);
+  return rows.rows[0].id;
 };
 
 export const updateUser = async (

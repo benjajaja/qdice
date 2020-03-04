@@ -90,6 +90,21 @@ body.navigator-standalone textarea {
           user-select: text;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  border-style: solid;
+  border-width: 1px;
+  line-height: 1.15;
+  height: 24px;
+  padding: 0;
+}
 
 .edMainScreen {}
 .edMainScreen__static {
@@ -768,13 +783,13 @@ button .material-icons, .edButton .material-icons {
 .edLoginDialog .edLoginSocial {
   width: 100%;
   padding-left: 0;
+  margin: 4px 0;
 }
 .edLoginSocial {
   justify-content: flex-start;
 }
 .edLoginSocial > img {
   height: 20px;
-  float: left;
   margin-right: 5px;
   background: white;
 }
@@ -947,3 +962,28 @@ button .material-icons, .edButton .material-icons {
 }
 
 @import "./css/myprofile.css";
+
+.edLoginPassword {
+  position: relative;
+  overflow: hidden;
+}
+.edLoginPassword_input {
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+.edLoginPassword_input input {
+  flex-grow: 2;
+  width: inherit;
+}
+.edLoginPassword_input .edLoginPassword_btn {
+  min-width: 0;
+  padding-left: 2px;
+  padding-right: 2px;
+  height: 26px;
+  margin: 0 2px;
+}
+.edLoginPassword_input-last {
+  position: absolute;
+  top: 0;
+}

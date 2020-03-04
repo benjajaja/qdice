@@ -48,6 +48,7 @@ type Msg
     | ShowLogin LoginDialogStatus
     | Register String (Maybe Table)
     | SetLoginName String
+    | SetLoginPassword LoginPasswordStep
     | SetPassword ( String, String ) (Maybe String) -- (email, pass) check
     | UpdateUser LoggedUser String Preferences
       -- game
@@ -76,6 +77,12 @@ type alias AuthState =
     , table : Maybe Table
     , addTo : Maybe UserId
     }
+
+
+type LoginPasswordStep
+    = StepEmail String
+    | StepPassword String
+    | StepNext Int (Maybe Table)
 
 
 type StaticPage
@@ -117,6 +124,12 @@ type alias Model =
     , zip : Bool
     , screenshot : Bool
     , loginName : String
+    , loginPassword :
+        { step : Int
+        , email : String
+        , password : String
+        , animations : ( Animation.State, Animation.State )
+        }
     , showLoginDialog : LoginDialogStatus
     , settings : GlobalSettings
     , leaderBoard : LeaderBoardModel

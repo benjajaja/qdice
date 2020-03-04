@@ -2,7 +2,7 @@ port module Edice exposing (init, pushSubscribe, started, subscriptions, updateW
 
 import Animation
 import Backend
-import Backend.HttpCommands exposing (getPushKey, loadGlobalSettings, loadMe, register, registerPush, registerPushEvent)
+import Backend.HttpCommands exposing (getPushKey, loadGlobalSettings, loadMe, login, register, registerPush, registerPushEvent)
 import Backend.MqttCommands exposing (sendGameCommand)
 import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
@@ -91,6 +91,15 @@ init flags location key =
             , screenshot = flags.screenshot
             , zip = flags.zip
             , loginName = ""
+            , loginPassword =
+                { step = 0
+                , email = ""
+                , password = ""
+                , animations =
+                    ( Animation.style [ Animation.left <| Animation.percent 0 ]
+                    , Animation.style [ Animation.left <| Animation.percent 100 ]
+                    )
+                }
             , showLoginDialog = LoginHide
             , settings =
                 { gameCountdownSeconds = 30
@@ -371,6 +380,90 @@ update msg model =
             , Cmd.none
             )
 
+        SetLoginPassword action ->
+            let
+                loginPassword =
+                    model.loginPassword
+            in
+            case action of
+                StepNext step joinTable ->
+                    if step /= loginPassword.step then
+                        let
+                            loginPassword_ =
+                                { loginPassword | step = step }
+
+                            animations =
+                                loginPassword.animations
+                        in
+                        ( { model
+                            | loginPassword =
+                                { loginPassword_
+                                    | animations =
+                                        ( Animation.queue
+                                            [ Animation.to
+                                                [ Animation.left <|
+                                                    Animation.percent <|
+                                                        if step == 1 then
+                                                            -100
+
+                                                        else
+                                                            0
+                                                ]
+                                            ]
+                                          <|
+                                            Tuple.first animations
+                                        , Animation.queue
+                                            [ Animation.to
+                                                [ Animation.left <|
+                                                    Animation.percent <|
+                                                        if step == 1 then
+                                                            0
+
+                                                        else
+                                                            100
+                                                ]
+                                            ]
+                                          <|
+                                            Tuple.second animations
+                                        )
+                                }
+                          }
+                        , if step == 1 then
+                            Browser.Dom.focus "login-dialog-password" |> Task.attempt (\_ -> Nop)
+
+                          else
+                            Browser.Dom.focus "login-dialog-email" |> Task.attempt (\_ -> Nop)
+                        )
+
+                    else if step == 1 then
+                        ( { model
+                            | showLoginDialog = LoginHide
+                            , loginPassword =
+                                { step = 0
+                                , email = ""
+                                , password = ""
+                                , animations =
+                                    ( Animation.style [ Animation.left <| Animation.percent 0 ]
+                                    , Animation.style [ Animation.left <| Animation.percent 100 ]
+                                    )
+                                }
+                          }
+                        , login model model.loginPassword.email model.loginPassword.password joinTable
+                        )
+
+                    else
+                        ( model, Cmd.none )
+
+                StepEmail value ->
+                    ( { model | loginPassword = { loginPassword | email = value } }
+                    , Cmd.none
+                    )
+
+                StepPassword value ->
+                    ( { model | loginPassword = { loginPassword | password = value } }
+                    , Cmd.none
+                    )
+
         SetPassword ( email, password ) passwordCheck ->
             ( model
             , Backend.HttpCommands.updatePassword model.backend ( email, password ) passwordCheck
@@ -443,11 +536,21 @@ update msg model =
 
                 ( board, cmds ) =
                     Board.updateAnimations game.board animateMsg
+
+                loginPassword =
+                    model.loginPassword
             in
             ( { model
                 | game =
                     { game
                         | board = board
+                    }
+                , loginPassword =
+                    { loginPassword
+                        | animations =
+                            ( Animation.update animateMsg <| Tuple.first loginPassword.animations
+                            , Animation.update animateMsg <| Tuple.second loginPassword.animations
+                            )
                     }
               }
             , Cmd.map BoardMsg cmds
@@ -759,16 +862,22 @@ viewWrapper =
 
 mainViewSubscriptions : Model -> Sub Msg
 mainViewSubscriptions model =
-    case model.route of
-        GameRoute _ ->
-            let
-                list =
+    let
+        list =
+            case model.route of
+                GameRoute _ ->
                     Board.animations model.game.board
-            in
-            Animation.subscription Animate list
 
-        _ ->
-            Sub.none
+                _ ->
+                    []
+    in
+    Sub.batch
+        [ Animation.subscription Animate list
+        , Animation.subscription Animate
+            [ Tuple.first model.loginPassword.animations
+            , Tuple.second model.loginPassword.animations
+            ]
+        ]
 
 
 onLocationChange : Model -> Url -> ( Model, Cmd Msg )

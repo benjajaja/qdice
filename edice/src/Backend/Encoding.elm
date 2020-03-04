@@ -1,4 +1,4 @@
-module Backend.Encoding exposing (actionPayload, authStateEncoder, encodeAuthNetwork, encodeJwt, encodePlayerAction, myProfileUpdateEncoder, passwordEncoder, playerEncoder, profileEncoder)
+module Backend.Encoding exposing (actionPayload, authStateEncoder, encodeAuthNetwork, encodeJwt, encodePlayerAction, loginEncoder, myProfileUpdateEncoder, passwordEncoder, playerEncoder, profileEncoder)
 
 import Game.Types exposing (Player, PlayerAction(..), actionToString)
 import Json.Encode exposing (Value, bool, encode, list, null, object, string)
@@ -128,4 +128,12 @@ passwordEncoder ( email, password ) passwordCheck =
         [ ( "email", string email )
         , ( "password", string password )
         , ( "passwordCheck", stringOrNull passwordCheck )
+        ]
+
+
+loginEncoder : ( String, String ) -> Value
+loginEncoder ( email, password ) =
+    object
+        [ ( "email", string email )
+        , ( "password", string password )
         ]

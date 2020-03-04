@@ -21,6 +21,35 @@ export const defaultPreferences = (): Preferences => ({});
 export const login = async (req, res, next) => {
   try {
     const network = req.params.network;
+    if (network === "password") {
+      try {
+        if ((req.body.email ?? "") === "" || (req.body.password ?? "") === "") {
+          return res.send(400, "missing parameters");
+        }
+        const id = await db.getUserId(req.body.email);
+        const oldPassword = await db.getPassword(id);
+        const buffer = Buffer.from(oldPassword, "base64");
+        const ok = await Scrypt.verify(buffer, req.body.password);
+
+        if (!ok) {
+          return res.send(403, "bad password");
+        }
+
+        const profile = await db.getUser(id);
+        const token = jwt.sign(
+          JSON.stringify(profile),
+          process.env.JWT_SECRET!
+        );
+        res.sendRaw(200, token);
+        next();
+      } catch (e) {
+        logger.error(e);
+        next(e);
+      } finally {
+        return;
+      }
+    }
+
     const profile = await getProfile(
       network,
       req.body,
@@ -122,6 +151,7 @@ const getProfile = (network, code, referer): Promise<any> => {
         },
       },
     }[network];
+
     request(Object.assign({ method: "POST" }, options), function(
       err,
       response,

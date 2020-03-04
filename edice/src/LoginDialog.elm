@@ -1,11 +1,13 @@
 module LoginDialog exposing (loginDialog)
 
+import Animation
 import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Icon
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), LoginDialogStatus(..), Model, Msg(..))
+import Types exposing (AuthNetwork(..), LoginDialogStatus(..), LoginPasswordStep(..), Model, Msg(..))
 
 
 loginDialog : Model -> Html Msg
@@ -73,6 +75,43 @@ body model joinTable =
                 ]
                 [ img [ src "assets/social_icons/reddit.svg" ] []
                 , text "Sign in with Reddit"
+                ]
+            , div []
+                [ text "Email / Password:" ]
+            , Html.form [ class "edLoginPassword", onSubmit <| SetLoginPassword <| StepNext 1 joinTable ]
+                [ div
+                    ([ class "edLoginPassword_input" ]
+                        ++ (Animation.render <|
+                                Tuple.first model.loginPassword.animations
+                           )
+                    )
+                    [ input
+                        [ type_ "email"
+                        , id "login-dialog-email"
+                        , placeholder "you@mail.com"
+                        , value model.loginPassword.email
+                        , onInput <| SetLoginPassword << StepEmail
+                        ]
+                        []
+                    , button [ class "edLoginPassword_btn", type_ "button", onClick <| SetLoginPassword <| StepNext 1 Nothing ] [ Icon.icon "keyboard_tab" ]
+                    ]
+                , div
+                    ([ class "edLoginPassword_input edLoginPassword_input-last" ]
+                        ++ (Animation.render <|
+                                Tuple.second model.loginPassword.animations
+                           )
+                    )
+                    [ button [ class "edLoginPassword_btn", type_ "button", onClick <| SetLoginPassword <| StepNext 0 Nothing ] [ Icon.icon "keyboard_backspace" ]
+                    , input
+                        [ type_ "password"
+                        , id "login-dialog-password"
+                        , placeholder "********"
+                        , value model.loginPassword.password
+                        , onInput <| SetLoginPassword << StepPassword
+                        ]
+                        []
+                    , button [ class "edLoginPassword_btn" ] [ Icon.icon "keyboard_return" ]
+                    ]
                 ]
             ]
         , div [ class "edLoginDialog__register" ]

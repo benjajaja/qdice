@@ -1,4 +1,4 @@
-module Backend.HttpCommands exposing (authenticate, deleteAccount, games, getPushKey, leaderBoard, loadGlobalSettings, loadMe, profile, register, registerPush, registerPushEvent, toastHttpError, updateAccount, updatePassword)
+module Backend.HttpCommands exposing (..)
 
 import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
@@ -119,6 +119,17 @@ register model name joinTable =
             expectString (GetToken joinTable)
         }
     )
+
+
+login : Types.Model -> String -> String -> Maybe Table -> Cmd Msg
+login model email password joinTable =
+    Http.post
+        { url = model.backend.baseUrl ++ "/login/password"
+        , body =
+            jsonBody <| loginEncoder ( email, password )
+        , expect =
+            expectString (GetToken joinTable)
+        }
 
 
 updateAccount : Model -> MyProfileUpdate -> Cmd Msg
