@@ -1,6 +1,10 @@
 #!/bin/bash
 
-cd ~/nodice
+if [ -d ~/nodice ]; then
+  cd ~/nodice
+else
+  cd ~/o/nodice
+fi
 export $(cat .env | xargs)
 export $(cat .local_env | xargs)
 
@@ -16,6 +20,10 @@ docker run -it --rm --network qdice -e PGPASSWORD=$POSTGRES_PASSWORD nodice_post
   pg_dump -U bgrosse -h postgres -d nodice \
   > $DIR/pg_dump.sql
 
+if [ ! -s $DIR/pg_dump.sql ]; then
+  echo "pg_dump.sql is empty!"
+  exit 1
+fi
 echo "Created DB archive."
 
 cp -R ~/data-avatars/ $DIR
