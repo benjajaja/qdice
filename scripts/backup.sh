@@ -11,7 +11,7 @@ export $(cat .local_env | xargs)
 DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 DIR="/tmp/backup_${DATE}"
 FILENAME="backup_${DATE}.tgz"
-FILE_PATH="/tmp/backup_${DATE}.tgz"
+FILE_PATH="/tmp/${FILENAME}"
 
 
 mkdir $DIR
@@ -40,3 +40,7 @@ aws2 s3 cp $FILE_PATH "s3://qdice-postgres/${FILENAME}"
 
 echo "Uploaded DB to S3 bucket."
 
+rm $FILE_PATH
+rm -rf $DIR
+
+echo "Deleted temporary files."
