@@ -22,7 +22,11 @@ init table tableMap_ =
     let
         map =
             Maybe.map Maps.load tableMap_
-                |> Maybe.withDefault Maps.emptyMap
+                |> Maybe.withDefault
+                    (Maybe.andThen mapFromTable table
+                        |> Maybe.map Maps.load
+                        |> Maybe.withDefault Maps.emptyMap
+                    )
 
         board =
             Board.init map
@@ -137,6 +141,11 @@ tableMap table tableList =
         (List.filter (\t -> t.table == table) tableList
             |> List.head
         )
+
+
+mapFromTable : Table -> Maybe Map
+mapFromTable =
+    Tables.decodeMap
 
 
 findUserPlayer : Types.User -> List Player -> Maybe Player
