@@ -29,6 +29,7 @@ RUN yarn install --frozen-lockfile --production
 RUN yarn generate-changelog
 RUN yarn generate-maps
 RUN yarn build
+RUN yarn gzip
 RUN rm -rf node_modules src html scripts package.json yarn.lock elm.json webpack.config.js
 
 WORKDIR /usr/src/nodice

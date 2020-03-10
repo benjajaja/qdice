@@ -43,7 +43,10 @@ server {
     gzip_buffers 16 8k;
     gzip_http_version 1.1;
     gzip_min_length 256;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript application/octet-stream;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript application/octet-stream audio/ogg;
+
+    gzip_static  on;
+    gzip_proxied expired no-cache no-store private auth;
 
     expires $expires;
 
