@@ -15,6 +15,7 @@ cd ..
 
 cd e2e
 yarn
+sleep 5
 yarn test
 cd ..
 
