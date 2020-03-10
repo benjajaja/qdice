@@ -115,12 +115,8 @@ type alias Roll =
 
 
 type alias RollPart =
-    { emoji : Land.Emoji, roll : List Int }
-
-
-type alias ReceiveDice =
-    { player : Player
-    , count : Int
+    { emoji : Land.Emoji
+    , roll : List Int
     }
 
 

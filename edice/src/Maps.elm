@@ -1,16 +1,12 @@
 module Maps exposing (consoleLogMap, emojisToMap, emptyMap, fullCellMap, load, symbols, toCharList)
 
 import Dict
-import Helpers exposing (..)
+import Helpers exposing (consoleDebug)
 import Land exposing (Cells, Emoji)
 import Maps.Sources exposing (mapSourceString)
 import Regex
 import String
-import Tables exposing (Map(..), Table, encodeMap)
-
-
-type alias MapSource =
-    String
+import Tables exposing (Map(..), encodeMap)
 
 
 type alias EmojiLand =
@@ -277,16 +273,6 @@ symbols : List String
 symbols =
     Dict.values symbolDict
         |> List.map String.fromChar
-
-
-indexSymbol : Int -> String
-indexSymbol i =
-    case Dict.get i symbolDict of
-        Just c ->
-            String.fromChar c
-
-        Nothing ->
-            Land.emptyEmoji
 
 
 fullCellMap : Int -> Int -> Land.Color -> Land.Map

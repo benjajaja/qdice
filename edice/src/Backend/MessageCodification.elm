@@ -1,16 +1,16 @@
-module Backend.MessageCodification exposing (ChatMessage, decodeClientMessage, decodeDirection, decodeTableMessage, decodeTopicMessage, encodeDirection, encodeTopic)
+module Backend.MessageCodification exposing (ChatMessage, decodeDirection, decodeTopicMessage, encodeTopic)
 
 import Backend.Decoding exposing (..)
 import Backend.Types exposing (..)
-import Game.Types
 import Json.Decode as Dec exposing (..)
-import Land exposing (Emoji)
 import Tables exposing (Table)
 import Types exposing (Msg(..))
 
 
 type alias ChatMessage =
-    { username : String, message : String }
+    { username : String
+    , message : String
+    }
 
 
 {-| Maybe Table because it might be a table message for this client only
@@ -18,9 +18,9 @@ type alias ChatMessage =
 decodeTopicMessage : Maybe Table -> Topic -> String -> Result String Msg
 decodeTopicMessage userTable topic message =
     case topic of
-        Client id ->
+        Client _ ->
             case decodeString (field "table" string) message of
-                Err err ->
+                Err _ ->
                     decodeClientMessage message
 
                 Ok tableName ->
@@ -56,7 +56,7 @@ decodeTopicMessage userTable topic message =
                         _ ->
                             Err <| "unknown global message type \"" ++ mtype ++ "\""
 
-        Tables table direction ->
+        Tables table _ ->
             decodeTableMessage table message
 
 
@@ -90,7 +90,7 @@ decodeTableMessage table message =
                         Ok user ->
                             Ok <| TableMsg table <| Enter <| Just user
 
-                        Err err ->
+                        Err _ ->
                             Ok <| TableMsg table <| Enter Nothing
 
                 "exit" ->
@@ -98,7 +98,7 @@ decodeTableMessage table message =
                         Ok user ->
                             Ok <| TableMsg table <| Exit <| Just user
 
-                        Err err ->
+                        Err _ ->
                             Ok <| TableMsg table <| Exit Nothing
 
                 "update" ->
@@ -138,7 +138,7 @@ decodeTableMessage table message =
                         Ok error ->
                             Ok <| TableMsg table <| Error error
 
-                        Err err ->
+                        Err _ ->
                             Ok <| TableMsg table <| Error <| "💣"
 
                 "receive" ->

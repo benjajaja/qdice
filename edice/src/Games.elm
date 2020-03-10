@@ -165,15 +165,14 @@ gameView zone game =
                     (\p ->
                         li []
                             [ div [] <|
-                                case p.isBot of
-                                    False ->
-                                        [ a [ href <| routeToString False <| ProfileRoute p.id p.name ]
-                                            [ text p.name
-                                            ]
+                                if p.isBot == False then
+                                    [ a [ href <| routeToString False <| ProfileRoute p.id p.name ]
+                                        [ text p.name
                                         ]
+                                    ]
 
-                                    True ->
-                                        [ text p.name ]
+                                else
+                                    [ text p.name ]
                             ]
                     )
                     game.players

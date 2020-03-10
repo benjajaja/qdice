@@ -1,6 +1,6 @@
-module Backend.Encoding exposing (actionPayload, authStateEncoder, encodeAuthNetwork, encodeJwt, encodePlayerAction, loginEncoder, myProfileUpdateEncoder, passwordEncoder, playerEncoder, profileEncoder)
+module Backend.Encoding exposing (authStateEncoder, encodeAuthNetwork, encodePlayerAction, loginEncoder, myProfileUpdateEncoder, passwordEncoder, profileEncoder)
 
-import Game.Types exposing (Player, PlayerAction(..), actionToString)
+import Game.Types exposing (PlayerAction(..), actionToString)
 import Json.Encode exposing (Value, bool, encode, list, null, object, string)
 import MyProfile.Types exposing (MyProfileUpdate)
 import Types exposing (..)
@@ -16,13 +16,6 @@ stringOrNull s =
             null
 
 
-playerEncoder : Player -> Value
-playerEncoder user =
-    object
-        [ ( "name", string user.name )
-        ]
-
-
 profileEncoder : LoggedUser -> Value
 profileEncoder user =
     object
@@ -31,11 +24,6 @@ profileEncoder user =
         , ( "email", stringOrNull user.email )
         , ( "picture", string user.picture )
         ]
-
-
-encodeJwt : String -> String
-encodeJwt =
-    string >> encode 2
 
 
 encodePlayerAction : Maybe String -> String -> PlayerAction -> Result String String

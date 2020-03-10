@@ -155,7 +155,7 @@ updateSubscribed model topic =
                     Client _ ->
                         ( model_, Cmd.none )
 
-                    Tables table direction ->
+                    Tables table _ ->
                         case model_.game.table of
                             Nothing ->
                                 ( model_
@@ -297,22 +297,12 @@ decodeTopic clientId string =
             direction =
                 parts |> List.drop 1 |> List.head
         in
-        case tableName of
-            Nothing ->
-                Nothing
-
-            Just table ->
-                case direction of
-                    Nothing ->
-                        Nothing
-
-                    Just direction1 ->
-                        case decodeDirection direction1 of
-                            Nothing ->
-                                Nothing
-
-                            Just direction2 ->
-                                Just <| Tables table direction2
+        Maybe.andThen
+            (\table ->
+                Maybe.andThen decodeDirection direction
+                    |> Maybe.andThen (Just << Tables table)
+            )
+            tableName
 
     else
         case string of
@@ -392,28 +382,26 @@ toRollLog model roll =
             Game.Types.makePlayer "(⚠ unknown player)"
 
         attacker =
-            case attackerLand of
-                Just land ->
+            Maybe.andThen
+                (\land ->
                     if land.color == Land.Neutral then
                         Just neutralPlayer
 
                     else
                         find (\p -> p.color == land.color) players
-
-                Nothing ->
-                    Nothing
+                )
+                attackerLand
 
         defender =
-            case defenderLand of
-                Just land ->
+            Maybe.andThen
+                (\land ->
                     if land.color == Land.Neutral then
                         Just neutralPlayer
 
                     else
                         find (\p -> p.color == land.color) players
-
-                Nothing ->
-                    Nothing
+                )
+                defenderLand
     in
     { attacker = Maybe.withDefault errorPlayer attacker |> .name
     , attackerColor = Maybe.withDefault errorPlayer attacker |> .color

@@ -4,8 +4,7 @@ import Helpers exposing (find, findIndex)
 import Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
 import Hexagons.Hex as HH exposing (Direction, Hex, eq)
 import Hexagons.Layout as HL exposing (Layout, offsetToHex, orientationLayoutPointy)
-import List exposing (..)
-import Maybe exposing (..)
+import List
 import Random
 
 
@@ -132,7 +131,7 @@ landCenter layout cells =
             ( -1, -1 )
 
         list ->
-            centerPoint layout cells
+            centerPoint layout list
 
 
 centerPoint : Layout -> Cells -> Point
@@ -178,9 +177,6 @@ isCellOnLandBorder land hex =
 areNeighbours : Hex -> Hex -> Bool
 areNeighbours a b =
     let
-        applied =
-            isBorderOnSide a
-
         flipped =
             \c -> \d -> isBorderOnSide a d c
     in
@@ -211,7 +207,7 @@ at lands coord =
 
         cb : Hex -> Land -> Bool
         cb aHex land =
-            any (\h -> eq h aHex) land.cells
+            List.any (\h -> eq h aHex) land.cells
     in
     find (cb hex) lands
 
@@ -224,7 +220,7 @@ indexAt lands coord =
 
         cb : Hex -> Land -> Bool
         cb aHex land =
-            any (\h -> eq h aHex) land.cells
+            List.any (\h -> eq h aHex) land.cells
     in
     findIndex (cb hex) lands
 
@@ -313,7 +309,7 @@ landBorders cells =
         _ ->
             case firstFreeBorder cells of
                 Nothing ->
-                    --Debug.todo "Set of cells must have some outer borders"
+                    -- Set of cells must have some outer borders!
                     []
 
                 Just ( coord, side ) ->
@@ -333,8 +329,6 @@ nextBorders_ cells coord origin side accum fuse =
     in
     if (eq coord <| Tuple.first origin) && Tuple.second origin == side && List.length accum > 1 then
         current :: accum
-        --else if fuse == 0 then
-        --Debug.todo "Recursion exhausted"
 
     else
         case cellOnBorder coord side cells of
@@ -396,7 +390,7 @@ oppositeSide =
 
 hasCell : Cells -> Hex -> Bool
 hasCell cells coord =
-    any (eq coord) cells
+    List.any (eq coord) cells
 
 
 firstFreeBorder : Cells -> Maybe Border
@@ -445,24 +439,19 @@ isNothing a =
 
 cellOnBorder : Hex -> Direction -> Cells -> Maybe Hex
 cellOnBorder coord side cells =
-    case head cells of
-        Nothing ->
+    case cells of
+        hd :: tl ->
+            if isBorderOnSide coord side hd then
+                Just hd
+
+            else if List.length cells == 1 then
+                Nothing
+
+            else
+                cellOnBorder coord side tl
+
+        _ ->
             Nothing
-
-        Just hd ->
-            case tail cells of
-                Nothing ->
-                    Nothing
-
-                Just tl ->
-                    if isBorderOnSide coord side hd then
-                        Just hd
-
-                    else if length cells == 1 then
-                        Nothing
-
-                    else
-                        cellOnBorder coord side tl
 
 
 isBorderOnSide : Hex -> Direction -> Hex -> Bool

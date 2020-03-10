@@ -6,7 +6,7 @@ import Board.Colors
 import Board.PathCache
 import Board.Types exposing (..)
 import Dict
-import Helpers exposing (dataTestId, dataTestValue, find)
+import Helpers exposing (dataTestId, dataTestValue)
 import Html
 import Html.Attributes
 import Html.Lazy
@@ -136,40 +136,6 @@ landElement layout pathCache isSelected isHovered land =
         []
 
 
-
--- massElement : Layout -> PathCache -> Land -> Svg Msg
--- massElement layout pathCache land =
--- polygon
--- [ fill "transparent"
--- , stroke "black"
--- , strokeLinejoin "round"
--- , strokeWidth "1.5"
--- , Html.Attributes.attribute "vector-effect" "non-scaling-stroke"
--- , points <| Board.PathCache.points pathCache layout land
--- , class "edLandOutline"
--- ]
--- []
-
-
-landMasses : List Land -> List Land
-landMasses lands =
-    List.foldl
-        (\land ->
-            \masses ->
-                List.map
-                    (\mass ->
-                        if mass.color == land.color then
-                            { mass | cells = List.append mass.cells land.cells }
-
-                        else
-                            mass
-                    )
-                    masses
-        )
-        (List.map (\color -> { cells = [], color = color, emoji = "", points = 0 }) playerColors)
-        lands
-
-
 lazyLandDies : Layout -> Animations -> Land.Land -> Svg Msg
 lazyLandDies layout animations land =
     let
@@ -291,35 +257,6 @@ landDie animations ( cx, cy ) points index =
                ]
         )
         []
-
-
-landText : Layout -> Land.Land -> Svg Msg
-landText layout land =
-    landCenter layout land.cells
-        |> (\c ->
-                let
-                    ( cx, cy ) =
-                        c
-                in
-                g
-                    [ transform <|
-                        "translate("
-                            ++ (String.fromFloat <| cx - 1.75)
-                            ++ ","
-                            ++ (String.fromFloat <| cy + 0.5)
-                            ++ ")"
-
-                    --x <| String.fromFloat cx
-                    --, y <| String.fromFloat cy
-                    ]
-                    [ Svg.text_
-                        [ textAnchor "middle"
-                        , alignmentBaseline "central"
-                        , class "edBoard--emoji"
-                        ]
-                        [ Html.text land.emoji ]
-                    ]
-           )
 
 
 waterConnections : Layout -> PathCache -> List ( Land.Emoji, Land.Emoji ) -> List Land -> Svg Msg

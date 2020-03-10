@@ -1,14 +1,14 @@
-module Backend.Decoding exposing (..)
+module Backend.Decoding exposing (authStateDecoder, eliminationDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder)
 
 import Board.Types
 import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus)
 import Games.Types exposing (..)
 import Iso8601
-import Json.Decode exposing (Decoder, andThen, bool, fail, field, float, index, int, list, map, map2, map3, maybe, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (hardcoded, optional, required)
+import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, list, map, map2, map3, maybe, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, LeaderBoardResponse, LoggedUser, Preferences, Profile, PushEvent(..), SessionPreferences)
+import Types exposing (AuthNetwork(..), AuthState, LeaderBoardResponse, LoggedUser, Preferences, Profile, PushEvent(..))
 
 
 stringDecoder : Decoder String

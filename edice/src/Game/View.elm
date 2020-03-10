@@ -12,7 +12,7 @@ import Game.State exposing (canHover)
 import Game.Types exposing (Player, PlayerAction(..), isBot, statusToString)
 import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
-import Html.Attributes exposing (class, disabled, href, style, target, type_)
+import Html.Attributes exposing (class, disabled, href, style, type_)
 import Html.Events exposing (onClick)
 import Icon
 import LeaderBoard.View
@@ -27,17 +27,16 @@ view model =
     let
         board =
             Board.view model.game.board
-                (case model.game.board.hovered of
-                    Just emoji ->
+                (Maybe.andThen
+                    (\emoji ->
                         if canHover model.game emoji then
                             model.game.board.hovered
                             -- for Html.lazy ref-check
 
                         else
                             Nothing
-
-                    Nothing ->
-                        Nothing
+                    )
+                    model.game.board.hovered
                 )
                 |> Html.map BoardMsg
     in
