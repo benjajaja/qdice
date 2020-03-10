@@ -43,7 +43,7 @@ animations model =
                     Board.Types.Animation anim ->
                         [ anim ]
 
-                    Board.Types.CssAnimation posix ->
+                    Board.Types.CssAnimation _ ->
                         []
             )
         |> List.concat
@@ -54,7 +54,7 @@ clearCssAnimations model posix =
     { model
         | animations =
             Dict.filter
-                (\k ->
+                (\_ ->
                     \v ->
                         case v of
                             Board.Types.Animation _ ->

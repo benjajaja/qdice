@@ -618,9 +618,6 @@ update msg model =
                 enter =
                     Backend.MqttCommands.enter model.backend table
 
-                totalPlayers =
-                    List.sum <| List.map .playerCount <| model.tableList
-
                 cmds =
                     Cmd.batch <|
                         [ enter, Cmd.none ]

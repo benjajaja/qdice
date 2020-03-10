@@ -14,7 +14,7 @@ import Maps exposing (load)
 import Snackbar exposing (toastMessage)
 import Tables exposing (Map, Table)
 import Task
-import Types exposing (LoggedUser, Msg(..), User(..))
+import Types exposing (Msg(..), User(..))
 
 
 init : Maybe Table -> Maybe Map -> Game.Types.Model
@@ -119,9 +119,6 @@ gameCommand model playerAction =
 changeTable : Types.Model -> Table -> ( Types.Model, Cmd Types.Msg )
 changeTable model table =
     let
-        previousTable =
-            model.game.table
-
         map =
             tableMap table model.tableList
 
@@ -475,7 +472,7 @@ clickLand model land =
                                             -- no table!
                                             ( model.game.board.move, consoleDebug "error: no table" )
 
-                            Board.Types.FromTo from to ->
+                            Board.Types.FromTo _ _ ->
                                 ( model.game.board.move, consoleDebug "ongoing attack" )
 
                 game =
@@ -539,7 +536,7 @@ canHover game emoji =
                                     -- is bordering, different land and color: attack
                                     True
 
-                            Board.Types.FromTo from to ->
+                            Board.Types.FromTo _ _ ->
                                 False
 
                     Nothing ->
@@ -631,7 +628,7 @@ updateTable model table msg =
                                                     board
                                                     model.time
                                                     (case move_ of
-                                                        Board.Types.FromTo from to ->
+                                                        Board.Types.FromTo from _ ->
                                                             [ { color = from.color
                                                               , emoji = from.emoji
                                                               , points = from.points
@@ -736,10 +733,10 @@ update model game msg =
                     LogReceiveDice player count ->
                         case game.player of
                             Just me ->
-                                if player.id == me.id && player.gameStats.connectedLands < player.gameStats.totalLands then
+                                if player.id == me.id && count < player.gameStats.totalLands then
                                     toastMessage
                                         ("You missed "
-                                            ++ (String.fromInt <| player.gameStats.totalLands - player.gameStats.connectedLands)
+                                            ++ (String.fromInt <| player.gameStats.totalLands - count)
                                             ++ " dice because you have disconnected lands!"
                                         )
                                     <|

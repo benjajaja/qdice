@@ -6,7 +6,7 @@ import Board.PathCache
 import Board.Types exposing (..)
 import Dict
 import Land
-import Time exposing (millisToPosix)
+import Time
 
 
 init : Land.Map -> Model
@@ -104,7 +104,7 @@ updateLands model posix updates mMove msg =
 
             landUpdates : List ( Land.Land, List ( Int, AnimationState ) )
             landUpdates =
-                List.map (updateLand layout posix updates) map.lands
+                List.map (updateLand posix updates) map.lands
 
             map_ =
                 { map
@@ -150,8 +150,8 @@ animationsDict landUpdates =
         landUpdates
 
 
-updateLand : Land.Layout -> Time.Posix -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, AnimationState ) )
-updateLand layout posix updates land =
+updateLand : Time.Posix -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, AnimationState ) )
+updateLand posix updates land =
     let
         match =
             List.filter (\l -> l.emoji == land.emoji) updates
@@ -163,7 +163,7 @@ updateLand layout posix updates land =
                     | color = landUpdate.color
                     , points = landUpdate.points
                   }
-                , updateLandAnimations layout posix land landUpdate
+                , updateLandAnimations posix land landUpdate
                 )
 
             else
@@ -173,9 +173,9 @@ updateLand layout posix updates land =
             ( land, [] )
 
 
-updateLandAnimations : Land.Layout -> Time.Posix -> Land.Land -> LandUpdate -> List ( Int, AnimationState )
-updateLandAnimations layout posix land landUpdate =
-    if landUpdate.color == land.color && landUpdate.points > land.points then
+updateLandAnimations : Time.Posix -> Land.Land -> LandUpdate -> List ( Int, AnimationState )
+updateLandAnimations posix land landUpdate =
+    if landUpdate.color /= Land.Neutral && landUpdate.color == land.color && landUpdate.points > land.points then
         List.map
             (\index ->
                 ( index
@@ -253,7 +253,7 @@ translateStack reverse layout from to doneMsg =
     in
     Animation <|
         Animation.queue
-            ([ Animation.toWith
+            (Animation.toWith
                 (Animation.easing
                     { duration =
                         if not reverse then
@@ -265,8 +265,7 @@ translateStack reverse layout from to doneMsg =
                     }
                 )
                 [ toAnimation ]
-             ]
-                ++ (if reverse == True then
+                :: (if reverse == True then
                         [ Animation.Messenger.send doneMsg ]
 
                     else
