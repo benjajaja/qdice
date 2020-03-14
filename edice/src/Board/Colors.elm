@@ -39,7 +39,7 @@ base color =
             Color.rgb255 245 130 48
 
         Brown ->
-            Color.rgb255 255 250 200
+            Color.rgb255 175 135 90
 
 
 highlight : Color.Color -> Color.Color
