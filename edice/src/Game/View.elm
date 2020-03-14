@@ -10,11 +10,12 @@ import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
 import Game.State exposing (canHover)
 import Game.Types exposing (Player, PlayerAction(..), isBot, statusToString)
-import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
+import Helpers exposing (dataTestId, find, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, style, type_)
 import Html.Events exposing (onClick)
 import Icon
+import Land
 import LeaderBoard.View
 import Ordinal exposing (ordinal)
 import Routing exposing (routeToString)
@@ -89,8 +90,9 @@ playerBar dropCount model =
         List.map (PlayerCard.view model) <|
             List.take 4 <|
                 List.drop dropCount <|
-                    sortedPlayers <|
-                        model.game.players
+                    showBlackPlayer <|
+                        sortedPlayers <|
+                            model.game.players
 
 
 sortedPlayers : List Player -> List TurnPlayer
@@ -98,7 +100,7 @@ sortedPlayers players =
     let
         acc : Array.Array TurnPlayer
         acc =
-            Array.initialize 8 (always ( Nothing, -1 ))
+            Array.initialize 9 (\i -> ( Nothing, i ))
 
         fold : ( Int, Player ) -> Array.Array TurnPlayer -> Array.Array TurnPlayer
         fold =
@@ -111,6 +113,34 @@ sortedPlayers players =
         acc
         (List.indexedMap Tuple.pair players)
         |> Array.toList
+
+
+showBlackPlayer : List TurnPlayer -> List TurnPlayer
+showBlackPlayer players =
+    case
+        find
+            (\( tp, _ ) ->
+                case tp of
+                    Just p ->
+                        p.color == Land.Black
+
+                    Nothing ->
+                        False
+            )
+            players
+    of
+        Just ( blackPlayer, pos ) ->
+            case find (Tuple.first >> (==) Nothing) players of
+                Just ( _, index ) ->
+                    Array.fromList players
+                        |> Array.set index ( blackPlayer, pos )
+                        |> Array.toList
+
+                Nothing ->
+                    players
+
+        Nothing ->
+            players
 
 
 seatButtons : Model -> List (Html.Html Types.Msg)

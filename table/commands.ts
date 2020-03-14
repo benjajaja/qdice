@@ -115,7 +115,7 @@ export const makePlayer = (
       players.map(p => p.color)
     )
   );
-  const color = forceColor ?? R.head(R.range(1, 9).filter(taken));
+  const color = forceColor ?? R.head(R.range(1, 10).filter(taken));
   if (color === undefined) {
     logger.error("cannot find untaken color", players);
     throw new Error("cannot find unused color on join");

@@ -32,7 +32,7 @@ const defaultPersona: Persona = {
   },
 };
 
-const mkBot = (
+export const mkBot = (
   name: string,
   strategy: BotStrategy,
   picture?: string
@@ -55,7 +55,7 @@ const personas: Persona[] = [
   mkBot("Winston", "RandomCareful", "assets/bots/bot_winston.png"),
   mkBot("Genghis", "RandomCareless", "assets/bots/bot_genkhis.png"),
   mkBot("HiroHito", "TargetCareful", "assets/bots/bot_hirohito.png"),
-  mkBot("Trump", "RandomCareful", "assets/bots/bot_trump.png"),
+  mkBot("Donald", "RandomCareful", "assets/bots/bot_trump.png"),
   mkBot("Fidel", "ExtraCareful", "assets/bots/bot_fidel.png"),
   mkBot("Vladimir", "RandomCareful", "assets/bots/bot_vladimir.png"),
   mkBot("Kim", "ExtraCareful", "assets/bots/bot_kim.png"),
@@ -66,7 +66,7 @@ const personas: Persona[] = [
 export const isBot = (player: Player): player is BotPlayer =>
   player.bot !== null;
 
-export const addBots = (table: Table): CommandResult => {
+export const addBots = (table: Table, persona?: Persona): CommandResult => {
   const unusedPersonas = personas.filter(
     p =>
       !R.contains(
@@ -74,7 +74,11 @@ export const addBots = (table: Table): CommandResult => {
         table.players.filter(isBot).map(p => p.name)
       )
   );
-  const persona = unusedPersonas[rand(0, unusedPersonas.length - 1)];
+
+  if (typeof persona === "undefined") {
+    persona = unusedPersonas[rand(0, unusedPersonas.length - 1)];
+  }
+
   const botUser: User = {
     id: `bot_${persona.name}`,
     name: persona.name,

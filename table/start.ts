@@ -1,5 +1,5 @@
 import * as R from "ramda";
-import { Table, Player, Land, CommandResult } from "../types";
+import { Table, Player, Land, CommandResult, Color } from "../types";
 import { now } from "../timestamp";
 import * as publish from "./publish";
 import { rand, shuffle } from "../rand";
@@ -31,13 +31,44 @@ const start = (table: Table): CommandResult => {
       })
     );
 
-  const assignedLands = shuffledLands.map((land, index) => {
+  const assignedLands: Land[] = shuffledLands.map((land, index) => {
     const player = table.players[index % table.players.length];
     return Object.assign({}, land, { color: player.color, points: 4 });
   });
 
+  const specialAssignedLands: Land[] =
+    table.name !== "Planeta"
+      ? assignedLands
+      : (() => {
+          const wuhan = assignedLands.find(R.propEq("emoji", "💊"));
+          if (wuhan) {
+            const covidLand = assignedLands.find(
+              R.propEq("color", Color.Black)
+            );
+
+            return assignedLands.map(land => {
+              if (land === wuhan) {
+                return { ...land, color: Color.Black, points: 5 };
+              } else if (land === covidLand && wuhan.color !== Color.Neutral) {
+                return { ...land, color: wuhan.color };
+              }
+              return land;
+            });
+          } else {
+            return assignedLands
+              .filter(land => land.color !== Color.Black)
+              .concat(
+                lands
+                  .filter(land => land.emoji === "💊")
+                  .map(land => ({ ...land, color: Color.Black, points: 5 }))
+              );
+          }
+        })();
+
   const allLands = lands.map(oldLand => {
-    const match = assignedLands.filter(l => l.emoji === oldLand.emoji).pop();
+    const match = specialAssignedLands
+      .filter(l => l.emoji === oldLand.emoji)
+      .pop();
     if (match) {
       return match;
     }

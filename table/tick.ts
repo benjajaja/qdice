@@ -15,7 +15,7 @@ import * as publish from "./publish";
 import nextTurn from "./turn";
 import startGame from "./start";
 import { rollResult } from "./attack";
-import { addBots, tickBotTurn, isBot } from "./bots";
+import { addBots, tickBotTurn, isBot, mkBot } from "./bots";
 import { leave } from "./commands";
 import logger from "../logger";
 import { setTimeout } from "timers";
@@ -102,6 +102,19 @@ const tick = async (tableTag: string, lock) => {
         havePassed(3, lastJoined(table.players))
       ) {
         result = addBots(table);
+      } else if (
+        !table.params.botLess &&
+        table.players.filter(R.complement(isBot)).length > 0 &&
+        table.name === "Planeta" &&
+        table.players.length === table.startSlots &&
+        havePassed(3, lastJoined(table.players))
+      ) {
+        const persona = mkBot(
+          "Covid-19",
+          "RandomCareful",
+          "assets/bots/bot_covid19.png"
+        );
+        result = addBots(table, persona);
       } else if (table.players.length > 0) {
         result = cleanPlayers(table);
       }
@@ -177,7 +190,9 @@ const removeBots = (table: Table): CommandResult | undefined => {
     const bots = table.players.filter(isBot);
     if (bots.length > 0) {
       if (
-        bots.length === table.players.length ||
+        (table.name === "Planeta"
+          ? bots.length === table.players.length + 1
+          : bots.length === table.players.length) ||
         table.players.length > table.startSlots
       ) {
         return leave(R.last(bots)!, table);
