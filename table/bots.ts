@@ -1,23 +1,19 @@
 import * as R from "ramda";
 import {
   Table,
-  CommandResult,
   User,
   Persona,
   Player,
   BotPlayer,
   BotState,
-  IllegalMoveError,
   BotStrategy,
   Color,
+  Command,
 } from "../types";
-import { now, addSeconds, havePassed } from "../timestamp";
-import * as publish from "./publish";
+import { havePassed } from "../timestamp";
 import { shuffle, rand } from "../rand";
 import logger from "../logger";
-import { GAME_START_COUNTDOWN, BOT_DEADLOCK_MAX } from "../constants";
-import { makePlayer, flag } from "./commands";
-import nextTurn from "./turn";
+import { BOT_DEADLOCK_MAX } from "../constants";
 import { isBorder } from "../maps";
 import { findLand, groupedPlayerPositions } from "../helpers";
 import { move, Source } from "./bot_strategies";
@@ -66,7 +62,7 @@ const personas: Persona[] = [
 export const isBot = (player: Player): player is BotPlayer =>
   player.bot !== null;
 
-export const addBots = (table: Table, persona?: Persona): CommandResult => {
+export const addBots = (table: Table, persona?: Persona): Command => {
   const unusedPersonas = personas.filter(
     p =>
       !R.contains(
@@ -94,35 +90,17 @@ export const addBots = (table: Table, persona?: Persona): CommandResult => {
     awards: [],
   };
 
-  const player = {
-    ...tableThemed(table, makePlayer(botUser, "bot", table.players)),
-    bot: persona,
-    ready: process.env.NODE_ENV === "local",
-  };
-
-  const players = R.sortBy(R.prop("color"), table.players.concat([player]));
-
-  let gameStart = table.gameStart;
-  if (players.length >= table.startSlots) {
-    gameStart = addSeconds(GAME_START_COUNTDOWN);
-
-    publish.event({
-      type: "countdown",
-      table: table.name,
-      players: players,
-    });
-  }
-  publish.join(table, player);
   return {
     type: "Join",
-    players,
-    table: { gameStart },
+    user: botUser,
+    clientId: null,
+    bot: persona,
   };
 };
 
-export const tickBotTurn = (table: Table): CommandResult => {
+export const tickBotTurn = (table: Table): Command | undefined => {
   if (!havePassed(0.5, table.turnStart)) {
-    return { type: "Heartbeat" }; // fake noop
+    return;
   }
 
   const player = table.players[table.turnIndex];
@@ -137,15 +115,10 @@ export const tickBotTurn = (table: Table): CommandResult => {
     player.bot.state.deadlockCount > BOT_DEADLOCK_MAX
   ) {
     if (position > 1) {
-      try {
-        return flag(player, table);
-      } catch (e) {
-        logger.error("could not flag bot:", e);
-        if (e instanceof IllegalMoveError) {
-          return botNextTurn(table, player);
-        } else {
-          throw e;
-        }
+      if (player.flag === null || player.flag < position) {
+        return { type: "Flag", player };
+      } else {
+        return { type: "EndTurn", player };
       }
     }
   }
@@ -157,15 +130,8 @@ export const tickBotTurn = (table: Table): CommandResult => {
       table.lands.filter(land => land.color === otherPlayer.color) >=
       table.lands.filter(land => land.color === player.color)
     ) {
-      try {
-        return flag(player, table);
-      } catch (e) {
-        logger.error("could not flag bot:", e);
-        if (e instanceof IllegalMoveError) {
-          return botNextTurn(table, player);
-        } else {
-          throw e;
-        }
+      if (player.flag === null || player.flag < position) {
+        return { type: "Flag", player };
       }
     }
   }
@@ -173,53 +139,24 @@ export const tickBotTurn = (table: Table): CommandResult => {
   const sources = botSources(table, player);
 
   if (sources.length === 0) {
-    return botNextTurn(table, player);
+    return { type: "EndTurn", player };
   }
 
   const attack = move(player.bot.strategy)(sources, player, table);
 
   if (attack === null) {
-    return botNextTurn(table, player);
+    return { type: "EndTurn", player };
   }
 
   const emojiFrom = attack.from.emoji;
   const emojiTo = attack.to.emoji; // shuffled random
 
-  const timestamp = now();
-  publish.move(table, {
-    from: emojiFrom,
-    to: emojiTo,
-  });
   return {
     type: "Attack",
-    table: {
-      turnStart: timestamp,
-      turnActivity: true,
-      attack: {
-        start: timestamp,
-        from: emojiFrom,
-        to: emojiTo,
-      },
-    },
-    players: table.players.map(p =>
-      p === player ? setState(player, { deadlockCount: 0 }) : p
-    ),
+    player,
+    from: emojiFrom,
+    to: emojiTo,
   };
-};
-
-const botNextTurn = (table: Table, bot: BotPlayer) => {
-  const table_ = {
-    ...table,
-    players: table.players.map(p => {
-      if (p === bot) {
-        return setState(bot, {
-          deadlockCount: bot.bot.state.deadlockCount + 1,
-        });
-      }
-      return p;
-    }),
-  };
-  return nextTurn("EndTurn", table_);
 };
 
 const setState = (p: BotPlayer, s: Partial<BotState>): BotPlayer => ({
@@ -263,7 +200,7 @@ const botSources = (table: Table, player: Player): Source[] => {
     .filter(attack => attack.targets.length > 0);
 };
 
-const tableThemed = (table: Table, player: Player): Player => {
+export const tableThemed = (table: Table, player: Player): Player => {
   if (table.tag === "España") {
     return { ...player, ...spanishPersona(player.color) };
   }

@@ -1,8 +1,8 @@
 import * as R from "ramda";
 import * as Sentry from "@sentry/node";
 import { getTable } from "./get";
-import { Table, Player, CommandResult, Timestamp } from "../types";
-import { processComandResult } from "../table";
+import { Table, Player, Timestamp, Command } from "../types";
+import { processCommand } from "../table";
 import { havePassed } from "../timestamp";
 
 import {
@@ -12,21 +12,22 @@ import {
   ROLL_SECONDS,
   ROLL_SECONDS_BOT,
 } from "../constants";
-import * as publish from "./publish";
-import nextTurn from "./turn";
-import startGame from "./start";
-import { rollResult } from "./attack";
 import { addBots, tickBotTurn, isBot, mkBot } from "./bots";
-import { leave } from "./commands";
 import logger from "../logger";
 import { setTimeout } from "timers";
-import endGame from "./endGame";
+import { findLand } from "../helpers";
+import { diceRoll } from "../rand";
 
 const intervalIds: { [tableTag: string]: any } = {};
 
 const TICK_PERIOD_MS = 250;
 
-export const start = (tableTag: string, lock: any, index, count) => {
+export const start = (
+  tableTag: string,
+  lock: any,
+  index: number,
+  count: number
+) => {
   setTimeout(() => {
     if (intervalIds[tableTag]) {
       throw new Error("already ticking");
@@ -56,12 +57,13 @@ const tick = async (tableTag: string, lock) => {
 
   lock.acquire(tableTag, async done => {
     const table = await getTable(tableTag);
-    let result: CommandResult | void = undefined;
+    let command: Command | void = undefined;
     if (table.status === STATUS_PLAYING) {
       if (table.players.length === 0) {
         logger.error("STATUS_PLAYING but no players!");
         Sentry.captureException(new Error("STATUS_PLAYING but no players!"));
-        result = endGame(table, { type: "TickTurnOver" });
+        command = { type: "EndGame", winner: null, turnCount: table.turnCount };
+        // result = endGame(table, { type: "TickTurnOver" });
       } else if (!table.players[table.turnIndex]) {
         logger.error(
           "turnIndex out of bounds!",
@@ -75,10 +77,7 @@ const tick = async (tableTag: string, lock) => {
             }, ${table.players.map(p => p.name).join()}`
           )
         );
-        result = nextTurn("TickTurnOver", {
-          ...table,
-          turnIndex: table.players.length - 1,
-        });
+        command = { type: "TickTurnOver", sitPlayerOut: false };
       } else if (table.attack) {
         if (
           havePassed(
@@ -88,28 +87,35 @@ const tick = async (tableTag: string, lock) => {
             table.attack.start
           )
         ) {
-          result = rollResult(table);
+          const find = findLand(table.lands);
+          const fromLand = find(table.attack.from);
+          const toLand = find(table.attack.to);
+          const [fromRoll, toRoll, _] = diceRoll(
+            fromLand.points,
+            toLand.points
+          );
+          command = { type: "Roll", fromRoll, toRoll };
         }
         // never process anything else during attack
       } else if (table.players[table.turnIndex].out) {
-        result = nextTurn("TickTurnOut", table);
+        command = { type: "TickTurnOut" };
       } else if (havePassed(TURN_SECONDS, table.turnStart)) {
-        result = nextTurn("TickTurnOver", table, !table.turnActivity);
+        command = { type: "TickTurnOver", sitPlayerOut: !table.turnActivity };
       } else if (table.players.every(R.prop("out"))) {
-        result = nextTurn("TickTurnAllOut", table);
+        command = { type: "TickTurnAllOut" };
       } else if (table.players[table.turnIndex].bot !== null) {
-        result = tickBotTurn(table);
+        command = tickBotTurn(table);
       }
     } else if (table.status === STATUS_PAUSED) {
       if (shouldStart(table)) {
-        result = startGame(table);
+        command = { type: "Start" };
       } else if (
         !table.params.botLess &&
         table.players.filter(R.complement(isBot)).length > 0 &&
         table.players.length < table.startSlots &&
         havePassed(3, lastJoined(table.players))
       ) {
-        result = addBots(table);
+        command = addBots(table);
       } else if (
         !table.params.botLess &&
         table.players.filter(R.complement(isBot)).length > 0 &&
@@ -122,17 +128,17 @@ const tick = async (tableTag: string, lock) => {
           "RandomCareful",
           "assets/bots/bot_covid19.png"
         );
-        result = addBots(table, persona);
-      } else if (table.players.length > 0) {
-        result = cleanPlayers(table);
+        command = addBots(table, persona);
+        // } else if (table.players.length > 0) {
+        // command = cleanPlayers(table);
       }
     }
 
-    if (result === undefined) {
-      result = cleanWatchers(table);
+    if (command === undefined) {
+      command = { type: "Clear" }; // cleanWatchers(table);
     }
 
-    await processComandResult(table, result);
+    await processCommand(table, command);
     done();
   });
 };
@@ -155,59 +161,6 @@ const shouldStart = (table: Table) => {
 
 const countdownFinished = (gameStart: number) =>
   gameStart !== 0 && havePassed(0, gameStart);
-
-const checkWatchers = <T extends { lastBeat: Timestamp }>(
-  watchers: ReadonlyArray<T>,
-  seconds: number
-): [ReadonlyArray<T>, ReadonlyArray<T>] => {
-  return watchers.reduce(
-    ([yes, no], watcher) => {
-      if (!havePassed(seconds, watcher.lastBeat)) {
-        return [R.append(watcher, yes), no];
-      } else {
-        return [yes, R.append(watcher, no)];
-      }
-    },
-    [[], []] as any
-  );
-};
-
-const cleanWatchers = (table: Table): CommandResult | undefined => {
-  const [stillWatching, stoppedWatching] = checkWatchers(table.watching, 30);
-  if (stoppedWatching.length > 0) {
-    stoppedWatching.forEach(user => publish.exit(table, user.name));
-    return {
-      type: "CleanWatchers",
-      watchers: stillWatching,
-    };
-  }
-  return undefined;
-};
-
-const cleanPlayers = (table: Table): CommandResult | undefined => {
-  const [_, stoppedWatching] = checkWatchers(table.players, 60 * 5);
-  if (stoppedWatching.length > 0) {
-    return leave(stoppedWatching[0], table);
-  }
-
-  return removeBots(table);
-};
-
-const removeBots = (table: Table): CommandResult | undefined => {
-  if (table.players.length > 0) {
-    const bots = table.players.filter(isBot);
-    if (bots.length > 0) {
-      if (
-        (table.name === "Planeta"
-          ? bots.length === table.players.length + 1
-          : bots.length === table.players.length) ||
-        table.players.length > table.startSlots
-      ) {
-        return leave(R.last(bots)!, table);
-      }
-    }
-  }
-};
 
 const lastJoined = (players: ReadonlyArray<Player>): Timestamp => {
   const last = R.reduce<Timestamp, Timestamp>(

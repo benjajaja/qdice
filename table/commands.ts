@@ -12,6 +12,8 @@ import {
   UserLike,
   BotPlayer,
   Color,
+  Persona,
+  Command,
 } from "../types";
 import * as publish from "./publish";
 import { addSeconds, now } from "../timestamp";
@@ -34,10 +36,10 @@ import {
 } from "../constants";
 import logger from "../logger";
 import endGame from "./endGame";
-import { isBot } from "./bots";
+import { isBot, tableThemed } from "./bots";
 
 export const heartbeat = (
-  user: User,
+  user: User | null,
   table: Table,
   clientId: string
 ): CommandResult => {
@@ -64,10 +66,10 @@ export const heartbeat = (
 };
 
 export const enter = (
-  user: User,
+  user: User | null,
   table: Table,
   clientId: string
-): CommandResult | undefined => {
+): CommandResult | null => {
   const existing = R.find(R.propEq("clientId", clientId), table.watching);
   publish.tableStatus(table, clientId);
   if (!existing) {
@@ -85,10 +87,14 @@ export const enter = (
       ),
     };
   }
-  return;
+  return null;
 };
 
-export const exit = (user, table, clientId): CommandResult | undefined => {
+export const exit = (
+  user: User | null,
+  table: Table,
+  clientId: string
+): CommandResult | null => {
   const existing = R.find(R.propEq("clientId", clientId), table.watching);
   if (existing) {
     publish.exit(table, user ? user.name : null);
@@ -100,12 +106,12 @@ export const exit = (user, table, clientId): CommandResult | undefined => {
       ),
     };
   }
-  return;
+  return null;
 };
 
 export const makePlayer = (
   user: User,
-  clientId,
+  clientId: string,
   players: readonly Player[],
   forceColor?: Color
 ): Player => {
@@ -144,9 +150,14 @@ export const makePlayer = (
   };
 };
 
-export const join = (user: User, table: Table, clientId): CommandResult => {
+export const join = (
+  user: User,
+  table: Table,
+  clientId: string | null,
+  bot: Persona | null
+): CommandResult => {
   if (table.status === STATUS_PLAYING) {
-    if (table.players.some(isBot)) {
+    if (clientId !== null && table.players.some(isBot)) {
       return takeover(user, table, clientId);
     }
     throw new IllegalMoveError("join while STATUS_PLAYING", user.id);
@@ -164,23 +175,37 @@ export const join = (user: User, table: Table, clientId): CommandResult => {
     throw new IllegalMoveError("table already full", user.id);
   }
 
-  logger.debug("join", typeof user.id);
-  const [players, player, removed] = insertPlayer(
-    table.players,
-    user,
-    clientId
-  );
-  if (!R.equals(players, R.sortBy(R.prop("color"), players))) {
-    logger.error(
-      "bad sort",
-      table.players.map(p => [p.name, p.color]),
-      players.map(p => [p.name, p.color])
+  let result: [readonly Player[], Player];
+  if (bot !== null) {
+    const player = {
+      ...tableThemed(table, makePlayer(user, "bot", table.players)),
+      bot,
+      ready: process.env.NODE_ENV === "local",
+    };
+    const players = R.sortBy(R.prop("color"), table.players.concat([player]));
+    result = [players, player];
+  } else {
+    logger.debug("join", typeof user.id);
+    const [players, player, removed] = insertPlayer(
+      table.players,
+      user,
+      clientId
     );
+    if (!R.equals(players, R.sortBy(R.prop("color"), players))) {
+      logger.error(
+        "bad sort",
+        table.players.map(p => [p.name, p.color]),
+        players.map(p => [p.name, p.color])
+      );
+    }
+
+    if (removed) {
+      publish.leave(table, removed);
+    }
+    result = [players, player];
   }
 
-  if (removed) {
-    publish.leave(table, removed);
-  }
+  const [players, player] = result;
 
   const status =
     table.status === STATUS_FINISHED ? STATUS_PAUSED : table.status;
@@ -233,7 +258,11 @@ const insertPlayer = (
   return [heads.concat([newPlayer]).concat(tail.slice(1)), newPlayer, tail[0]];
 };
 
-const takeover = (user: User, table: Table, clientId): CommandResult => {
+const takeover = (
+  user: User,
+  table: Table,
+  clientId: string
+): CommandResult => {
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
     throw new IllegalMoveError("already joined", user.id);
@@ -294,8 +323,7 @@ const takeover = (user: User, table: Table, clientId): CommandResult => {
 
 export const leave = (
   user: { id: UserId; name: string },
-  table: Table,
-  clientId?
+  table: Table
 ): CommandResult => {
   if (table.status === STATUS_PLAYING) {
     throw new IllegalMoveError("leave while STATUS_PLAYING", user.id);
@@ -328,23 +356,23 @@ export const leave = (
 };
 
 export const attack = (
-  user,
+  player: Player,
   table: Table,
-  clientId,
-  [emojiFrom, emojiTo]
+  emojiFrom: string,
+  emojiTo: string
 ): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
     throw new IllegalMoveError(
       "attack while not STATUS_PLAYING",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo
     );
   }
-  if (!hasTurn(table)(user)) {
+  if (!hasTurn(table)(player)) {
     throw new IllegalMoveError(
       "attack while not having turn",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo
     );
@@ -352,7 +380,7 @@ export const attack = (
   if (table.attack !== null) {
     throw new IllegalMoveError(
       "attack while ongoing attack",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo
     );
@@ -365,7 +393,7 @@ export const attack = (
     logger.debug(table.lands.map(l => l.emoji));
     throw new IllegalMoveError(
       "some land not found in attack",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -375,7 +403,7 @@ export const attack = (
   if (fromLand.color === COLOR_NEUTRAL) {
     throw new IllegalMoveError(
       "attack from neutral",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -385,7 +413,7 @@ export const attack = (
   if (fromLand.points === 1) {
     throw new IllegalMoveError(
       "attack from single-die land",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -395,7 +423,7 @@ export const attack = (
   if (fromLand.color === toLand.color) {
     throw new IllegalMoveError(
       "attack same color",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -405,7 +433,7 @@ export const attack = (
   if (!isBorder(table.adjacency, emojiFrom, emojiTo)) {
     throw new IllegalMoveError(
       "attack not border",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -427,39 +455,40 @@ export const attack = (
         start: timestamp,
         from: emojiFrom,
         to: emojiTo,
-        clientId: clientId,
       },
     },
   };
 };
 
-export const endTurn = (user: User, table: Table, clientId): CommandResult => {
+export const endTurn = (
+  player: Player,
+  table: Table
+): [CommandResult, Command | null] => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError("endTurn while not STATUS_PLAYING", user.id);
+    throw new IllegalMoveError("endTurn while not STATUS_PLAYING", player.id);
   }
-  if (!hasTurn(table)(user)) {
-    throw new IllegalMoveError("endTurn while not having turn", user.id);
+  if (!hasTurn(table)(player)) {
+    throw new IllegalMoveError("endTurn while not having turn", player.id);
   }
   if (table.attack !== null) {
-    throw new IllegalMoveError("endTurn while ongoing attack", user.id);
+    throw new IllegalMoveError("endTurn while ongoing attack", player.id);
   }
 
-  const existing = table.players.filter(p => p.id === user.id).pop();
+  const existing = table.players.filter(p => p.id === player.id).pop();
   if (!existing) {
-    throw new IllegalMoveError("endTurn but did not exist in game", user.id);
+    throw new IllegalMoveError("endTurn but did not exist in game", player.id);
   }
 
   return nextTurn("EndTurn", table);
 };
 
-export const sitOut = (user: User, table: Table, clientId): CommandResult => {
+export const sitOut = (player: Player, table: Table): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError("sitOut while not STATUS_PLAYING", user.id);
+    throw new IllegalMoveError("sitOut while not STATUS_PLAYING", player.id);
   }
 
-  const player = table.players.filter(p => p.id === user.id).pop();
-  if (!player) {
-    throw new IllegalMoveError("sitOut while not in game", user.id);
+  if (table.players.filter(p => p.id === player.id).length === 0) {
+    throw new IllegalMoveError("sitOut while not in game", player.id);
   }
 
   //if (hasTurn({ turnIndex: table.turnIndex, players: table.players })(player)) {
@@ -476,7 +505,7 @@ export const sitOut = (user: User, table: Table, clientId): CommandResult => {
   };
 };
 
-export const sitIn = (user, table: Table, clientId): CommandResult => {
+export const sitIn = (user, table: Table): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
     throw new IllegalMoveError("sitIn while not STATUS_PLAYING", user.id);
   }
@@ -491,15 +520,14 @@ export const sitIn = (user, table: Table, clientId): CommandResult => {
   return { type: "SitIn", players };
 };
 
-export const chat = (user, table, clientId, payload): void => {
+export const chat = (user: User | null, table, payload): null => {
   publish.chat(table, user ? user.name : null, payload);
-  return;
+  return null;
 };
 
 export const toggleReady = (
   user,
   table: Table,
-  clientId,
   payload: boolean
 ): CommandResult => {
   if (table.status === STATUS_PLAYING) {
@@ -518,9 +546,8 @@ export const toggleReady = (
 
 export const flag = (
   user: UserLike,
-  table: Table,
-  clientId?
-): CommandResult => {
+  table: Table
+): [CommandResult, Command | null] => {
   if (table.status !== STATUS_PLAYING) {
     throw new IllegalMoveError("Flag while not STATUS_PLAYING", user.id);
   }
@@ -578,13 +605,16 @@ export const flag = (
       eliminations,
     };
     if (players.length === 1) {
-      return endGame(table, result);
+      return [
+        result,
+        { type: "EndGame", winner: players[0], turnCount: table.turnCount },
+      ];
     }
-    return result;
+    return [result, null];
   }
 
   const players = table.players.map(p =>
     p === player ? { ...p, flag: position } : p
   );
-  return { type: "Flag", players };
+  return [{ type: "Flag", players }, null];
 };

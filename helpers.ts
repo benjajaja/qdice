@@ -199,3 +199,7 @@ export const downloadPicture = async (
   const stream = request(url);
   return savePicture(filename, stream);
 };
+
+export const assertNever = (x: never): never => {
+  throw new Error("Unexpected value: " + x);
+};
