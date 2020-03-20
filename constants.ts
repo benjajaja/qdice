@@ -6,6 +6,7 @@ export const STATUS_FINISHED: TableStatus = "FINISHED";
 
 export const TURN_SECONDS = 20;
 export const ROLL_SECONDS = 0.5;
+export const ROLL_SECONDS_BOT = 0.1;
 export const GAME_START_COUNTDOWN = 5;
 
 export const COLOR_NEUTRAL = -1;

@@ -10,6 +10,7 @@ import {
   STATUS_PLAYING,
   TURN_SECONDS,
   ROLL_SECONDS,
+  ROLL_SECONDS_BOT,
 } from "../constants";
 import * as publish from "./publish";
 import nextTurn from "./turn";
@@ -23,7 +24,7 @@ import endGame from "./endGame";
 
 const intervalIds: { [tableTag: string]: any } = {};
 
-const TICK_PERIOD_MS = 500;
+const TICK_PERIOD_MS = 250;
 
 export const start = (tableTag: string, lock: any, index, count) => {
   setTimeout(() => {
@@ -79,7 +80,14 @@ const tick = async (tableTag: string, lock) => {
           turnIndex: table.players.length - 1,
         });
       } else if (table.attack) {
-        if (havePassed(ROLL_SECONDS, table.attack.start)) {
+        if (
+          havePassed(
+            table.players[table.turnIndex].bot
+              ? ROLL_SECONDS_BOT
+              : ROLL_SECONDS,
+            table.attack.start
+          )
+        ) {
           result = rollResult(table);
         }
         // never process anything else during attack
