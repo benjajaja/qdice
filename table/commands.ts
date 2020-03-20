@@ -37,7 +37,7 @@ import endGame from "./endGame";
 import { isBot } from "./bots";
 
 export const heartbeat = (
-  user: User,
+  user: User | null,
   table: Table,
   clientId: string
 ): CommandResult => {
@@ -64,7 +64,7 @@ export const heartbeat = (
 };
 
 export const enter = (
-  user: User,
+  user: User | null,
   table: Table,
   clientId: string
 ): CommandResult | undefined => {
@@ -88,7 +88,11 @@ export const enter = (
   return;
 };
 
-export const exit = (user, table, clientId): CommandResult | undefined => {
+export const exit = (
+  user: User | null,
+  table,
+  clientId
+): CommandResult | undefined => {
   const existing = R.find(R.propEq("clientId", clientId), table.watching);
   if (existing) {
     publish.exit(table, user ? user.name : null);
@@ -294,8 +298,7 @@ const takeover = (user: User, table: Table, clientId): CommandResult => {
 
 export const leave = (
   user: { id: UserId; name: string },
-  table: Table,
-  clientId?
+  table: Table
 ): CommandResult => {
   if (table.status === STATUS_PLAYING) {
     throw new IllegalMoveError("leave while STATUS_PLAYING", user.id);
@@ -328,23 +331,23 @@ export const leave = (
 };
 
 export const attack = (
-  user,
+  player: Player,
   table: Table,
-  clientId,
-  [emojiFrom, emojiTo]
+  emojiFrom: string,
+  emojiTo: string
 ): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
     throw new IllegalMoveError(
       "attack while not STATUS_PLAYING",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo
     );
   }
-  if (!hasTurn(table)(user)) {
+  if (!hasTurn(table)(player)) {
     throw new IllegalMoveError(
       "attack while not having turn",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo
     );
@@ -352,7 +355,7 @@ export const attack = (
   if (table.attack !== null) {
     throw new IllegalMoveError(
       "attack while ongoing attack",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo
     );
@@ -365,7 +368,7 @@ export const attack = (
     logger.debug(table.lands.map(l => l.emoji));
     throw new IllegalMoveError(
       "some land not found in attack",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -375,7 +378,7 @@ export const attack = (
   if (fromLand.color === COLOR_NEUTRAL) {
     throw new IllegalMoveError(
       "attack from neutral",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -385,7 +388,7 @@ export const attack = (
   if (fromLand.points === 1) {
     throw new IllegalMoveError(
       "attack from single-die land",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -395,7 +398,7 @@ export const attack = (
   if (fromLand.color === toLand.color) {
     throw new IllegalMoveError(
       "attack same color",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -405,7 +408,7 @@ export const attack = (
   if (!isBorder(table.adjacency, emojiFrom, emojiTo)) {
     throw new IllegalMoveError(
       "attack not border",
-      user.id,
+      player.id,
       emojiFrom,
       emojiTo,
       fromLand,
@@ -427,39 +430,37 @@ export const attack = (
         start: timestamp,
         from: emojiFrom,
         to: emojiTo,
-        clientId: clientId,
       },
     },
   };
 };
 
-export const endTurn = (user: User, table: Table, clientId): CommandResult => {
+export const endTurn = (player: Player, table: Table): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError("endTurn while not STATUS_PLAYING", user.id);
+    throw new IllegalMoveError("endTurn while not STATUS_PLAYING", player.id);
   }
-  if (!hasTurn(table)(user)) {
-    throw new IllegalMoveError("endTurn while not having turn", user.id);
+  if (!hasTurn(table)(player)) {
+    throw new IllegalMoveError("endTurn while not having turn", player.id);
   }
   if (table.attack !== null) {
-    throw new IllegalMoveError("endTurn while ongoing attack", user.id);
+    throw new IllegalMoveError("endTurn while ongoing attack", player.id);
   }
 
-  const existing = table.players.filter(p => p.id === user.id).pop();
+  const existing = table.players.filter(p => p.id === player.id).pop();
   if (!existing) {
-    throw new IllegalMoveError("endTurn but did not exist in game", user.id);
+    throw new IllegalMoveError("endTurn but did not exist in game", player.id);
   }
 
   return nextTurn("EndTurn", table);
 };
 
-export const sitOut = (user: User, table: Table, clientId): CommandResult => {
+export const sitOut = (player: Player, table: Table): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError("sitOut while not STATUS_PLAYING", user.id);
+    throw new IllegalMoveError("sitOut while not STATUS_PLAYING", player.id);
   }
 
-  const player = table.players.filter(p => p.id === user.id).pop();
-  if (!player) {
-    throw new IllegalMoveError("sitOut while not in game", user.id);
+  if (table.players.filter(p => p.id === player.id).length === 0) {
+    throw new IllegalMoveError("sitOut while not in game", player.id);
   }
 
   //if (hasTurn({ turnIndex: table.turnIndex, players: table.players })(player)) {
@@ -476,7 +477,7 @@ export const sitOut = (user: User, table: Table, clientId): CommandResult => {
   };
 };
 
-export const sitIn = (user, table: Table, clientId): CommandResult => {
+export const sitIn = (user, table: Table): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
     throw new IllegalMoveError("sitIn while not STATUS_PLAYING", user.id);
   }
@@ -491,7 +492,7 @@ export const sitIn = (user, table: Table, clientId): CommandResult => {
   return { type: "SitIn", players };
 };
 
-export const chat = (user, table, clientId, payload): void => {
+export const chat = (user: User | null, table, payload): void => {
   publish.chat(table, user ? user.name : null, payload);
   return;
 };
@@ -499,7 +500,6 @@ export const chat = (user, table, clientId, payload): void => {
 export const toggleReady = (
   user,
   table: Table,
-  clientId,
   payload: boolean
 ): CommandResult => {
   if (table.status === STATUS_PLAYING) {
@@ -516,11 +516,7 @@ export const toggleReady = (
   return { type: "ToggleReady", players };
 };
 
-export const flag = (
-  user: UserLike,
-  table: Table,
-  clientId?
-): CommandResult => {
+export const flag = (user: UserLike, table: Table): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
     throw new IllegalMoveError("Flag while not STATUS_PLAYING", user.id);
   }

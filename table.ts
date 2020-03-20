@@ -6,13 +6,25 @@ import * as AsyncLock from "async-lock";
 import * as Sentry from "@sentry/node";
 
 import * as maps from "./maps";
-import { Table, CommandResult, Elimination, IllegalMoveError } from "./types";
+import {
+  Table,
+  CommandResult,
+  Elimination,
+  IllegalMoveError,
+  Command,
+  User,
+  CommandType,
+  Timestamp,
+} from "./types";
 import * as db from "./db";
 import * as publish from "./table/publish";
 import * as tick from "./table/tick";
 import { getTable } from "./table/get";
 import { addGameEvent } from "./table/games";
-import { positionScore, tablePoints } from "./helpers";
+import nextTurn from "./table/turn";
+import startGame from "./table/start";
+import { cleanWatchers, cleanPlayers } from "./table/watchers";
+import { positionScore, tablePoints, assertNever } from "./helpers";
 import logger from "./logger";
 import * as config from "./tables.config";
 
@@ -32,6 +44,8 @@ import {
 } from "./table/commands";
 import { save } from "./table/get";
 import { STATUS_FINISHED } from "./constants";
+import endGame from "./table/endGame";
+import { rollResult } from "./table/attack";
 
 const verifyJwt = promisify(jwt.verify);
 
@@ -118,13 +132,13 @@ export const start = async (
 
     lock.acquire(tableTag, async done => {
       try {
-        const user = await (token
+        const user = (await (token
           ? verifyJwt(token, process.env.JWT_SECRET!)
-          : null);
+          : null)) as User | null;
         const table = await getTable(tableTag);
 
-        const result = command(user, clientId, table, type, payload);
-        await processComandResult(table, result);
+        const userCommand = toCommand(user, clientId, type, payload);
+        await processCommand(table, userCommand);
       } catch (e) {
         publish.clientError(clientId, e);
         if (e instanceof IllegalMoveError) {
@@ -155,7 +169,7 @@ export const start = async (
 const parseMessage = (
   message: string
 ): {
-  type: string;
+  type: CommandType;
   clientId: string;
   token: string;
   payload: any | undefined;
@@ -171,47 +185,107 @@ const parseMessage = (
   }
 };
 
-const command = (
-  user,
-  clientId,
-  table: Table,
-  type,
-  payload
-): CommandResult | void => {
+const toCommand = (
+  user: User | null,
+  clientId: string,
+  type: CommandType,
+  payload: unknown
+): Command => {
   switch (type) {
     case "Enter":
-      return enter(user, table, clientId);
+      return { type: "Enter", user, clientId };
     case "Exit":
-      return exit(user, table, clientId);
+      return { type: "Exit", user, clientId };
     case "Join":
-      return join(user, table, clientId);
+      return { type: "Join", user: assertUser(user), clientId };
     case "Leave":
-      return leave(user, table, clientId);
+      return { type: "Leave", user: assertUser(user) };
     case "Attack":
-      return attack(user, table, clientId, payload);
+      const [from, to] = payload as [string, string];
+      return { type: "Attack", user: assertUser(user), from, to };
     case "EndTurn":
-      return endTurn(user, table, clientId);
+      return { type: "EndTurn", user: assertUser(user) };
     case "SitOut":
-      return sitOut(user, table, clientId);
+      return { type: "SitOut", user: assertUser(user) };
     case "SitIn":
-      return sitIn(user, table, clientId);
+      return { type: "SitIn", user: assertUser(user) };
     case "Chat":
-      return chat(user, table, clientId, payload);
+      return {
+        type: "Chat",
+        user: assertUser(user),
+        message: payload as string,
+      };
     case "ToggleReady":
-      return toggleReady(user, table, clientId, payload);
+      return {
+        type: "ToggleReady",
+        user: assertUser(user),
+        ready: payload as boolean,
+      };
     case "Flag":
-      return flag(user, table, clientId);
+      return { type: "Flag", user: assertUser(user) };
     case "Heartbeat":
-      return heartbeat(user, table, clientId);
+      return { type: "Heartbeat", user: assertUser(user), clientId };
     default:
       throw new Error(`unknown command "${type}"`);
   }
 };
+const assertUser = (user: User | null): User => {
+  if (user === null) {
+    throw new Error("user is null (for command)");
+  }
+  return user;
+};
 
-export const processComandResult = async (
+const commandResult = async (
   table: Table,
-  result: CommandResult | void
-) => {
+  command: Command
+): Promise<CommandResult | void> => {
+  switch (command.type) {
+    case "Enter":
+      return enter(command.user, table, command.clientId);
+    case "Exit":
+      return exit(command.user, table, command.clientId);
+    case "Join":
+      return join(command.user, table, command.clientId);
+    case "Leave":
+      return leave(command.player, table);
+    case "Attack":
+      return attack(command.player, table, command.from, command.to);
+    case "EndTurn":
+      return endTurn(command.player, table);
+    case "SitOut":
+      return sitOut(command.player, table);
+    case "SitIn":
+      return sitIn(command.player, table);
+    case "Chat":
+      return chat(command.user, table, command.message);
+    case "ToggleReady":
+      return toggleReady(command.player, table, command.ready);
+    case "Flag":
+      return flag(command.player, table);
+    case "Heartbeat":
+      return heartbeat(command.user, table, command.clientId);
+    case "TickTurnOver":
+      return nextTurn("TickTurnOver", table, command.sitPlayerOut);
+    case "TickTurnOut":
+      return nextTurn("TickTurnOut", table);
+    case "TickTurnAllOut":
+      return nextTurn("TickTurnAllOut", table);
+    case "EndGame":
+      return endGame(table, command.winner, command.turnCount);
+    case "Roll":
+      return rollResult(table, command.fromRoll, command.toRoll);
+    case "Start":
+      return startGame(table);
+    case "Clear":
+      return cleanPlayers(table) || cleanWatchers(table);
+    default:
+      return assertNever(command);
+  }
+};
+
+export const processCommand = async (table: Table, command: Command) => {
+  const result = await commandResult(table, command);
   if (result) {
     const {
       type,

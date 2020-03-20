@@ -8,21 +8,22 @@ import {
   ELIMINATION_REASON_OUT,
   ELIMINATION_REASON_WIN,
 } from "../constants";
-import { Table, Player, CommandResult, Elimination } from "../types";
+import { Table, Player, CommandResult, Elimination, Command } from "../types";
 import logger from "../logger";
 
-const endGame = (table: Table, result: CommandResult): CommandResult => {
-  const winner = (result.players || table.players)[0];
+const endGame = (
+  table: Table,
+  winner: Player | null,
+  turnCount: number
+): CommandResult => {
+  // const winner = (result.players || table.players)[0];
   logger.info("a game has finished", table.tag);
   const elimination: Elimination = {
     player: winner,
     position: 1,
     reason: ELIMINATION_REASON_WIN,
     source: {
-      turns:
-        result.table && result.table.turnCount
-          ? result.table.turnCount
-          : table.turnCount,
+      turns: turnCount,
     },
   };
 

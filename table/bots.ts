@@ -10,6 +10,7 @@ import {
   IllegalMoveError,
   BotStrategy,
   Color,
+  Command,
 } from "../types";
 import { now, addSeconds, havePassed } from "../timestamp";
 import * as publish from "./publish";
@@ -120,9 +121,9 @@ export const addBots = (table: Table, persona?: Persona): CommandResult => {
   };
 };
 
-export const tickBotTurn = (table: Table): CommandResult => {
+export const tickBotTurn = (table: Table): Command | undefined => {
   if (!havePassed(0.5, table.turnStart)) {
-    return { type: "Heartbeat" }; // fake noop
+    return;
   }
 
   const player = table.players[table.turnIndex];
@@ -138,7 +139,8 @@ export const tickBotTurn = (table: Table): CommandResult => {
   ) {
     if (position > 1) {
       try {
-        return flag(player, table);
+        return { type: "Flag", user: player };
+        // flag(player, table);
       } catch (e) {
         logger.error("could not flag bot:", e);
         if (e instanceof IllegalMoveError) {

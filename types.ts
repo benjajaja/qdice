@@ -62,7 +62,6 @@ export type Attack = {
   start: Timestamp;
   from: Emoji;
   to: Emoji;
-  clientId?: string;
 };
 
 export type TableStatus = "PAUSED" | "PLAYING" | "FINISHED";
@@ -182,6 +181,30 @@ export type CommandType =
   | "TickStart"
   | "CleanWatchers"
   | "CleanPlayers";
+
+type CommandSkeleton<T, P = {}> = {
+  readonly type: T;
+} & P;
+export type Command =
+  | CommandSkeleton<"Enter", { user: User | null; clientId: string }>
+  | CommandSkeleton<"Exit", { user: User | null; clientId: string }>
+  | CommandSkeleton<"Chat", { user: User | null; message: string }>
+  | CommandSkeleton<"Join", { user: User; clientId: string }>
+  | CommandSkeleton<"Leave", { player: Player }>
+  | CommandSkeleton<"Attack", { player: Player; from: string; to: string }>
+  | CommandSkeleton<"Roll", { fromRoll: number[]; toRoll: number[] }>
+  | CommandSkeleton<"EndTurn", { player: Player }>
+  | CommandSkeleton<"SitOut", { player: Player }>
+  | CommandSkeleton<"SitIn", { player: Player }>
+  | CommandSkeleton<"ToggleReady", { player: Player; ready: boolean }>
+  | CommandSkeleton<"Flag", { player: Player }>
+  | CommandSkeleton<"TickTurnOver", { sitPlayerOut: boolean }>
+  | CommandSkeleton<"TickTurnOut">
+  | CommandSkeleton<"TickTurnAllOut">
+  | CommandSkeleton<"EndGame", { winner: Player | null; turnCount: number }>
+  | CommandSkeleton<"Start">
+  | CommandSkeleton<"Clear">
+  | CommandSkeleton<"Heartbeat", { user: User | null; clientId: string }>;
 
 export type CommandResult = {
   readonly type: CommandType;

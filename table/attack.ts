@@ -15,7 +15,11 @@ import { botsNotifyAttack } from "./bots";
 import { playerWithDerived } from "./serialize";
 import { ELIMINATION_REASON_DIE } from "../constants";
 
-export const rollResult = (table: Table): CommandResult => {
+export const rollResult = (
+  table: Table,
+  fromRoll: number[],
+  toRoll: number[]
+): CommandResult => {
   if (!table.attack) {
     throw new Error(`rollResult without attack: ${table.attack}`);
   }
@@ -23,10 +27,8 @@ export const rollResult = (table: Table): CommandResult => {
     const find = findLand(table.lands);
     const fromLand: Land = find(table.attack.from);
     const toLand = find(table.attack.to);
-    const [fromRoll, toRoll, isSuccess] = diceRoll(
-      fromLand.points,
-      toLand.points
-    );
+    const isSuccess = R.sum(fromRoll) > R.sum(toRoll);
+
     let lands = table.lands;
     let players = botsNotifyAttack(table);
     let eliminations: ReadonlyArray<Elimination> | undefined = undefined;
@@ -95,9 +97,6 @@ export const rollResult = (table: Table): CommandResult => {
     }
     return result;
   } catch (e) {
-    if (table.attack.clientId) {
-      publish.clientError(table.attack.clientId, new Error("Roll failed"));
-    }
     logger.error(e);
     throw e;
   }
