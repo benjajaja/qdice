@@ -90,7 +90,7 @@ export const pickTactic = (
       return tactics.careful;
 
     case "ExtraCareful":
-      if (rand(0, 100) > 95 || wouldRefill) {
+      if (table.turnCount < 5 || rand(0, 100) > 95 || wouldRefill) {
         return tactics.careless;
       }
       return tactics.extraCareful;
