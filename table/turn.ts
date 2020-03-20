@@ -117,7 +117,7 @@ const turn = (
       table.players,
       table.lands,
       newPlayer,
-      table.turnIndex,
+      props.turnIndex,
       elimination
     );
     props.turnIndex = turnIndex;

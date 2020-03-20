@@ -5,6 +5,7 @@ import { Table, Elimination, Player } from "../types";
 import {
   ELIMINATION_REASON_SURRENDER,
   ELIMINATION_REASON_DIE,
+  ELIMINATION_REASON_OUT,
 } from "../constants";
 
 describe("Helpers", function() {
@@ -374,6 +375,34 @@ describe("Helpers", function() {
           },
         },
       ]);
+    });
+
+    it("out", () => {
+      const players: Player[] = [
+        { id: "a" } as any,
+        { id: "b" } as any,
+        { id: "c" } as any,
+      ];
+
+      const player = players[1];
+      const elimination: Elimination = {
+        player,
+        position: players.length,
+        reason: ELIMINATION_REASON_OUT,
+        source: {
+          turns: 5,
+        },
+      };
+      const [
+        players_,
+        lands_,
+        turnIndex,
+        eliminations,
+      ] = helpers.removePlayerCascade(players, [], player, 1, elimination);
+
+      assert.deepEqual(turnIndex, 1);
+      assert.deepEqual(players_, [players[0], players[2]]);
+      assert.deepEqual(eliminations, [elimination]);
     });
   });
 });
