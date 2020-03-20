@@ -1,9 +1,15 @@
 import * as R from "ramda";
 import * as maps from "../maps";
-import endGame from "./endGame";
 import { rand } from "../rand";
 import logger from "../logger";
-import { Table, Land, Player, CommandResult, CommandType } from "../types";
+import {
+  Table,
+  Land,
+  Player,
+  CommandResult,
+  CommandType,
+  Command,
+} from "../types";
 import {
   updateLand,
   groupedPlayerPositions,
@@ -22,7 +28,7 @@ const turn = (
   type: CommandType,
   table: Table,
   sitPlayerOut = false
-): CommandResult => {
+): [CommandResult, Command | null] => {
   const inPlayers = sitPlayerOut
     ? R.adjust(
         player => ({ ...player, out: true }),
@@ -93,15 +99,18 @@ const turn = (
 
     if (players_.length === 1) {
       // okthxbye
-      return endGame(table, result);
+      return [
+        result,
+        { type: "EndGame", winner: players_[0], turnCount: table.turnCount },
+      ];
     } else {
-      return result;
+      return [result, null];
     }
   }
 
   if (!newPlayer.out) {
     // normal turn over
-    return { type, table: props, lands, players };
+    return [{ type, table: props, lands, players }, null];
   }
 
   if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
@@ -132,23 +141,29 @@ const turn = (
 
     if (players_.length === 1) {
       // okthxbye
-      return endGame(table, result);
+      return [
+        result,
+        { type: "EndGame", winner: players_[0], turnCount: table.turnCount },
+      ];
     } else {
-      return result;
+      return [result, null];
     }
   }
 
-  return {
-    type,
-    table: props,
-    lands: lands,
-    players: players.map(player => {
-      if (player === newPlayer) {
-        return { ...player, outTurns: player.outTurns + 1 };
-      }
-      return player;
-    }),
-  };
+  return [
+    {
+      type,
+      table: props,
+      lands: lands,
+      players: players.map(player => {
+        if (player === newPlayer) {
+          return { ...player, outTurns: player.outTurns + 1 };
+        }
+        return player;
+      }),
+    },
+    null,
+  ];
 };
 
 const giveDice = (
