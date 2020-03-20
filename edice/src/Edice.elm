@@ -571,15 +571,11 @@ update msg model =
                     { model | game = game_ }
             in
             case boardMsg of
-                Board.Types.ClickLand land ->
-                    Game.State.clickLand model_ land
+                Board.Types.ClickLand emoji ->
+                    Game.State.clickLand model_ emoji
 
-                -- Board.Types.HoverLand land ->
-                -- Game.State.hoverLand model_ land
                 _ ->
-                    ( model_
-                    , Cmd.map BoardMsg newBoardMsg
-                    )
+                    ( model_, Cmd.map BoardMsg newBoardMsg )
 
         InputChat text ->
             let

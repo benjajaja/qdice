@@ -8,7 +8,7 @@ import Time exposing (Posix)
 
 
 type Msg
-    = ClickLand Land
+    = ClickLand Land.Emoji
     | HoverLand Land.Emoji
     | UnHoverLand Land.Emoji
     | AnimationDone String

@@ -418,8 +418,8 @@ showRoll model roll =
     ( { model | game = game_ }, playSound soundName )
 
 
-clickLand : Types.Model -> Land.Land -> ( Types.Model, Cmd Types.Msg )
-clickLand model land =
+clickLand : Types.Model -> Land.Emoji -> ( Types.Model, Cmd Types.Msg )
+clickLand model emoji =
     case model.game.player of
         Nothing ->
             ( model, consoleDebug "not logged in" )
@@ -431,49 +431,54 @@ clickLand model land =
                         ( model.game.board.move, consoleDebug "not hasTurn" )
 
                     else
-                        case model.game.board.move of
-                            Board.Types.Idle ->
-                                if land.points > 1 && land.color == player.color then
-                                    ( Board.Types.From land, Cmd.none )
+                        case find (.emoji >> (==) emoji) model.game.board.map.lands of
+                            Just land ->
+                                case model.game.board.move of
+                                    Board.Types.Idle ->
+                                        if land.points > 1 && land.color == player.color then
+                                            ( Board.Types.From land, Cmd.none )
 
-                                else
-                                    ( Board.Types.Idle, consoleDebug "cannot select foreign land" )
+                                        else
+                                            ( Board.Types.Idle, consoleDebug "cannot select foreign land" )
 
-                            Board.Types.From from ->
-                                if land == from then
-                                    -- same land: deselect
-                                    ( Board.Types.Idle, Cmd.none )
+                                    Board.Types.From from ->
+                                        if land == from then
+                                            -- same land: deselect
+                                            ( Board.Types.Idle, Cmd.none )
 
-                                else if land.color == player.color then
-                                    -- same color and...
-                                    if land.points > 1 then
-                                        -- could move: select
-                                        ( Board.Types.From land, Cmd.none )
+                                        else if land.color == player.color then
+                                            -- same color and...
+                                            if land.points > 1 then
+                                                -- could move: select
+                                                ( Board.Types.From land, Cmd.none )
 
-                                    else
-                                        -- could not move: do nothing
-                                        ( model.game.board.move, consoleDebug "cannot select" )
+                                            else
+                                                -- could not move: do nothing
+                                                ( model.game.board.move, consoleDebug "cannot select" )
 
-                                else if not <| Land.isBordering model.game.board.map land from then
-                                    -- not bordering: do nothing
-                                    ( model.game.board.move, consoleDebug "cannot attack far land" )
+                                        else if not <| Land.isBordering model.game.board.map land from then
+                                            -- not bordering: do nothing
+                                            ( model.game.board.move, consoleDebug "cannot attack far land" )
 
-                                else
-                                    -- is bordering, different land and color: attack
-                                    case model.game.table of
-                                        Just table ->
-                                            let
-                                                gameCmd =
-                                                    attack model.backend table from.emoji land.emoji
-                                            in
-                                            ( Board.Types.FromTo from land, Cmd.batch [ playSound "diceroll", gameCmd ] )
+                                        else
+                                            -- is bordering, different land and color: attack
+                                            case model.game.table of
+                                                Just table ->
+                                                    let
+                                                        gameCmd =
+                                                            attack model.backend table from.emoji land.emoji
+                                                    in
+                                                    ( Board.Types.FromTo from land, Cmd.batch [ playSound "diceroll", gameCmd ] )
 
-                                        Nothing ->
-                                            -- no table!
-                                            ( model.game.board.move, consoleDebug "error: no table" )
+                                                Nothing ->
+                                                    -- no table!
+                                                    ( model.game.board.move, consoleDebug "error: no table" )
 
-                            Board.Types.FromTo _ _ ->
-                                ( model.game.board.move, consoleDebug "ongoing attack" )
+                                    Board.Types.FromTo _ _ ->
+                                        ( model.game.board.move, consoleDebug "ongoing attack" )
+
+                            Nothing ->
+                                ( model.game.board.move, consoleDebug <| "error: ClickLand not found: " ++ emoji )
 
                 game =
                     model.game
