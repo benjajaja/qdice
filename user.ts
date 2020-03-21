@@ -15,6 +15,7 @@ import { savePicture, downloadPicture } from "./helpers";
 import { NETWORK_PASSWORD } from "./db";
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
+const REDDIT_OAUTH_SECRET = process.env.REDDIT_OAUTH_SECRET;
 
 export const defaultPreferences = (): Preferences => ({});
 
@@ -146,8 +147,8 @@ const getProfile = (network, code, referer): Promise<any> => {
           redirect_uri: referer,
         },
         auth: {
-          username: "FjcCKkabynWNug",
-          password: "TaKLR_955KZuWSF0GwkvZ2Wmeic",
+          username: "Ik08wUaMvoUZ3A",
+          password: REDDIT_OAUTH_SECRET,
         },
       },
     }[network];
