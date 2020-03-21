@@ -1,5 +1,4 @@
 .env
-.local_env
 node_modules/
 npm-debug.log
 map-sources.json

@@ -1,0 +1,6 @@
+PGHOST=localhost
+PGPORT=5433
+MQTT_URL=mqtt://localhost:1883
+API_ROOT=/api
+
+AVATAR_PATH=~/data-avatars
