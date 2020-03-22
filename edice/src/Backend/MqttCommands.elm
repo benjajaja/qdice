@@ -1,4 +1,4 @@
-port module Backend.MqttCommands exposing (attack, enter, exit, leave, mqttPublish, publish, sendGameCommand)
+port module Backend.MqttCommands exposing (attack, enter, exit, leave, sendGameCommand)
 
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
