@@ -8,6 +8,7 @@ MQTT_URL=mqtt://emqx:1883
 MQTT_USERNAME=nodice
 MQTT_PASSWORD=
 POSTGRES_PASSWORD=
+POSTGRES_DIR=~/data-postgres
 PGPORT=5432
 PGHOST=postgres
 PGUSER=bgrosse

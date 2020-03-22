@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: "bgrosse"
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ~/data-postgres:/var/lib/postgresql/data
+      - ${POSTGRES_DIR}:/var/lib/postgresql/data
   emqx:
     image: emqx/emqx:v3.2.7
     environment:
@@ -28,7 +28,7 @@ services:
     env_file: .env
     volumes:
       - statics:/usr/src/edice/dist
-      - ~/data-avatars:/avatars
+      - ${AVATAR_PATH}:/avatars
     depends_on:
       - postgres
       - emqx
@@ -37,7 +37,7 @@ services:
     image: bgrosse/qdice:latest
     env_file: .env
     volumes:
-      - ~/data-avatars:/avatars
+      - ${AVATAR_PATH}:/avatars
     depends_on:
       - postgres
       - emqx
@@ -63,7 +63,7 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - statics:/var/www/qdice.wtf
-      - ~/data-avatars:/var/www/qdice.wtf/pictures:ro
+      - ${AVATAR_PATH}:/var/www/qdice.wtf/pictures:ro
       - ./data/logs/nginx:/var/log/nginx
       - goaccess:/var/www/goaccess:ro
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
