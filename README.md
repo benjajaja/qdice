@@ -43,14 +43,115 @@ Run `./scripts/restart.sh` or `docker-compose up`.
 
 ### Full dev cycle
 
-A full dev cycle only relies on docker for PostgreSQL and emqx.
+A full dev cycle only relies on docker for PostgreSQL and emqx, but needs
+node.js installed on the system. We use `nodenv` as version manager, install
+that and run `nodenv install` in the project, or use your version manager of
+choice with the version in `.node-version`. My yarn version is `1.21.1`.
+
+Run `yarn` and then `yarn generate-maps`. Then do the same inside `edice` and
+additionally `yarn generate-changelog`.
+
+Run `yarn start` inside `edice` to get a dev webserver that reload on Elm code
+changes.
 
 Get docker containers up with `./local_docker.sh`, subsequent restarts can be
-done with `./local_env.sh`. Start dev webserver with `yarn start` inside
-`edice`. Open `http://localhost:5000`.
+done with `./local_env.sh`. This runs the node.js game server, there is no
+autoreload so kill it with `Ctrl-C` and rerun the command when needed.
+
+Open `http://localhost:5000`.
 
 Some unit tests can be run with `yarn test` in the root and `edice` each.
 There is `./scripts/CI.sh` which will build and run some basic end-to-end tests
 against the real docker images (locally), and then deploy. You can ignore the
 last part and just see the e2e tests with that.
+
+## Game API
+
+It is possible to connect to the game server over HTTP and MQTT.
+
+## HTTP API
+
+#### `/global`
+
+Returns global configuration and table list and a top-10 of the leaderboard.
+
+#### `/register`
+
+Create an account with a payload like
+
+```{id: "💩", name: "El Zorro", email: null, picture: ""}```
+
+only `name` is relevant. Response is `text/plain` with a JWT. The JWT must be
+used for all endpoints that need authentication with a header:
+`authorization: Bearer <the jwt token>`.
+
+You an get your userId from the `/me` endpoint with the JWT.
+
+#### `/me`
+
+Returns an array of `[user, token, push-subscriptions]`. The user has an `id`
+field, the token should be stored in place of the previous token.
+
+#### TODO: document remaining endpoints
+
+## MQTT
+
+The MQTT game state messages are quite reactive (maybe not 100%). After a client
+sends its `enter` command to a table, it gets the full game state once. After
+that it will get small deltas of game events like move, roll, elimination, etc.
+Still some events might trigger a full game-update, although this should be
+refactored.
+
+### MQTT API incoming
+
+You must subscribe to some topics, and publish to some others. You use a
+clientId in the connection options, this is used througout the MQTT API.
+
+#### `clients`
+
+Some messages for all clients.
+
+##### `{type:"tables, payload: ... }` info about ongoing games, see [Decoding.elm](edice/src/Backend/Decoding.elm#L307)
+
+#### `clients/<clientId>`
+
+##### {type:"user", payload: [<user record, <new token>]}
+
+When your user's points, level, etc. change.
+
+#### `tables/<table>/clients`
+
+Game events are published here. Format is `{type,payload}`.
+
+##### `chat` with message.
+
+##### `enter`, `exit` with name.
+
+##### `update` with full game state.
+
+See [Decoding.elm](edice/src/Backend/Decoding.elm#L121)
+
+##### `move` with attack move
+
+payload is `{from:"<emoji>", to:"<emoji>"}`
+
+##### `roll` with dice roll result
+
+payload is `{from:[4,3],to:[3,6,1],turnStart:<timestamp>,players:...}`.
+
+`from`/`to` are an array of dice rolls per each dice (points) of
+attacker/defender.  `turnStart` is the turn reset. `players` is the updated list
+of players due with updated land count etc.
+
+##### `elimination` with player, position, score, reason
+
+##### `receive` is dice give-out with player and count
+
+Contains the player with updated dicecount
+
+##### `join` and `leave` with player
+
+### MQTT API outgoing
+
+See `parseMessage` and `command` in [table.ts](table.ts#L155).
 
