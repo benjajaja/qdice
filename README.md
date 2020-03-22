@@ -30,10 +30,20 @@ PostgreSQL as storage. Runtime crashes are successfully recovered without
 noticeable interruption to players, also thanks to using MQTT as broker.  
 Future tech: rewrite in something exciting like Haskell or Erlan.
 
-## Getting started
+## Running locally
 
 Copy `env_sample` to `.env`, and _maybe_ fill in some values, but they're
 probably only needed for running in production.
+
+### As docker image
+
+Run `./scripts/build.sh` to build a local `bgrosse/qdice:latest` image.
+
+Run `./scripts/restart.sh` or `docker-compose up`.
+
+### Full dev cycle
+
+A full dev cycle only relies on docker for PostgreSQL and emqx.
 
 Get docker containers up with `./local_docker.sh`, subsequent restarts can be
 done with `./local_env.sh`. Start dev webserver with `yarn start` inside
