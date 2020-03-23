@@ -167,7 +167,7 @@ export const join = (
     throw new IllegalMoveError("already joined", user.id);
   }
 
-  if (user.points < table.points) {
+  if (bot === null && user.points < table.points) {
     throw new IllegalMoveError("not enough points to join", user.id);
   }
 
