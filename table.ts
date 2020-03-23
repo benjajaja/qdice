@@ -313,6 +313,9 @@ const commandResult = async (
 export const processCommand = async (table: Table, command: Command) => {
   let [result, next] = await commandResult(table, command);
   let newTable = table;
+
+  let gameId = await addGameEvent(table, command, result);
+
   if (result !== null) {
     const {
       type,
@@ -324,20 +327,10 @@ export const processCommand = async (table: Table, command: Command) => {
       retired, // only from endGame
     } = result;
 
-    let game;
-    if (type !== "Heartbeat") {
-      game = await addGameEvent(table, result);
-    } else if (
-      table.status !== STATUS_FINISHED &&
-      props?.status === STATUS_FINISHED
-    ) {
-      game = { id: 0 };
-    }
-
     if (type !== "Heartbeat" || (watchers && watchers.length > 0)) {
       newTable = await save(
         table,
-        game ? { ...props, currentGame: game.id } : props,
+        gameId ? { ...props, currentGame: gameId } : props,
         players,
         lands,
         watchers,

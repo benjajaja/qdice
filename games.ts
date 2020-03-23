@@ -34,4 +34,5 @@ const serializeGame = game => ({
       ...p,
       bot: !!p.bot,
     })),
+  events: (game.events ?? []).map(event => event.params),
 });

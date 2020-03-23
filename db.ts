@@ -15,6 +15,7 @@ import {
   Watcher,
   PushNotificationEvents,
   CommandResult,
+  Command,
 } from "./types";
 import { date } from "./timestamp";
 import * as sleep from "sleep-promise";
@@ -580,8 +581,31 @@ export const addGame = async (table: Table): Promise<{ id: number }> => {
 
 export const addGameEvent = async (
   gameId: number,
-  result: CommandResult
+  command: Command
 ): Promise<void> => {
+  const slimCommand: any = {
+    ...command,
+  };
+  if (slimCommand.player) {
+    slimCommand.player = {
+      id: slimCommand.player.id,
+      name: slimCommand.player.name,
+    };
+  }
+  if (slimCommand.user) {
+    slimCommand.user = {
+      id: slimCommand.user.id,
+      name: slimCommand.user.name,
+    };
+  }
+  if (slimCommand.winner) {
+    slimCommand.winner = {
+      id: slimCommand.winner.id,
+      name: slimCommand.winner.name,
+    };
+  }
+
+  delete slimCommand.clientId;
   const {
     rows: [event],
   } = await pool.query({
@@ -589,7 +613,7 @@ export const addGameEvent = async (
     text: `INSERT INTO game_events (game_id, command, params, result)
     VALUES ($1, $2, $3, $4)
     RETURNING *`,
-    values: [gameId, result.type, "{}", JSON.stringify(result)],
+    values: [gameId, command.type, JSON.stringify(slimCommand), "{}"],
   });
   // logger.info("created game event", event.id, event.game_id, event.command);
   return event;
@@ -626,7 +650,7 @@ export const game = async (id: string) => {
     text: `SELECT * FROM game_events WHERE game_events.game_id = $1`,
     values: [id],
   });
-  const game = { ...games[0], events: gameEvents };
+  const game = { ...games[0], events: gameEvents ?? [] };
   return camelize(game);
 };
 
