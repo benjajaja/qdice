@@ -142,7 +142,7 @@ export const start = async (
       } catch (e) {
         publish.clientError(clientId, e);
         if (e instanceof IllegalMoveError) {
-          logger.error(e, "illegal move caught gracefully");
+          logger.error(e, e.userId, "illegal move caught gracefully");
           Sentry.captureException(e);
         } else if (e instanceof jwt.JsonWebTokenError) {
           logger.error(e, "bad JWT token");
