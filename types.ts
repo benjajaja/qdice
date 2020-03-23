@@ -12,8 +12,8 @@ export enum Color {
   Magenta = 5,
   Cyan = 6,
   Orange = 7,
-  Beige = 8,
-  Black = 9,
+  Black = 8,
+  Beige = 9,
 }
 
 export type TableProps = {

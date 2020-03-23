@@ -116,22 +116,12 @@ const tick = async (tableTag: string, lock) => {
         table.players.length < table.startSlots &&
         havePassed(3, lastJoined(table.players))
       ) {
-        command = addBots(table);
-      } else if (
-        !table.params.botLess &&
-        table.players.filter(R.complement(isBot)).length > 0 &&
-        table.name === "Planeta" &&
-        table.players.length === table.startSlots &&
-        havePassed(3, lastJoined(table.players))
-      ) {
-        const persona = mkBot(
-          "Covid-19",
-          "RandomCareful",
-          "assets/bots/bot_covid19.png"
-        );
+        const persona =
+          table.name === "Planeta" &&
+          table.players.length === table.playerSlots - 1
+            ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
+            : undefined;
         command = addBots(table, persona);
-        // } else if (table.players.length > 0) {
-        // command = cleanPlayers(table);
       }
     }
 

@@ -133,10 +133,10 @@ colorIndex color =
         Orange ->
             7
 
-        Brown ->
+        Black ->
             8
 
-        Black ->
+        Brown ->
             9
 
         Neutral ->
