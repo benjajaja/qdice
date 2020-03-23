@@ -19,12 +19,11 @@ export const cleanWatchers = (table: Table): CommandResult | null => {
 };
 
 export const cleanPlayers = (table: Table): CommandResult | null => {
-  if (table.status === STATUS_PLAYING) {
-    return null;
-  }
-  const [_, stoppedWatching] = checkWatchers(table.players, 60 * 5);
-  if (stoppedWatching.length > 0) {
-    return leave(stoppedWatching[0], table);
+  if (table.status !== STATUS_PLAYING) {
+    const [_, stoppedWatching] = checkWatchers(table.players, 60 * 5);
+    if (stoppedWatching.length > 0) {
+      return leave(stoppedWatching[0], table);
+    }
   }
 
   return removeBots(table);
@@ -51,9 +50,7 @@ const removeBots = (table: Table): CommandResult | null => {
     const bots = table.players.filter(isBot);
     if (bots.length > 0) {
       if (
-        (table.name === "Planeta"
-          ? bots.length === table.players.length + 1
-          : bots.length === table.players.length) ||
+        bots.length === table.players.length ||
         table.players.length > table.startSlots
       ) {
         return leave(R.last(bots)!, table);
