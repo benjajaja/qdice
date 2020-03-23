@@ -234,11 +234,13 @@ export const join = (
     });
   }
 
-  publish.event({
-    type: "join",
-    table: table.name,
-    player,
-  });
+  if (!player.bot) {
+    publish.event({
+      type: "join",
+      table: table.name,
+      player,
+    });
+  }
 
   return {
     type: "Join",
