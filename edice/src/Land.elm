@@ -56,8 +56,8 @@ type Color
     | Magenta
     | Cyan
     | Orange {- 7 -}
-    | Brown
     | Black
+    | Brown
 
 
 playerColors : List Color
@@ -73,10 +73,10 @@ playerColors =
     , Orange
 
     {- 7 -}
-    , Brown
+    , Black
 
     {- 8 -}
-    , Black
+    , Brown
 
     {- 9 -}
     ]
@@ -271,10 +271,10 @@ playerColor i =
                 Orange
 
             8 ->
-                Brown
+                Black
 
             9 ->
-                Black
+                Brown
 
             _ ->
                 Neutral
