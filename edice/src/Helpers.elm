@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel)
+port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, triple)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -95,3 +95,8 @@ dataTestValue key value =
 pointsToNextLevel : Int -> Int -> Int
 pointsToNextLevel level points =
     (((toFloat level + 1 + 10) ^ 3) * 0.1 |> ceiling) - points
+
+
+triple : a -> b -> c -> ( a, b, c )
+triple a b c =
+    ( a, b, c )

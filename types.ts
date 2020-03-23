@@ -187,6 +187,7 @@ type CommandSkeleton<T, P = {}> = {
   readonly type: T;
 } & P;
 export type Command =
+  | CommandSkeleton<"Start">
   | CommandSkeleton<"Enter", { user: User | null; clientId: string }>
   | CommandSkeleton<"Exit", { user: User | null; clientId: string }>
   | CommandSkeleton<"Chat", { user: User | null; message: string }>
@@ -206,7 +207,6 @@ export type Command =
   | CommandSkeleton<"TickTurnOut">
   | CommandSkeleton<"TickTurnAllOut">
   | CommandSkeleton<"EndGame", { winner: Player | null; turnCount: number }>
-  | CommandSkeleton<"Start">
   | CommandSkeleton<"Clear">
   | CommandSkeleton<"Heartbeat", { user: User | null; clientId: string }>;
 

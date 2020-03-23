@@ -3,6 +3,7 @@ module Backend.Decoding exposing (authStateDecoder, eliminationDecoder, gamesDec
 import Board.Types
 import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus)
 import Games.Types exposing (..)
+import Helpers exposing (triple)
 import Iso8601
 import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, list, map, map2, map3, maybe, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (required)
@@ -367,6 +368,11 @@ gameDecoder =
         |> required "tag" string
         |> required "gameStart" Iso8601.decoder
         |> required "players" (list gamePlayerDecoder)
+        |> required "events" (list gameEventDecoder)
+        |> required "lands"
+            (list <|
+                map3 triple (index 0 string) (index 1 colorDecoder) (index 2 int)
+            )
 
 
 gamePlayerDecoder : Decoder GamePlayer
@@ -377,3 +383,77 @@ gamePlayerDecoder =
         |> required "picture" string
         |> required "color" colorDecoder
         |> required "bot" bool
+
+
+gameEventDecoder : Decoder GameEvent
+gameEventDecoder =
+    field "type" string
+        |> andThen
+            (\t ->
+                case t of
+                    "Start" ->
+                        succeed Games.Types.Start
+
+                    "Chat" ->
+                        succeed Games.Types.Chat
+                            |> required "user" shortPlayerDecoder
+                            |> required "message" string
+
+                    "Attack" ->
+                        succeed Games.Types.Attack
+                            |> required "player" shortPlayerDecoder
+                            |> required "from" string
+                            |> required "to" string
+
+                    "Roll" ->
+                        succeed Games.Types.Roll
+                            |> required "fromRoll" (list int)
+                            |> required "toRoll" (list int)
+
+                    "EndTurn" ->
+                        succeed Games.Types.EndTurn
+                            |> required "player" shortPlayerDecoder
+
+                    "TickTurnOut" ->
+                        succeed Games.Types.TickTurnOut
+
+                    "TickTurnOver" ->
+                        succeed Games.Types.TickTurnOver
+                            |> required "sitPlayerOut" bool
+
+                    "TickTurnAllOut" ->
+                        succeed Games.Types.TickTurnAllOut
+
+                    "SitOut" ->
+                        succeed Games.Types.SitOut
+                            |> required "player" shortPlayerDecoder
+
+                    "SitIn" ->
+                        succeed Games.Types.SitIn
+                            |> required "player" shortPlayerDecoder
+
+                    "ToggleReady" ->
+                        succeed Games.Types.ToggleReady
+                            |> required "player" shortPlayerDecoder
+                            |> required "ready" bool
+
+                    "Flag" ->
+                        succeed Games.Types.Flag
+                            |> required "player" shortPlayerDecoder
+
+                    "EndGame" ->
+                        succeed Games.Types.EndGame
+                            |> required "winner" (nullable shortPlayerDecoder)
+                            |> required "turnCount" int
+
+                    _ ->
+                        succeed Games.Types.Start
+             -- fail <| "Unknown game event type: " ++ t
+            )
+
+
+shortPlayerDecoder : Decoder ShortGamePlayer
+shortPlayerDecoder =
+    succeed ShortGamePlayer
+        |> required "id" string
+        |> required "name" string

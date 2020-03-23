@@ -246,7 +246,8 @@ CREATE TABLE games (
     points integer NOT NULL,
     game_start timestamp with time zone,
     params json,
-    players json
+    players json,
+    lands json
 );
 
 
