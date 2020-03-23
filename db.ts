@@ -553,8 +553,8 @@ export const addGame = async (table: Table): Promise<{ id: number }> => {
   const {
     rows: [game],
   } = await pool.query(
-    `INSERT INTO games (tag, name, map_name, stack_size, player_slots, start_slots, points, game_start, params, players)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `INSERT INTO games (tag, name, map_name, stack_size, player_slots, start_slots, points, game_start, params, players, lands)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     RETURNING *`,
     [
       table.tag,
@@ -567,6 +567,7 @@ export const addGame = async (table: Table): Promise<{ id: number }> => {
       date(table.gameStart),
       JSON.stringify(table.params),
       JSON.stringify(table.players),
+      JSON.stringify(table.lands),
     ]
   );
   logger.info(
@@ -647,7 +648,7 @@ export const game = async (id: string) => {
 
   const { rows: gameEvents } = await pool.query({
     name: "games-id-events",
-    text: `SELECT * FROM game_events WHERE game_events.game_id = $1`,
+    text: `SELECT * FROM game_events WHERE game_events.game_id = $1 ORDER BY id ASC`,
     values: [id],
   });
   const game = { ...games[0], events: gameEvents ?? [] };

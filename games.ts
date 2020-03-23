@@ -35,4 +35,5 @@ const serializeGame = game => ({
       bot: !!p.bot,
     })),
   events: (game.events ?? []).map(event => event.params),
+  lands: (game.lands ?? []).map(land => [land.emoji, land.color, land.points]),
 });

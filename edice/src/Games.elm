@@ -3,7 +3,7 @@ module Games exposing (..)
 import Backend.HttpCommands
 import DateFormat
 import Dict
-import Games.Types exposing (Game, GamePlayer)
+import Games.Types exposing (Game, GameEvent(..))
 import Helpers
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -176,5 +176,100 @@ gameView zone game =
                             ]
                     )
                     game.players
+            , div [] [ text "Ledger: " ]
+            , ul [] <|
+                Tuple.second <|
+                    List.foldl
+                        foldGame
+                        ( game, [] )
+                        game.events
             ]
         ]
+
+
+foldGame : GameEvent -> ( Game, List (Html Msg) ) -> ( Game, List (Html Msg) )
+foldGame event ( game, list ) =
+    case event of
+        Start ->
+            ( game, foldGameItem list "Game started" )
+
+        Chat user message ->
+            ( game, foldGameItem list <| user.name ++ " said: " ++ message )
+
+        Attack player from to ->
+            ( game, foldGameItem list <| player.name ++ " attacked " ++ from ++ " -> " ++ to )
+
+        Roll from to ->
+            ( game
+            , foldGameItem list <|
+                "Roll"
+                    ++ (if List.sum from > List.sum to then
+                            " succeeded"
+
+                        else
+                            " failed"
+                       )
+                    ++ " ("
+                    ++ (String.join "," <| List.map String.fromInt from)
+                    ++ " / "
+                    ++ (String.join "," <| List.map String.fromInt to)
+                    ++ ")"
+            )
+
+        EndTurn player ->
+            ( game, foldGameItem list <| player.name ++ " ended his turn" )
+
+        TickTurnOut ->
+            ( game, foldGameItem list <| "Skipped out player" )
+
+        TickTurnOver sitPlayerOut ->
+            ( game
+            , foldGameItem list <|
+                "Turn time ran out"
+                    ++ (if sitPlayerOut then
+                            ", player is out"
+
+                        else
+                            ""
+                       )
+            )
+
+        TickTurnAllOut ->
+            ( game, foldGameItem list <| "All players are out" )
+
+        SitOut player ->
+            ( game, foldGameItem list <| player.name ++ " sat out" )
+
+        SitIn player ->
+            ( game, foldGameItem list <| player.name ++ " sat in" )
+
+        ToggleReady player ready ->
+            ( game, foldGameItem list <| player.name ++ " toggled ready" )
+
+        Flag player ->
+            ( game, foldGameItem list <| player.name ++ " flagged" )
+
+        EndGame winner turnCount ->
+            ( game
+            , foldGameItem list <|
+                (case winner of
+                    Just player ->
+                        player.name
+
+                    Nothing ->
+                        "Nobody"
+                )
+                    ++ " won the game after "
+                    ++ String.fromInt turnCount
+                    ++ " rounds"
+            )
+
+
+foldGameItem : List (Html Msg) -> String -> List (Html Msg)
+foldGameItem list str =
+    list
+        ++ [ li []
+                [ div []
+                    [ text str ]
+                ]
+           ]
