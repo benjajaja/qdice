@@ -207,9 +207,13 @@ export const tableThemed = (table: Table, player: Player): Player => {
   return player;
 };
 
-const spanishPersona = (color: Color): { name: string; picture: string } => {
+const spanishPersona = (
+  color: Color
+): { id: string; name: string; picture: string } => {
   const name = spanishName(color);
+  const id = `bot_${name}`;
   return {
+    id,
     name,
     picture: `assets/bots/bot_${name}.png`,
   };

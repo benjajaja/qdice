@@ -1,9 +1,10 @@
 import * as R from "ramda";
 import * as Sentry from "@sentry/node";
 import { getTable } from "./get";
-import { Table, Player, Timestamp, Command } from "../types";
+import { Table, Player, Timestamp, Command, IllegalMoveError } from "../types";
 import { processCommand } from "../table";
 import { havePassed } from "../timestamp";
+import * as publish from "./publish";
 
 import {
   STATUS_PAUSED,
@@ -138,8 +139,24 @@ const tick = async (tableTag: string, lock) => {
       command = { type: "Clear" }; // cleanWatchers(table);
     }
 
-    await processCommand(table, command);
-    done();
+    try {
+      await processCommand(table, command);
+    } catch (e) {
+      if (e instanceof IllegalMoveError) {
+        logger.error(
+          e,
+          e.userId,
+          "illegal move from tick caught gracefully",
+          command
+        );
+        Sentry.captureException(e);
+      } else {
+        await publish.sigint();
+        throw e;
+      }
+    } finally {
+      done();
+    }
   });
 };
 

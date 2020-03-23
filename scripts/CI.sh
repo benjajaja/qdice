@@ -15,7 +15,7 @@ cd ..
 
 cd e2e
 yarn
-sleep 5
+sleep 15 # emqx reports as started to docker, but has some internal delay
 yarn test
 cd ..
 
