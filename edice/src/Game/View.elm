@@ -20,7 +20,7 @@ import LeaderBoard.View
 import Ordinal exposing (ordinal)
 import Routing exposing (routeToString)
 import Time exposing (posixToMillis)
-import Types exposing (AuthNetwork(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), User(..))
+import Types exposing (AuthNetwork(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
 
 
 view : Model -> Html Types.Msg
@@ -411,6 +411,26 @@ playerBox model =
                                 else
                                     []
                                )
+                            ++ [ label
+                                    [ class <|
+                                        "edCheckbox edGameHeader__checkbox"
+                                            ++ (if model.sessionPreferences.muted then
+                                                    " edGameHeader__checkbox--checked"
+
+                                                else
+                                                    ""
+                                               )
+                                    , onClick <| SetSessionPreference <| Muted <| not model.sessionPreferences.muted
+                                    ]
+                                    [ Icon.icon <|
+                                        if model.sessionPreferences.muted then
+                                            "check_box"
+
+                                        else
+                                            "check_box_outline_blank"
+                                    , text "Mute sound"
+                                    ]
+                               ]
                     ]
 
                 Anonymous ->
