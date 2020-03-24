@@ -111,6 +111,7 @@ init flags location key =
                 }
             , sessionPreferences =
                 { notificationsEnabled = flags.notificationsEnabled
+                , muted = flags.muted
                 }
             , leaderBoard =
                 { loading = False
@@ -778,6 +779,27 @@ update msg model =
         PushRegisterEvent ( event, enable ) ->
             ( model, registerPushEvent model.backend ( event, enable ) )
 
+        SetSessionPreference preference ->
+            let
+                preferences =
+                    model.sessionPreferences
+            in
+            case preference of
+                Muted muted ->
+                    ( { model
+                        | sessionPreferences =
+                            { preferences | muted = muted }
+                      }
+                    , setSessionPreference
+                        ( "muted"
+                        , if muted then
+                            "true"
+
+                          else
+                            "false"
+                        )
+                    )
+
 
 tableFromRoute : Route -> Maybe Table
 tableFromRoute route =
@@ -939,3 +961,6 @@ port pushSubscribe : String -> Cmd msg
 
 
 port pushRegister : (PushSubscription -> msg) -> Sub msg
+
+
+port setSessionPreference : ( String, String ) -> Cmd msg

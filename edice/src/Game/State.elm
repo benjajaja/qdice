@@ -8,13 +8,13 @@ import Board.State
 import Board.Types exposing (Msg(..))
 import Browser.Dom as Dom
 import Game.Types exposing (..)
-import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates, playSound)
+import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
 import Land
 import Maps exposing (load)
 import Snackbar exposing (toastMessage)
 import Tables exposing (Map, Table)
 import Task
-import Types exposing (Msg(..), User(..))
+import Types exposing (Msg(..), SessionPreferences, User(..))
 
 
 init : Maybe Table -> Maybe Map -> Game.Types.Model
@@ -108,7 +108,7 @@ gameCommand model playerAction =
         sendGameCommand model.backend model.game.table playerAction
             :: (case playerAction of
                     Join ->
-                        [ Helpers.playSound "kick" ]
+                        [ playSound model.sessionPreferences "kick" ]
 
                     _ ->
                         []
@@ -298,7 +298,7 @@ updateTableStatus model status =
     , Cmd.batch
         [ if hasStarted then
             Cmd.batch <|
-                Helpers.playSound "start"
+                playSound model.sessionPreferences "start"
                     :: (if hasTurn then
                             [ Helpers.notification <| Just "game-start" ]
 
@@ -310,7 +310,7 @@ updateTableStatus model status =
             Cmd.none
         , if hasFinished then
             Cmd.batch
-                [ Helpers.playSound "finish"
+                [ playSound model.sessionPreferences "finish"
                 , Helpers.notification Nothing
                 ]
 
@@ -318,7 +318,7 @@ updateTableStatus model status =
             Cmd.none
         , if hasGainedTurn then
             Cmd.batch
-                [ Helpers.playSound "turn"
+                [ playSound model.sessionPreferences "turn"
                 , Helpers.notification <| Just "game-turn"
                 ]
 
@@ -415,7 +415,7 @@ showRoll model roll =
             else
                 "rollDefeat"
     in
-    ( { model | game = game_ }, playSound soundName )
+    ( { model | game = game_ }, playSound model.sessionPreferences soundName )
 
 
 clickLand : Types.Model -> Land.Emoji -> ( Types.Model, Cmd Types.Msg )
@@ -468,7 +468,7 @@ clickLand model emoji =
                                                         gameCmd =
                                                             attack model.backend table from.emoji land.emoji
                                                     in
-                                                    ( Board.Types.FromTo from land, Cmd.batch [ playSound "diceroll", gameCmd ] )
+                                                    ( Board.Types.FromTo from land, Cmd.batch [ playSound model.sessionPreferences "diceroll", gameCmd ] )
 
                                                 Nothing ->
                                                     -- no table!
@@ -651,7 +651,7 @@ updateTable model table msg =
                                             --}
                                         }
                                   }
-                                , Helpers.playSound "kick"
+                                , playSound model.sessionPreferences "kick"
                                 )
 
                     Backend.Types.Elimination elimination ->
@@ -767,3 +767,12 @@ setUser model user =
 removePlayer : Model -> Player -> Model
 removePlayer model player =
     { model | players = List.filter (.id >> (==) player.id >> not) model.players }
+
+
+playSound : SessionPreferences -> String -> Cmd Msg
+playSound preferences sound =
+    if preferences.muted then
+        Cmd.none
+
+    else
+        Helpers.playSound sound

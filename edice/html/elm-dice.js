@@ -63,6 +63,7 @@ var app = Elm.App.init({
     isTelegram: isTelegram,
     screenshot: /[?&]screenshot/.test(window.location.search),
     notificationsEnabled: notificationsEnabled,
+    muted: JSON.parse(localStorage.getItem("session.muted") || "false"),
     zip: !!zip,
   },
 });
@@ -330,3 +331,7 @@ try {
 } catch (e) {
   Sentry.captureException(e);
 }
+
+app.ports.setSessionPreference.subscribe(function(keyValue) {
+  localStorage.setItem("session." + keyValue[0], keyValue[1]);
+});

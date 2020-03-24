@@ -29,6 +29,7 @@ type Msg
     | RequestFullscreen
     | RequestNotifications
     | RenounceNotifications
+    | SetSessionPreference SessionPreference
     | NotificationsChange ( String, Maybe PushSubscription, Maybe String ) -- 3rd item is JWT, because this might come right after logout
     | PushGetKey
     | PushKey (Result Error String)
@@ -150,6 +151,7 @@ type alias Flags =
     , isTelegram : Bool
     , screenshot : Bool
     , notificationsEnabled : Bool
+    , muted : Bool
     , zip : Bool
     }
 
@@ -261,7 +263,12 @@ type alias Preferences =
 
 type alias SessionPreferences =
     { notificationsEnabled : Bool
+    , muted : Bool
     }
+
+
+type SessionPreference
+    = Muted Bool
 
 
 type alias PushSubscription =
