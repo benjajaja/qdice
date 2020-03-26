@@ -1,19 +1,18 @@
 import * as R from "ramda";
 import { Table, Player, Land, CommandResult, Color } from "../types";
 import { now } from "../timestamp";
-import * as publish from "./publish";
 import { rand, shuffle } from "../rand";
 import logger from "../logger";
 import { STATUS_PLAYING } from "../constants";
 
-const randomPoints = stackSize => {
+const randomPoints = (stackSize: number) => {
   const r = rand(0, 999) / 1000;
   if (r > 0.98) return Math.min(8, Math.floor(stackSize / 2 + 1));
   else if (r > 0.9) return Math.floor(stackSize / 2);
   return rand(1, Math.floor(stackSize / 4));
 };
 
-const start = (table: Table): CommandResult => {
+export const startGame = (table: Table): CommandResult => {
   const lands = R.sort<Land>((a, b) => a.emoji.localeCompare(b.emoji))(
     table.lands
   ).map(land =>
@@ -23,52 +22,10 @@ const start = (table: Table): CommandResult => {
     })
   );
 
-  const shuffledLands = shuffle(lands.slice())
-    .slice(0, table.players.length)
-    .map(land =>
-      Object.assign({}, land, {
-        points: randomPoints(table.stackSize),
-      })
-    );
-
-  const assignedLands: Land[] = shuffledLands.map((land, index) => {
-    const player = table.players[index % table.players.length];
-    return Object.assign({}, land, { color: player.color, points: 4 });
-  });
-
-  const specialAssignedLands: Land[] =
-    table.name !== "Planeta"
-      ? assignedLands
-      : (() => {
-          const wuhan = assignedLands.find(R.propEq("emoji", "💊"));
-          if (wuhan) {
-            const covidLand = assignedLands.find(
-              R.propEq("color", Color.Black)
-            );
-
-            return assignedLands.map(land => {
-              if (land === wuhan) {
-                return { ...land, color: Color.Black, points: 5 };
-              } else if (land === covidLand && wuhan.color !== Color.Neutral) {
-                return { ...land, color: wuhan.color };
-              }
-              return land;
-            });
-          } else {
-            return assignedLands
-              .filter(land => land.color !== Color.Black)
-              .concat(
-                lands
-                  .filter(land => land.emoji === "💊")
-                  .map(land => ({ ...land, color: Color.Black, points: 5 }))
-              );
-          }
-        })();
+  const assignedLands = assignLands(table, lands);
 
   const allLands = lands.map(oldLand => {
-    const match = specialAssignedLands
-      .filter(l => l.emoji === oldLand.emoji)
-      .pop();
+    const match = assignedLands.filter(l => l.emoji === oldLand.emoji).pop();
     if (match) {
       return match;
     }
@@ -89,4 +46,77 @@ const start = (table: Table): CommandResult => {
     lands: allLands,
   };
 };
-export default start;
+
+const assignLands = (table: Table, lands: readonly Land[]): readonly Land[] => {
+  const spread = loadSpread(table.mapName, table.players.length);
+  if (spread !== null) {
+    logger.debug("attempting to use pregenerated spread");
+    const newLands = lands.map(land => {
+      const index = spread.indexOf(land.emoji);
+      if (index !== -1) {
+        return { ...land, color: index + 1 };
+      }
+      return land;
+    });
+
+    if (
+      R.range(1, table.players.length).every(i =>
+        newLands.find(R.propEq("color", i))
+      )
+    ) {
+      logger.info(
+        `Loaded pregenerated spread for ${table.mapName} with ${table.players.length}`
+      );
+      return newLands;
+    }
+    logger.error("did not allocate correctly");
+  }
+
+  const shuffledLands = shuffle(lands.slice())
+    .slice(0, table.players.length)
+    .map(land =>
+      Object.assign({}, land, {
+        points: randomPoints(table.stackSize),
+      })
+    );
+
+  const assignedLands: Land[] = shuffledLands.map((land, index) => {
+    const player = table.players[index % table.players.length];
+    return Object.assign({}, land, { color: player.color, points: 4 });
+  });
+  return assignedLands;
+};
+
+let preloadedStartingPositions: {
+  [table: string]: {
+    [size: number]: string[][];
+  };
+} = {};
+const loadSpread = (mapName: string, size: number): string[] | null => {
+  const positions = preloadedStartingPositions[mapName]?.[size];
+  if (!positions) {
+    logger.error(
+      `starting positions have not been preloaded for ${mapName} / ${size}`
+    );
+    return null;
+  } else {
+    return positions[rand(0, positions.length - 1)];
+  }
+};
+
+export const preloadStartingPositions = async (
+  mapName: string
+): Promise<void> => {
+  const sizesList: { [size: number]: string[][] } = {};
+  for (let p = 2; p <= 8; p++) {
+    for (let i = 4; i > 0; i--) {
+      try {
+        const json: string[][] = require(`../starting_positions/maps/output/${mapName}_${i}_sep_${p}_players.json`);
+        logger.debug(`got starting positions for ${mapName} (${p} players)`);
+        sizesList[p] = json;
+        break;
+      } catch (e) {}
+    }
+  }
+  preloadedStartingPositions[mapName] = sizesList;
+};

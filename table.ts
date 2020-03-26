@@ -22,7 +22,7 @@ import * as tick from "./table/tick";
 import { getTable } from "./table/get";
 import { addGameEvent } from "./table/games";
 import nextTurn from "./table/turn";
-import startGame from "./table/start";
+import { startGame, preloadStartingPositions } from "./table/start";
 import { cleanWatchers, cleanPlayers } from "./table/watchers";
 import { positionScore, tablePoints, assertNever } from "./helpers";
 import logger from "./logger";
@@ -95,6 +95,7 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
             undefined,
             undefined
           );
+          await preloadStartingPositions(table.mapName);
           await start(table.tag, lock, client, index, config.tables.length);
         }
       )
