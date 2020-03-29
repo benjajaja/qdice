@@ -54,7 +54,7 @@ const assignLands = (table: Table, lands: readonly Land[]): readonly Land[] => {
     const newLands = lands.map(land => {
       const index = spread.indexOf(land.emoji);
       if (index !== -1) {
-        return { ...land, color: index + 1 };
+        return { ...land, color: index + 1, points: 4 };
       }
       return land;
     });

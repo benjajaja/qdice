@@ -15,6 +15,7 @@ RUN yarn install --frozen-lockfile --production
 RUN yarn generate-changelog
 RUN yarn generate-maps
 RUN yarn build
+RUN yarn test
 RUN yarn gzip
 
 # NGINX

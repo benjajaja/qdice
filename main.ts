@@ -11,7 +11,6 @@ import * as corsMiddleware from "restify-cors-middleware";
 import * as jwt from "restify-jwt-community";
 import * as mqtt from "mqtt";
 import * as AsyncLock from "async-lock";
-import * as webPush from "web-push";
 
 import * as globalServer from "./global";
 import { leaderboard } from "./leaderboard";
@@ -21,15 +20,6 @@ import * as user from "./user";
 import { profile } from "./profile";
 import * as games from "./games";
 import { resetGenerator } from "./rand";
-
-if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
-  console.log(
-    "You must set the VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY " +
-      "environment variables. You can use the following ones:"
-  );
-  console.log(webPush.generateVAPIDKeys());
-  process.exit(1);
-}
 
 process.on("unhandledRejection", (reason, p) => {
   logger.error("Unhandled Rejection at: Promise", p, "reason:", reason);
@@ -114,7 +104,10 @@ export const server = async () => {
   server.use(cors.actual);
   server.use(
     jwt({
-      secret: process.env.JWT_SECRET,
+      secret:
+        process.argv.slice().pop() === "--quit"
+          ? "temp"
+          : process.env.JWT_SECRET,
       credentialsRequired: true,
       getToken: function fromHeaderOrQuerystring(req: any) {
         if (
@@ -150,7 +143,7 @@ export const server = async () => {
     })
   );
 
-  if (!process.env.API_ROOT) {
+  if (process.argv.slice().pop() !== "--quit" && !process.env.API_ROOT) {
     throw new Error("API_ROOT_is not set");
   }
   const root = process.env.API_ROOT;
@@ -194,11 +187,6 @@ export const server = async () => {
     screenshot
   );
 
-  logger.info("connecting to postgres...");
-  await db.retry();
-
-  logger.info("connected to postgres.");
-
   server.listen(process.env.PORT || 5001, function() {
     logger.info("%s listening at %s port %s", server.name, server.url);
   });
@@ -230,19 +218,6 @@ export const server = async () => {
 
   client.on("message", globalServer.onMessage);
 
-  //process.on('SIGINT', () => {
-  //(client.end as any)(() => {
-  //logger.info('main stopped gracefully');
-  //process.exit(0);
-  //});
-  //});
-
-  webPush.setVapidDetails(
-    process.env.VAPID_URL!,
-    process.env.VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-  );
-
   server.get(`${root}/push/key`, (_, res) => {
     res.sendRaw(200, process.env.VAPID_PUBLIC_KEY);
   });
@@ -267,4 +242,13 @@ export const server = async () => {
     });
     process.exit();
   });
+
+  if (process.argv.slice().pop() === "--quit") {
+    logger.info("Will quit in one second");
+    process.exit(0);
+  } else {
+    logger.info("connecting to postgres...");
+    await db.retry();
+    logger.info("connected to postgres.");
+  }
 };

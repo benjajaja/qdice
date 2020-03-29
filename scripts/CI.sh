@@ -1,14 +1,6 @@
 #!/bin/bash
 set -e
 
-yarn build
-yarn test
-
-cd edice
-yarn build
-yarn test
-cd ..
-
 ./scripts/build.sh
 
 ./scripts/restart.sh
