@@ -1,5 +1,5 @@
 # Purpose
-To find a distribution of lands on [Qdice](qdice.wtf) for better starting positions. These are listed in `./maps/output`
+To find a distribution of lands on [Qdice](qdice.wtf) for better starting positions. These are listed in `./maps/adj_mat`
 
 # To Install
 1. Install Python 3
@@ -8,8 +8,9 @@ To find a distribution of lands on [Qdice](qdice.wtf) for better starting positi
 
 # To Use
 1. `cd qdice_starting_position`
-1. `python ./src/build_adjacency_matrix.py` _Optional_
-1. `python ./src/shotest_path.py`
+1. `export PYTHONPATH=`<_path to qdice_starting_position_>
+1. `python ./src/generate_starting_positions.py -h` to get the arguments
+1. Then run the previous step with your desired arguments
 
 
 # Example output
