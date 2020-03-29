@@ -17,3 +17,4 @@ done
 echo $MAPS
 
 docker run -e "MAPS=${MAPS}" -v "$(realpath starting_positions/maps):/app/maps" starting
+echo "Starting positions have been built for: ${MAPS}"
