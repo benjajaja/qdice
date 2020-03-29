@@ -89,10 +89,13 @@ const assignLands = (table: Table, lands: readonly Land[]): readonly Land[] => {
 
 let preloadedStartingPositions: {
   [table: string]: {
-    [size: number]: string[][];
+    [size: number]: readonly (readonly string[])[];
   };
 } = {};
-const loadSpread = (mapName: string, size: number): string[] | null => {
+const loadSpread = (
+  mapName: string,
+  size: number
+): readonly string[] | null => {
   const positions = preloadedStartingPositions[mapName]?.[size];
   if (!positions) {
     logger.error(
@@ -100,7 +103,15 @@ const loadSpread = (mapName: string, size: number): string[] | null => {
     );
     return null;
   } else {
-    return positions[rand(0, positions.length - 1)];
+    try {
+      const emojis = positions[rand(0, positions.length - 1)];
+      return shuffle(emojis);
+    } catch (e) {
+      logger.error(
+        `starting positions are not appropiate for ${mapName} / ${size}`
+      );
+      return null;
+    }
   }
 };
 
