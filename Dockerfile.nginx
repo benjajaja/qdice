@@ -1,3 +1,24 @@
+FROM node:10.15.3-alpine
+ARG build_id
+ARG git_log
+
+WORKDIR /usr/src/edice
+COPY edice/package.json edice/yarn.lock edice/elm.json edice/package.json edice/webpack.config.js edice/yarn.lock ./
+COPY edice/html ./html
+COPY edice/maps ./maps
+COPY edice/scripts ./scripts
+COPY edice/src ./src
+
+ENV git_log=$git_log
+ENV build_id=$build_id
+RUN yarn install --frozen-lockfile --production
+RUN yarn generate-changelog
+RUN yarn generate-maps
+RUN yarn build
+RUN yarn gzip
+
+# NGINX
+
 FROM nginx:mainline
 ARG ENV
 
@@ -5,4 +26,6 @@ WORKDIR /
 COPY data/nginx/default.conf.${ENV} /etc/nginx/conf.d/default.conf
 COPY data/nginx/proxy_params /etc/nginx/proxy_params
 COPY data/nginx/.htpasswd /etc/nginx/.htpasswd
+
+COPY --from=0 /usr/src/edice/dist /var/www/qdice.wtf
 

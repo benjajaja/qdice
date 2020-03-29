@@ -27,7 +27,6 @@ services:
     image: bgrosse/qdice:latest
     env_file: .env
     volumes:
-      - statics:/usr/src/edice/dist
       - ${AVATAR_PATH}:/avatars
     depends_on:
       - postgres
@@ -62,7 +61,6 @@ services:
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
-      - statics:/var/www/qdice.wtf
       - ${AVATAR_PATH}:/var/www/qdice.wtf/pictures:ro
       - ./data/logs/nginx:/var/log/nginx
       - goaccess:/var/www/goaccess:ro
@@ -93,6 +91,5 @@ networks:
       name: qdice
 
 volumes:
-  statics:
   goaccess:
 
