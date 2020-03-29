@@ -46,6 +46,7 @@
   "dependencies": {
     "@sentry/browser": "5.10.2",
     "autoprefixer": "^6.5.3",
+    "bundlesize": "0.18.0",
     "copy-webpack-plugin": "^4.2.3",
     "css-loader": "0.25.0",
     "dialog-polyfill": "^0.4.9",
@@ -67,7 +68,6 @@
     "worker-loader": "^1.1.0"
   },
   "devDependencies": {
-    "bundlesize": "^0.18.0",
     "electron": "^7.1.7",
     "electron-fetch": "^1.4.0",
     "elm-format": "^0.8.1",

@@ -13,7 +13,6 @@ random.seed(42)
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--maps', nargs='+', required=True, help='Must match exact name in map-sources.json')
     parser.add_argument('--out_dir', type=Path, default=proj_dir / 'maps' / 'output',
                         help='Where to put the starting positions')
     parser.add_argument('--adj_mat_dir', type=Path, default=proj_dir / 'maps' / 'adj_mat',
@@ -81,10 +80,12 @@ def main():
     args = get_args()
 
     # To generate adj_mats
-    generate_adj_mat(adj_mat_source_path=args.adj_mat_source, adj_mat_out_dir=args.adj_mat_dir)
+    maps = generate_adj_mat(adj_mat_source_path=args.adj_mat_source, adj_mat_out_dir=args.adj_mat_dir)
 
     # For all the relevant maps as some dont need starting positions
-    for map_name in args.maps:
+    Path(args.out_dir).mkdir(parents=True, exist_ok=True)
+    Path(args.adj_mat_dir).mkdir(parents=True, exist_ok=True)
+    for map_name in maps:
         map_json = args.adj_mat_dir / f'{map_name}.json'
         G = get_map_graph(map_json)
         G.name = map_name

@@ -33,6 +33,10 @@ def generate_adj_mat(adj_mat_source_path, adj_mat_out_dir):
                     adj_dict[key].append(value)
 
         out_dict = {'keys': reverse_index, 'reverse_keys': index, 'adj_dict': adj_dict, 'adj_mat': matrix}
+        Path(adj_mat_out_dir).mkdir(parents=True, exist_ok=True)
         with open(adj_mat_out_dir / f'{name}.json', 'w') as fp:
             print(f"Writing {fp.name}...")
             json.dump(out_dict, fp)
+
+    return maps.keys()
+

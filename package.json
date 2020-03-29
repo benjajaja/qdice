@@ -8,7 +8,6 @@
   "scripts": {
     "start": "node server.js",
     "deploy": "./scripts/deploy.sh",
-    "build": "./scripts/build.sh",
     "push": "docker push bgrosse/qdice:latest",
     "generate-maps": "node scripts/build.js edice/maps/",
     "lint": "yarn prettier --check '**/*.{ts,tsx}'",
@@ -44,6 +43,7 @@
     "data-url-stream": "^1.0.0",
     "decamelize": "^2.0.0",
     "gif-stream": "^1.1.0",
+    "jest": "24.9.0",
     "jpg-stream": "^1.1.2",
     "jsonwebtoken": "^8.1.0",
     "mqtt": "^2.9.1",
@@ -52,6 +52,7 @@
     "pino": "^5.10.6",
     "pino-pretty": "^2.5.0",
     "png-stream": "^1.0.5",
+    "prettier": "1.19.1",
     "promise-streams": "^2.1.1",
     "puppeteer": "^2.0.0",
     "ramda": "^0.25.0",
@@ -66,14 +67,11 @@
     "short-unique-id": "^1.1.0",
     "sleep-promise": "^8.0.1",
     "telegraf": "^3.17.2",
+    "ts-jest": "24.2.0",
     "ts-node": "^7.0.1",
     "twitter": "^1.7.1",
     "typescript": "^3.7.2",
     "web-push": "^3.4.3"
   },
-  "devDependencies": {
-    "jest": "^24.9.0",
-    "prettier": "^1.19.1",
-    "ts-jest": "^24.2.0"
-  }
+  "devDependencies": {}
 }

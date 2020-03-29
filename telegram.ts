@@ -15,8 +15,17 @@ import * as Twitter from "twitter";
 import { rand } from "./rand";
 import * as db from "./db";
 import logger from "./logger";
-import {GAME_START_COUNTDOWN} from "./constants";
-import {now} from "./timestamp";
+import { GAME_START_COUNTDOWN } from "./constants";
+import { now } from "./timestamp";
+
+if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+  console.log(
+    "You must set the VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY " +
+      "environment variables. You can use the following ones:"
+  );
+  console.log(webPush.generateVAPIDKeys());
+  process.exit(1);
+}
 
 webPush.setVapidDetails(
   process.env.VAPID_URL!,
@@ -82,7 +91,7 @@ client.on("message", async (topic, message) => {
               }),
               {
                 TTL: GAME_START_COUNTDOWN,
-              },
+              }
             );
           } catch (e) {
             console.error(e);
@@ -137,7 +146,7 @@ client.on("message", async (topic, message) => {
               }),
               {
                 TTL: GAME_START_COUNTDOWN,
-              },
+              }
             );
             console.log("PN", row.name, request);
           } catch (e) {
