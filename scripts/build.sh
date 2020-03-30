@@ -1,6 +1,4 @@
 #!/bin/bash
 
-
-
-docker build --tag bgrosse/qdice:latest .
+docker build --tag bgrosse/qdice:backend .
 

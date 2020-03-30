@@ -5,9 +5,16 @@ var ExtractTextPlugin = require("extract-text-webpack-plugin");
 var CopyWebpackPlugin = require("copy-webpack-plugin");
 var HtmlWebpackPlugin = require("html-webpack-plugin");
 
-function logEnv(env) {
-  console.log("Parse webpack.config.js env: " + JSON.stringify(env));
-  return env;
+function isProduction(env) {
+  var isProduction = !!env.production;
+  console.log(
+    "Parse webpack.config.js env.production: " +
+      JSON.stringify(env) +
+      " (" +
+      isProduction +
+      ")"
+  );
+  return isProduction;
 }
 
 module.exports = env => ({
@@ -110,7 +117,7 @@ module.exports = env => ({
       inject: false,
     }),
   ].concat(
-    env && logEnv(env).production
+    env && isProduction(env)
       ? new webpack.optimize.UglifyJsPlugin({
           include: "elm",
           compress: {

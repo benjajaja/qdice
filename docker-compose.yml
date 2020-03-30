@@ -50,11 +50,7 @@ services:
   nginx:
     restart: always
     env_file: .env
-    build:
-      context: .
-      dockerfile: ./Dockerfile.nginx
-      args:
-        ENV: $ENV
+    image: bgrosse/qdice:frontend-production
     ports:
       - "80:80"
       - "443:443"
@@ -70,9 +66,6 @@ services:
       - nodice
       - certbot
   goaccess:
-    # build:
-      # context: .
-      # dockerfile: ./Dockerfile.goaccess
     image: allinurl/goaccess
     restart: always
     volumes:

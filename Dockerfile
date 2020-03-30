@@ -5,15 +5,16 @@ FROM node:10.15.3-alpine AS server
 WORKDIR /usr/src/nodice
 COPY package.json .
 COPY yarn.lock .
+RUN yarn install --frozen-lockfile --production
+
 COPY *.ts *.js *.json start.sh ./
 COPY scripts ./scripts
 COPY table ./table
 COPY test ./test
 COPY edice/maps ./edice/maps
 
-RUN yarn install --frozen-lockfile --production
 RUN node scripts/build.js edice/maps
-RUN yarn test
+RUN yarn test --color false
 RUN node server.js --quit
 
 # starting positions generation

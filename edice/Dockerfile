@@ -3,18 +3,21 @@ ARG build_id
 ARG git_log
 
 WORKDIR /usr/src/edice
-COPY edice/package.json edice/yarn.lock edice/elm.json edice/package.json edice/webpack.config.js edice/yarn.lock ./
-COPY edice/html ./html
-COPY edice/maps ./maps
-COPY edice/scripts ./scripts
-COPY edice/src ./src
+COPY package.json yarn.lock ./
+ENV NODE_ENV=production
+RUN yarn install --frozen-lockfile --production
+
+COPY elm.json webpack.config.js ./
+COPY html ./html
+COPY maps ./maps
+COPY scripts ./scripts
+COPY src ./src
 
 ENV git_log=$git_log
 ENV build_id=$build_id
-RUN yarn install --frozen-lockfile --production
 RUN yarn generate-changelog
 RUN yarn generate-maps
-RUN yarn build
+RUN yarn build --color false
 RUN yarn test
 RUN yarn gzip
 

@@ -11,4 +11,6 @@ services:
       - 8082:8080
       - 18083:18083
       - 11883:11883
+  nginx:
+    image: bgrosse/qdice:frontend-local
 
