@@ -199,7 +199,14 @@ onlineButtons model =
                     sitButton =
                         if player.out then
                             [ button
-                                [ class "edButton edGameHeader__button edGameHeader__button--left"
+                                [ class <|
+                                    "edButton edGameHeader__button"
+                                        ++ (if not model.game.canFlag then
+                                                " edGameHeader__button--left"
+
+                                            else
+                                                ""
+                                           )
                                 , onClick <| GameCmd SitIn
                                 , dataTestId "button-seat"
                                 ]
@@ -208,27 +215,36 @@ onlineButtons model =
 
                         else
                             [ button
-                                [ class "edButton edGameHeader__button edGameHeader__button--left"
+                                [ class <|
+                                    "edButton edGameHeader__button"
+                                        ++ (if not model.game.canFlag then
+                                                " edGameHeader__button--left"
+
+                                            else
+                                                ""
+                                           )
                                 , onClick <| GameCmd SitOut
                                 , dataTestId "button-seat"
                                 ]
-                                [ text "Sit out" ]
+                                [ text "Leave game" ]
                             ]
 
                     checkbox =
                         if model.game.canFlag then
                             [ label
-                                [ class "edCheckbox edGameHeader__checkbox"
+                                [ class "edCheckbox edGameHeader__checkbox edGameHeader__button--left"
                                 , onClick <| GameCmd <| Flag <| not <| Maybe.withDefault False model.game.flag
                                 , dataTestId "check-flag"
                                 ]
                                 [ Icon.icon "flag"
                                 , text <|
-                                    if model.game.playerPosition == List.length model.game.players then
-                                        "Surrender"
+                                    "Surrender"
+                                        ++ (if model.game.playerPosition == List.length model.game.players then
+                                                ""
 
-                                    else
-                                        ordinal model.game.playerPosition
+                                            else
+                                                " " ++ ordinal model.game.playerPosition
+                                           )
                                 ]
                             ]
 
