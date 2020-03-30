@@ -24,7 +24,7 @@ services:
       - ./data/emqx/acl.conf:/opt/emqx/etc/acl.conf:ro
   nodice:
     restart: always
-    image: bgrosse/qdice:latest
+    image: bgrosse/qdice:backend
     env_file: .env
     volumes:
       - ${AVATAR_PATH}:/avatars
@@ -33,7 +33,7 @@ services:
       - emqx
   telegram:
     restart: always
-    image: bgrosse/qdice:latest
+    image: bgrosse/qdice:backend
     env_file: .env
     volumes:
       - ${AVATAR_PATH}:/avatars
