@@ -46,14 +46,16 @@ export const checkWatchers = <T extends { lastBeat: Timestamp }>(
 };
 
 const removeBots = (table: Table): CommandResult | null => {
-  if (table.players.length > 0) {
-    const bots = table.players.filter(isBot);
-    if (bots.length > 0) {
-      if (
-        bots.length === table.players.length ||
-        table.players.length > table.startSlots
-      ) {
-        return leave(R.last(bots)!, table);
+  if (table.status !== STATUS_PLAYING) {
+    if (table.players.length > 0) {
+      const bots = table.players.filter(isBot);
+      if (bots.length > 0) {
+        if (
+          bots.length === table.players.length ||
+          table.players.length > table.startSlots
+        ) {
+          return leave(R.last(bots)!, table);
+        }
       }
     }
   }
