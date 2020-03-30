@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: "bgrosse"
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ${POSTGRES_DIR}:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
   emqx:
     image: emqx/emqx:v3.2.7
     environment:
