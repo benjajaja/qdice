@@ -4,6 +4,5 @@ rsync_exclude.txt
 node_modules
 .env
 yarn-error.log
-data/certbot
-data/logs
+data
 

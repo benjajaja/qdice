@@ -2,11 +2,7 @@ edice/node_modules
 edice/elm-stuff
 edice/dist
 node_modules
-data/avatars
-data/certbot
-data/emqx
-data/logs
-data/goaccess
+data
 e2e
 .env
 .local_env

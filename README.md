@@ -32,14 +32,26 @@ Future tech: rewrite in something exciting like Haskell or Erlan.
 
 ## Running locally
 
-Copy `env_sample` to `.env`, and _maybe_ fill in some values, but they're
-probably only needed for running in production.
+Copy `env_sample` to `.env`, and some values - you'll want at least the
+following:
+```
+JWT_SECRET=anything
+MQTT_PASSWORD=anything
+POSTGRES_PASSWORD=anything
+EMQX_DASHBOARD_PASSWORD=anything
+VAPID_PUBLIC_KEY=run it once and let it generate some for you
+VAPID_PRIVATE_KEY=you can get them from the logs: docker-compose logs nodice
+```
+The above values should be good enough for a local instance.
+The VAPID keys will be generated and logged, if missing.
 
 ### As docker image
 
-Run `./scripts/build.sh` to build a local `bgrosse/qdice:latest` image.
+Run `./scripts/build.sh` to build a local `bgrosse/qdice:backend` image.
 
-Run `./scripts/restart.sh` or `docker-compose up`.
+Run `./scripts/build.frontend.sh local` to build a local `bgrosse/qdice:fronted-local` image.
+
+Run `./scripts/dev-env.sh` or take a look at that script.
 
 ### Full dev cycle
 
