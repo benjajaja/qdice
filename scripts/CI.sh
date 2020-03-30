@@ -2,8 +2,10 @@
 set -e
 
 ./scripts/build.sh
+./scripts/build.frontend.sh local
 
-./scripts/restart.sh
+docker-compose down -v
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 cd e2e
 yarn
@@ -11,10 +13,8 @@ sleep 15 # emqx reports as started to docker, but has some internal delay
 yarn test
 cd ..
 
-docker push bgrosse/qdice:latest
-
-# docker build ./e2e -t qdice2e
-# docker network create qdice || true
-# docker run --network qdice -e E2E_URL=http://nginx qdice2e yarn test
+./scripts/build.frontend.sh production
+docker push bgrosse/qdice:frontend-production
+docker push bgrosse/qdice:backend
 
 ./scripts/deploy.sh
