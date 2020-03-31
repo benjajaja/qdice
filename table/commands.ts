@@ -523,7 +523,7 @@ export const sitIn = (user, table: Table): CommandResult => {
   return { type: "SitIn", players };
 };
 
-export const chat = (user: User | null, table, payload): null => {
+export const chat = (user: { name: string } | null, table, payload): null => {
   publish.chat(table, user ? user.name : null, payload);
   return null;
 };
