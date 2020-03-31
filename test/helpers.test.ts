@@ -181,6 +181,7 @@ describe("Helpers", function() {
         reason: ELIMINATION_REASON_SURRENDER,
         source: {
           flag: player.flag!,
+          under: null,
         },
       };
       const [
@@ -209,6 +210,7 @@ describe("Helpers", function() {
         reason: ELIMINATION_REASON_SURRENDER,
         source: {
           flag: player.flag!,
+          under: null,
         },
       };
       const [
@@ -237,6 +239,7 @@ describe("Helpers", function() {
         reason: ELIMINATION_REASON_SURRENDER,
         source: {
           flag: player.flag!,
+          under: null,
         },
       };
       const [
@@ -267,6 +270,7 @@ describe("Helpers", function() {
         reason: ELIMINATION_REASON_SURRENDER,
         source: {
           flag: player.flag!,
+          under: null,
         },
       };
       const [
@@ -286,6 +290,7 @@ describe("Helpers", function() {
           reason: ELIMINATION_REASON_SURRENDER,
           source: {
             flag: players[2].flag!,
+            under: null,
           },
         },
       ]);
@@ -306,6 +311,7 @@ describe("Helpers", function() {
         reason: ELIMINATION_REASON_SURRENDER,
         source: {
           flag: player.flag!,
+          under: null,
         },
       };
       const [
@@ -325,6 +331,7 @@ describe("Helpers", function() {
           reason: ELIMINATION_REASON_SURRENDER,
           source: {
             flag: players[2].flag!,
+            under: null,
           },
         },
         {
@@ -333,6 +340,7 @@ describe("Helpers", function() {
           reason: ELIMINATION_REASON_SURRENDER,
           source: {
             flag: players[1].flag!,
+            under: null,
           },
         },
       ]);
@@ -372,6 +380,7 @@ describe("Helpers", function() {
           reason: ELIMINATION_REASON_SURRENDER,
           source: {
             flag: players[1].flag!,
+            under: null,
           },
         },
       ]);

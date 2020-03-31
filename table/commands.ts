@@ -23,6 +23,7 @@ import {
   adjustPlayer,
   groupedPlayerPositions,
   removePlayerCascade,
+  tablePoints,
 } from "../helpers";
 import { isBorder } from "../maps";
 import nextTurn from "./turn";
@@ -578,24 +579,48 @@ export const flag = (
   if (hasTurn(table)(user) && position === table.players.length) {
     logger.debug(`${player.name} flagged suicide`);
 
+    let under: null | { player: Player; points: number } = null;
+    let players = table.players;
+    if (player.bot && table.players.length === 2) {
+      // last bot flags if losing - give kill points to winner
+      const remaining = table.players.filter(p => p.id !== player.id);
+      const sorted: Player[] = R.sortWith<Player>(
+        [R.ascend(positions)],
+        remaining
+      );
+      const penultimate = sorted.pop()!;
+      under = {
+        player: penultimate,
+        points: tablePoints(table) / 2,
+      };
+      players = players.map(p =>
+        p === penultimate
+          ? {
+              ...penultimate,
+              score: penultimate.score + tablePoints(table) / 2,
+            }
+          : p
+      );
+    }
     const elimination: Elimination = {
       player,
       position,
       reason: ELIMINATION_REASON_SURRENDER,
       source: {
         flag: position,
+        under: under,
       },
     };
 
-    const [players, lands, turnIndex, eliminations] = removePlayerCascade(
-      table.players,
+    const [players_, lands, turnIndex, eliminations] = removePlayerCascade(
+      players,
       table.lands,
       player,
       table.turnIndex,
       elimination
     );
 
-    if (players.length === table.players.length) {
+    if (players_.length === table.players.length) {
       throw new Error(`could not remove player ${player.id}`);
     }
 
@@ -603,13 +628,13 @@ export const flag = (
       type: "Flag",
       table: { turnStart: now(), turnIndex },
       lands: lands,
-      players: players,
+      players: players_,
       eliminations,
     };
-    if (players.length === 1) {
+    if (players_.length === 1) {
       return [
         result,
-        { type: "EndGame", winner: players[0], turnCount: table.turnCount },
+        { type: "EndGame", winner: players_[0], turnCount: table.turnCount },
       ];
     }
     return [result, null];
