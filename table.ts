@@ -15,6 +15,7 @@ import {
   User,
   CommandType,
   Player,
+  BotPlayer,
 } from "./types";
 import * as db from "./db";
 import * as publish from "./table/publish";
@@ -46,6 +47,7 @@ import { save } from "./table/get";
 import { STATUS_FINISHED } from "./constants";
 import endGame from "./table/endGame";
 import { rollResult } from "./table/attack";
+import { botState } from "./table/bots";
 
 const verifyJwt = promisify(jwt.verify);
 
@@ -306,6 +308,8 @@ const commandResult = async (
       return [startGame(table), null];
     case "Clear":
       return [cleanPlayers(table) || cleanWatchers(table), null];
+    case "BotState":
+      return botState(table, command.player as BotPlayer, command.botCommand);
     default:
       return assertNever(command);
   }

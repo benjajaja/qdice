@@ -9,6 +9,8 @@ import {
   BotStrategy,
   Color,
   Command,
+  BotCommand,
+  CommandResult,
 } from "../types";
 import { havePassed } from "../timestamp";
 import { shuffle, rand } from "../rand";
@@ -25,6 +27,7 @@ const defaultPersona: Persona = {
   state: {
     deadlockCount: 0,
     lastAgressor: null,
+    surrender: false,
   },
 };
 
@@ -130,8 +133,12 @@ export const tickBotTurn = (table: Table): Command | undefined => {
       table.lands.filter(land => land.color === otherPlayer.color).length >=
       table.lands.filter(land => land.color === player.color).length * 0.5
     ) {
-      if (player.flag === null || player.flag < position) {
-        return { type: "Flag", player };
+      if (player.flag === null) {
+        if (!player.bot.state.surrender) {
+          return { type: "BotState", player, botCommand: "Surrender" };
+        } else {
+          return { type: "Flag", player };
+        }
       }
     }
   }
@@ -241,5 +248,44 @@ const spanishName = (color: Color): string => {
       return "N";
     case Color.Neutral:
       return "Neutral";
+  }
+};
+
+export const botState = (
+  table: Table,
+  player: BotPlayer,
+  botCommand: BotCommand
+): [CommandResult, Command | null] => {
+  const [newState, next] = setBotState(botCommand, player, player.bot.state);
+  return [
+    {
+      type: "BotState",
+      players: table.players.map(p =>
+        p === player
+          ? {
+              ...player,
+              bot: {
+                ...player.bot,
+                state: newState,
+              },
+            }
+          : p
+      ),
+    },
+    next,
+  ];
+};
+
+const setBotState = (
+  botCommand: BotCommand,
+  player: BotPlayer,
+  state: BotState
+): [BotState, Command | null] => {
+  switch (botCommand) {
+    case "Surrender":
+      return [
+        { ...state, surrender: true },
+        { type: "Chat", user: player, message: "gg" },
+      ];
   }
 };

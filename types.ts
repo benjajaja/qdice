@@ -182,6 +182,7 @@ export type CommandType =
   | "TickStart"
   | "CleanWatchers"
   | "CleanPlayers"
+  | "BotState"
   | "EndGame";
 
 type CommandSkeleton<T, P = {}> = {
@@ -191,7 +192,7 @@ export type Command =
   | CommandSkeleton<"Start">
   | CommandSkeleton<"Enter", { user: User | null; clientId: string }>
   | CommandSkeleton<"Exit", { user: User | null; clientId: string }>
-  | CommandSkeleton<"Chat", { user: User | null; message: string }>
+  | CommandSkeleton<"Chat", { user: { name: string } | null; message: string }>
   | CommandSkeleton<
       "Join",
       { user: User; clientId: string | null; bot: Persona | null }
@@ -209,7 +210,8 @@ export type Command =
   | CommandSkeleton<"TickTurnAllOut">
   | CommandSkeleton<"EndGame", { winner: Player | null; turnCount: number }>
   | CommandSkeleton<"Clear">
-  | CommandSkeleton<"Heartbeat", { user: User | null; clientId: string }>;
+  | CommandSkeleton<"Heartbeat", { user: User | null; clientId: string }>
+  | CommandSkeleton<"BotState", { player: Player; botCommand: BotCommand }>;
 
 export type CommandResult = {
   readonly type: CommandType;
@@ -235,6 +237,7 @@ export type Persona = {
 export type BotState = {
   deadlockCount: number;
   lastAgressor: UserId | null;
+  surrender: boolean;
 };
 
 export type BotStrategy =
@@ -243,3 +246,5 @@ export type BotStrategy =
   | "Revengeful"
   | "ExtraCareful"
   | "TargetCareful";
+
+export type BotCommand = "Surrender";
