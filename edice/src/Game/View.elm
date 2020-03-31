@@ -9,7 +9,7 @@ import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
 import Game.State exposing (canHover)
-import Game.Types exposing (Player, PlayerAction(..), isBot, statusToString)
+import Game.Types exposing (Msg(..), Player, PlayerAction(..), isBot, statusToString)
 import Helpers exposing (dataTestId, find, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, style, type_)
@@ -39,6 +39,7 @@ view model =
                     )
                     model.game.board.hovered
                 )
+                model.game.diceVisible
                 |> Html.map BoardMsg
     in
     div [ class "edMainScreen" ]
@@ -347,7 +348,21 @@ tableInfo model =
             Nothing ->
                 []
         )
-            ++ [ button [ class "edGameStatus__button edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ] ]
+            ++ [ div [ class "edGameStatus__buttons" ]
+                    [ button
+                        [ class "edGameStatus__button edButton--icon"
+                        , onClick <| GameMsg <| ToggleDiceVisible <| not model.game.diceVisible
+                        ]
+                        [ Icon.icon <|
+                            if model.game.diceVisible then
+                                "visibility"
+
+                            else
+                                "visibility_off"
+                        ]
+                    , button [ class "edGameStatus__button edGameStatus__button--landscape edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ]
+                    ]
+               ]
 
 
 tableDetails : Model -> Html Types.Msg

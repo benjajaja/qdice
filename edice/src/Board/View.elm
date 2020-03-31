@@ -6,12 +6,14 @@ import Array
 import Board.Colors
 import Board.PathCache
 import Board.Types exposing (..)
+import Color
+import Color.Accessibility
 import Dict
 import Helpers exposing (dataTestId, dataTestValue)
 import Html
 import Html.Attributes
 import Html.Lazy
-import Land exposing (Land, Layout, landCenter, playerColors)
+import Land exposing (Land, Layout, landCenter)
 import String
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -24,19 +26,20 @@ empty =
     []
 
 
-view : Model -> Maybe Land.Emoji -> Html.Html Msg
-view model hovered =
-    Html.Lazy.lazy6 board
+view : Model -> Maybe Land.Emoji -> Bool -> Html.Html Msg
+view model hovered diceVisible =
+    Html.Lazy.lazy7 board
         model.map
         model.layout
         model.pathCache
         model.animations
         model.move
         hovered
+        diceVisible
 
 
-board : Land.Map -> ( Layout, String, String ) -> PathCache -> Animations -> BoardMove -> Maybe Land.Emoji -> Svg Msg
-board map ( layout, sWidth, sHeight ) pathCache animations move hovered =
+board : Land.Map -> ( Layout, String, String ) -> PathCache -> Animations -> BoardMove -> Maybe Land.Emoji -> Bool -> Svg Msg
+board map ( layout, sWidth, sHeight ) pathCache animations move hovered diceVisible =
     Html.div [ class "edBoard" ]
         [ Svg.svg
             [ viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
@@ -51,7 +54,7 @@ board map ( layout, sWidth, sHeight ) pathCache animations move hovered =
                 move
                 hovered
                 map.lands
-            , Svg.Lazy.lazy3 allDies layout animations map.lands
+            , Svg.Lazy.lazy4 allDies layout animations map.lands diceVisible
             ]
         ]
 
@@ -130,13 +133,13 @@ landElement layout pathCache isSelected isHovered land =
         []
 
 
-allDies : Layout -> Animations -> List Land.Land -> Svg Msg
-allDies layout animations lands =
-    g [] <| List.map (lazyLandDies layout animations) lands
+allDies : Layout -> Animations -> List Land.Land -> Bool -> Svg Msg
+allDies layout animations lands diceVisible =
+    g [] <| List.map (lazyLandDies layout animations diceVisible) lands
 
 
-lazyLandDies : Layout -> Animations -> Land.Land -> Svg Msg
-lazyLandDies layout animations land =
+lazyLandDies : Layout -> Animations -> Bool -> Land.Land -> Svg Msg
+lazyLandDies layout animations diceVisible land =
     let
         stackAnimation : Maybe (Animation.Messenger.State Msg)
         stackAnimation =
@@ -155,7 +158,7 @@ lazyLandDies layout animations land =
         diceAnimations =
             getDiceAnimations animations land
     in
-    Svg.Lazy.lazy4 landDies layout stackAnimation diceAnimations land
+    Svg.Lazy.lazy5 landDies layout stackAnimation diceAnimations diceVisible land
 
 
 getDiceAnimations : Animations -> Land.Land -> Array.Array Bool
@@ -191,31 +194,62 @@ getDiceAnimations dict land =
         Array.empty
 
 
-landDies : Layout -> Maybe (Animation.Messenger.State Msg) -> Array.Array Bool -> Land.Land -> Svg Msg
-landDies layout stackAnimation diceAnimations land =
+landDies : Layout -> Maybe (Animation.Messenger.State Msg) -> Array.Array Bool -> Bool -> Land.Land -> Svg Msg
+landDies layout stackAnimation diceAnimations diceVisible land =
     let
-        ( x, y ) =
+        ( x_, y_ ) =
             landCenter
                 layout
                 land.cells
-    in
-    g
-        (class "edBoard--stack"
-            :: (case stackAnimation of
-                    Just animation ->
-                        Animation.render animation
 
-                    Nothing ->
-                        []
-               )
-        )
-    <|
-        List.map
-            (Svg.Lazy.lazy4 landDie diceAnimations x y)
+        animationAttrs =
+            case stackAnimation of
+                Just animation ->
+                    Animation.render animation
+
+                Nothing ->
+                    []
+    in
+    if diceVisible == True then
+        g
+            (class "edBoard--stack"
+                :: animationAttrs
+            )
         <|
-            List.range
-                0
-                (land.points - 1)
+            List.map
+                (Svg.Lazy.lazy4 landDie diceAnimations x_ y_)
+            <|
+                List.range
+                    0
+                    (land.points - 1)
+
+    else
+        let
+            color =
+                Color.Accessibility.maximumContrast (Board.Colors.base land.color)
+                    [ Color.rgb255 30 30 30, Color.rgb255 225 225 225 ]
+                    |> Maybe.withDefault (Color.rgb255 30 30 30)
+
+            oppositeColor =
+                Color.Accessibility.maximumContrast color
+                    [ Color.rgb255 30 30 30, Color.rgb255 225 225 225 ]
+                    |> Maybe.withDefault (Color.rgb255 255 255 255)
+        in
+        text_
+            ([ class "edBoard--stack edBoard--stack__text"
+             , x <| String.fromFloat x_
+             , y <| String.fromFloat y_
+             , oppositeColor
+                |> Board.Colors.cssRgb
+                |> stroke
+             , color
+                |> Board.Colors.cssRgb
+                |> fill
+             , textAnchor "middle"
+             ]
+                ++ animationAttrs
+            )
+            [ Svg.text <| String.fromInt land.points ]
 
 
 landDie : Array.Array Bool -> Float -> Float -> Int -> Svg Msg

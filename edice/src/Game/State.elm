@@ -66,6 +66,7 @@ init table tableMap_ =
         , botLess = True
         }
     , currentGame = Nothing
+    , diceVisible = True
     }
 
 
@@ -756,6 +757,13 @@ update model game msg =
                     _ ->
                         Cmd.none
                 ]
+            )
+
+        ToggleDiceVisible visible ->
+            ( { model
+                | game = { game | diceVisible = visible }
+              }
+            , Cmd.none
             )
 
 

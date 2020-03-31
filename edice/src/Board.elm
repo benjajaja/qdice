@@ -31,7 +31,7 @@ update =
 
 
 view =
-    Html.Lazy.lazy2 Board.View.view
+    Html.Lazy.lazy3 Board.View.view
 
 
 animations : Model -> List (Animation.Messenger.State Msg)

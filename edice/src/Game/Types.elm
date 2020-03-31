@@ -29,6 +29,7 @@ type PlayerAction
 
 type Msg
     = ScrollChat String ChatLogEntry (Result Dom.Error Dom.Viewport)
+    | ToggleDiceVisible Bool
 
 
 type alias Model =
@@ -55,6 +56,7 @@ type alias Model =
     , flag : Maybe Bool
     , params : TableParams
     , currentGame : Maybe Int
+    , diceVisible : Bool
     }
 
 
