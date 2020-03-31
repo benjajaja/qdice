@@ -194,7 +194,7 @@ type EliminationReason
     = ReasonDeath Player Int
     | ReasonOut Int
     | ReasonWin Int
-    | ReasonFlag Int
+    | ReasonFlag Int (Maybe ( Player, Int ))
 
 
 type alias Award =

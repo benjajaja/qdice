@@ -488,9 +488,6 @@ export const saveTable = async (
     .concat(lands ? [JSON.stringify(lands)] : [])
     .concat(watching ? [JSON.stringify(watching)] : [])
     .concat(retired ? [JSON.stringify(retired)] : []);
-  if (retired) {
-    logger.warn("setting retired:", retired);
-  }
 
   const extra = (players ? ["players"] : [])
     .concat(lands ? ["lands"] : [])

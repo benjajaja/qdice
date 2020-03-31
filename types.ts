@@ -127,11 +127,12 @@ export type Elimination = {
   player: Player;
   position: number;
   reason: EliminationReason;
-  source:
-    | { turns: number }
-    | { player: Player; points: number }
-    | { flag: number };
+  source: EliminationSource;
 };
+export type EliminationSource =
+  | { turns: number }
+  | { player: Player; points: number }
+  | { flag: number; under: null | { player: Player; points: number } };
 
 export type EliminationReason = "☠" | "💤" | "🏆" | "🏳";
 

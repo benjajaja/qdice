@@ -230,7 +230,7 @@ eliminationEmoji reason =
             Game.Types.ReasonWin _ ->
                 "🏆"
 
-            Game.Types.ReasonFlag _ ->
+            Game.Types.ReasonFlag _ _ ->
                 "🏳"
 
 
@@ -245,5 +245,17 @@ eliminationReasonText reason =
         Game.Types.ReasonWin turns ->
             "(Last standing player after " ++ String.fromInt turns ++ " turns)"
 
-        Game.Types.ReasonFlag position ->
-            "(Flagged for " ++ ordinal position ++ ")"
+        Game.Types.ReasonFlag position to ->
+            case to of
+                Nothing ->
+                    "(Flagged for " ++ ordinal position ++ ")"
+
+                Just ( player, points ) ->
+                    "(Flagged for "
+                        ++ ordinal position
+                        ++ " under "
+                        ++ player.name
+                        ++ " for "
+                        ++ String.fromInt points
+                        ++ pointsSymbol
+                        ++ ")"

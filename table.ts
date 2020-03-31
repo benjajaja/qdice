@@ -372,10 +372,7 @@ const processEliminations = async (
         player.score +
         positionScore(tablePoints(table))(table.playerStartCount)(position);
 
-      publish.elimination(table, player, position, score, {
-        type: reason,
-        ...source,
-      });
+      publish.elimination(table, player, position, score, reason, source);
       publish.event({
         type: "elimination",
         table: table.name,
@@ -384,9 +381,9 @@ const processEliminations = async (
         score,
       });
 
+      logger.debug("ELIMINATION-------------");
+      logger.debug(position, player.name, player.score, score);
       if (player.bot === null) {
-        logger.debug("ELIMINATION-------------");
-        logger.debug(position, player.name);
         try {
           const user = await db.addScore(player.id, score);
           const preferences = await db.getPreferences(player.id);

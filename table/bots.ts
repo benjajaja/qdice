@@ -127,8 +127,8 @@ export const tickBotTurn = (table: Table): Command | undefined => {
       other => other.color !== player.color
     )!;
     if (
-      table.lands.filter(land => land.color === otherPlayer.color) >=
-      table.lands.filter(land => land.color === player.color)
+      table.lands.filter(land => land.color === otherPlayer.color).length >=
+      table.lands.filter(land => land.color === player.color).length * 0.5
     ) {
       if (player.flag === null || player.flag < position) {
         return { type: "Flag", player };
