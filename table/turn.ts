@@ -9,6 +9,7 @@ import {
   CommandResult,
   CommandType,
   Command,
+  Elimination,
 } from "../types";
 import {
   updateLand,
@@ -66,12 +67,13 @@ const turn = (
     newPlayer.flag >= position &&
     position === table.players.length
   ) {
-    const elimination = {
+    const elimination: Elimination = {
       player: newPlayer,
       position: players.length,
       reason: ELIMINATION_REASON_SURRENDER,
       source: {
         flag: newPlayer.flag,
+        under: null,
       },
     };
     const [players_, lands_, turnIndex, eliminations] = removePlayerCascade(

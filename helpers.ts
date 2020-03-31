@@ -165,6 +165,7 @@ const removeNext = ([players, lands, turnIndex, eliminations]: [
           reason: ELIMINATION_REASON_SURRENDER,
           source: {
             flag: next.flag!,
+            under: null,
           },
         },
       ]),
