@@ -2,7 +2,7 @@ import * as R from "ramda";
 
 import * as maps from "../maps";
 import { groupedPlayerPositions, positionScore, tablePoints } from "../helpers";
-import { Table, Player } from "../types";
+import { Table, Player, EliminationReason, EliminationSource } from "../types";
 import logger from "../logger";
 import { COLOR_NEUTRAL } from "../constants";
 
@@ -78,6 +78,15 @@ export const computePlayerDerived = (table: Table) => {
     const lands = table.lands.filter(R.propEq("color", player.color));
     const connectedLands = maps.countConnectedLands(table)(player.color);
     const position = positions(player);
+    if (position === undefined) {
+      return {
+        connectedLands,
+        totalLands: lands.length,
+        currentDice: R.sum(lands.map(R.prop("points"))),
+        position: 0,
+        score: 0,
+      };
+    }
     let score = player.score + getScore(position);
     if (isNaN(score)) {
       logger.error(`score for ${player.name} isNaN`);
@@ -100,3 +109,38 @@ export const playerWithDerived = (
   Object.assign({}, player, {
     derived: computePlayerDerived(table)(player),
   });
+
+export const serializeEliminationReason = (
+  table: Table,
+  reason: EliminationReason,
+  source: EliminationSource
+) => {
+  let merge = {};
+  switch (reason) {
+    case "☠":
+      merge = {
+        player: playerWithDerived(table, (source as any).player),
+        points: (source as any).points,
+      };
+      break;
+    case "🏆":
+    case "💤":
+      merge = {
+        turns: (source as any).turns,
+      };
+      break;
+    case "🏳":
+      merge = {
+        flag: (source as any).flag,
+        under:
+          (source as any).under === null
+            ? null
+            : {
+                player: playerWithDerived(table, (source as any).under.player),
+                points: (source as any).under.points,
+              },
+      };
+      break;
+  }
+  return { type: reason, ...merge };
+};

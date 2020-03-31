@@ -1,5 +1,15 @@
-import { Table, Player, Emoji } from "../types";
-import { serializeTable, serializePlayer } from "./serialize";
+import {
+  Table,
+  Player,
+  Emoji,
+  EliminationReason,
+  EliminationSource,
+} from "../types";
+import {
+  serializeTable,
+  serializePlayer,
+  serializeEliminationReason,
+} from "./serialize";
 import logger from "../logger";
 import * as jwt from "jsonwebtoken";
 
@@ -131,7 +141,14 @@ export const move = (table, move) => {
   );
 };
 
-export const elimination = (table, player, position, score, reason) => {
+export const elimination = (
+  table: Table,
+  player: Player,
+  position: number,
+  score: number,
+  reason: EliminationReason,
+  source: EliminationSource
+) => {
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
@@ -140,7 +157,7 @@ export const elimination = (table, player, position, score, reason) => {
         player: serializePlayer(table)(player),
         position,
         score,
-        reason,
+        reason: serializeEliminationReason(table, reason, source),
       },
     }),
     undefined,

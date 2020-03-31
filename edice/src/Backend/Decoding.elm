@@ -246,7 +246,15 @@ eliminationReasonDecoder =
                         field "turns" int |> Json.Decode.map Game.Types.ReasonWin
 
                     "🏳" ->
-                        field "flag" int |> Json.Decode.map Game.Types.ReasonFlag
+                        map2 Game.Types.ReasonFlag
+                            (field "flag" int)
+                            (field "under"
+                                (nullable <|
+                                    map2 Tuple.pair
+                                        (field "player" playersDecoder)
+                                        (field "points" int)
+                                )
+                            )
 
                     _ ->
                         Json.Decode.fail <| "unknown elimination type: " ++ t
