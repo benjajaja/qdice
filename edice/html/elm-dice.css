@@ -273,6 +273,12 @@ button .material-icons, .edButton .material-icons {
 .edBoard--stack {
   will-change: transform;
 }
+.edBoard--stack__text {
+  dominant-baseline: middle;
+  font-size: 4px;
+  font-weight: bold;
+  stroke-width: 0.2px;
+}
 .edBoard--dies {
   pointer-events: none;
   fill: currentColor;
@@ -498,9 +504,13 @@ button .material-icons, .edButton .material-icons {
 .edGameStatus > div:first-child {
   padding-left: 0;
 }
-.edGameStatus__button {
-  display: none;
+.edGameStatus__buttons {
   margin-left: auto;
+  display: flex;
+  flex-direction: row;
+}
+.edGameStatus__button--landscape {
+  display: none;
 }
 .edGameStatus__chip {
 }
@@ -919,7 +929,7 @@ button .material-icons, .edButton .material-icons {
     /*align-items: center;*/
     /*height: 35px;*/
   /*}*/
-  .edGameStatus__button {
+  .edGameStatus__button--landscape {
     display: flex;
   }
 }
