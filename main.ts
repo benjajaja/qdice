@@ -20,6 +20,7 @@ import * as user from "./user";
 import { profile } from "./profile";
 import * as games from "./games";
 import { resetGenerator } from "./rand";
+import { clearMemoryTables } from "./table/get";
 
 process.on("unhandledRejection", (reason, p) => {
   logger.error("Unhandled Rejection at: Promise", p, "reason:", reason);
@@ -150,15 +151,6 @@ export const server = async () => {
 
   const lock = new AsyncLock();
 
-  if (process.env.E2E) {
-    server.get(`${root}/e2e`, async (req, res) => {
-      const ref = resetGenerator();
-      logger.debug(`E2E first random value: ${ref()}`);
-      await db.clearGames(lock);
-      res.send(200, "ok.");
-    });
-  }
-
   server.post(`${root}/login/:network`, user.login);
   server.post(`${root}/add-login/:network`, user.addLogin);
   server.get(`${root}/me`, user.me);
@@ -213,6 +205,16 @@ export const server = async () => {
       process.send("ready");
     }
     publish.setMqtt(client);
+
+    if (process.env.E2E) {
+      server.get(`${root}/e2e`, async (req, res) => {
+        const ref = resetGenerator();
+        logger.debug(`E2E first random value: ${ref()}`);
+        await db.clearGames(lock);
+        clearMemoryTables();
+        res.send(200, "ok.");
+      });
+    }
   });
 
   table.startTables(lock, client);

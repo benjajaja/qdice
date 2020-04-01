@@ -18,7 +18,7 @@ import { death } from "./table/watchers";
 import AsyncLock = require("async-lock");
 
 export const global = async (req, res, next) => {
-  const tables = await getTablesStatus();
+  const tables = getStatuses();
   const top = await db.leaderBoardTop(10);
   res.send(200, {
     settings: {
@@ -35,49 +35,19 @@ export const global = async (req, res, next) => {
 };
 
 export const findtable = (req, res, next) => {
-  getTablesStatus().then(tables => {
-    let best = tables.reduce(
-      (best, table) => (table.playerCount > best.playerCount ? table : best),
-      tables[0]
-    );
-    res.send(200, best.tag);
-  });
-};
-
-const getTablesStatus = async () => {
-  let tables = await getStatuses();
-  return R.sortWith<Table & { playerCount: number }>([
-    R.descend(R.prop("playerCount")),
-    R.ascend(R.prop("name")),
-  ])(
-    tables.map(table =>
-      Object.assign(
-        R.pick([
-          "name",
-          "tag",
-          "mapName",
-          "stackSize",
-          "status",
-          "playerSlots",
-          "startSlots",
-          "landCount",
-          "points",
-          "params",
-        ])(table),
-        {
-          playerCount: table.players.length,
-          watchCount: table.watching.length,
-        }
-      )
-    )
-  ) as any[];
+  const tables = getStatuses();
+  let best = tables.reduce(
+    (best, table) => (table.playerCount > best.playerCount ? table : best),
+    tables[0]
+  );
+  res.send(200, best.tag);
 };
 
 export const onMessage = (lock: AsyncLock) => async (topic, message) => {
   try {
     if (topic === "events") {
       const event = JSON.parse(message);
-      const tables = await getTablesStatus();
+      const tables = getStatuses();
       switch (event.type) {
         case "join": {
           const table = findTable(tables)(event.table);

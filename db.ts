@@ -463,8 +463,13 @@ RETURNING *`,
       JSON.stringify(table.retired),
     ]
   );
-  const row = result.rows.pop();
-  return camelize(row);
+  const row = camelize(result.rows.pop());
+  return {
+    ...row,
+    gameStart: row.gameStart ? row.gameStart.getTime() : 0,
+    turnStart: row.turnStart ? row.turnStart.getTime() : 0,
+    retired: row.retired ?? [],
+  };
 };
 
 export const saveTable = async (
@@ -474,7 +479,7 @@ export const saveTable = async (
   lands?: ReadonlyArray<{ emoji: Emoji; color: Color; points: number }>,
   watching?: ReadonlyArray<Watcher>,
   retired?: ReadonlyArray<Player>
-) => {
+): Promise<Table | null> => {
   const propColumns = Object.keys(props);
   const propValues = propColumns.map(column => {
     if (column === "gameStart" || column === "turnStart") {
@@ -515,7 +520,11 @@ RETURNING *`;
       ? await pool.query({ name, text, values })
       : await pool.query(text, values);
 
-  const row = camelize(result.rows.pop());
+  const row = camelize(result.rows.pop()) ?? {};
+  if (!row) {
+    logger.warn("UPDATE did not RETURN table");
+    return null;
+  }
   return {
     ...row,
     gameStart: row.gameStart ? row.gameStart.getTime() : 0,

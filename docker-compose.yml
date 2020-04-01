@@ -61,10 +61,6 @@ services:
       - ./data/logs/nginx:/var/log/nginx
       - goaccess:/var/www/goaccess:ro
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
-    depends_on:
-      - emqx
-      - nodice
-      - certbot
   goaccess:
     image: allinurl/goaccess
     restart: always
@@ -75,8 +71,6 @@ services:
     command: "--no-global-config --config-file=/srv/data/goaccess.conf"
     cap_drop:
       - all
-    depends_on:
-      - nginx
 
 networks:
   default:

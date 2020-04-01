@@ -18,7 +18,17 @@ global.testValue = (id: string, key: string, value: string) =>
   `[data-test-id="${id}"][data-test-${key}="${value}"]`;
 
 beforeEach(async () => {
-  await got(E2E_API_RESET_URL);
+  while (true) {
+    try {
+      console.log("API reset...");
+      await got(E2E_API_RESET_URL);
+      break;
+    } catch (e) {
+      console.log("API reset error", e.statusCode);
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+  console.log("API reset ok.");
   await page.evaluateOnNewDocument(() => localStorage.clear());
   page.on("console", consoleObj => console.log("page:", consoleObj.text()));
   await page.goto(TEST_URL, { waitUntil: "networkidle2" });
@@ -30,4 +40,4 @@ beforeEach(async () => {
   await expect(page).toMatchElement(testId("connection-status"), {
     text: "Online",
   });
-});
+}, 60000);
