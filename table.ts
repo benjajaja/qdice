@@ -24,15 +24,18 @@ import { getTable } from "./table/get";
 import { addGameEvent } from "./table/games";
 import nextTurn from "./table/turn";
 import { startGame, preloadStartingPositions } from "./table/start";
-import { cleanWatchers, cleanPlayers } from "./table/watchers";
+import {
+  cleanWatchers,
+  cleanPlayers,
+  heartbeat,
+  enter,
+  exit,
+} from "./table/watchers";
 import { positionScore, tablePoints, assertNever } from "./helpers";
 import logger from "./logger";
 import * as config from "./tables.config";
 
 import {
-  heartbeat,
-  enter,
-  exit,
   join,
   leave,
   attack,
@@ -226,7 +229,7 @@ const toCommand = (
     case "Chat":
       return {
         type: "Chat",
-        user: assertUser(type, user),
+        user,
         message: payload as string,
       };
     case "ToggleReady":

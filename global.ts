@@ -14,6 +14,8 @@ import * as publish from "./table/publish";
 import { getStatuses } from "./table/get";
 import * as db from "./db";
 import logger from "./logger";
+import { death } from "./table/watchers";
+import AsyncLock = require("async-lock");
 
 export const global = async (req, res, next) => {
   const tables = await getTablesStatus();
@@ -71,7 +73,7 @@ const getTablesStatus = async () => {
   ) as any[];
 };
 
-export const onMessage = async (topic, message) => {
+export const onMessage = (lock: AsyncLock) => async (topic, message) => {
   try {
     if (topic === "events") {
       const event = JSON.parse(message);
@@ -115,6 +117,8 @@ export const onMessage = async (topic, message) => {
           return;
         }
       }
+    } else if (topic === "death") {
+      death(lock)(message.toString());
     }
   } catch (e) {
     console.error("table list event error", e);

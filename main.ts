@@ -200,6 +200,7 @@ export const server = async () => {
   publish.setMqtt(client);
 
   client.subscribe("events");
+  client.subscribe("death");
   client.on("error", (err: Error) => logger.error(err));
   client.on("close", () => logger.error("mqqt close"));
   client.on("disconnect", () => logger.error("mqqt disconnect"));
@@ -216,7 +217,7 @@ export const server = async () => {
 
   table.startTables(lock, client);
 
-  client.on("message", globalServer.onMessage);
+  client.on("message", globalServer.onMessage(lock));
 
   server.get(`${root}/push/key`, (_, res) => {
     res.sendRaw(200, process.env.VAPID_PUBLIC_KEY);
