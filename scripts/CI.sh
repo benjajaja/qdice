@@ -9,7 +9,7 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 cd e2e
 yarn
-sleep 15 # emqx reports as started to docker, but has some internal delay
+# sleep 20 # emqx reports as started to docker, but has some internal delay
 yarn test
 cd ..
 

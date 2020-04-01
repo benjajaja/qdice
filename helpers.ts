@@ -15,8 +15,9 @@ pics.use(require("gif-stream"));
 pics.use(require("jpg-stream"));
 pics.use(require("png-stream"));
 
-export const findTable = (tables: Table[]) => (name: string): Table =>
-  tables.filter(table => table.name === name).pop()!;
+export const findTable = <T extends { name: string }>(tables: T[]) => (
+  name: string
+): T => tables.filter(table => table.name === name).pop()!;
 
 export const findLand = (lands: ReadonlyArray<Land>) => (emoji: string): Land =>
   lands.filter(land => land.emoji === emoji).pop()!;

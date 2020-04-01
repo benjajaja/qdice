@@ -2,6 +2,7 @@ import * as R from "ramda";
 import { UserId, Table, Player, Land, Watcher } from "../types";
 import * as maps from "../maps";
 import * as db from "../db";
+import * as Sentry from "@sentry/node";
 import {
   STATUS_PAUSED,
   STATUS_PLAYING,
@@ -11,6 +12,12 @@ import {
 } from "../constants";
 import * as config from "../tables.config";
 import logger from "../logger";
+
+let memoryTables: { [tag: string]: Table } = {};
+
+export const clearMemoryTables = () => {
+  memoryTables = {};
+};
 
 const makeTable = (config: any): Table => {
   if (!config.tag) {
@@ -47,6 +54,9 @@ const makeTable = (config: any): Table => {
 };
 
 export const getTable = async (tableTag: string): Promise<Table> => {
+  if (memoryTables[tableTag] && Math.random() > 0.01) {
+    return memoryTables[tableTag];
+  }
   let dbTable = await db.getTable(tableTag);
   if (!dbTable) {
     const tableConfig = config.tables
@@ -54,8 +64,14 @@ export const getTable = async (tableTag: string): Promise<Table> => {
       .pop();
     try {
       const [lands, adjacency] = maps.loadMap(tableConfig.mapName);
-      const dbTableData = { ...makeTable(tableConfig), lands, adjacency };
+      const dbTableData = {
+        ...makeTable(tableConfig),
+        lands: lands.map(R.omit(["cells"])),
+        adjacency,
+      };
       dbTable = await db.createTable(dbTableData);
+      const [_, adjacency_] = maps.loadMap(dbTable.mapName);
+      memoryTables[tableTag] = { ...dbTable, adjacency: adjacency_ };
     } catch (e) {
       logger.error(`could not load map ${tableTag}`);
       throw e;
@@ -64,6 +80,22 @@ export const getTable = async (tableTag: string): Promise<Table> => {
 
   const [_, adjacency] = maps.loadMap(dbTable.mapName);
   const table = { ...dbTable, adjacency };
+
+  if (memoryTables[tableTag]) {
+    if (!R.equals(memoryTables[tableTag], table)) {
+      logger.error("cache diff error");
+      logger.debug("memory: " + JSON.stringify(memoryTables[tableTag]));
+      logger.debug("db: " + JSON.stringify(table));
+      Sentry.captureException(new Error("DB/Memory inconsistent"));
+      Sentry.captureEvent({
+        message: "CacheError",
+        extra: {
+          memory: memoryTables[tableTag],
+          db: table,
+        },
+      });
+    }
+  }
 
   return table;
 };
@@ -92,36 +124,45 @@ export const save = async (
   if (retired) {
     logger.debug("retired:", retired);
   }
-  const saved = await db.saveTable(
-    table.tag,
-    props,
-    players,
-    lands
-      ? lands.map(land => ({
-          emoji: land.emoji,
-          color: land.color,
-          points: land.points,
-        }))
-      : undefined,
-    watching,
-    retired
-  );
-  return {
+  const lands_ = lands
+    ? lands.map(land => ({
+        emoji: land.emoji,
+        color: land.color,
+        points: land.points,
+      }))
+    : undefined;
+  const saved =
+    (await db.saveTable(
+      table.tag,
+      props,
+      players,
+      lands_,
+      watching,
+      retired
+    )) ?? {};
+  const result: Table = {
     ...table,
     ...saved,
-    lands: lands ?? table.lands,
+    lands: lands_ ?? table.lands,
     players: players ?? table.players,
     watching: watching ?? table.watching,
     retired: retired ?? table.retired,
   };
+  memoryTables[table.tag] = result;
+  return result;
 };
 
-export const getStatuses = async () => {
-  const tables = await db.getTablesStatus();
-  const statuses = tables.map(tableStatus =>
-    Object.assign(tableStatus, {
-      landCount: maps.loadMap(tableStatus.mapName)[0].length,
-    })
+export const getStatuses = () =>
+  R.sortWith(
+    [
+      R.descend(R.prop("playerCount")),
+      R.descend(R.prop("watchCount")),
+      R.ascend(R.prop("name")),
+    ],
+    Object.values(memoryTables).map(table => ({
+      ...R.omit(["lands", "players", "watchers"], table),
+      landCount: table.lands.length,
+      playerCount: table.players.length,
+      watchCount: table.watching.length,
+    }))
   );
-  return statuses;
-};

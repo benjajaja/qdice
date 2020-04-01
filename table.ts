@@ -335,30 +335,28 @@ export const processCommand = async (table: Table, command: Command) => {
       retired, // only from endGame
     } = result;
 
-    if (type !== "Heartbeat" || (watchers && watchers.length > 0)) {
-      newTable = await save(
-        table,
-        gameId ? { ...props, currentGame: gameId } : props,
-        players,
-        lands,
-        watchers,
-        retired
-          ? retired
-          : eliminations
-          ? table.retired.concat(
-              eliminations.filter(e => !e.player.bot).map(e => e.player)
-            )
-          : undefined
-      );
-      if (eliminations) {
-        await processEliminations(newTable, eliminations);
-      }
-      if (
-        eliminations ||
-        ["Heartbeat", "Enter", "Exit", "Attack", "Roll"].indexOf(type) === -1
-      ) {
-        publish.tableStatus(newTable);
-      }
+    newTable = await save(
+      table,
+      gameId ? { ...props, currentGame: gameId } : props,
+      players,
+      lands,
+      watchers,
+      retired
+        ? retired
+        : eliminations
+        ? table.retired.concat(
+            eliminations.filter(e => !e.player.bot).map(e => e.player)
+          )
+        : undefined
+    );
+    if (eliminations) {
+      await processEliminations(newTable, eliminations);
+    }
+    if (
+      eliminations ||
+      ["Heartbeat", "Enter", "Exit", "Attack", "Roll"].indexOf(type) === -1
+    ) {
+      publish.tableStatus(newTable);
     }
   }
   if (next !== null) {
