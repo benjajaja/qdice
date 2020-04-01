@@ -88,9 +88,8 @@ updateLands model posix updates mMove msg =
         in
         { model
             | animations =
-                Dict.union
-                    (attackAnimations layout move_ model.move msg)
-                    model.animations
+                -- new move replaces any older animations
+                attackAnimations layout move_ model.move msg
             , move = move_
         }
 
