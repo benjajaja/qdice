@@ -44,16 +44,19 @@ module.exports.connect = function(jwt) {
     .concat(mqttConfig.port ? [":", mqttConfig.port] : [])
     .concat(["/", mqttConfig.path])
     .join("");
-  var clientId =
-    "elm-dice_" +
-    Math.random()
-      .toString(16)
-      .substr(2, 8);
+  var clientId = sessionClientId();
   client = mqtt.connect(url, {
     clientId: clientId,
     username: mqttConfig.username,
     password: mqttConfig.password,
     resubscribe: false,
+    will: {
+      topic: "death",
+      payload: clientId,
+      properties: {
+        willDelayInterval: 1,
+      },
+    },
   });
 
   var connectionAttempts = 0;
@@ -129,3 +132,26 @@ module.exports.unsubscribe = function(payload) {
 module.exports.publish = function(payload) {
   client.publish(payload[0], payload[1]);
 };
+
+function sessionClientId() {
+  try {
+    var existing = window.sessionStorage.getItem("clientId");
+    if (typeof existing === "string" && existing.length === 17) {
+      return existing;
+    }
+    var id = generateSessionClientId();
+    window.sessionStorage.setItem("clientId", id);
+    return id;
+  } catch (e) {
+    return generateSessionClientId();
+  }
+}
+
+function generateSessionClientId() {
+  return (
+    "elm-dice_" +
+    Math.random()
+      .toString(16)
+      .substr(2, 8)
+  );
+}

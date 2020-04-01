@@ -121,6 +121,7 @@ export type Watcher = {
   id: UserId | null;
   name: string | null;
   lastBeat: number;
+  death: number;
 };
 
 export type Elimination = {

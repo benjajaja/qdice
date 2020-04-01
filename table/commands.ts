@@ -5,7 +5,6 @@ import {
   Land,
   User,
   Player,
-  Watcher,
   CommandResult,
   IllegalMoveError,
   Elimination,
@@ -36,79 +35,7 @@ import {
   ELIMINATION_REASON_SURRENDER,
 } from "../constants";
 import logger from "../logger";
-import endGame from "./endGame";
 import { isBot, tableThemed } from "./bots";
-
-export const heartbeat = (
-  user: User | null,
-  table: Table,
-  clientId: string
-): CommandResult => {
-  const finder =
-    user && user.id ? R.propEq("id", user.id) : R.propEq("clientId", clientId);
-
-  const existing = R.find(finder, table.watching);
-  const watching: ReadonlyArray<Watcher> = existing
-    ? table.watching.map(watcher =>
-        finder(watcher)
-          ? Object.assign({}, watcher, { lastBeat: now() })
-          : watcher
-      )
-    : table.watching.concat([
-        {
-          clientId,
-          id: user && user.id ? user.id : null,
-          name: user ? user.name : null,
-          lastBeat: now(),
-        },
-      ]);
-
-  return { type: "Heartbeat", watchers: watching };
-};
-
-export const enter = (
-  user: User | null,
-  table: Table,
-  clientId: string
-): CommandResult | null => {
-  const existing = R.find(R.propEq("clientId", clientId), table.watching);
-  publish.tableStatus(table, clientId);
-  if (!existing) {
-    publish.enter(table, user ? user.name : null);
-    return {
-      type: "Enter",
-      watchers: R.append(
-        {
-          clientId,
-          id: user && user.id ? user.id : null,
-          name: user ? user.name : null,
-          lastBeat: now(),
-        },
-        table.watching
-      ),
-    };
-  }
-  return null;
-};
-
-export const exit = (
-  user: User | null,
-  table: Table,
-  clientId: string
-): CommandResult | null => {
-  const existing = R.find(R.propEq("clientId", clientId), table.watching);
-  if (existing) {
-    publish.exit(table, user ? user.name : null);
-    return {
-      type: "Exit",
-      watchers: R.filter(
-        R.complement(R.propEq("clientId", clientId)),
-        table.watching
-      ),
-    };
-  }
-  return null;
-};
 
 export const makePlayer = (
   user: User,
