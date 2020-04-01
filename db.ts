@@ -514,7 +514,14 @@ RETURNING *`;
     name.length < 64
       ? await pool.query({ name, text, values })
       : await pool.query(text, values);
-  return camelize(result.rows.pop());
+
+  const row = camelize(result.rows.pop());
+  return {
+    ...row,
+    gameStart: row.gameStart ? row.gameStart.getTime() : 0,
+    turnStart: row.turnStart ? row.turnStart.getTime() : 0,
+    retired: row.retired ?? [],
+  };
 };
 
 export const getTablesStatus = async (): Promise<any> => {

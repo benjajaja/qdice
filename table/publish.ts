@@ -12,9 +12,10 @@ import {
 } from "./serialize";
 import logger from "../logger";
 import * as jwt from "jsonwebtoken";
+import { MqttClient } from "mqtt";
 
-let client;
-export const setMqtt = client_ => {
+let client: MqttClient;
+export const setMqtt = (client_: MqttClient) => {
   client = client_;
 };
 
@@ -26,7 +27,7 @@ export const tableStatus = (table: Table, clientId?) => {
       payload: serializeTable(table),
       table: clientId ? table.name : undefined,
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "tables/" + table.name + "/clients update", table);
@@ -42,7 +43,7 @@ export const join = (table: Table, player: Player) => {
       type: "join",
       payload: serializePlayer(table)(player),
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "tables/" + table.name + "/clients join", player.name);
@@ -58,7 +59,7 @@ export const leave = (table: Table, player: Player) => {
       type: "leave",
       payload: serializePlayer(table)(player),
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(
@@ -78,7 +79,7 @@ export const enter = (table: Table, name) => {
       type: "enter",
       payload: name,
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "tables/" + table.name + "/clients enter", name);
@@ -87,14 +88,14 @@ export const enter = (table: Table, name) => {
   );
 };
 
-export const exit = (table, name) => {
+export const exit = (table: Table, name: string | null) => {
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
       type: "exit",
       payload: name,
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "tables/" + table.name + "/clients exit", name);
@@ -109,14 +110,14 @@ type Roll = {
   turnStart: number;
   players: readonly Player[];
 };
-export const roll = (table, roll: Roll) => {
+export const roll = (table: Table, roll: Roll) => {
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
       type: "roll",
       payload: { ...roll, players: roll.players.map(serializePlayer(table)) },
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "tables/" + table.name + "/clients roll", roll);
@@ -125,14 +126,14 @@ export const roll = (table, roll: Roll) => {
   );
 };
 
-export const move = (table, move) => {
+export const move = (table: Table, move: any) => {
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
       type: "move",
       payload: move,
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "tables/" + table.name + "/clients move", table);
@@ -160,7 +161,7 @@ export const elimination = (
         reason: serializeEliminationReason(table, reason, source),
       },
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(
@@ -189,7 +190,7 @@ export const tables = globalTablesUpdate => {
       type: "tables",
       payload: globalTablesUpdate,
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "clients tables");
@@ -199,14 +200,14 @@ export const tables = globalTablesUpdate => {
 };
 
 export const event = event => {
-  client.publish("events", JSON.stringify(event), undefined, err => {
+  client.publish("events", JSON.stringify(event), undefined!, err => {
     if (err) {
       console.error("pub telegram error", err);
     }
   });
 };
 
-export const clientError = (clientId, error) => {
+export const clientError = (clientId: string, error: Error) => {
   console.error("client error", clientId, error);
   client.publish(
     `clients/${clientId}`,
@@ -214,7 +215,7 @@ export const clientError = (clientId, error) => {
       type: "error",
       payload: error.toString(),
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.error("pub clientError error", err);
@@ -226,14 +227,14 @@ export const clientError = (clientId, error) => {
   }
 };
 
-export const chat = (table, user, message) => {
+export const chat = (table: Table, user: string | null, message: string) => {
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
       type: "chat",
       payload: { user, message },
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "tables/" + table.name + "/clients chat", table);
@@ -242,7 +243,7 @@ export const chat = (table, user, message) => {
   );
 };
 
-export const userUpdate = clientId => (profile, preferences) => {
+export const userUpdate = (clientId: string) => (profile, preferences) => {
   const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
   client.publish(
     `clients/${clientId}`,
@@ -250,7 +251,7 @@ export const userUpdate = clientId => (profile, preferences) => {
       type: "user",
       payload: [profile, token, preferences],
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "tables/?/clients update", clientId);
@@ -259,14 +260,14 @@ export const userUpdate = clientId => (profile, preferences) => {
   );
 };
 
-export const receivedDice = (table, count, player) => {
+export const receivedDice = (table: Table, count: number, player: Player) => {
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
       type: "receive",
       payload: { player: serializePlayer(table)(player), count },
     }),
-    undefined,
+    undefined!,
     err => {
       if (err) {
         console.log(err, "tables/" + table.name + "/clients roll", roll);
@@ -282,7 +283,7 @@ export const sigint = async () =>
       JSON.stringify({
         type: "sigint",
       }),
-      resolve,
+      undefined!,
       err => {
         if (err) {
           console.log(err, "clients tables");
@@ -300,7 +301,7 @@ export const userMessage = async (clientId: string, message: string) =>
         type: "message",
         payload: message,
       }),
-      resolve,
+      undefined!,
       err => {
         if (err) {
           console.log(err, "clients tables");
