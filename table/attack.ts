@@ -76,12 +76,15 @@ export const rollResult = (
       { turnStart: now(), attack: null },
       turnIndex !== undefined ? { turnIndex } : {}
     );
-    publish.roll(table, {
-      from: { emoji: table.attack.from, roll: fromRoll },
-      to: { emoji: table.attack.to, roll: toRoll },
-      turnStart: Math.floor(props.turnStart / 1000),
-      players: players,
-    });
+    publish.roll(
+      { ...table, lands },
+      {
+        from: { emoji: table.attack.from, roll: fromRoll },
+        to: { emoji: table.attack.to, roll: toRoll },
+        turnStart: Math.floor(props.turnStart / 1000),
+        players: players,
+      }
+    );
     const result: CommandResult = {
       type: "Roll",
       table: props,
