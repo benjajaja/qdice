@@ -188,7 +188,12 @@ decodeClientMessage message =
                 "error" ->
                     case decodeString (field "payload" Dec.string) message of
                         Ok error ->
-                            Ok <| ErrorToast error error
+                            Ok <|
+                                if String.startsWith "JsonWebTokenError" error then
+                                    ErrorToast "Login error, please log in again." error
+
+                                else
+                                    ErrorToast error error
 
                         Err err ->
                             Ok <| ErrorToast "💣 Server-client error" <| errorToString err

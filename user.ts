@@ -207,7 +207,9 @@ export const me = async function(req, res, next) {
   } catch (e) {
     logger.error("/me", req.user);
     logger.error(e);
-    next(new errs.InternalError("could not get profile, JWT, or preferences"));
+    next(
+      new errs.BadRequestError("could not get profile, JWT, or preferences")
+    );
   }
 };
 
