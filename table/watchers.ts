@@ -127,6 +127,8 @@ export const cleanWatchers = (table: Table): CommandResult | null => {
     }
   });
   if (stoppedWatching.length > 0) {
+    logger.debug("gone", stoppedWatching);
+
     stoppedWatching.forEach(user => publish.exit(table, user.name));
     return {
       type: "CleanWatchers",
