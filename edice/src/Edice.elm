@@ -293,7 +293,11 @@ update msg model =
         GetProfile res ->
             case res of
                 Err err ->
-                    ( model
+                    let
+                        backend =
+                            model.backend
+                    in
+                    ( { model | user = Anonymous, backend = { backend | jwt = Nothing } }
                     , toastError "Could not sign in, please retry" <| httpErrorToString err
                     )
 
