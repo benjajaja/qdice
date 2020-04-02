@@ -10,37 +10,13 @@ jobs:
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
         paths:
         - ~/repo
-  install_dependencies:
-    docker:
-    - image: circleci/node:10.15.3
-    working_directory: ~/repo
-    steps:
-    - restore_cache:
-        name: Checkout source code
-        key: repo-{{ .Environment.CIRCLE_SHA1 }}
-    - restore_cache:
-        name: Restore Yarn package cache
-        keys:
-        - yarn-packages-{{ checksum "yarn.lock" }}
-    - run:
-        name: Install dependencies
-        command: yarn install --frozen-lockfile
-    - run:
-        working_directory: ~/repo/edice
-        name: Install dependencies (edice)
-        command: yarn install --frozen-lockfile
-    - save_cache:
-        name: Save Yarn package cache
-        key: yarn-packages-{{ checksum "yarn.lock" }}
-        paths:
-        - ~/.cache/yarn
-  build_image:
+  build_backend:
     docker:
     - image: circleci/node:10.15.3
     working_directory: ~/repo
     steps:
     - setup_remote_docker:
-        docker_layer_caching: true
+        docker_layer_caching: false
     - restore_cache:
         name: Checkout source code
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
@@ -53,14 +29,37 @@ jobs:
           docker login \
             --username $DOCKERHUB_USERNAME \
             --password $DOCKERHUB_PASSWORD
-          docker push bgrosse/qdice:latest
+          docker push bgrosse/qdice:backend
+  build_frontend:
+    docker:
+    - image: circleci/node:10.15.3
+    working_directory: ~/repo
+    steps:
+    - setup_remote_docker:
+        docker_layer_caching: false
+    - restore_cache:
+        name: Checkout source code
+        key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - run:
+        name: Build Docker image
+        command: |
+          ./scripts/build.frontend.sh local
+          ./scripts/build.frontend.sh production
+    - run:
+        name: Push image to container registry
+        command: |
+          docker login \
+            --username $DOCKERHUB_USERNAME \
+            --password $DOCKERHUB_PASSWORD
+          docker push bgrosse/qdice:frontend-local
+          docker push bgrosse/qdice:frontend-production
   build_e2e:
     docker:
     - image: circleci/node:10.15.3
     working_directory: ~/repo
     steps:
     - setup_remote_docker:
-        docker_layer_caching: true
+        docker_layer_caching: false
     - restore_cache:
         name: Checkout source code
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
@@ -68,56 +67,6 @@ jobs:
         name: Build e2e
         command: |
           docker build ./e2e -t qdice2e
-  test_web:
-    docker:
-    - image: circleci/node:10.15.3
-    working_directory: ~/repo
-    environment:
-      git_log: dummy
-    steps:
-    - restore_cache:
-        name: Checkout source code
-        key: repo-{{ .Environment.CIRCLE_SHA1 }}
-    - restore_cache:
-        name: Restore Yarn package cache
-        keys:
-        - yarn-packages-{{ checksum "yarn.lock" }}
-    - run:
-        working_directory: ~/repo/edice
-        name: Install dependencies
-        command: yarn install --frozen-lockfile
-    - run:
-        working_directory: ~/repo/edice
-        command: yarn generate-maps
-    - run:
-        working_directory: ~/repo/edice
-        command: yarn generate-changelog
-    - run:
-        working_directory: ~/repo/edice
-        command: yarn build
-    - run:
-        working_directory: ~/repo/edice
-        command: yarn test
-  test_nodejs:
-    docker:
-    - image: circleci/node:10.15.3
-    working_directory: ~/repo
-    steps:
-    - restore_cache:
-        name: Checkout source code
-        key: repo-{{ .Environment.CIRCLE_SHA1 }}
-    - restore_cache:
-        name: Restore Yarn package cache
-        keys:
-        - yarn-packages-{{ checksum "yarn.lock" }}
-    - run:
-        name: Install dependencies
-        command: yarn install --frozen-lockfile
-    - run:
-        name: Generate maps
-        command: yarn generate-maps
-    - run:
-        command: yarn jest
   test_e2e:
     docker:
     - image: circleci/node:10.15.3
@@ -133,7 +82,7 @@ jobs:
           chmod +x ~/docker-compose
           sudo mv ~/docker-compose /usr/local/bin/docker-compose
     - setup_remote_docker:
-        docker_layer_caching: true
+        docker_layer_caching: false
     - run:
         name: Create network
         command: docker network create qdice || true
@@ -142,7 +91,16 @@ jobs:
         command: |
           set -x
           docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
-          docker-compose -p nodice up -d
+          cat << EOF > .env
+          JWT_SECRET=anything
+          MQTT_PASSWORD=anything
+          POSTGRES_PASSWORD=anything
+          EMQX_DASHBOARD_PASSWORD=anything
+          VAPID_PUBLIC_KEY=BEnGLJDU-XZxCNlZ0uS6AsjXdVLPRDcAtK3H9SL-k_rslQJE1B98x_Dcqx3uL99gp_aiaVaX3-t73bQtzpt_tKk
+          VAPID_PRIVATE_KEY=f7964cnG2s8Qt7fKIyaHKzv_d4AD1oqweZ5BQ7J444A
+          AVATAR_PATH=./avatars
+          EOF
+          docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
     - run:
         name: Run e2e
         command: |
@@ -164,30 +122,26 @@ workflows:
   build_and_test:
     jobs:
     - checkout_code
-    - build_image:
+    - build_backend:
+        context: qdice
+        requires:
+        - checkout_code
+    - build_frontend:
+        context: qdice
         requires:
         - checkout_code
     - build_e2e:
         requires:
         - checkout_code
     - test_e2e:
+        context: qdice
         requires:
-        - build_image
+        - build_backend
+        - build_frontend
         - build_e2e
-    - install_dependencies:
-        requires:
-        - checkout_code
-    - test_nodejs:
-        requires:
-        - install_dependencies
-    - test_web:
-        requires:
-        - install_dependencies
     - deploy:
         requires:
         - test_e2e
-        - test_nodejs
-        - test_web
         filters:
           branches:
             only: master
