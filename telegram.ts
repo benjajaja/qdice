@@ -251,6 +251,16 @@ bot.command("dados", ctx => {
   ctx.reply(`${name} ha tirado: ${rolls}`);
 });
 
+bot.command("rank", ctx => {
+  console.log(ctx.message.from);
+  const {
+    text,
+    from: { first_name: name },
+  } = ctx.message;
+  const roll = rand(1, 6);
+  ctx.reply(`${name} ha tirado un: ${roll} ${dice[roll - 1]}`);
+});
+
 bot.on("sticker", ctx => ctx.reply("👍"));
 
 bot.on("inline_query", ctx => {

@@ -549,6 +549,7 @@ update msg model =
                 | game =
                     { game
                         | board = board
+                        , chatOverlay = Animation.update animateMsg model.game.chatOverlay
                     }
                 , loginPassword =
                     { loginPassword
@@ -895,6 +896,7 @@ mainViewSubscriptions model =
         , Animation.subscription Animate
             [ Tuple.first model.loginPassword.animations
             , Tuple.second model.loginPassword.animations
+            , model.game.chatOverlay
             ]
         ]
 
