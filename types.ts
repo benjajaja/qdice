@@ -138,27 +138,17 @@ export type EliminationSource =
 export type EliminationReason = "☠" | "💤" | "🏆" | "🏳";
 
 export class IllegalMoveError extends Error {
-  userId?: UserId;
-  emojiFrom?: Emoji;
-  emojiTo?: Emoji;
-  fromLand?: Land;
-  toLand?: Land;
+  bot: boolean;
 
-  constructor(
-    message: string,
-    userId?: UserId,
-    emojiFrom?: Emoji,
-    emojiTo?: Emoji,
-    fromLand?: Land,
-    toLand?: Land
-  ) {
+  constructor(message: string, player?: Player | boolean) {
     super(message);
     Object.setPrototypeOf(this, IllegalMoveError.prototype);
-    this.userId = userId;
-    this.emojiFrom = emojiFrom;
-    this.emojiTo = emojiTo;
-    this.fromLand = fromLand;
-    this.toLand = toLand;
+    this.bot =
+      player === undefined
+        ? false
+        : typeof player === "boolean"
+        ? player
+        : !!player.bot;
   }
 }
 
