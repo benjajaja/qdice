@@ -148,7 +148,7 @@ export const start = async (
       } catch (e) {
         publish.clientError(clientId, e);
         if (e instanceof IllegalMoveError) {
-          logger.error(e, e.userId, "illegal move caught gracefully");
+          logger.error(e, e.bot, "illegal move caught gracefully");
           Sentry.captureException(e);
         } else if (e instanceof jwt.JsonWebTokenError) {
           logger.error(e, "bad JWT token");
@@ -248,10 +248,7 @@ const toCommand = (
 };
 const assertUser = (type: CommandType, user: User | null): User => {
   if (user === null) {
-    throw new IllegalMoveError(
-      `user is null (for command "${type}")`,
-      undefined
-    );
+    throw new IllegalMoveError(`user is null (for command "${type}")`);
   }
   return user;
 };
@@ -263,7 +260,7 @@ const findPlayer = (
   const u = assertUser(type, user);
   const existing = table.players.filter(p => p.id === u.id).pop();
   if (!existing) {
-    throw new IllegalMoveError("not playing", u.id);
+    throw new IllegalMoveError("not playing");
   }
   return existing;
 };

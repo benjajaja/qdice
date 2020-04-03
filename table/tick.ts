@@ -135,7 +135,7 @@ const tick = async (tableTag: string, lock) => {
       if (e instanceof IllegalMoveError) {
         logger.error(
           e,
-          e.userId,
+          e.bot,
           "illegal move from tick caught gracefully",
           command
         );
