@@ -221,20 +221,21 @@ const takeover = (
 
   logger.debug("takeover", typeof user.id);
 
-  const bestBot = table.players
-    .filter(isBot)
-    .reduce((best: BotPlayer | null, bot) => {
-      if (
-        best === null ||
-        table.lands.filter(land => land.color === bot.color).length >
-          table.lands.filter(land => land.color === best.color).length
-      ) {
-        return bot;
-      }
-      return best;
-    }, null);
+  const sortedBots = R.sortWith(
+    [
+      R.descend(
+        bot => table.lands.filter(land => land.color === bot.color).length
+      ),
+      R.descend(bot =>
+        R.sum(table.lands.filter(land => land.color).map(l => l.points))
+      ),
+    ],
+    table.players.filter(isBot)
+  );
 
-  if (bestBot === null) {
+  const bestBot = sortedBots.length >= 2 ? sortedBots[1] : sortedBots[0];
+
+  if (!bestBot) {
     throw new IllegalMoveError("could not find a bot to takeover", false);
   }
 
