@@ -1,5 +1,6 @@
 module Game.View exposing (view)
 
+import Animation
 import Array
 import Awards
 import Backend.Types exposing (ConnectionStatus(..))
@@ -8,7 +9,7 @@ import Board.Colors
 import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
-import Game.State exposing (canHover)
+import Game.State exposing (canHover, isChat)
 import Game.Types exposing (Msg(..), Player, PlayerAction(..), isBot, statusToString)
 import Helpers exposing (dataTestId, find, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
@@ -83,6 +84,24 @@ boardFooter model =
     div [ class "edGameBoardFooter" ] <|
         playerBar 0 model
             :: toolbar
+            ++ chatOverlay model
+
+
+chatOverlay : Model -> List (Html Msg)
+chatOverlay model =
+    case List.reverse model.game.chatLog |> List.filter isChat |> List.head of
+        Just last ->
+            [ div
+                (class "edChatOverlay"
+                    :: Animation.render
+                        model.game.chatOverlay
+                )
+                [ Game.Chat.chatLine last
+                ]
+            ]
+
+        Nothing ->
+            []
 
 
 playerBar : Int -> Model -> Html Msg

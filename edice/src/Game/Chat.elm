@@ -1,4 +1,4 @@
-module Game.Chat exposing (chatBox, chatPlayerTag, eliminationEmoji, eliminationReasonText, gameBox, input, maybeUserChatTag, playerTag, rollLine)
+module Game.Chat exposing (chatBox, chatLine, chatPlayerTag, eliminationEmoji, eliminationReasonText, gameBox, input, maybeUserChatTag, playerTag, rollLine)
 
 import Board.Colors exposing (baseCssRgb, colorName)
 import Game.Types exposing (ChatLogEntry(..), Player, PlayerAction(..), RollLog, userColor)
@@ -18,29 +18,7 @@ chatBox inputValue colors lines id_ =
     div [ class "chatbox" ] <|
         [ div [ class "chatbox--log", id id_ ]
             (List.map
-                (\c ->
-                    case c of
-                        LogChat user color message ->
-                            div [ class "chatbox--line--chat" ]
-                                [ chatPlayerTag user color
-                                , Html.text ": "
-                                , Html.span []
-                                    [ Html.text message ]
-                                ]
-
-                        LogEnter user ->
-                            div [ class "chatbox--line--enter" ]
-                                [ Html.text <| maybeUserChatTag user ++ " is here"
-                                ]
-
-                        LogExit user ->
-                            div [ class "chatbox--line--exit" ]
-                                [ Html.text <| maybeUserChatTag user ++ " is gone"
-                                ]
-
-                        _ ->
-                            Html.text "^M"
-                )
+                chatLine
                 lines
             )
         , div [ class "chatbox--actions" ]
@@ -55,6 +33,31 @@ chatBox inputValue colors lines id_ =
                 ]
             ]
         ]
+
+
+chatLine : ChatLogEntry -> Html Types.Msg
+chatLine line =
+    case line of
+        LogChat user color message ->
+            div [ class "chatbox--line--chat" ]
+                [ chatPlayerTag user color
+                , Html.text ": "
+                , Html.span []
+                    [ Html.text message ]
+                ]
+
+        LogEnter user ->
+            div [ class "chatbox--line--enter" ]
+                [ Html.text <| maybeUserChatTag user ++ " is here"
+                ]
+
+        LogExit user ->
+            div [ class "chatbox--line--exit" ]
+                [ Html.text <| maybeUserChatTag user ++ " is gone"
+                ]
+
+        _ ->
+            Html.text "^M"
 
 
 input : String -> Html Types.Msg

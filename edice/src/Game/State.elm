@@ -1,5 +1,6 @@
-module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, setUser, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
+module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, isChat, setUser, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
 
+import Animation
 import Backend
 import Backend.MqttCommands exposing (attack, sendGameCommand)
 import Backend.Types exposing (Topic(..))
@@ -14,6 +15,7 @@ import Maps exposing (load)
 import Snackbar exposing (toastMessage)
 import Tables exposing (Map, Table)
 import Task
+import Time
 import Types exposing (Msg(..), SessionPreferences, User(..))
 
 
@@ -55,6 +57,11 @@ init table tableMap_ =
 
             Nothing ->
                 []
+    , chatOverlay =
+        Animation.style
+            [ Animation.translate (Animation.percent 0)
+                (Animation.percent -100)
+            ]
     , isPlayerOut = False
     , playerPosition = 0
     , roundCount = 0
@@ -718,7 +725,33 @@ update model game msg =
     case msg of
         ScrollChat id entry res ->
             ( if isChat entry then
-                { model | game = { game | chatLog = List.append game.chatLog [ entry ] } }
+                { model
+                    | game =
+                        { game
+                            | chatLog = List.append game.chatLog [ entry ]
+                            , chatOverlay =
+                                case entry of
+                                    LogChat _ _ _ ->
+                                        Animation.interrupt
+                                            [ Animation.set [ Animation.translate (Animation.percent 0) (Animation.percent 300) ]
+                                            , Animation.toWith
+                                                (Animation.easing
+                                                    { duration = 500
+                                                    , ease = \x -> x ^ 2
+                                                    }
+                                                )
+                                                [ Animation.translate (Animation.percent 0) (Animation.percent -100) ]
+                                            , Animation.wait <| Time.millisToPosix 10000
+                                            , Animation.to
+                                                [ Animation.translate (Animation.percent 0) (Animation.percent 500)
+                                                ]
+                                            ]
+                                            model.game.chatOverlay
+
+                                    _ ->
+                                        model.game.chatOverlay
+                        }
+                }
 
               else
                 { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }

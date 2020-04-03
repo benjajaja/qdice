@@ -1,5 +1,6 @@
 module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, isBot, makePlayer, statusToIcon, statusToString, userColor)
 
+import Animation
 import Board exposing (LandUpdate)
 import Browser.Dom as Dom
 import Land exposing (Color, Emoji)
@@ -48,6 +49,7 @@ type alias Model =
     , chatInput : String
     , chatLog : List ChatLogEntry
     , gameLog : List ChatLogEntry
+    , chatOverlay : Animation.State
     , isPlayerOut : Bool
     , playerPosition : Int
     , roundCount : Int
