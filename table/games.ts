@@ -1,22 +1,24 @@
 import { CommandResult, Table, Command } from "../types";
 import * as db from "../db";
 
-export const addGameEvent = async (
+export const startGameEvent = async (
   table: Table,
-  command: Command,
   result: CommandResult | null
+): Promise<number | null> => {
+  return (await db.addGame({ ...table, ...(result ?? {}) })).id;
+};
+
+export const addGameEvent = async (
+  tableName: string,
+  gameId: number,
+  command: Command
 ): Promise<number | null> => {
   if (command.type === "Clear" || command.type === "Heartbeat") {
     return null;
   }
-  let gameId =
-    command.type === "Start"
-      ? (await db.addGame({ ...table, ...(result ?? {}) })).id
-      : table.currentGame;
 
-  if (gameId !== null) {
-    setImmediate(() => db.addGameEvent(gameId!, command));
-  }
+  setImmediate(() => db.addGameEvent(gameId!, command));
+
   if (command.type === "EndGame") {
     return 0;
   }

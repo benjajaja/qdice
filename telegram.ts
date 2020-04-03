@@ -17,6 +17,8 @@ import * as db from "./db";
 import logger from "./logger";
 import { GAME_START_COUNTDOWN } from "./constants";
 import { now } from "./timestamp";
+import { addGameEvent } from "./table/games";
+import { Command } from "./types";
 
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
   console.log(
@@ -52,6 +54,7 @@ var client = mqtt.connect(process.env.MQTT_URL, {
   password: process.env.MQTT_PASSWORD,
 });
 client.subscribe("events");
+client.subscribe("game_events");
 
 var lastJoinPlayer: string | null = null;
 client.on("message", async (topic, message) => {
@@ -171,6 +174,21 @@ client.on("message", async (topic, message) => {
         });
       }
     }
+  } else if (topic === "game_events") {
+    const {
+      tableName,
+      gameId,
+      command,
+    }: { tableName: string; gameId: number; command: Command } = JSON.parse(
+      message.toString()
+    );
+    await addGameEvent(tableName, gameId, command);
+    // console.log("added game_events", tableName, gameId, command.type);
+    // switch (command.type) {
+    // case "Roll":
+    // console.log("attack", command);
+    // break;
+    // }
   }
 });
 

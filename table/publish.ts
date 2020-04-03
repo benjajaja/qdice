@@ -4,6 +4,7 @@ import {
   Emoji,
   EliminationReason,
   EliminationSource,
+  Command,
 } from "../types";
 import {
   serializeTable,
@@ -310,3 +311,27 @@ export const userMessage = async (clientId: string, message: string) =>
       }
     );
   });
+
+export const gameEvent = async (
+  tableName: string,
+  gameId: number,
+  command: Command
+) => {
+  new Promise(resolve => {
+    client.publish(
+      "game_events",
+      JSON.stringify({
+        tableName,
+        gameId,
+        command,
+      }),
+      undefined!,
+      err => {
+        if (err) {
+          console.log(err, "clients tables");
+        }
+        resolve();
+      }
+    );
+  });
+};
