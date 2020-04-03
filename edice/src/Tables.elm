@@ -13,6 +13,7 @@ type Map
     | DeLucía
     | Sabicas
     | Planeta
+    | Montoya
 
 
 
@@ -42,6 +43,9 @@ decodeMap name =
         "Planeta" ->
             Just Planeta
 
+        "Montoya" ->
+            Just Montoya
+
         _ ->
             Nothing
 
@@ -69,3 +73,6 @@ encodeMap map =
 
         Sabicas ->
             "Sabicas"
+
+        Montoya ->
+            "Montoya"
