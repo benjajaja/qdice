@@ -54,6 +54,12 @@ if ("Notification" in window) {
     Sentry.captureException(e);
   }
 }
+var muted = false;
+try {
+  muted = JSON.parse(localStorage.getItem("session.muted") || "false");
+} catch (e) {
+  Sentry.captureException(e);
+}
 
 var app = Elm.App.init({
   node: document.body,
@@ -63,7 +69,7 @@ var app = Elm.App.init({
     isTelegram: isTelegram,
     screenshot: /[?&]screenshot/.test(window.location.search),
     notificationsEnabled: notificationsEnabled,
-    muted: JSON.parse(localStorage.getItem("session.muted") || "false"),
+    muted: muted,
     zip: !!zip,
   },
 });
@@ -73,10 +79,14 @@ app.ports.started.subscribe(function(msg) {
 });
 
 app.ports.saveToken.subscribe(function(token) {
-  if (token !== null) {
-    localStorage.setItem("jwt_token", token);
-  } else {
-    localStorage.removeItem("jwt_token");
+  try {
+    if (token !== null) {
+      localStorage.setItem("jwt_token", token);
+    } else {
+      localStorage.removeItem("jwt_token");
+    }
+  } catch (e) {
+    Sentry.captureException(e);
   }
 });
 
@@ -87,9 +97,17 @@ app.ports.consoleDebug.subscribe(function(string) {
   console.groupEnd();
 });
 
-var snackbar = require("node-snackbar/dist/snackbar.min.js");
+var snackbar = function(options) {
+  try {
+    var snackbar = require("node-snackbar/dist/snackbar.min.js");
+    snackbar.show(options);
+  } catch (e) {
+    console.error(e);
+    Sentry.captureException(e);
+  }
+};
 app.ports.toast.subscribe(function(options) {
-  snackbar.show(
+  snackbar(
     Object.assign(options, {
       pos: "bottom-center",
       actionTextColor: "#38d6ff",
@@ -199,7 +217,7 @@ app.ports.requestNotifications.subscribe(function() {
         JSON.stringify(subscription),
         null,
       ]);
-      snackbar.show({
+      snackbar({
         text: "Notifications are enabled",
         pos: "bottom-center",
         actionTextColor: "#38d6ff",
@@ -213,7 +231,7 @@ app.ports.requestNotifications.subscribe(function() {
           JSON.stringify(subscription),
           null,
         ]);
-        snackbar.show({
+        snackbar({
           text:
             permission === "granted"
               ? "Notifications are now enabled"
@@ -225,7 +243,7 @@ app.ports.requestNotifications.subscribe(function() {
     });
   } else if (Notification.permission === "denied") {
     app.ports.notificationsChange.send(["denied", null, null]);
-    snackbar.show({
+    snackbar({
       text:
         'It seems that you have blocked notifications at some time before. Try clicking on the lock icon next to the URL and look for "Notifications" or "Permissions" and unblock it.',
       pos: "bottom-center",
@@ -240,69 +258,81 @@ app.ports.renounceNotifications.subscribe(function(jwt) {
     return registration.pushManager
       .getSubscription()
       .then(function(subscription) {
-        localStorage.removeItem("notifications");
-        app.ports.notificationsChange.send([
-          "denied",
-          JSON.stringify(subscription),
-          jwt,
-        ]);
+        try {
+          localStorage.removeItem("notifications");
+          app.ports.notificationsChange.send([
+            "denied",
+            JSON.stringify(subscription),
+            jwt,
+          ]);
+        } catch (e) {
+          Sentry.captureException(e);
+        }
       });
   });
 });
 
 function enablePush() {
-  localStorage.setItem("notifications", "2");
-  return navigator.serviceWorker.ready
-    .then(function(registration) {
-      return registration.pushManager
-        .getSubscription()
-        .then(function(subscription) {
-          if (subscription) {
-            return subscription;
-          }
+  try {
+    localStorage.setItem("notifications", "2");
+    return navigator.serviceWorker.ready
+      .then(function(registration) {
+        return registration.pushManager
+          .getSubscription()
+          .then(function(subscription) {
+            if (subscription) {
+              return subscription;
+            }
 
-          return new Promise(function(resolve) {
-            app.ports.pushGetKey.send(null);
-            app.ports.pushSubscribe.subscribe(function(vapidPublicKey) {
-              const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-              resolve(
-                registration.pushManager.subscribe({
-                  userVisibleOnly: true,
-                  applicationServerKey: convertedVapidKey,
-                })
-              );
+            return new Promise(function(resolve) {
+              app.ports.pushGetKey.send(null);
+              app.ports.pushSubscribe.subscribe(function(vapidPublicKey) {
+                const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+                resolve(
+                  registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: convertedVapidKey,
+                  })
+                );
+              });
             });
           });
-        });
-    })
-    .then(function(subscription) {
-      app.ports.pushRegister.send(JSON.stringify(subscription));
-      return subscription;
-    })
-    .catch(function(error) {
-      console.error("Error while subscribing push:", error);
-    });
+      })
+      .then(function(subscription) {
+        app.ports.pushRegister.send(JSON.stringify(subscription));
+        return subscription;
+      })
+      .catch(function(error) {
+        console.error("Error while subscribing push:", error);
+      });
+  } catch (e) {
+    Sentry.captureException(e);
+  }
 }
 
 function notification(title, actions) {
-  if (
-    localStorage.getItem("notifications") === "1" &&
-    "Notification" in window &&
-    Notification.permission === "granted" &&
-    serviceWorkerRegistration !== null &&
-    typeof document.visibilityState !== "undefined" &&
-    document.visibilityState === "hidden"
-  ) {
-    var notification = serviceWorkerRegistration.showNotification(title, {
-      icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
-      badge: "https://qdice.wtf/assets/monochrome.png",
-      actions: actions,
-      vibrate: [50, 100, 50],
-    });
-    notification.onclick = function(event) {
-      event.preventDefault();
-      notification.close();
-    };
+  try {
+    if (
+      localStorage.getItem("notifications") === "1" &&
+      "Notification" in window &&
+      Notification.permission === "granted" &&
+      serviceWorkerRegistration !== null &&
+      typeof document.visibilityState !== "undefined" &&
+      document.visibilityState === "hidden"
+    ) {
+      var notification = serviceWorkerRegistration.showNotification(title, {
+        icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
+        badge: "https://qdice.wtf/assets/monochrome.png",
+        actions: actions,
+        vibrate: [50, 100, 50],
+      });
+      notification.onclick = function(event) {
+        event.preventDefault();
+        notification.close();
+      };
+    }
+  } catch (e) {
+    Sentry.captureException(e);
   }
 }
 
@@ -319,19 +349,10 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-try {
-  if (localStorage.getItem("notifications") === "1") {
-    // this was a hotfix in production
-    snackbar.show({
-      text: 'Please click "Enable notifications" one more time',
-      pos: "bottom-center",
-      actionTextColor: "#38d6ff",
-    });
-  }
-} catch (e) {
-  Sentry.captureException(e);
-}
-
 app.ports.setSessionPreference.subscribe(function(keyValue) {
-  localStorage.setItem("session." + keyValue[0], keyValue[1]);
+  try {
+    localStorage.setItem("session." + keyValue[0], keyValue[1]);
+  } catch (e) {
+    Sentry.captureException(e);
+  }
 });
