@@ -20,7 +20,7 @@ footer model =
 
 tableOfTables : Model -> Html.Html Types.Msg
 tableOfTables model =
-    table [ class "edGameTable" ]
+    table [ class "edGameTable", style "-webkit-user-select" "none" ]
         [ thead []
             [ tr []
                 [ th [ align "left" ] [ text "Table" ]
@@ -35,40 +35,39 @@ tableOfTables model =
                 ]
             ]
         , tbody [] <|
-            List.indexedMap
-                (\i ->
-                    \table ->
-                        tr
-                            [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
-                            , dataTestId <| "go-to-table-" ++ table.table
+            List.map
+                (\table ->
+                    tr
+                        [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
+                        , dataTestId <| "go-to-table-" ++ table.table
+                        ]
+                        [ td [ align "left" ] [ text <| table.table ]
+                        , td [ align "right" ] [ text <| String.fromInt table.points ]
+                        , td [ align "right" ]
+                            [ text <|
+                                String.concat
+                                    [ String.fromInt table.playerCount
+                                    , " / "
+                                    , String.fromInt table.startSlots
+                                    , "-"
+                                    , String.fromInt table.playerSlots
+                                    ]
                             ]
-                            [ td [ align "left" ] [ text <| table.table ]
-                            , td [ align "right" ] [ text <| String.fromInt table.points ]
-                            , td [ align "right" ]
-                                [ text <|
-                                    String.concat
-                                        [ String.fromInt table.playerCount
-                                        , " / "
-                                        , String.fromInt table.startSlots
-                                        , "-"
-                                        , String.fromInt table.playerSlots
-                                        ]
-                                ]
-                            , td [ align "right" ]
-                                [ text <|
-                                    if table.params.botLess then
-                                        "No"
+                        , td [ align "right" ]
+                            [ text <|
+                                if table.params.botLess then
+                                    "No"
 
-                                    else
-                                        "Yes"
-                                ]
-                            , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
-                            , td [ align "right" ]
-                                [ Icon.icon <| statusToIcon table.status ]
-                            , td [ align "right" ] [ text <| String.fromInt table.landCount ]
-
-                            -- , td [ align "right" ] [ text <| String.fromInt table.stackSize ]
+                                else
+                                    "Yes"
                             ]
+                        , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
+                        , td [ align "right" ]
+                            [ Icon.icon <| statusToIcon table.status ]
+                        , td [ align "right" ] [ text <| String.fromInt table.landCount ]
+
+                        -- , td [ align "right" ] [ text <| String.fromInt table.stackSize ]
+                        ]
                 )
                 model.tableList
         ]
