@@ -21,7 +21,7 @@ import * as db from "./db";
 import * as publish from "./table/publish";
 import * as tick from "./table/tick";
 import { getTable } from "./table/get";
-import { addGameEvent } from "./table/games";
+import { addGameEvent, startGameEvent } from "./table/games";
 import nextTurn from "./table/turn";
 import { startGame, preloadStartingPositions } from "./table/start";
 import {
@@ -319,7 +319,10 @@ export const processCommand = async (table: Table, command: Command) => {
   let [result, next] = await commandResult(table, command);
   let newTable = table;
 
-  let gameId = await addGameEvent(table, command, result);
+  let gameId: number | null = null;
+  if (command.type === "Start") {
+    gameId = await startGameEvent(table, result);
+  }
 
   if (result !== null) {
     const {
@@ -354,6 +357,9 @@ export const processCommand = async (table: Table, command: Command) => {
       ["Heartbeat", "Enter", "Exit", "Attack", "Roll"].indexOf(type) === -1
     ) {
       publish.tableStatus(newTable);
+    }
+    if (table.currentGame ?? gameId) {
+      publish.gameEvent(table.tag, (table.currentGame ?? gameId)!, command);
     }
   }
   if (next !== null) {
