@@ -857,28 +857,11 @@ button .material-icons, .edButton .material-icons {
   color: #efefef;
 }
 
-@media (min-width: 896px) {
-  .edMainScreen {
-    width: 800px;
-    margin: 0 auto;
-  }
-  .edGameHeader {
-    width: 800px;
-    margin: 0 auto;
-    padding-left: 0;
-  }
-  .edFooter--struts {
-    width: 800px;
-  }
-}
-@media (min-width: 1000px) {
+@media (min-width: 900px) {
   .edMainScreen, .edGameHeader {
     width: 900px;
-  }
-}
-@media (min-width: 1100px) {
-  .edMainScreen, .edGameHeader {
-    width: 1000px;
+    margin: 0 auto;
+    padding-left: 0;
   }
 }
 
