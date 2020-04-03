@@ -95,7 +95,17 @@ const tick = async (tableTag: string, lock) => {
             fromLand.points,
             toLand.points
           );
-          command = { type: "Roll", fromRoll, toRoll };
+          const defender =
+            table.players.find(p => p.color === toLand.color) ?? null;
+          command = {
+            type: "Roll",
+            attacker: table.players[table.turnIndex],
+            defender,
+            from: table.attack.from,
+            to: table.attack.to,
+            fromRoll,
+            toRoll,
+          };
         }
         // never process anything else during attack
       } else if (table.players[table.turnIndex].out) {

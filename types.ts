@@ -190,7 +190,17 @@ export type Command =
     >
   | CommandSkeleton<"Leave", { player: Player }>
   | CommandSkeleton<"Attack", { player: Player; from: string; to: string }>
-  | CommandSkeleton<"Roll", { fromRoll: number[]; toRoll: number[] }>
+  | CommandSkeleton<
+      "Roll",
+      {
+        attacker: Player;
+        defender: Player | null;
+        from: string;
+        to: string;
+        fromRoll: number[];
+        toRoll: number[];
+      }
+    >
   | CommandSkeleton<"EndTurn", { player: Player }>
   | CommandSkeleton<"SitOut", { player: Player }>
   | CommandSkeleton<"SitIn", { player: Player }>
