@@ -43,7 +43,7 @@ module.exports = {
       tag: "Polo",
       name: "Polo",
       mapName: "Melchor",
-      playerSlots: 6,
+      playerSlots: 3,
       startSlots: 2,
       points: 100,
       stackSize: 8,

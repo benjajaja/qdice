@@ -33,6 +33,7 @@ import {
   COLOR_NEUTRAL,
   GAME_START_COUNTDOWN,
   ELIMINATION_REASON_SURRENDER,
+  GAME_START_COUNTDOWN_FULL,
 } from "../constants";
 import logger from "../logger";
 import { isBot, tableThemed } from "./bots";
@@ -153,7 +154,11 @@ export const join = (
   publish.join(table, player);
 
   if (players.length >= table.startSlots) {
-    gameStart = addSeconds(GAME_START_COUNTDOWN);
+    gameStart = addSeconds(
+      players.length >= table.playerSlots
+        ? GAME_START_COUNTDOWN_FULL
+        : GAME_START_COUNTDOWN
+    );
 
     publish.event({
       type: "countdown",
