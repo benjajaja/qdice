@@ -183,12 +183,17 @@ client.on("message", async (topic, message) => {
       message.toString()
     );
     await addGameEvent(tableName, gameId, command);
-    // console.log("added game_events", tableName, gameId, command.type);
-    // switch (command.type) {
-    // case "Roll":
-    // console.log("attack", command);
-    // break;
-    // }
+    switch (command.type) {
+      case "Roll":
+        const success = R.sum(command.fromRoll) > R.sum(command.toRoll);
+        // console.log(
+        // "attack",
+        // command.attacker.name,
+        // success ? "SUCCESS" : "FAILED",
+        // command.defender?.name ?? "Neutral"
+        // );
+        break;
+    }
   }
 });
 
@@ -229,6 +234,7 @@ bot.command("dado", ctx => {
   const roll = rand(1, 6);
   ctx.reply(`${name} ha tirado un: ${roll} ${dice[roll - 1]}`);
 });
+
 bot.command("dados", ctx => {
   const {
     text,
