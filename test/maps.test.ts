@@ -183,9 +183,11 @@ describe("Maps", () => {
       .map(t => t.mapName)
       .forEach(mapName => {
         const [lands, _] = maps.loadMap(mapName);
-        it(`${mapName} should be fixed`, () => {
-          assert.equal(lands.map(l => l.emoji).join(""), orders[mapName]);
-        });
+        if (orders[mapName]) {
+          it(`${mapName} should be fixed`, () => {
+            assert.equal(lands.map(l => l.emoji).join(""), orders[mapName]);
+          });
+        }
       });
   });
 });

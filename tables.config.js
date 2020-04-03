@@ -70,8 +70,21 @@ module.exports = {
       name: "Arabia",
       mapName: "Sabicas",
       playerSlots: 8,
-      startSlots: 8,
+      startSlots: 4,
       points: 500,
+      stackSize: 8,
+      params: {
+        noFlagRounds: 5,
+        botLess: true,
+      },
+    },
+    {
+      tag: "Europa",
+      name: "Europa",
+      mapName: "Montoya",
+      playerSlots: 8,
+      startSlots: 8,
+      points: 200,
       stackSize: 8,
       params: {
         noFlagRounds: 5,
