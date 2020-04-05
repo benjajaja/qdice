@@ -71,7 +71,7 @@ realLands :
 realLands layout pathCache move hovered lands =
     g [] <|
         List.map
-            (lazyLandElement (Debug.log "layout" layout)
+            (lazyLandElement layout
                 pathCache
                 move
                 hovered
