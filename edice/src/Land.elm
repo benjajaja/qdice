@@ -1,9 +1,8 @@
-module Land exposing (Border, Cells, Color(..), Emoji, Land, Layout, Map, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, myLayout, nextBorders, nextBorders_, offsetToHex, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
+module Land exposing (Cells, Color(..), Emoji, Land, Map, MapSize, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, nextBorders, nextBorders_, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
 
 import Helpers exposing (find, findIndex)
-import Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
-import Hexagons.Hex as HH exposing (Direction, Hex, eq)
-import Hexagons.Layout as HL exposing (Layout, offsetToHex, orientationLayoutPointy)
+import Hex exposing (Hex, Point, borderLeftCorner, cellCubicCoords, hexToOffset, offsetToHex)
+import Hexagons.Hex as HH exposing (Direction)
 import List
 import Random
 
@@ -28,10 +27,8 @@ type alias Land =
     }
 
 
-type alias Layout =
-    { size : ( Float, Float )
-    , padding : Float
-    }
+type alias MapSize =
+    ( Float, Float )
 
 
 type alias Map =
@@ -111,20 +108,12 @@ emptyEmoji =
     "\u{3000}"
 
 
-landPath : Layout -> Cells -> List Point
+landPath : MapSize -> Cells -> List Point
 landPath layout cells =
-    landBorders cells |> List.map ((\f ( a, b ) -> f a b) <| borderLeftCorner <| myLayout layout)
+    landBorders cells |> List.map (borderLeftCorner <| Hex.myLayout layout)
 
 
-myLayout : Layout -> HL.Layout
-myLayout { size, padding } =
-    { orientation = orientationLayoutPointy
-    , size = size
-    , origin = ( padding / 2, -(Tuple.second size) / 2 + padding / 2 )
-    }
-
-
-landCenter : Layout -> Cells -> Point
+landCenter : MapSize -> Cells -> Point
 landCenter layout cells =
     case cells of
         [] ->
@@ -134,23 +123,23 @@ landCenter layout cells =
             centerPoint layout list
 
 
-centerPoint : Layout -> Cells -> Point
+centerPoint : MapSize -> Cells -> Point
 centerPoint layout cells =
     let
         lx =
-            List.map (center (myLayout layout) >> Tuple.first) cells
+            List.map (Hex.center (Hex.myLayout layout) >> Tuple.first) cells
 
         ly =
-            List.map (center (myLayout layout) >> Tuple.second) cells
+            List.map (Hex.center (Hex.myLayout layout) >> Tuple.second) cells
     in
     ( List.sum lx / toFloat (List.length lx)
     , List.sum ly / toFloat (List.length ly)
     )
 
 
-cellCenter : Layout -> Hex -> Point
+cellCenter : MapSize -> Hex -> Point
 cellCenter layout hex =
-    Hex.center (myLayout layout) hex
+    Hex.center (Hex.myLayout layout) hex
 
 
 cellCubicCoords : Hex -> ( Int, Int, Int )
@@ -183,15 +172,6 @@ areNeighbours a b =
     List.any (flipped b) allSides
 
 
-offsetToHex : ( Int, Int ) -> Hex
-offsetToHex ( col, row ) =
-    let
-        x =
-            col - round (toFloat (row + modBy 2 (abs row)) / 2)
-    in
-    HH.intFactory ( x, row )
-
-
 append : Map -> Land -> Map
 append map land =
     { map | lands = List.append [ land ] map.lands }
@@ -207,7 +187,7 @@ at lands coord =
 
         cb : Hex -> Land -> Bool
         cb aHex land =
-            List.any (\h -> eq h aHex) land.cells
+            List.any (\h -> Hex.eq h aHex) land.cells
     in
     find (cb hex) lands
 
@@ -220,7 +200,7 @@ indexAt lands coord =
 
         cb : Hex -> Land -> Bool
         cb aHex land =
-            List.any (\h -> eq h aHex) land.cells
+            List.any (\h -> Hex.eq h aHex) land.cells
     in
     findIndex (cb hex) lands
 
@@ -327,7 +307,7 @@ nextBorders_ cells coord origin side accum fuse =
         current =
             ( coord, side )
     in
-    if (eq coord <| Tuple.first origin) && Tuple.second origin == side && List.length accum > 1 then
+    if (Hex.eq coord <| Tuple.first origin) && Tuple.second origin == side && List.length accum > 1 then
         current :: accum
 
     else
@@ -390,7 +370,7 @@ oppositeSide =
 
 hasCell : Cells -> Hex -> Bool
 hasCell cells coord =
-    List.any (eq coord) cells
+    List.any (Hex.eq coord) cells
 
 
 firstFreeBorder : Cells -> Maybe Border
@@ -456,7 +436,7 @@ cellOnBorder coord side cells =
 
 isBorderOnSide : Hex -> Direction -> Hex -> Bool
 isBorderOnSide coord side other =
-    if eq coord other then
+    if Hex.eq coord other then
         False
 
     else
@@ -469,10 +449,10 @@ isBorderOnSideCube : Hex -> Direction -> Hex -> Bool
 isBorderOnSideCube coord side other =
     let
         ( x, y ) =
-            HL.hexToOffset coord
+            hexToOffset coord
 
         ( x_, y_ ) =
-            HL.hexToOffset other
+            hexToOffset other
 
         even =
             modBy 2 y == 0

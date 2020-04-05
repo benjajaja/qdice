@@ -12,7 +12,7 @@ import Time
 init : Land.Map -> Model
 init map =
     let
-        ( layout, w, h ) =
+        ( layout, viewBox ) =
             getLayout map
 
         pathCache : Dict.Dict String String
@@ -20,7 +20,7 @@ init map =
             Board.PathCache.addToDict layout map.lands Dict.empty
                 |> Board.PathCache.addToDictLines layout map.lands map.extraAdjacency
     in
-    Model map Nothing Idle pathCache ( layout, w, h ) Dict.empty
+    Model map Nothing Idle pathCache ( layout, viewBox ) Dict.empty
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,7 +80,7 @@ updateLands : Model -> Time.Posix -> List LandUpdate -> Maybe BoardMove -> (Stri
 updateLands model posix updates mMove msg =
     if List.length updates == 0 then
         let
-            ( layout, _, _ ) =
+            ( layout, _ ) =
                 model.layout
 
             move_ =
@@ -98,7 +98,7 @@ updateLands model posix updates mMove msg =
             map =
                 model.map
 
-            ( layout, _, _ ) =
+            ( layout, _ ) =
                 model.layout
 
             landUpdates : List ( Land.Land, List ( Int, AnimationState ) )
@@ -190,7 +190,7 @@ updateLandAnimations posix land landUpdate =
         []
 
 
-attackAnimations : Land.Layout -> BoardMove -> BoardMove -> (String -> Msg) -> Animations
+attackAnimations : Land.MapSize -> BoardMove -> BoardMove -> (String -> Msg) -> Animations
 attackAnimations layout move oldMove msg =
     case move of
         FromTo from to ->
@@ -220,7 +220,7 @@ attackAnimations layout move oldMove msg =
             Dict.empty
 
 
-translateStack : Bool -> Land.Layout -> Land.Land -> Land.Land -> Msg -> AnimationState
+translateStack : Bool -> Land.MapSize -> Land.Land -> Land.Land -> Msg -> AnimationState
 translateStack reverse layout from to doneMsg =
     let
         ( fx, fy ) =
