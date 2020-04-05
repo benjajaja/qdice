@@ -14,7 +14,7 @@ import Helpers exposing (dataTestId, dataTestValue)
 import Html
 import Html.Attributes
 import Html.Lazy
-import Land exposing (Land, Layout, landCenter)
+import Land exposing (Land, MapSize, landCenter)
 import String
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -39,12 +39,13 @@ view model hovered diceVisible =
         diceVisible
 
 
-board : Land.Map -> ( Layout, String, String ) -> PathCache -> Animations -> BoardMove -> Maybe Land.Emoji -> Bool -> Svg Msg
-board map ( layout, sWidth, sHeight ) pathCache animations move hovered diceVisible =
+board : Land.Map -> ( MapSize, String ) -> PathCache -> Animations -> BoardMove -> Maybe Land.Emoji -> Bool -> Svg Msg
+board map ( layout, mapViewBox ) pathCache animations move hovered diceVisible =
     Html.div [ class "edBoard" ]
         [ Svg.svg
-            [ viewBox ("0 0 " ++ sWidth ++ " " ++ sHeight)
-            , preserveAspectRatio "xMidYMin meet"
+            [ viewBox mapViewBox
+
+            -- , preserveAspectRatio "xMidYMin meet"
             , class "edBoard--svg"
             ]
             [ die
@@ -61,7 +62,7 @@ board map ( layout, sWidth, sHeight ) pathCache animations move hovered diceVisi
 
 
 realLands :
-    Layout
+    MapSize
     -> PathCache
     -> BoardMove
     -> Maybe Land.Emoji
@@ -70,7 +71,7 @@ realLands :
 realLands layout pathCache move hovered lands =
     g [] <|
         List.map
-            (lazyLandElement layout
+            (lazyLandElement (Debug.log "layout" layout)
                 pathCache
                 move
                 hovered
@@ -79,7 +80,7 @@ realLands layout pathCache move hovered lands =
 
 
 lazyLandElement :
-    Layout
+    MapSize
     -> PathCache
     -> BoardMove
     -> Maybe Land.Emoji
@@ -109,7 +110,7 @@ lazyLandElement layout pathCache move hovered land =
     Svg.Lazy.lazy5 landElement layout pathCache isSelected isHovered land
 
 
-landElement : Layout -> PathCache -> Bool -> Bool -> Land.Land -> Svg Msg
+landElement : MapSize -> PathCache -> Bool -> Bool -> Land.Land -> Svg Msg
 landElement layout pathCache isSelected isHovered land =
     polygon
         [ fill <| landColor isSelected isHovered land.color
@@ -134,12 +135,12 @@ landElement layout pathCache isSelected isHovered land =
         []
 
 
-allDies : Layout -> Animations -> List Land.Land -> Bool -> Svg Msg
+allDies : MapSize -> Animations -> List Land.Land -> Bool -> Svg Msg
 allDies layout animations lands diceVisible =
     g [] <| List.map (lazyLandDies layout animations diceVisible) lands
 
 
-lazyLandDies : Layout -> Animations -> Bool -> Land.Land -> Svg Msg
+lazyLandDies : MapSize -> Animations -> Bool -> Land.Land -> Svg Msg
 lazyLandDies layout animations diceVisible land =
     let
         stackAnimation : Maybe (Animation.Messenger.State Msg)
@@ -195,7 +196,7 @@ getDiceAnimations dict land =
         Array.empty
 
 
-landDies : Layout -> Maybe (Animation.Messenger.State Msg) -> Array.Array Bool -> Bool -> Land.Land -> Svg Msg
+landDies : MapSize -> Maybe (Animation.Messenger.State Msg) -> Array.Array Bool -> Bool -> Land.Land -> Svg Msg
 landDies layout stackAnimation diceAnimations diceVisible land =
     let
         ( x_, y_ ) =
@@ -293,12 +294,12 @@ landDie animations cx cy index =
         []
 
 
-waterConnections : Layout -> PathCache -> List ( Land.Emoji, Land.Emoji ) -> List Land -> Svg Msg
+waterConnections : MapSize -> PathCache -> List ( Land.Emoji, Land.Emoji ) -> List Land -> Svg Msg
 waterConnections layout pathCache connections lands =
     g [] <| List.map (waterConnection layout pathCache lands) connections
 
 
-waterConnection : Layout -> PathCache -> List Land.Land -> ( Land.Emoji, Land.Emoji ) -> Svg Msg
+waterConnection : MapSize -> PathCache -> List Land.Land -> ( Land.Emoji, Land.Emoji ) -> Svg Msg
 waterConnection layout pathCache lands ( from, to ) =
     Svg.path
         [ d <| Board.PathCache.line pathCache layout lands from to

@@ -3,7 +3,7 @@ module Board.Types exposing (AnimationState(..), Animations, BoardMove(..), Land
 import Animation exposing (px)
 import Animation.Messenger
 import Dict
-import Land exposing (Land, Layout, Map)
+import Land exposing (Land, Map, MapSize)
 import Time exposing (Posix)
 
 
@@ -19,7 +19,7 @@ type alias Model =
     , hovered : Maybe Land.Emoji
     , move : BoardMove
     , pathCache : PathCache
-    , layout : ( Layout, String, String )
+    , layout : ( MapSize, String )
     , animations : Animations
     }
 
@@ -55,37 +55,37 @@ type alias LandUpdate =
     }
 
 
-getLayout : Map -> ( Layout, String, String )
+getLayout : Map -> ( MapSize, String )
 getLayout map =
     let
-        widthScale =
-            100
-
         heightScale =
             0.5
 
         mapWidth =
-            map.width
+            toFloat map.width
 
         mapHeight =
-            map.height
-
-        padding =
-            0
+            toFloat map.height
 
         cellWidth =
-            (toFloat widthScale - padding) / (toFloat mapWidth + 0.5)
+            100 / (mapWidth + 0.5) / sqrt 3
 
         cellHeight =
             cellWidth * heightScale
 
         sWidth =
-            String.fromInt widthScale
+            100 |> String.fromFloat
 
         sHeight =
-            cellHeight * toFloat (mapHeight - 1) * 0.75 |> String.fromFloat
+            100
+                * ((mapHeight + 1)
+                    / mapWidth
+                  )
+                * heightScale
+                * 0.8
+                -- 2/3rds
+                |> String.fromFloat
     in
-    ( Layout ( cellWidth / sqrt 3, cellWidth * heightScale / 2 ) padding
-    , sWidth
-    , sHeight
+    ( ( cellWidth, cellHeight )
+    , "0 0 " ++ sWidth ++ " " ++ sHeight
     )

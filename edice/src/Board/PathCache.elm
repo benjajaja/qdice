@@ -6,17 +6,17 @@ import Helpers exposing (find)
 import Land
 
 
-points : PathCache -> Land.Layout -> Land.Land -> String
+points : PathCache -> Land.MapSize -> Land.Land -> String
 points dict layout land =
     case Dict.get (toKey layout land) dict of
         Just path ->
             path
 
         Nothing ->
-            Land.landPath layout land.cells |> landPointsString
+            Land.landPath layout land.cells |> landPointsString |> Debug.log "landPath"
 
 
-line : PathCache -> Land.Layout -> List Land.Land -> Land.Emoji -> Land.Emoji -> String
+line : PathCache -> Land.MapSize -> List Land.Land -> Land.Emoji -> Land.Emoji -> String
 line dict layout lands from to =
     case Dict.get ("line_" ++ from ++ to) dict of
         Just linePoints ->
@@ -26,7 +26,7 @@ line dict layout lands from to =
             lineConnection layout lands from to
 
 
-addToDict : Land.Layout -> List Land.Land -> Dict.Dict String String -> Dict.Dict String String
+addToDict : Land.MapSize -> List Land.Land -> Dict.Dict String String -> Dict.Dict String String
 addToDict layout list dict =
     case list of
         f :: tail ->
@@ -37,7 +37,7 @@ addToDict layout list dict =
             dict
 
 
-addToDictLines : Land.Layout -> List Land.Land -> List ( Land.Emoji, Land.Emoji ) -> Dict.Dict String String -> Dict.Dict String String
+addToDictLines : Land.MapSize -> List Land.Land -> List ( Land.Emoji, Land.Emoji ) -> Dict.Dict String String -> Dict.Dict String String
 addToDictLines layout lands connections dict =
     case connections of
         ( from, to ) :: tail ->
@@ -48,7 +48,7 @@ addToDictLines layout lands connections dict =
             dict
 
 
-toKey : Land.Layout -> Land.Land -> String
+toKey : Land.MapSize -> Land.Land -> String
 toKey layout land =
     -- let
     -- layoutKey =
@@ -77,7 +77,7 @@ pointToString ( x, y ) =
     (x |> String.fromFloat) ++ "," ++ (y |> String.fromFloat)
 
 
-lineConnection : Land.Layout -> List Land.Land -> Land.Emoji -> Land.Emoji -> String
+lineConnection : Land.MapSize -> List Land.Land -> Land.Emoji -> Land.Emoji -> String
 lineConnection layout lands from to =
     let
         findLand =

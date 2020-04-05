@@ -2,6 +2,7 @@ module Maps exposing (consoleLogMap, emojisToMap, emptyMap, fullCellMap, load, s
 
 import Dict
 import Helpers exposing (consoleDebug)
+import Hex
 import Land exposing (Cells, Emoji)
 import Maps.Sources exposing (mapSourceString)
 import Regex
@@ -95,10 +96,8 @@ emojisToMap name raw =
     in
     Land.Map name
         lands
-        --realWidth
-        --realHeight
-        (max realWidth realHeight)
-        (max realWidth realHeight)
+        realWidth
+        realHeight
         extraAdjacency
 
 
@@ -130,7 +129,7 @@ foldChars ( ( col, row ), char ) accum =
         accum
 
     else
-        EmojiLand [ Land.offsetToHex ( col, row ) ] char :: accum
+        EmojiLand [ Hex.offsetToHex ( col, row ) ] char :: accum
 
 
 isEmptyEmoji : ( a, String ) -> Bool
@@ -283,7 +282,7 @@ fullCellMap w h color =
             (\r ->
                 List.map
                     (\c ->
-                        { cells = [ Land.offsetToHex ( c, r ) ]
+                        { cells = [ Hex.offsetToHex ( c, r ) ]
                         , color = color
                         , emoji = Land.emptyEmoji
                         , points = 0

@@ -1,6 +1,6 @@
-module Hex exposing (Point, borderLeftCorner, cellCubicCoords, center)
+module Hex exposing (Hex, Point, borderLeftCorner, cellCubicCoords, center, eq, hexToOffset, myLayout, offsetToHex)
 
-import Hexagons.Hex as HH exposing (eq, Direction, Hex)
+import Hexagons.Hex as HH
 import Hexagons.Layout as HL exposing (Layout, Point)
 
 
@@ -8,10 +8,41 @@ type alias Point =
     HL.Point
 
 
+type alias Hex =
+    HH.Hex
+
+
+eq : Hex -> Hex -> Bool
+eq =
+    HH.eq
+
+
+myLayout : ( Float, Float ) -> HL.Layout
+myLayout size =
+    { orientation = HL.orientationLayoutPointy
+    , size = size
+    , origin = ( 0, 0 )
+    }
+
+
+offsetToHex : ( Int, Int ) -> Hex
+offsetToHex ( col, row ) =
+    let
+        x =
+            col - round (toFloat (row + modBy 2 (abs row)) / 2)
+    in
+    HH.intFactory ( x, row )
+
+
+hexToOffset : HH.Hex -> ( Int, Int )
+hexToOffset =
+    HL.hexToOffset
+
+
 {-| Left/counter-clockwise point of Hex edge
 -}
-borderLeftCorner : Layout -> Hex -> Direction -> Point
-borderLeftCorner layout hex corner =
+borderLeftCorner : Layout -> ( Hex, HH.Direction ) -> Point
+borderLeftCorner layout ( hex, corner ) =
     let
         ( x, y ) =
             center layout hex
@@ -19,7 +50,7 @@ borderLeftCorner layout hex corner =
         ( x_, y_ ) =
             hexCornerOffset layout.size layout.orientation.start_angle corner
     in
-        ( precision 2 <| x + x_, precision 2 <| y + y_ )
+    ( precision 2 <| x + x_, precision 2 <| y + y_ )
 
 
 center : Layout -> Hex -> Point
@@ -35,26 +66,26 @@ precision division number =
         k =
             toFloat <| 10 ^ division
     in
-        (toFloat << round) (number * k) / k
+    (toFloat << round) (number * k) / k
 
 
 {-| Calculate corner offset from a center of the Hex
 -}
-hexCornerOffset : ( Float, Float ) -> Float -> Direction -> Point
+hexCornerOffset : ( Float, Float ) -> Float -> HH.Direction -> Point
 hexCornerOffset ( w, h ) startAngle side =
     let
         angle =
             sideAngle startAngle side
     in
-        ( w * cos angle, h * sin angle )
+    ( w * cos angle, h * sin angle )
 
 
-sideAngle : Float -> Direction -> Float
+sideAngle : Float -> HH.Direction -> Float
 sideAngle startAngle side =
     ((2.0 * pi) * (toFloat (sideIndex side) + startAngle)) / 6
 
 
-sideIndex : Direction -> Int
+sideIndex : HH.Direction -> Int
 sideIndex side =
     case side of
         HH.SW ->
