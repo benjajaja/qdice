@@ -13,7 +13,7 @@ points dict layout land =
             path
 
         Nothing ->
-            Land.landPath layout land.cells |> landPointsString |> Debug.log "landPath"
+            Land.landPath layout land.cells |> landPointsString
 
 
 line : PathCache -> Land.MapSize -> List Land.Land -> Land.Emoji -> Land.Emoji -> String

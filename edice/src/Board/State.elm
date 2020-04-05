@@ -117,18 +117,18 @@ updateLands model posix updates mMove msg =
 
             move_ =
                 Maybe.withDefault model.move mMove
+
+            giveDiceAnimations =
+                animationsDict landUpdates
+
+            attackAnimations_ =
+                attackAnimations layout move_ model.move msg
         in
         { model
             | map = map_
             , move = move_
             , animations =
-                Dict.union
-                    (Dict.union (animationsDict landUpdates) <|
-                        attackAnimations layout move_ model.move msg
-                    )
-                    model.animations
-
-            -- , hovered = Nothing
+                Dict.union giveDiceAnimations attackAnimations_
         }
 
 
