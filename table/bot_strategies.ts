@@ -99,7 +99,7 @@ export const pickTactic = (
       if (rand(0, 100) > 95 || wouldRefill) {
         return tactics.careless;
       }
-      return tactics.extraCareful;
+      return tactics.targetCareful;
 
     case "RandomCareful":
       if (rand(0, 100) > 95 || wouldRefill) {
@@ -183,6 +183,9 @@ export const tactics = {
     table: Table
   ) => {
     const targetNeighboursCarefulness = table.roundCount < 5 ? -1 : 0;
+    if (target.points > 3 && target.points > source.points) {
+      return;
+    }
     const remainingPoints = source.points - 1;
     const targetNeighbours = neighbours(table, target).filter(
       land => land.color !== player.color && land.color != Color.Neutral
