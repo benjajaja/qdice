@@ -9,7 +9,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, li
 import Json.Decode.Pipeline exposing (required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, LeaderBoardResponse, LoggedUser, Preferences, Profile, PushEvent(..))
+import Types exposing (AuthNetwork(..), AuthState, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..))
 
 
 stringDecoder : Decoder String
@@ -467,8 +467,24 @@ shortPlayerDecoder =
         |> required "name" string
 
 
-otherProfileDecoder : Decoder ( Profile, List Game )
+otherProfileDecoder : Decoder OtherProfile
 otherProfileDecoder =
     map2 (\a b -> ( a, b ))
         (field "profile" profileDecoder)
-        (field "stats" (field "games" gamesDecoder))
+        (field "stats" profileStatsDecoder)
+
+
+profileStatsDecoder : Decoder ProfileStats
+profileStatsDecoder =
+    succeed ProfileStats
+        |> required "games" (list gameRefDecoder)
+        |> required "gamesWon" int
+        |> required "gamesPlayed" int
+
+
+gameRefDecoder : Decoder GameRef
+gameRefDecoder =
+    succeed GameRef
+        |> required "id" int
+        |> required "tag" string
+        |> required "gameStart" Iso8601.decoder

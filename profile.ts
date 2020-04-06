@@ -2,7 +2,6 @@ import * as R from "ramda";
 import * as db from "./db";
 import logger from "./logger";
 import * as errs from "restify-errors";
-import { serializeGame } from "./table/serialize";
 
 export const profile = async (req, res, next) => {
   try {
@@ -15,8 +14,7 @@ export const profile = async (req, res, next) => {
       ["email", "networks", "claimed", "voted"],
       await db.getUser(req.params.id)
     );
-    const rawStats = await db.getUserStats(req.params.id);
-    const stats = { games: rawStats.games.map(serializeGame) };
+    const stats = await db.getUserStats(req.params.id);
     res.send(200, { profile, stats });
     next();
   } catch (e) {
