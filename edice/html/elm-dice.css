@@ -69,7 +69,7 @@ a {
   color: #101010;
   flex: 2 1 auto;
   padding: 20px 8%;
-  background: #fff9f2;
+  background: #edfcff;
 }
 .MainBody img {
   max-width: 100%;
@@ -110,9 +110,7 @@ select:-webkit-autofill:focus {
 .edMainScreen__static {
   padding: 5px 10px;
   margin: 10px 10px;
-  background: #fff9f2;
-  display: flex;
-  align-items: stretch;
+  background: #edfcff;
 }
 .edMainScreen__static img {
   max-width: 100%;
@@ -873,7 +871,7 @@ button .material-icons, .edButton .material-icons {
   .edMainScreen, .edGameHeader {
     width: 900px;
     margin: 0 auto;
-    padding-left: 0;
+    /* padding-left: 0; */
   }
 }
 
