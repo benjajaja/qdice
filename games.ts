@@ -1,6 +1,7 @@
 import * as R from "ramda";
 import * as db from "./db";
 import logger from "./logger";
+import { serializeGame } from "./table/serialize";
 
 export const games = async (req, res, next) => {
   try {
@@ -25,15 +26,3 @@ export const game = async (req, res, next) => {
     next();
   }
 };
-
-const serializeGame = game => ({
-  ...game,
-  players: game.players
-    .map(R.pick(["id", "name", "picture", "color", "bot"]))
-    .map(p => ({
-      ...p,
-      bot: !!p.bot,
-    })),
-  events: (game.events ?? []).map(event => event.params),
-  lands: (game.lands ?? []).map(land => [land.emoji, land.color, land.points]),
-});

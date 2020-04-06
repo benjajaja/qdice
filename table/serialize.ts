@@ -144,3 +144,15 @@ export const serializeEliminationReason = (
   }
   return { type: reason, ...merge };
 };
+
+export const serializeGame = game => ({
+  ...game,
+  players: game.players
+    .map(R.pick(["id", "name", "picture", "color", "bot"]))
+    .map(p => ({
+      ...p,
+      bot: !!p.bot,
+    })),
+  events: (game.events ?? []).map(event => event.params),
+  lands: (game.lands ?? []).map(land => [land.emoji, land.color, land.points]),
+});

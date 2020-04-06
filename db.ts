@@ -676,3 +676,14 @@ export const isAvailable = async (email: string) => {
   logger.debug(rows, rows.length);
   return rows.length === 0;
 };
+
+export const getUserStats = async (id: string) => {
+  const { rows: games } = await pool.query({
+    // name: "games-id",
+    text: `SELECT * FROM games, LATERAL (SELECT json_array_elements(games.players) c) lat WHERE lat.c->>'id' = $1`,
+    values: [id],
+  });
+  return {
+    games: games.map(camelize),
+  };
+};
