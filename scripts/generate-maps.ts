@@ -78,7 +78,7 @@ const loadMap = (
 
 const createAdjacencyMatrix = (lands: Land[], extra: [string, string][]) => {
   process.stdout.write(
-    `caclulating adjacency matrix for ${lands.length} lands...`
+    `calculating adjacency matrix for ${lands.length} lands...`
   );
   const result = {
     matrix: lands.map(land => {

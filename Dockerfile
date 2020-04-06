@@ -7,15 +7,16 @@ COPY package.json .
 COPY yarn.lock .
 RUN yarn install --frozen-lockfile --production
 
-COPY *.ts *.js *.json start.sh ./
 COPY scripts ./scripts
+COPY edice/maps ./edice/maps
+COPY tsconfig.json ./
+RUN node scripts/build.js edice/maps
+
+COPY *.ts *.js ./
 COPY table ./table
 COPY test ./test
-COPY edice/maps ./edice/maps
-
-RUN node scripts/build.js edice/maps
 RUN yarn test --color false
-RUN node server.js --quit
+# RUN node server.js --quit
 
 # starting positions generation
 
