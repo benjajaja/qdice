@@ -1,22 +1,29 @@
 FROM node:10.15.3-alpine
-ARG build_id
-ARG git_log
 
+# node_modules
 WORKDIR /usr/src/edice
 COPY package.json yarn.lock ./
-ENV NODE_ENV=production
 RUN yarn install --frozen-lockfile --production
 
-COPY elm.json webpack.config.js ./
-COPY html ./html
+# elm-stuff
+COPY src ./src
+COPY elm.json ./
+RUN yarn elm make src/App.elm
+
+# maps
 COPY maps ./maps
 COPY scripts ./scripts
-COPY src ./src
+COPY html ./html
+RUN yarn generate-maps
 
+# build
+COPY webpack.config.js ./
+ENV NODE_ENV=production
+ARG build_id
+ARG git_log
 ENV git_log=$git_log
 ENV build_id=$build_id
 RUN yarn generate-changelog
-RUN yarn generate-maps
 RUN yarn build --color false
 RUN yarn test
 RUN yarn gzip
