@@ -5,10 +5,10 @@ WORKDIR /usr/src/edice
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production
 
-# elm-stuff
-COPY src ./src
+# cache package.elm-lang.org
+COPY src/Dummy.elm ./src/
 COPY elm.json ./
-RUN yarn elm make src/App.elm
+RUN yarn elm make src/Dummy.elm
 
 # maps
 COPY maps ./maps
@@ -17,6 +17,7 @@ COPY html ./html
 RUN yarn generate-maps
 
 # build
+COPY src ./src
 COPY webpack.config.js ./
 ENV NODE_ENV=production
 ARG build_id
