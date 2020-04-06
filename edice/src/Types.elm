@@ -44,7 +44,7 @@ type Msg
     | GetToken (Maybe Table) (Result Error String)
     | GetUpdateProfile (Result String String)
     | GetProfile (Result Error ( LoggedUser, String, Preferences ))
-    | GetOtherProfile (Result Error Profile)
+    | GetOtherProfile (Result Error ( Profile, List Game ))
     | Logout
     | ShowLogin LoginDialogStatus
     | Register String (Maybe Table)
@@ -134,7 +134,7 @@ type alias Model =
     , showLoginDialog : LoginDialogStatus
     , settings : GlobalSettings
     , leaderBoard : LeaderBoardModel
-    , otherProfile : Maybe Profile
+    , otherProfile : Maybe ( Profile, List Game )
     , preferences : Preferences
     , sessionPreferences : SessionPreferences
     , games :

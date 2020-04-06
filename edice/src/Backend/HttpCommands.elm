@@ -88,7 +88,7 @@ profile : Model -> UserId -> Cmd Msg
 profile model id =
     Http.get
         { url = model.baseUrl ++ "/profile/" ++ id
-        , expect = expectJson GetOtherProfile profileDecoder
+        , expect = expectJson GetOtherProfile otherProfileDecoder
         }
 
 

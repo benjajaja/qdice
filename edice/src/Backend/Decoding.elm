@@ -1,4 +1,4 @@
-module Backend.Decoding exposing (authStateDecoder, eliminationDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder)
+module Backend.Decoding exposing (authStateDecoder, eliminationDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder)
 
 import Board.Types
 import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus)
@@ -465,3 +465,10 @@ shortPlayerDecoder =
     succeed ShortGamePlayer
         |> required "id" string
         |> required "name" string
+
+
+otherProfileDecoder : Decoder ( Profile, List Game )
+otherProfileDecoder =
+    map2 (\a b -> ( a, b ))
+        (field "profile" profileDecoder)
+        (field "stats" (field "games" gamesDecoder))
