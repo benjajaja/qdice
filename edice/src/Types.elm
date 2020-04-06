@@ -7,7 +7,7 @@ import Browser
 import Browser.Navigation exposing (Key)
 import Dict exposing (Dict)
 import Game.Types exposing (Award, PlayerAction, TableInfo)
-import Games.Types exposing (Game)
+import Games.Types exposing (Game, GameRef)
 import Http exposing (Error)
 import MyProfile.Types
 import OAuth
@@ -44,7 +44,7 @@ type Msg
     | GetToken (Maybe Table) (Result Error String)
     | GetUpdateProfile (Result String String)
     | GetProfile (Result Error ( LoggedUser, String, Preferences ))
-    | GetOtherProfile (Result Error ( Profile, List Game ))
+    | GetOtherProfile (Result Error OtherProfile)
     | Logout
     | ShowLogin LoginDialogStatus
     | Register String (Maybe Table)
@@ -134,7 +134,7 @@ type alias Model =
     , showLoginDialog : LoginDialogStatus
     , settings : GlobalSettings
     , leaderBoard : LeaderBoardModel
-    , otherProfile : Maybe ( Profile, List Game )
+    , otherProfile : Maybe OtherProfile
     , preferences : Preferences
     , sessionPreferences : SessionPreferences
     , games :
@@ -237,6 +237,17 @@ type alias Profile =
     , level : Int
     , levelPoints : Int
     , awards : List Award
+    }
+
+
+type alias OtherProfile =
+    ( Profile, ProfileStats )
+
+
+type alias ProfileStats =
+    { games : List GameRef
+    , gamesWon : Int
+    , gamesPlayed : Int
     }
 
 

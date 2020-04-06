@@ -15,6 +15,13 @@ type alias Game =
     }
 
 
+type alias GameRef =
+    { id : Int
+    , tag : Table
+    , gameStart : Posix
+    }
+
+
 type GameEvent
     = Start
     | Chat ShortGamePlayer String

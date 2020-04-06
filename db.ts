@@ -679,11 +679,23 @@ export const isAvailable = async (email: string) => {
 
 export const getUserStats = async (id: string) => {
   const { rows: games } = await pool.query({
-    // name: "games-id",
-    text: `SELECT * FROM games, LATERAL (SELECT json_array_elements(games.players) c) lat WHERE lat.c->>'id' = $1`,
+    name: "user-stats-games",
+    text: `SELECT id, tag, game_start FROM games, LATERAL (SELECT json_array_elements(games.players) c) lat WHERE lat.c->>'id' = $1 ORDER BY game_start DESC LIMIT 100`,
+    values: [id],
+  });
+  const { rows: gamesWonCount } = await pool.query({
+    name: "user-stats-games_won",
+    text: `SELECT COUNT(*) as games_won FROM game_events WHERE command = 'EndGame' AND params->'winner'->>'id' = $1`,
+    values: [id],
+  });
+  const { rows: gamesPlayedCount } = await pool.query({
+    name: "user-stats-games_played",
+    text: `SELECT COUNT(*) as games_played FROM games, LATERAL (SELECT json_array_elements(games.players) c) lat WHERE lat.c->>'id' = $1`,
     values: [id],
   });
   return {
     games: games.map(camelize),
+    gamesWon: parseInt(gamesWonCount[0].games_won, 10),
+    gamesPlayed: parseInt(gamesPlayedCount[0].games_played, 10),
   };
 };

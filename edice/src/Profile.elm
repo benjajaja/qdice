@@ -1,13 +1,14 @@
 module Profile exposing (view)
 
 import Awards
+import DateFormat
 import Game.PlayerCard exposing (playerPicture)
-import Games
-import Games.Types exposing (Game)
+import Games.Types exposing (GameRef)
 import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Ordinal exposing (ordinal)
+import Routing exposing (routeToString)
 import Time exposing (Zone)
 import Types exposing (..)
 
@@ -27,14 +28,14 @@ view model id name =
                       , awards = []
                       , picture = "assets/empty_profile_picture.svg"
                       }
-                    , []
+                    , { games = [], gamesWon = 0, gamesPlayed = 0 }
                     )
                     model.otherProfile
         ]
 
 
-playerBox : Zone -> ( Profile, List Game ) -> List (Html Msg)
-playerBox zone ( user, games ) =
+playerBox : Zone -> OtherProfile -> List (Html Msg)
+playerBox zone ( user, stats ) =
     [ div [ class "edPlayerBox__Picture" ]
         [ playerPicture "large" user.picture
         ]
@@ -53,16 +54,34 @@ playerBox zone ( user, games ) =
         , text " points to next level"
         ]
     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
+    , div [ class "edPlayerBox__stat" ] [ text <| "Games won: " ++ String.fromInt stats.gamesWon ]
+    , div [ class "edPlayerBox__stat" ] [ text <| "Games played: " ++ String.fromInt stats.gamesPlayed ]
     , div [ class "edPlayerBox__stat" ] [ text "Games: " ]
-    , div [ class "edPlayerBox__stat" ] [ ul [] <| List.map (gameLink zone) games ]
+    , div [ class "edPlayerBox__stat" ] [ ul [] <| List.map (gameLink zone) stats.games ]
     ]
 
 
-gameLink : Zone -> Game -> Html Msg
+gameLink : Zone -> GameRef -> Html Msg
 gameLink zone game =
     li []
-        [ text <| "on table " ++ game.tag ++ ":"
-        , Games.gameHeader zone game
+        [ gameHeader zone game
+        , text <| "on table "
+        , a
+            [ href <| routeToString False <| GameRoute game.tag
+            ]
+            [ text <| game.tag ]
+        ]
+
+
+gameHeader : Zone -> GameRef -> Html Msg
+gameHeader zone game =
+    div []
+        [ a
+            [ href <| routeToString False <| GamesRoute <| GameId game.tag game.id
+            ]
+            [ text <| "#" ++ String.fromInt game.id ]
+        , text " "
+        , span [] [ text <| DateFormat.format "dddd, dd MMMM yyyy HH:mm:ss" zone game.gameStart ]
         ]
 
 
