@@ -30,6 +30,7 @@ jobs:
             --username $DOCKERHUB_USERNAME \
             --password $DOCKERHUB_PASSWORD
           docker push bgrosse/qdice:backend
+          docker push bgrosse/qdice:emqx
   build_frontend:
     docker:
     - image: circleci/node:10.15.3
@@ -53,21 +54,47 @@ jobs:
             --password $DOCKERHUB_PASSWORD
           docker push bgrosse/qdice:frontend-local
           docker push bgrosse/qdice:frontend-production
-  build_e2e:
+  test_e2e:
     docker:
-    - image: circleci/node:10.15.3
+    - image: zenato/puppeteer-renderer
     working_directory: ~/repo
     steps:
-    - setup_remote_docker:
-        docker_layer_caching: false
     - restore_cache:
         name: Checkout source code
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
     - run:
-        name: Build e2e
+        name: Install Docker Compose
         command: |
-          docker build ./e2e -t qdice2e
-  test_e2e:
+          curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+          chmod +x ~/docker-compose
+          sudo mv ~/docker-compose /usr/local/bin/docker-compose
+    - setup_remote_docker:
+        docker_layer_caching: false
+    - run:
+        name: Create network
+        command: docker network create qdice || true
+    - run:
+        name: Start all containers
+        command: |
+          set -x
+          docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+          cat << EOF > .env
+          JWT_SECRET=anything
+          MQTT_PASSWORD=anything
+          POSTGRES_PASSWORD=anything
+          EMQX_DASHBOARD_PASSWORD=anything
+          VAPID_PUBLIC_KEY=BEnGLJDU-XZxCNlZ0uS6AsjXdVLPRDcAtK3H9SL-k_rslQJE1B98x_Dcqx3uL99gp_aiaVaX3-t73bQtzpt_tKk
+          VAPID_PRIVATE_KEY=f7964cnG2s8Qt7fKIyaHKzv_d4AD1oqweZ5BQ7J444A
+          AVATAR_PATH=./avatars
+          EOF
+          docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+    - run:
+        name: Yarn install
+        command: yarn install --frozen-lockfile --production
+    - run:
+        name: Run e2e
+        command: yarn test
+  test_e2e_docker:
     docker:
     - image: circleci/node:10.15.3
     working_directory: ~/repo
@@ -102,6 +129,10 @@ jobs:
           EOF
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
     - run:
+        name: Build e2e
+        command: |
+          docker build ./e2e -t qdice2e
+    - run:
         name: Run e2e
         command: |
           docker run --network qdice -e E2E_URL=http://nginx qdice2e yarn test
@@ -130,18 +161,14 @@ workflows:
         context: qdice
         requires:
         - checkout_code
-    - build_e2e:
-        requires:
-        - checkout_code
-    - test_e2e:
+    - test_e2e_docker:
         context: qdice
         requires:
         - build_backend
         - build_frontend
-        - build_e2e
     - deploy:
         requires:
-        - test_e2e
+        - test_e2e_docker
         filters:
           branches:
             only: master

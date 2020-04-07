@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 echo "Build frontend-${1:-"production"}"
 docker build --tag bgrosse/qdice:frontend-${1:-"production"} \
