@@ -17,7 +17,7 @@ import Game.State exposing (gameCommand)
 import Game.Types exposing (PlayerAction(..))
 import Game.View
 import Games
-import Helpers exposing (httpErrorToString, pipeUpdates)
+import Helpers exposing (httpErrorToString, is502, pipeUpdates)
 import Html
 import Html.Attributes
 import Http exposing (Error(..))
@@ -176,7 +176,11 @@ update msg model =
         GetGlobalSettings res ->
             case res of
                 Err err ->
-                    ( model, toastError "Could not load global configuration!" <| httpErrorToString err )
+                    if is502 err then
+                        ( model, toastError "Server down, please retry" <| httpErrorToString err )
+
+                    else
+                        ( model, toastError "Could not load global configuration!" <| httpErrorToString err )
 
                 Ok ( settings, tables, ( month, top ) ) ->
                     let
@@ -298,7 +302,11 @@ update msg model =
                             model.backend
                     in
                     ( { model | user = Anonymous, backend = { backend | jwt = Nothing } }
-                    , toastError "Could not sign in, please retry" <| httpErrorToString err
+                    , if is502 err then
+                        toastError "Server down, please retry" <| httpErrorToString err
+
+                      else
+                        toastError "Could not sign in, please retry" <| httpErrorToString err
                     )
 
                 Ok ( profile, token, preferences ) ->

@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, triple)
+port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, triple)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -80,6 +80,21 @@ httpErrorToString err =
 
         BadBody error ->
             "Server/Client error: " ++ error
+
+
+is502 : Http.Error -> Bool
+is502 err =
+    case err of
+        BadStatus status ->
+            case status of
+                502 ->
+                    True
+
+                _ ->
+                    False
+
+        _ ->
+            False
 
 
 dataTestId : String -> Attribute msg
