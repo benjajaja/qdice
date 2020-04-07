@@ -11,17 +11,12 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
   emqx:
-    image: emqx/emqx:v3.2.7
+    image: bgrosse/qdice:emqx
     environment:
       EMQX_LOADED_PLUGINS: "emqx_management,emqx_auth_username,emqx_recon,emqx_retainer,emqx_dashboard"
       EMQX_DASHBOARD__DEFAULT_USER__PASSWORD: ${EMQX_DASHBOARD_PASSWORD}
-      # EMQX_ALLOW_ANONYMOUS: "true"
-      # EMQX_AUTH__JWT__SECRET: ${JWT_SECRET}
-      # EMQX_AUTH__JWT__FROM: "password"
       EMQX_AUTH__USER__1__USERNAME: ${MQTT_USERNAME}
       EMQX_AUTH__USER__1__PASSWORD: ${MQTT_PASSWORD}
-    volumes:
-      - ./data/emqx/acl.conf:/opt/emqx/etc/acl.conf:ro
   nodice:
     restart: always
     image: bgrosse/qdice:backend
