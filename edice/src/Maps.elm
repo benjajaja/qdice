@@ -5,7 +5,7 @@ import Dict exposing (Dict)
 import Helpers exposing (combine, consoleDebug, resultCombine)
 import Hex
 import Land exposing (Cells, Emoji)
-import Maps.Sources exposing (mapSourceString)
+import Maps.Sources exposing (mapAdjacency, mapSourceString)
 import Regex
 import String
 import Tables exposing (Map(..), encodeMap)
@@ -14,6 +14,15 @@ import Tables exposing (Map(..), encodeMap)
 type alias EmojiLand =
     { cells : Cells
     , emoji : String
+    }
+
+
+type alias EmojiMap =
+    { name : String
+    , lands : List Land.Land
+    , width : Int
+    , height : Int
+    , waterConnections : List ( Emoji, Emoji )
     }
 
 
@@ -38,10 +47,41 @@ consoleLogMap map =
 
 load : Map -> Result String Land.Map
 load map =
-    emojisToMap (encodeMap map) <| mapSourceString map
+    let
+        emojiMap =
+            emojisToMap (encodeMap map) <| mapSourceString map
+
+        ( indices, matrix ) =
+            mapAdjacency map
+    in
+    Result.map
+        (\{ name, lands, width, height, waterConnections } ->
+            Land.Map name
+                lands
+                width
+                height
+                (indices |> Dict.fromList)
+                (matrix
+                    |> List.map
+                        (List.map
+                            (\i ->
+                                case i of
+                                    1 ->
+                                        True
+
+                                    _ ->
+                                        False
+                            )
+                            >> Array.fromList
+                        )
+                    |> Array.fromList
+                )
+                waterConnections
+        )
+        emojiMap
 
 
-emojisToMap : String -> String -> Result String Land.Map
+emojisToMap : String -> String -> Result String EmojiMap
 emojisToMap name raw =
     let
         rawLines : List String
@@ -197,12 +237,10 @@ emojisToMap name raw =
     in
     Result.map3
         (\a b c ->
-            Land.Map name
+            EmojiMap name
                 lands
                 a
                 realHeight
-                b
-                c
                 extraAdjacency
         )
         realWidth

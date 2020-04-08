@@ -7,9 +7,7 @@
   "author": "Benjamin Große",
   "scripts": {
     "start": "node server.js",
-    "deploy": "./scripts/deploy.sh",
-    "push": "docker push bgrosse/qdice:latest",
-    "generate-maps": "node scripts/build.js edice/maps/",
+    "generate-maps": "node edice/scripts/generate-maps.js ./edice/maps/ ./edice",
     "lint": "yarn prettier --check '**/*.{ts,tsx}'",
     "format": "yarn prettier --write '**/*.{ts,tsx}'",
     "test": "yarn jest --verbose"

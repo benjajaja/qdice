@@ -7,11 +7,11 @@ COPY package.json .
 COPY yarn.lock .
 RUN yarn install --frozen-lockfile --production
 
-COPY scripts ./scripts
+COPY edice/scripts/generate-maps.js ./scripts/generate-maps.js
 COPY edice/maps ./edice/maps
-COPY tsconfig.json ./
-RUN node scripts/build.js edice/maps
+RUN node ./scripts/generate-maps.js ./edice/maps/
 
+COPY tsconfig.json ./
 COPY *.ts *.js ./
 COPY table ./table
 COPY test ./test
