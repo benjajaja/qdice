@@ -19,62 +19,80 @@ import Time
 import Types exposing (Msg(..), SessionPreferences, User(..))
 
 
-init : Maybe Table -> Maybe Map -> Game.Types.Model
+init : Maybe Table -> Maybe Map -> ( Game.Types.Model, Cmd Msg )
 init table tableMap_ =
     let
+        map : Result String Land.Map
         map =
-            Maybe.map Maps.load tableMap_
-                |> Maybe.withDefault
-                    (Maybe.andThen mapFromTable table
-                        |> Maybe.map Maps.load
-                        |> Maybe.withDefault Maps.emptyMap
-                    )
+            case tableMap_ |> Result.fromMaybe "no current table-map" |> Result.andThen Maps.load of
+                Ok landMap ->
+                    Ok landMap
+
+                Err err ->
+                    case table of
+                        Just t ->
+                            case mapFromTable t of
+                                Ok m ->
+                                    Maps.load m
+
+                                Err err2 ->
+                                    Err err2
+
+                        Nothing ->
+                            Err "no table no map"
 
         board =
-            Board.init map
+            Board.init <| Result.withDefault Maps.emptyMap map
 
         players =
             []
     in
-    { table = table
-    , board = board
-    , players = players
-    , player = Nothing
-    , status = Paused
-    , gameStart = Nothing
-    , playerSlots = 0
-    , startSlots = 0
-    , points = 0
-    , turnIndex = -1
-    , hasTurn = False
-    , turnStart = -1
-    , chatInput = ""
-    , chatLog = []
-    , gameLog =
-        case table of
-            Just aTable ->
-                [ LogBegin aTable ]
+    ( { table = table
+      , board = board
+      , players = players
+      , player = Nothing
+      , status = Paused
+      , gameStart = Nothing
+      , playerSlots = 0
+      , startSlots = 0
+      , points = 0
+      , turnIndex = -1
+      , hasTurn = False
+      , turnStart = -1
+      , chatInput = ""
+      , chatLog = []
+      , gameLog =
+            case table of
+                Just aTable ->
+                    [ LogBegin aTable ]
 
-            Nothing ->
-                []
-    , chatOverlay =
-        Animation.style
-            [ Animation.translate (Animation.percent 0)
-                (Animation.percent -100)
-            ]
-    , isPlayerOut = False
-    , playerPosition = 0
-    , roundCount = 0
-    , canFlag = False
-    , isReady = Nothing
-    , flag = Nothing
-    , params =
-        { noFlagRounds = 0
-        , botLess = True
-        }
-    , currentGame = Nothing
-    , diceVisible = True
-    }
+                Nothing ->
+                    []
+      , chatOverlay =
+            Animation.style
+                [ Animation.translate (Animation.percent 0)
+                    (Animation.percent -100)
+                ]
+      , isPlayerOut = False
+      , playerPosition = 0
+      , roundCount = 0
+      , canFlag = False
+      , isReady = Nothing
+      , flag = Nothing
+      , params =
+            { noFlagRounds = 0
+            , botLess = True
+            }
+      , currentGame = Nothing
+      , diceVisible = True
+      }
+    , case map of
+        Ok _ ->
+            Cmd.none
+
+        Err err ->
+            consoleDebug err
+    )
 
 
 gameCommand : Types.Model -> PlayerAction -> ( Types.Model, Cmd Msg )
@@ -130,7 +148,7 @@ changeTable model table =
         map =
             tableMap table model.tableList
 
-        game =
+        ( game, cmd ) =
             updateGameInfo (init (Just table) map) model.tableList
 
         model_ =
@@ -148,7 +166,7 @@ tableMap table tableList =
         )
 
 
-mapFromTable : Table -> Maybe Map
+mapFromTable : Table -> Result String Map
 mapFromTable =
     Tables.decodeMap
 
@@ -342,11 +360,11 @@ updateTableStatus model status =
     )
 
 
-updateGameInfo : Game.Types.Model -> List Game.Types.TableInfo -> Game.Types.Model
-updateGameInfo model tableList =
+updateGameInfo : ( Game.Types.Model, Cmd Msg ) -> List Game.Types.TableInfo -> ( Game.Types.Model, Cmd Msg )
+updateGameInfo ( model, cmd ) tableList =
     case model.table of
         Nothing ->
-            model
+            ( model, cmd )
 
         Just table ->
             let
@@ -357,15 +375,17 @@ updateGameInfo model tableList =
             in
             case currentTableInfo of
                 Just tableInfo ->
-                    { model
+                    ( { model
                         | playerSlots = tableInfo.playerSlots
                         , startSlots = tableInfo.startSlots
                         , points = tableInfo.points
                         , params = tableInfo.params
-                    }
+                      }
+                    , cmd
+                    )
 
                 Nothing ->
-                    model
+                    ( model, cmd )
 
 
 showRoll : Types.Model -> Roll -> ( Types.Model, Cmd Msg )
@@ -444,7 +464,11 @@ clickLand model emoji =
                                 case model.game.board.move of
                                     Board.Types.Idle ->
                                         if land.points > 1 && land.color == player.color then
-                                            ( Board.Types.From land, Cmd.none )
+                                            if Land.hasAttackableNeighbours model.game.board.map land then
+                                                ( Board.Types.From land, Cmd.none )
+
+                                            else
+                                                ( Board.Types.Idle, consoleDebug "has no possible targets" )
 
                                         else
                                             ( Board.Types.Idle, consoleDebug "cannot select foreign land" )
@@ -466,7 +490,13 @@ clickLand model emoji =
 
                                         else if not <| Land.isBordering model.game.board.map land from then
                                             -- not bordering: do nothing
-                                            ( model.game.board.move, consoleDebug "cannot attack far land" )
+                                            ( model.game.board.move
+                                            , consoleDebug <|
+                                                "cannot attack far land: "
+                                                    ++ from.emoji
+                                                    ++ "->"
+                                                    ++ land.emoji
+                                            )
 
                                         else
                                             -- is bordering, different land and color: attack
@@ -520,7 +550,7 @@ canHover game emoji =
                     Just land ->
                         case game.board.move of
                             Board.Types.Idle ->
-                                if land.points > 1 && land.color == player.color then
+                                if land.points > 1 && land.color == player.color && Land.hasAttackableNeighbours game.board.map land then
                                     True
 
                                 else
@@ -533,7 +563,7 @@ canHover game emoji =
 
                                 else if land.color == player.color then
                                     -- same color and...
-                                    if land.points > 1 then
+                                    if land.points > 1 && Land.hasAttackableNeighbours game.board.map land then
                                         -- could move: select
                                         True
 
@@ -653,10 +683,6 @@ updateTable model table msg =
                                                     )
                                                     (Just move_)
                                                     AnimationDone
-
-                                            --{ board
-                                            --| move = Debug.log "bck move" move_
-                                            --}
                                         }
                                   }
                                 , playSound model.sessionPreferences "kick"

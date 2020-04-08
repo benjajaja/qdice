@@ -47,7 +47,7 @@ init flags location key =
         table =
             tableFromRoute route
 
-        game =
+        ( game, gameCmd ) =
             Game.State.init table Nothing
 
         ( backend, backendCmd ) =
@@ -142,6 +142,7 @@ init flags location key =
                     , [ loadGlobalSettings backend ]
                     , [ routeCmd ]
                     , [ Task.perform UserZone Time.here ]
+                    , [ gameCmd ]
                     ]
     in
     ( model_, cmds )
@@ -679,11 +680,11 @@ update msg model =
                         game =
                             model.game
 
-                        game_ =
-                            Game.State.updateGameInfo model.game tables
+                        ( game_, gameCmd ) =
+                            Game.State.updateGameInfo ( model.game, Cmd.none ) tables
                     in
                     ( { model | tableList = tables, game = game_ }
-                    , Cmd.none
+                    , gameCmd
                     )
 
                 Backend.Types.SigInt ->

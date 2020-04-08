@@ -22,32 +22,32 @@ type Map
 --    [ Melchor, Miño, DeLucía, Serrano, Avocado ]
 
 
-decodeMap : String -> Maybe Map
+decodeMap : String -> Result String Map
 decodeMap name =
     case name of
         "Melchor" ->
-            Just Melchor
+            Ok Melchor
 
         "Miño" ->
-            Just Miño
+            Ok Miño
 
         "Serrano" ->
-            Just Serrano
+            Ok Serrano
 
         "DeLucía" ->
-            Just DeLucía
+            Ok DeLucía
 
         "Sabicas" ->
-            Just Sabicas
+            Ok Sabicas
 
         "Planeta" ->
-            Just Planeta
+            Ok Planeta
 
         "Montoya" ->
-            Just Montoya
+            Ok Montoya
 
         _ ->
-            Nothing
+            Err <| "Table (map) not found: " ++ name
 
 
 encodeMap : Map -> String

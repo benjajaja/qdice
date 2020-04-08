@@ -49,7 +49,7 @@ board map ( layout, mapViewBox ) pathCache animations move hovered diceVisible =
             , class "edBoard--svg"
             ]
             [ die
-            , Svg.Lazy.lazy4 waterConnections layout pathCache map.extraAdjacency map.lands
+            , Svg.Lazy.lazy4 waterConnections layout pathCache map.waterConnections map.lands
             , Svg.Lazy.lazy5 realLands
                 layout
                 pathCache

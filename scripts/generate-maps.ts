@@ -6,6 +6,7 @@ type Hex = { row: number; col: number };
 type Land = { emoji: string; cells: Hex[] };
 
 const srcDir = process.argv[2];
+const writeMaps = process.argv[3];
 
 const cubeFromAxial = (col: number, row: number) => {
   const cubeX = col - ((row - (row & 1)) >> 1);
@@ -162,27 +163,76 @@ const neighbors = (hex: Hex): Hex[] =>
 const findLand = (lands: Land[]) => (emoji: string) =>
   R.find<Land>(R.propEq("emoji", emoji))(lands)!;
 
-const write = fs.createWriteStream("./map-sources.json");
-write.write(
+const [maps, clientMaps] = fs.readdirSync(srcDir).reduce(
+  ([dict, clientMaps], file) => {
+    const buffer = fs.readFileSync(`${srcDir}/${file}`);
+    const lines = buffer.toString().split("\n");
+    const name = lines.shift()!;
+    console.log(name);
+    const [lands, adjacency] = loadMap(lines);
+    console.log(`${lands.length} lands`);
+    dict[name] = {
+      name,
+      tag: name,
+      lands,
+      adjacency,
+      source: buffer.toString(),
+    };
+
+    clientMaps.push([buffer.toString(), adjacency]);
+    return [dict, clientMaps];
+  },
+  [{}, [] as [string, { indexes: any[]; matrix: any[] }][]]
+);
+
+const mapSources = fs.createWriteStream("./map-sources.json");
+mapSources.write(
   JSON.stringify(
     {
-      maps: fs.readdirSync(srcDir).reduce((dict, file) => {
-        const buffer = fs.readFileSync(`${srcDir}/${file}`);
-        const lines = buffer.toString().split("\n");
-        const name = lines.shift()!;
-        console.log(name);
-        const [lands, adjacency] = loadMap(lines);
-        console.log(`${lands.length} lands`);
-        dict[name] = {
-          name,
-          tag: name,
-          lands,
-          adjacency,
-        };
-        return dict;
-      }, {}),
+      maps: maps,
     },
     null,
     "\t"
   )
 );
+mapSources.close();
+
+// client maps (elm file)
+
+if (!fs.existsSync("./edice/src/Maps")) {
+  fs.mkdirSync("./edice/src/Maps");
+}
+const write = fs.createWriteStream("./edice/src/Maps/Sources.elm");
+write.write("module Maps.Sources exposing (mapSourceString)\n");
+write.write("import Tables exposing (Map(..))\n");
+write.write("\n");
+write.write("mapSourceString : Map -> String\n");
+write.write("mapSourceString table =\n");
+write.write("    case table of\n");
+
+const mapNames: string[] = [];
+clientMaps.forEach(([str, adjacency]) => {
+  const lines = str.split("\n");
+  const name = lines.shift()!;
+  const matrixString = adjacency.matrix
+    .map(row =>
+      row.reduce((array, bit, i) => [...array, bit ? 1 : 0], []).join("")
+    )
+    .join(",");
+  write.write("        " + name + " ->\n");
+  write.write('            """\n');
+  write.write(lines.join("\n"));
+  write.write("indices:" + Object.keys(adjacency.indexes).join("") + "\n");
+  write.write("matrix:" + matrixString + "\n");
+  write.write('"""\n');
+  write.write("\n");
+
+  mapNames.push(name);
+
+  console.log(`Generated map: "${name}"`);
+});
+write.close();
+
+const mapNamesJson = fs.createWriteStream("./edice/html/mapnames.json");
+mapNamesJson.write(JSON.stringify(mapNames));
+mapNamesJson.close();
