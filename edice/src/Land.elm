@@ -1,5 +1,8 @@
-module Land exposing (Cells, Color(..), Emoji, Land, Map, MapSize, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, nextBorders, nextBorders_, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
+module Land exposing (Cells, Color(..), Emoji, Land, Map, MapSize, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasAttackableNeighbours, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, nextBorders, nextBorders_, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
 
+import Array exposing (Array)
+import Bitwise
+import Dict exposing (Dict)
 import Helpers exposing (find, findIndex)
 import Hex exposing (Hex, Point, borderLeftCorner, cellCubicCoords, hexToOffset, offsetToHex)
 import Hexagons.Hex as HH exposing (Direction)
@@ -36,7 +39,9 @@ type alias Map =
     , lands : List Land
     , width : Int
     , height : Int
-    , extraAdjacency : List ( Emoji, Emoji )
+    , adjacencyKeys : Dict Emoji Int
+    , adjacency : Array (Array Bool)
+    , waterConnections : List ( Emoji, Emoji )
     }
 
 
@@ -149,13 +154,38 @@ cellCubicCoords hex =
 
 isBordering : Map -> Land -> Land -> Bool
 isBordering map a b =
-    List.any
-        (\( ta, tb ) ->
-            (ta == a.emoji && tb == b.emoji)
-                || (ta == b.emoji && tb == a.emoji)
-        )
-        map.extraAdjacency
-        || List.any (isCellOnLandBorder b) a.cells
+    let
+        indexA =
+            Dict.get a.emoji map.adjacencyKeys |> Maybe.withDefault -1
+
+        indexB =
+            Dict.get b.emoji map.adjacencyKeys |> Maybe.withDefault -1
+
+        row =
+            Array.get indexA map.adjacency
+    in
+    row
+        |> Maybe.andThen (Array.get indexB)
+        |> Maybe.withDefault False
+
+
+isBitSet : Int -> Int -> Bool
+isBitSet index bits =
+    let
+        mask =
+            Bitwise.shiftLeftBy index 1
+    in
+    Bitwise.and mask bits == mask
+
+
+
+-- List.any
+-- (\( ta, tb ) ->
+-- (ta == a.emoji && tb == b.emoji)
+-- || (ta == b.emoji && tb == a.emoji)
+-- )
+-- map.extraAdjacency
+-- || List.any (isCellOnLandBorder b) a.cells
 
 
 isCellOnLandBorder : Land -> Hex -> Bool
@@ -496,3 +526,16 @@ isBorderOnSideCube coord side other =
 findLand : Emoji -> List Land -> Maybe Land
 findLand emoji lands =
     find (\l -> l.emoji == emoji) lands
+
+
+hasAttackableNeighbours : Map -> Land -> Bool
+hasAttackableNeighbours map land =
+    map.lands
+        |> List.any (canAttack map land)
+
+
+canAttack : Map -> Land -> Land -> Bool
+canAttack map source target =
+    target.color
+        /= source.color
+        && isBordering map source target

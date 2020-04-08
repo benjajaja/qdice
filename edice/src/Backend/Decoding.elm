@@ -305,11 +305,11 @@ mapNameDecoder =
         |> andThen
             (\m ->
                 case m of
-                    Just map ->
+                    Ok map ->
                         succeed map
 
-                    Nothing ->
-                        fail "unknown map"
+                    Err err ->
+                        fail err
             )
 
 

@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, triple)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, triple)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -115,3 +115,17 @@ pointsToNextLevel level points =
 triple : a -> b -> c -> ( a, b, c )
 triple a b c =
     ( a, b, c )
+
+
+
+{- From https://package.elm-lang.org/packages/elm-community/maybe-extra/latest -}
+
+
+combine : List (Maybe a) -> Maybe (List a)
+combine =
+    List.foldr (Maybe.map2 (::)) (Just [])
+
+
+resultCombine : List (Result s a) -> Result s (List a)
+resultCombine =
+    List.foldr (Result.map2 (::)) (Ok [])

@@ -1,7 +1,8 @@
-module Maps exposing (consoleLogMap, emojisToMap, emptyMap, fullCellMap, load, symbols, toCharList)
+module Maps exposing (consoleLogMap, emptyMap, load, symbols, toCharList)
 
-import Dict
-import Helpers exposing (consoleDebug)
+import Array exposing (Array)
+import Dict exposing (Dict)
+import Helpers exposing (combine, consoleDebug, resultCombine)
 import Hex
 import Land exposing (Cells, Emoji)
 import Maps.Sources exposing (mapSourceString)
@@ -35,12 +36,12 @@ consoleLogMap map =
     consoleDebug <| toEmojiString <| toCharList map
 
 
-load : Map -> Land.Map
+load : Map -> Result String Land.Map
 load map =
     emojisToMap (encodeMap map) <| mapSourceString map
 
 
-emojisToMap : String -> String -> Land.Map
+emojisToMap : String -> String -> Result String Land.Map
 emojisToMap name raw =
     let
         rawLines : List String
@@ -59,9 +60,8 @@ emojisToMap name raw =
                 Just extra ->
                     String.split "," extra
                         |> List.map
-                            (\conn ->
-                                Regex.find emojiRegex conn
-                                    |> List.map .match
+                            (Regex.find emojiRegex
+                                >> List.map .match
                             )
                         |> List.foldl emojisToTuples []
 
@@ -71,18 +71,32 @@ emojisToMap name raw =
         lines : List Line
         lines =
             rawLines
-                |> List.filter (not << String.startsWith "water:")
+                |> List.filter
+                    (\line ->
+                        if
+                            String.startsWith "water:" line
+                                || String.startsWith "indices:" line
+                                || String.startsWith "matrix:" line
+                        then
+                            False
+
+                        else
+                            True
+                    )
                 |> List.indexedMap charRow
 
-        widths : List Int
+        widths : Maybe (List Int)
         widths =
             List.map
-                (List.map (\l -> Tuple.first l |> Tuple.first) >> List.maximum)
+                (List.map (Tuple.first >> Tuple.first) >> List.maximum)
                 lines
-                |> List.map (Maybe.withDefault 0)
+                |> List.filter ((/=) Nothing)
+                |> combine
 
+        realWidth : Result String Int
         realWidth =
-            List.maximum widths |> Maybe.withDefault 0
+            Maybe.andThen List.maximum widths
+                |> Result.fromMaybe "Could not get width of emoji map"
 
         realHeight =
             List.length lines
@@ -93,12 +107,107 @@ emojisToMap name raw =
                 |> foldLines
                 |> List.foldr dedupeEmojis []
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)
+
+        keys : Result String (Dict Emoji Int)
+        keys =
+            rawLines
+                |> List.filter (String.startsWith "indices:")
+                |> List.head
+                |> Maybe.map
+                    (String.slice (String.length "indices:") -1
+                        -- >> String.split ""
+                        >> (Regex.find emojiRegex
+                                >> List.map .match
+                           )
+                        >> List.indexedMap (\i -> \emoji -> ( emoji, i ))
+                        >> Dict.fromList
+                    )
+                |> Result.fromMaybe "No adjacency indices in map"
+
+        rowSize : Result String Int
+        rowSize =
+            Result.map (Dict.keys >> List.length) keys
+
+        toBool : Int -> Bool
+        toBool f =
+            if f == 1 then
+                True
+
+            else
+                False
+
+        decodeMatrixRow : List Bool -> Int -> Result String (Array Bool)
+        decodeMatrixRow acc row =
+            if row > 1 then
+                decodeMatrixRow
+                    ((row |> remainderBy 2 |> toBool) :: acc)
+                    (toFloat row / 2 |> floor)
+
+            else
+                Ok <| Array.fromList acc
+
+        adjacency : Result String (Array (Array Bool))
+        adjacency =
+            rawLines
+                |> List.filter (String.startsWith "matrix:")
+                |> List.head
+                |> Result.fromMaybe "no matrix in emoji source"
+                |> Result.andThen
+                    (String.slice (String.length "matrix:") -1
+                        >> String.split ","
+                        >> List.map
+                            (String.split ""
+                                >> List.map
+                                    (String.toInt
+                                        >> Result.fromMaybe "cannot parse bit"
+                                        >> Result.map
+                                            (\bit ->
+                                                if bit == 1 then
+                                                    True
+
+                                                else
+                                                    False
+                                            )
+                                    )
+                                >> resultCombine
+                                >> Result.map Array.fromList
+                            )
+                        >> resultCombine
+                        >> Result.map Array.fromList
+                    )
+
+        -- adjacency : Result String (Array (Array Bool))
+        -- adjacency =
+        -- rawLines
+        -- |> List.filter (String.startsWith "matrix:")
+        -- |> List.head
+        -- |> Result.fromMaybe "no matrix in emoji source"
+        -- |> Result.andThen
+        -- (String.slice (String.length "matrix:") -1
+        -- >> String.split ","
+        -- >> List.map
+        -- ((String.toInt
+        -- >> Result.fromMaybe "bad matrix row"
+        -- )
+        -- >> Result.andThen (decodeMatrixRow [])
+        -- )
+        -- >> resultCombine
+        -- >> Result.map Array.fromList
+        -- )
     in
-    Land.Map name
-        lands
+    Result.map3
+        (\a b c ->
+            Land.Map name
+                lands
+                a
+                realHeight
+                b
+                c
+                extraAdjacency
+        )
         realWidth
-        realHeight
-        extraAdjacency
+        keys
+        adjacency
 
 
 emojisToTuples : List Emoji -> List ( Emoji, Emoji ) -> List ( Emoji, Emoji )
@@ -274,30 +383,6 @@ symbols =
         |> List.map String.fromChar
 
 
-fullCellMap : Int -> Int -> Land.Color -> Land.Map
-fullCellMap w h color =
-    Land.Map
-        "FULLCELLMAP"
-        (List.map
-            (\r ->
-                List.map
-                    (\c ->
-                        { cells = [ Hex.offsetToHex ( c, r ) ]
-                        , color = color
-                        , emoji = Land.emptyEmoji
-                        , points = 0
-                        }
-                    )
-                    (List.range 1 w)
-            )
-            (List.range 1 h)
-            |> List.concat
-        )
-        w
-        h
-        []
-
-
 emptyMap : Land.Map
 emptyMap =
-    Land.Map "empty" [] 40 40 []
+    Land.Map "empty" [] 40 40 Dict.empty Array.empty []
