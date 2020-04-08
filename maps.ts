@@ -11,6 +11,7 @@ type LimitedTable = {
 };
 
 export const loadMap = (mapName: string): [Land[], Adjacency, string] => {
+  logger.debug("loadMap", mapName);
   const { lands, adjacency, name } = mapJson.maps[mapName];
   return [
     lands.map(land => ({ ...land, color: COLOR_NEUTRAL, points: 0 })),
