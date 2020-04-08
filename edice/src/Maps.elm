@@ -147,96 +147,9 @@ emojisToMap name raw =
                 |> foldLines
                 |> List.foldr dedupeEmojis []
                 |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1)
-
-        keys : Result String (Dict Emoji Int)
-        keys =
-            rawLines
-                |> List.filter (String.startsWith "indices:")
-                |> List.head
-                |> Maybe.map
-                    (String.slice (String.length "indices:") -1
-                        -- >> String.split ""
-                        >> (Regex.find emojiRegex
-                                >> List.map .match
-                           )
-                        >> List.indexedMap (\i -> \emoji -> ( emoji, i ))
-                        >> Dict.fromList
-                    )
-                |> Result.fromMaybe "No adjacency indices in map"
-
-        rowSize : Result String Int
-        rowSize =
-            Result.map (Dict.keys >> List.length) keys
-
-        toBool : Int -> Bool
-        toBool f =
-            if f == 1 then
-                True
-
-            else
-                False
-
-        decodeMatrixRow : List Bool -> Int -> Result String (Array Bool)
-        decodeMatrixRow acc row =
-            if row > 1 then
-                decodeMatrixRow
-                    ((row |> remainderBy 2 |> toBool) :: acc)
-                    (toFloat row / 2 |> floor)
-
-            else
-                Ok <| Array.fromList acc
-
-        adjacency : Result String (Array (Array Bool))
-        adjacency =
-            rawLines
-                |> List.filter (String.startsWith "matrix:")
-                |> List.head
-                |> Result.fromMaybe "no matrix in emoji source"
-                |> Result.andThen
-                    (String.slice (String.length "matrix:") -1
-                        >> String.split ","
-                        >> List.map
-                            (String.split ""
-                                >> List.map
-                                    (String.toInt
-                                        >> Result.fromMaybe "cannot parse bit"
-                                        >> Result.map
-                                            (\bit ->
-                                                if bit == 1 then
-                                                    True
-
-                                                else
-                                                    False
-                                            )
-                                    )
-                                >> resultCombine
-                                >> Result.map Array.fromList
-                            )
-                        >> resultCombine
-                        >> Result.map Array.fromList
-                    )
-
-        -- adjacency : Result String (Array (Array Bool))
-        -- adjacency =
-        -- rawLines
-        -- |> List.filter (String.startsWith "matrix:")
-        -- |> List.head
-        -- |> Result.fromMaybe "no matrix in emoji source"
-        -- |> Result.andThen
-        -- (String.slice (String.length "matrix:") -1
-        -- >> String.split ","
-        -- >> List.map
-        -- ((String.toInt
-        -- >> Result.fromMaybe "bad matrix row"
-        -- )
-        -- >> Result.andThen (decodeMatrixRow [])
-        -- )
-        -- >> resultCombine
-        -- >> Result.map Array.fromList
-        -- )
     in
-    Result.map3
-        (\a b c ->
+    Result.map
+        (\a ->
             EmojiMap name
                 lands
                 a
@@ -244,8 +157,6 @@ emojisToMap name raw =
                 extraAdjacency
         )
         realWidth
-        keys
-        adjacency
 
 
 emojisToTuples : List Emoji -> List ( Emoji, Emoji ) -> List ( Emoji, Emoji )
