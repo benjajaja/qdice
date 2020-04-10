@@ -543,7 +543,7 @@ hasAttackableNeighbours map land =
 
 canAttack : Map -> Land -> Land -> Result String Bool
 canAttack map source target =
-    if target.color /= source.color then
+    if source.points > 1 && target.color /= source.color then
         isBordering map source target
 
     else

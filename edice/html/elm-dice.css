@@ -349,6 +349,15 @@ button .material-icons, .edButton .material-icons {
   margin-right: auto;
 }
 
+.edGameHeader__button--flash {
+  animation: flash 1000ms infinite;
+}
+@keyframes flash {
+  0% { background: black; color: white; }
+  50% { background: red; color: white; box-shadow: 0 0 30px white; transform: scale(1.1) }
+  100% { background: black; color: white; }
+}
+
 .edGameBoardFooter {
   position: relative;
 }

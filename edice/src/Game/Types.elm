@@ -45,6 +45,7 @@ type alias Model =
     , points : Int
     , turnIndex : Int
     , hasTurn : Bool
+    , canMove : Bool
     , turnStart : Int
     , chatInput : String
     , chatLog : List ChatLogEntry

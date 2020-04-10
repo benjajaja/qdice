@@ -1,4 +1,4 @@
-module Board exposing (LandUpdate, Model, Msg, animations, canMove, clearCssAnimations, init, update, updateAnimations, view)
+module Board exposing (LandUpdate, Model, Msg, animations, canAttackFrom, canMove, clearCssAnimations, init, update, updateAnimations, view)
 
 import Animation
 import Animation.Messenger

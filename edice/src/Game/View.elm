@@ -273,7 +273,12 @@ onlineButtons model =
 
                     turnButton =
                         [ button
-                            [ class "edButton edGameHeader__button"
+                            [ class <|
+                                if model.game.hasTurn && not model.game.canMove then
+                                    "edButton edGameHeader__button edGameHeader__button--flash"
+
+                                else
+                                    "edButton edGameHeader__button"
                             , onClick <| GameCmd EndTurn
                             , dataTestId "button-seat"
                             , disabled <| not model.game.hasTurn

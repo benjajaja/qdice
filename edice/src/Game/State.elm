@@ -58,6 +58,7 @@ init table tableMap_ =
       , points = 0
       , turnIndex = -1
       , hasTurn = False
+      , canMove = False
       , turnStart = -1
       , chatInput = ""
       , chatLog = []
@@ -292,6 +293,21 @@ updateTableStatus model status =
                                     True
                            )
 
+        canMove =
+            if not hasTurn then
+                False
+
+            else
+                case player of
+                    Nothing ->
+                        False
+
+                    Just turnPlayer ->
+                        board_.map.lands
+                            |> List.filter (\land -> land.color == turnPlayer.color && land.points > 1)
+                            |> List.map (Board.canAttackFrom board_.map turnPlayer.color >> Result.toMaybe)
+                            |> List.any ((==) Nothing >> not)
+
         game_ =
             { game
                 | players = status.players
@@ -300,6 +316,7 @@ updateTableStatus model status =
                 , gameStart = gameStart
                 , turnIndex = status.turnIndex
                 , hasTurn = hasTurn
+                , canMove = canMove
                 , turnStart = status.turnStart
                 , isPlayerOut = isOut
                 , board = board_
@@ -433,8 +450,23 @@ showRoll model roll =
         game =
             model.game
 
+        canMove =
+            if not game.hasTurn then
+                False
+
+            else
+                case game.player of
+                    Nothing ->
+                        False
+
+                    Just turnPlayer ->
+                        board_.map.lands
+                            |> List.filter (\land -> land.color == turnPlayer.color && land.points > 1)
+                            |> List.map (Board.canAttackFrom board_.map turnPlayer.color >> Result.toMaybe)
+                            |> List.any ((==) Nothing >> not)
+
         game_ =
-            { game | board = board_, turnStart = roll.turnStart, players = roll.players }
+            { game | board = board_, turnStart = roll.turnStart, players = roll.players, canMove = canMove }
 
         soundName =
             if List.sum roll.from.roll > List.sum roll.to.roll then
@@ -513,11 +545,7 @@ canSelect game emoji =
                     Ok _ ->
                         True
 
-                    Err err ->
-                        -- let
-                        -- _ =
-                        -- Debug.log "canSelect err" err
-                        -- in
+                    Err _ ->
                         False
 
 
