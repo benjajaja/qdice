@@ -1,4 +1,4 @@
-module Game.State exposing (canHover, changeTable, clickLand, gameCommand, init, isChat, setUser, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
+module Game.State exposing (canSelect, changeTable, clickLand, gameCommand, init, isChat, setUser, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
 
 import Animation
 import Backend
@@ -6,7 +6,7 @@ import Backend.MqttCommands exposing (attack, sendGameCommand)
 import Backend.Types exposing (Topic(..))
 import Board
 import Board.State
-import Board.Types exposing (Msg(..))
+import Board.Types exposing (BoardMove(..), Msg(..))
 import Browser.Dom as Dom
 import Game.Types exposing (..)
 import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
@@ -459,64 +459,27 @@ clickLand model emoji =
                         ( model.game.board.move, consoleDebug "not hasTurn" )
 
                     else
-                        case find (.emoji >> (==) emoji) model.game.board.map.lands of
-                            Just land ->
-                                case model.game.board.move of
-                                    Board.Types.Idle ->
-                                        if land.points > 1 && land.color == player.color then
-                                            if Land.hasAttackableNeighbours model.game.board.map land then
-                                                ( Board.Types.From land, Cmd.none )
+                        case Board.canMove model.game.board player.color emoji of
+                            Ok newMove ->
+                                case newMove of
+                                    FromTo from to ->
+                                        case model.game.table of
+                                            Just table ->
+                                                let
+                                                    gameCmd =
+                                                        attack model.backend table from.emoji to.emoji
+                                                in
+                                                ( newMove, Cmd.batch [ playSound model.sessionPreferences "diceroll", gameCmd ] )
 
-                                            else
-                                                ( Board.Types.Idle, consoleDebug "has no possible targets" )
+                                            Nothing ->
+                                                -- no table!
+                                                ( model.game.board.move, consoleDebug "error: no table" )
 
-                                        else
-                                            ( Board.Types.Idle, consoleDebug "cannot select foreign land" )
+                                    _ ->
+                                        ( newMove, Cmd.none )
 
-                                    Board.Types.From from ->
-                                        if land == from then
-                                            -- same land: deselect
-                                            ( Board.Types.Idle, Cmd.none )
-
-                                        else if land.color == player.color then
-                                            -- same color and...
-                                            if land.points > 1 then
-                                                -- could move: select
-                                                ( Board.Types.From land, Cmd.none )
-
-                                            else
-                                                -- could not move: do nothing
-                                                ( model.game.board.move, consoleDebug "cannot select" )
-
-                                        else if not <| Land.isBordering model.game.board.map land from then
-                                            -- not bordering: do nothing
-                                            ( model.game.board.move
-                                            , consoleDebug <|
-                                                "cannot attack far land: "
-                                                    ++ from.emoji
-                                                    ++ "->"
-                                                    ++ land.emoji
-                                            )
-
-                                        else
-                                            -- is bordering, different land and color: attack
-                                            case model.game.table of
-                                                Just table ->
-                                                    let
-                                                        gameCmd =
-                                                            attack model.backend table from.emoji land.emoji
-                                                    in
-                                                    ( Board.Types.FromTo from land, Cmd.batch [ playSound model.sessionPreferences "diceroll", gameCmd ] )
-
-                                                Nothing ->
-                                                    -- no table!
-                                                    ( model.game.board.move, consoleDebug "error: no table" )
-
-                                    Board.Types.FromTo _ _ ->
-                                        ( model.game.board.move, consoleDebug "ongoing attack" )
-
-                            Nothing ->
-                                ( model.game.board.move, consoleDebug <| "error: ClickLand not found: " ++ emoji )
+                            Err err ->
+                                ( model.game.board.move, consoleDebug <| "click: " ++ err )
 
                 game =
                     model.game
@@ -535,8 +498,8 @@ clickLand model emoji =
             )
 
 
-canHover : Model -> Land.Emoji -> Bool
-canHover game emoji =
+canSelect : Model -> Land.Emoji -> Bool
+canSelect game emoji =
     case game.player of
         Nothing ->
             False
@@ -546,43 +509,15 @@ canHover game emoji =
                 False
 
             else
-                case Land.findLand emoji game.board.map.lands of
-                    Just land ->
-                        case game.board.move of
-                            Board.Types.Idle ->
-                                if land.points > 1 && land.color == player.color && Land.hasAttackableNeighbours game.board.map land then
-                                    True
+                case Board.canMove game.board player.color emoji of
+                    Ok _ ->
+                        True
 
-                                else
-                                    False
-
-                            Board.Types.From from ->
-                                if land == from then
-                                    -- same land: deselect
-                                    True
-
-                                else if land.color == player.color then
-                                    -- same color and...
-                                    if land.points > 1 && Land.hasAttackableNeighbours game.board.map land then
-                                        -- could move: select
-                                        True
-
-                                    else
-                                        -- could not move: do nothing
-                                        False
-
-                                else if not <| Land.isBordering game.board.map land from then
-                                    -- not bordering: do nothing
-                                    False
-
-                                else
-                                    -- is bordering, different land and color: attack
-                                    True
-
-                            Board.Types.FromTo _ _ ->
-                                False
-
-                    Nothing ->
+                    Err err ->
+                        -- let
+                        -- _ =
+                        -- Debug.log "canSelect err" err
+                        -- in
                         False
 
 

@@ -9,7 +9,7 @@ import Board.Colors
 import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
-import Game.State exposing (canHover, isChat)
+import Game.State exposing (canSelect, isChat)
 import Game.Types exposing (Msg(..), Player, PlayerAction(..), isBot, statusToString)
 import Helpers exposing (dataTestId, find, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
@@ -31,7 +31,7 @@ view model =
             Board.view model.game.board
                 (Maybe.andThen
                     (\emoji ->
-                        if canHover model.game emoji then
+                        if canSelect model.game emoji then
                             model.game.board.hovered
                             -- for Html.lazy ref-check
 

@@ -3,7 +3,7 @@ module Land exposing (Cells, Color(..), Emoji, Land, Map, MapSize, Point, allSid
 import Array exposing (Array)
 import Bitwise
 import Dict exposing (Dict)
-import Helpers exposing (find, findIndex)
+import Helpers exposing (find, findIndex, resultCombine)
 import Hex exposing (Hex, Point, borderLeftCorner, cellCubicCoords, hexToOffset, offsetToHex)
 import Hexagons.Hex as HH exposing (Direction)
 import List
@@ -152,21 +152,26 @@ cellCubicCoords hex =
     Hex.cellCubicCoords hex
 
 
-isBordering : Map -> Land -> Land -> Bool
+isBordering : Map -> Land -> Land -> Result String Bool
 isBordering map a b =
-    let
-        indexA =
-            Dict.get a.emoji map.adjacencyKeys |> Maybe.withDefault -1
-
-        indexB =
-            Dict.get b.emoji map.adjacencyKeys |> Maybe.withDefault -1
-
-        row =
-            Array.get indexA map.adjacency
-    in
-    row
-        |> Maybe.andThen (Array.get indexB)
-        |> Maybe.withDefault False
+    Result.map2
+        Tuple.pair
+        (Dict.get
+            a.emoji
+            map.adjacencyKeys
+            |> Result.fromMaybe (a.emoji ++ " not in matrix")
+        )
+        (Dict.get
+            b.emoji
+            map.adjacencyKeys
+            |> Result.fromMaybe (b.emoji ++ " not in matrix")
+        )
+        |> Result.andThen
+            (\( indexA, indexB ) ->
+                Array.get indexA map.adjacency
+                    |> Maybe.andThen (Array.get indexB)
+                    |> Result.fromMaybe "not it matrix"
+            )
 
 
 isBitSet : Int -> Int -> Bool
@@ -528,14 +533,18 @@ findLand emoji lands =
     find (\l -> l.emoji == emoji) lands
 
 
-hasAttackableNeighbours : Map -> Land -> Bool
+hasAttackableNeighbours : Map -> Land -> Result String Bool
 hasAttackableNeighbours map land =
     map.lands
-        |> List.any (canAttack map land)
+        |> List.map (canAttack map land)
+        |> resultCombine
+        |> Result.map (List.any identity)
 
 
-canAttack : Map -> Land -> Land -> Bool
+canAttack : Map -> Land -> Land -> Result String Bool
 canAttack map source target =
-    target.color
-        /= source.color
-        && isBordering map source target
+    if target.color /= source.color then
+        isBordering map source target
+
+    else
+        Ok False
