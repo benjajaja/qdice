@@ -5,6 +5,7 @@ import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
+import Routing exposing (routeToString)
 import Types exposing (LoginDialogStatus(..), Model, Msg(..), Route(..), StaticPage(..), User(..))
 
 
@@ -29,22 +30,22 @@ footer model =
 
 links1 : User -> List (Html Msg)
 links1 user =
-    [ link "/" "Play!" "casino"
+    [ link HomeRoute "Play!" "casino"
     , case user of
         Anonymous ->
             span [ onClick <| ShowLogin LoginShow, class "edFooter--box__link" ] [ i [ class "material-icons" ] [ text "account_circle" ], text "Login" ]
 
         Logged _ ->
-            link "/me" "Account & Settings" "account_circle"
-    , link "/leaderboard" "Leaderboard" "list"
+            link MyProfileRoute "Account & Settings" "account_circle"
+    , link LeaderBoardRoute "Leaderboard" "list"
     ]
 
 
 links2 : User -> List (Html Msg)
 links2 user =
-    [ link "/static/help" "Gameplay & Rules" "help"
-    , link "/static/about" "About qdice" "info"
-    , link "/static/changelog" "Changelog" "call_merge"
+    [ link (StaticPageRoute Help) "Gameplay & Rules" "help"
+    , link (StaticPageRoute About) "About qdice" "info"
+    , link ChangelogRoute "Changelog" "call_merge"
     ]
 
 
@@ -70,9 +71,9 @@ links3 user =
     ]
 
 
-link : String -> String -> String -> Html Types.Msg
-link path label iconName =
-    a [ href path, class "edFooter--box__link" ]
+link : Route -> String -> String -> Html Types.Msg
+link route label iconName =
+    a [ href <| routeToString False route, class "edFooter--box__link" ]
         [ i [ class "material-icons" ] [ text iconName ]
         , text label
         ]

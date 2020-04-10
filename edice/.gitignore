@@ -5,6 +5,5 @@ dist
 .env
 stats.json
 src/Maps/Sources.elm
-src/Static/Changelog.elm
 html/pictures
 html/mapnames.json

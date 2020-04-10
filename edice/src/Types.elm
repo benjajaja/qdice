@@ -52,6 +52,7 @@ type Msg
     | SetLoginPassword LoginPasswordStep
     | SetPassword ( String, String ) (Maybe String) -- (email, pass) check
     | UpdateUser LoggedUser String Preferences
+    | GetChangelog (Result Error String)
       -- game
     | BoardMsg Board.Msg
     | InputChat String
@@ -89,13 +90,13 @@ type LoginPasswordStep
 type StaticPage
     = Help
     | About
-    | Changelog
 
 
 type Route
     = HomeRoute
     | GameRoute Table
     | StaticPageRoute StaticPage
+    | ChangelogRoute
     | NotFoundRoute
     | MyProfileRoute
     | TokenRoute String
@@ -142,6 +143,7 @@ type alias Model =
         , all : List Game
         , fetching : Maybe GamesSubRoute
         }
+    , changelog : Changelog
     }
 
 
@@ -298,3 +300,9 @@ type LeaderboardMsg
 
 type GamesMsg
     = GetGames GamesSubRoute (Result Error (List Game))
+
+
+type Changelog
+    = ChangelogFetching
+    | ChangelogFetched String
+    | ChangelogError String

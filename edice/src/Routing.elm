@@ -3,6 +3,7 @@ module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, 
 import Backend.HttpCommands exposing (leaderBoard, profile)
 import Browser.Navigation exposing (Key)
 import LeaderBoard.State exposing (fetchLeaderboard)
+import Static.Changelog exposing (fetchChangelog)
 import String.Normalize exposing (slug)
 import Types exposing (GamesSubRoute(..), Model, Msg, Route(..), StaticPage(..))
 import Url exposing (Url, percentDecode)
@@ -21,6 +22,7 @@ matchers =
     oneOf
         [ map HomeRoute top
         , map StaticPageRoute (s "static" </> staticPageMatcher)
+        , map ChangelogRoute (s "changelog")
         , map MyProfileRoute (s "me")
         , map TokenRoute (s "token" </> string)
         , map ProfileRoute (s "profile" </> string </> string)
@@ -47,9 +49,6 @@ staticPageMatcher =
 
                 "about" ->
                     Just About
-
-                "changelog" ->
-                    Just Changelog
 
                 _ ->
                     Nothing
@@ -95,8 +94,8 @@ routeToString useHash route =
                         About ->
                             "static/about"
 
-                        Changelog ->
-                            "static/changelog"
+                ChangelogRoute ->
+                    "changelog"
 
                 NotFoundRoute ->
                     "404"
@@ -138,6 +137,9 @@ routeEnterCmd model route =
             ( model
             , profile model.backend id
             )
+
+        ChangelogRoute ->
+            fetchChangelog model
 
         HomeRoute ->
             ( model

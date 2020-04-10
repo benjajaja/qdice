@@ -307,3 +307,11 @@ games model sub =
                 []
         , expect = expectJson (GamesMsg << GetGames sub) gamesDecoder
         }
+
+
+changelog : Model -> Cmd Msg
+changelog model =
+    Http.get
+        { url = model.baseUrl ++ "/changelog"
+        , expect = expectString GetChangelog
+        }

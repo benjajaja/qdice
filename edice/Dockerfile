@@ -21,10 +21,7 @@ COPY src ./src
 COPY webpack.config.js ./
 ENV NODE_ENV=production
 ARG build_id
-ARG git_log
-ENV git_log=$git_log
 ENV build_id=$build_id
-RUN yarn generate-changelog
 RUN yarn build --color false
 RUN yarn test
 RUN yarn gzip

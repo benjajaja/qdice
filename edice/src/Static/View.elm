@@ -2,7 +2,6 @@ module Static.View exposing (view)
 
 import Html exposing (..)
 import Markdown
-import Static.Changelog
 import Static.Help
 import Types exposing (..)
 
@@ -12,9 +11,6 @@ view model page =
     case page of
         Help ->
             Static.Help.markdown
-
-        Changelog ->
-            Static.Changelog.markdown
 
         About ->
             Markdown.toHtml [] """

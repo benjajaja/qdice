@@ -6,3 +6,4 @@ data/goaccess/html/
 data/logs/nginx/
 starting_positions/maps
 starting_positions/src/__pycache__
+changelog.md

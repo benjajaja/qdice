@@ -1,6 +1,7 @@
 import logger from "./logger";
 logger.info("Qdice server starting");
 
+import * as fs from "fs";
 import * as db from "./db";
 import * as table from "./table";
 
@@ -138,6 +139,7 @@ export const server = async () => {
           (req: any) => req.path().indexOf(`${root}/profile`) === 0,
           (req: any) => req.path() === `${root}/topwebgames`,
           (req: any) => req.path().indexOf(`${root}/games`) === 0,
+          (req: any) => req.path() === `${root}/changelog`,
         ])(req);
         return ok;
       },
@@ -234,6 +236,19 @@ export const server = async () => {
   server.get(`${root}/games`, games.games);
   server.get(`${root}/games/:table`, games.games);
   server.get(`${root}/games/:table/:id`, games.game);
+
+  let changelog = "not loaded";
+  fs.readFile("./changelog.md", undefined, (err, file) => {
+    if (err) {
+      logger.error(err);
+    }
+    changelog = file.toString();
+    logger.debug(`Loaded changelog md (${changelog.split("\n").length} lines)`);
+  });
+  server.get(`${root}/changelog`, (_, res, next) => {
+    res.sendRaw(200, changelog);
+    next();
+  });
 
   process.on("SIGINT", async function() {
     logger.info("SIGINT");

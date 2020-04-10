@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node server.js",
     "generate-maps": "node edice/scripts/generate-maps.js ./edice/maps/ ./edice",
+    "generate-changelog": "git log --pretty=format:%ad%n%h%n%s%n%b--- | ts-node scripts/generate-changelog.ts",
     "lint": "yarn prettier --check '**/*.{ts,tsx}'",
     "format": "yarn prettier --write '**/*.{ts,tsx}'",
     "test": "yarn jest --verbose"
