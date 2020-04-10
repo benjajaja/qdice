@@ -11,7 +11,8 @@ import { now } from "../timestamp";
 import logger from "../logger";
 import { botsNotifyAttack } from "./bots";
 import { playerWithDerived } from "./serialize";
-import { ELIMINATION_REASON_DIE } from "../constants";
+import { ELIMINATION_REASON_DIE, TURN_SECONDS } from "../constants";
+import { isBorder } from "../maps";
 
 export const rollResult = (
   table: Table,
@@ -31,6 +32,7 @@ export const rollResult = (
     let players = botsNotifyAttack(table);
     let eliminations: ReadonlyArray<Elimination> | undefined = undefined;
     let turnIndex: number | undefined = undefined;
+    const attacker = players[table.turnIndex];
     if (isSuccess) {
       const loser = R.find(R.propEq("color", toLand.color), players);
       lands = updateLand(table.lands, toLand, {
@@ -41,7 +43,6 @@ export const rollResult = (
         loser &&
         R.filter(R.propEq("color", loser.color), lands).length === 0
       ) {
-        const attacker = players[table.turnIndex];
         [players, lands, turnIndex, eliminations] = removePlayerCascade(
           players,
           lands,
@@ -72,8 +73,22 @@ export const rollResult = (
 
     lands = updateLand(lands, fromLand, { points: 1 });
 
+    const canAttack = (land: Land) => {
+      return (
+        land.points > 1 &&
+        lands
+          .filter(land => land.color !== attacker.color)
+          .some(other => isBorder(table.adjacency, land.emoji, other.emoji))
+      );
+    };
+    const canMove = lands
+      .filter(land => land.color === attacker.color)
+      .some(canAttack);
+    logger.debug("can attack after roll? " + canMove);
+    const turnStart = canMove ? now() : now() - (TURN_SECONDS * 1000) / 2;
+
     const props = Object.assign(
-      { turnStart: now(), attack: null },
+      { turnStart: turnStart, attack: null },
       turnIndex !== undefined ? { turnIndex } : {}
     );
     publish.roll(
