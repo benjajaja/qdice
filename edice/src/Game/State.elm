@@ -13,7 +13,7 @@ import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
 import Land
 import Maps exposing (load)
 import Snackbar exposing (toastMessage)
-import Tables exposing (Map, Table)
+import Tables exposing (Map(..), Table)
 import Task
 import Time
 import Types exposing (Msg(..), SessionPreferences, User(..))
@@ -168,8 +168,28 @@ tableMap table tableList =
 
 
 mapFromTable : Table -> Result String Map
-mapFromTable =
-    Tables.decodeMap
+mapFromTable table =
+    case table of
+        "Planeta" ->
+            Ok Planeta
+
+        "España" ->
+            Ok Serrano
+
+        "Lagos" ->
+            Ok DeLucía
+
+        "Polo" ->
+            Ok Melchor
+
+        "Arabia" ->
+            Ok Sabicas
+
+        "Europa" ->
+            Ok Montoya
+
+        _ ->
+            Tables.decodeMap table
 
 
 findUserPlayer : Types.User -> List Player -> Maybe Player
