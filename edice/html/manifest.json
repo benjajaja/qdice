@@ -1,7 +1,7 @@
 {
   "short_name": "Qdice",
   "name": "Qdice.wtf",
-  "start-url": "/?homescreen=1",
+  "start_url": "/?homescreen=1",
   "icons": [
       {
           "src": "/favicons-2/android-chrome-192x192.png?v=1",

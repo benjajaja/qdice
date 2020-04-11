@@ -253,8 +253,6 @@ clientMaps.forEach(([str, adjacency]) => {
   write.write("            ]])");
   write.write("\n");
 
-  mapNames.push(name);
-
   console.log(`Generated adjacency: "${name}"`);
 });
 

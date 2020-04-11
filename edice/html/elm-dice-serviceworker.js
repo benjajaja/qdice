@@ -91,33 +91,15 @@ function preCache() {
     });
 }
 
-self.addEventListener("fetch_DISABLED", function(event) {
-  var result = event.request.url.match(
-    new RegExp("^https?://[^/]+/([^/]+)/?(.*)$")
+self.addEventListener("fetch", function(evt) {
+  evt.respondWith(
+    fromNetwork(evt.request, 400).catch(function() {
+      return fromCache(evt.request);
+    })
   );
-  if (result === null) {
-    fetchFirst(event.request, 500);
-    return;
-  }
-
-  var matches = result ? Array.prototype.slice.call(result, 1) : null;
-  if (matches && matches[1] === "" && matches[0].indexOf(".") === -1) {
-    event.respondWith(
-      fetchFirst(event.request, 500).catch(function() {
-        return fromCache(evt.request);
-      })
-    );
-  } else {
-    event.respondWith(cacheFirst(event.request));
-  }
-
-  var basePath = matches ? matches[0] : undefined;
-  if (["api", "mqtt"].indexOf(basePath) === -1) {
-    event.waitUntil(update(event.request));
-  }
 });
 
-function fetchFirst(request, timeout) {
+function fromNetwork(request, timeout) {
   return new Promise(function(fulfill, reject) {
     var timeoutId = setTimeout(reject, timeout);
     fetch(request).then(function(response) {
@@ -126,20 +108,10 @@ function fetchFirst(request, timeout) {
     }, reject);
   });
 }
-
-function cacheFirst(request) {
-  return caches.match(request).then(function(response) {
-    if (response) {
-      return response;
-    }
-    return fetch(request);
-  });
-}
-
-function update(request) {
+function fromCache(request) {
   return caches.open(CACHE).then(function(cache) {
-    return fetch(request).then(function(response) {
-      return cache.put(request, response);
+    return cache.match(request).then(function(matching) {
+      return matching || Promise.reject("no-match");
     });
   });
 }
