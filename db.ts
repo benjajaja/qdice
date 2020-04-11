@@ -568,7 +568,7 @@ export const removePushSubscription = async (
 ) => {
   const res = await pool.query({
     name: "push-subscriptions-remove",
-    text: `DELETE FROM push_subscriptions WHERE user_id = $1 AND subscription = $1`,
+    text: `DELETE FROM push_subscriptions WHERE user_id = $1 AND subscription::text = $1`,
     values: [id, subscription],
   });
   return res;

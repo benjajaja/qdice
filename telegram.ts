@@ -108,7 +108,11 @@ client.on("message", async (topic, message) => {
                 row.subscription
               );
             } catch (e) {
-              console.error("could not remove push subscription", e);
+              console.error(
+                "could not remove push subscription",
+                JSON.stringify({ id: row.id, subscription: row.subscription }),
+                e
+              );
             }
             // TODO remove subscription if unsubscribed or expired
           }
