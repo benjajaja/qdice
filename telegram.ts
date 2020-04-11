@@ -97,7 +97,19 @@ client.on("message", async (topic, message) => {
               }
             );
           } catch (e) {
-            console.error(e);
+            console.error(
+              "push subscription expired, removing",
+              row.id,
+              row.subscription
+            );
+            try {
+              const result = await db.removePushSubscription(
+                row.id,
+                row.subscription
+              );
+            } catch (e) {
+              console.error("could not remove push subscription", e);
+            }
             // TODO remove subscription if unsubscribed or expired
           }
         }

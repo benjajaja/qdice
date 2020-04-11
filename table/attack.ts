@@ -84,7 +84,6 @@ export const rollResult = (
     const canMove = lands
       .filter(land => land.color === attacker.color)
       .some(canAttack);
-    logger.debug("can attack after roll? " + canMove);
     const turnStart = canMove ? now() : now() - (TURN_SECONDS * 1000) / 2;
 
     const props = Object.assign(

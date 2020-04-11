@@ -562,6 +562,18 @@ export const getPushSubscriptions = async (event: string) => {
   return res.rows;
 };
 
+export const removePushSubscription = async (
+  id: string,
+  subscription: string
+) => {
+  const res = await pool.query({
+    name: "push-subscriptions-remove",
+    text: `DELETE FROM push_subscriptions WHERE user_id = $1 AND subscription = $1`,
+    values: [id, subscription],
+  });
+  return res;
+};
+
 export const addGame = async (table: Table): Promise<{ id: number }> => {
   const {
     rows: [game],
