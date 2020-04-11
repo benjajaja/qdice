@@ -14,13 +14,13 @@ setTimeout(function() {
   try {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
     keys.forEach(function(key) {
-      var url = "sounds/" + key + ".ogg";
-      fetch(url)
-        .then(function(response) {
-          return response.arrayBuffer();
-        })
-        .then(function(arrayBuffer) {
-          sounds[key] = function() {
+      sounds[key] = function() {
+        var url = "sounds/" + key + ".ogg";
+        fetch(url)
+          .then(function(response) {
+            return response.arrayBuffer();
+          })
+          .then(function(arrayBuffer) {
             var context = new AudioContext();
             context.decodeAudioData(
               arrayBuffer,
@@ -41,11 +41,11 @@ setTimeout(function() {
                 console.error("decodeAudioData error", error);
               }
             );
-          };
-        })
-        .catch(function(error) {
-          Sentry.captureException(error);
-        });
+          })
+          .catch(function(error) {
+            Sentry.captureException(error);
+          });
+      };
     });
   } catch (e) {
     Sentry.captureException(e);
