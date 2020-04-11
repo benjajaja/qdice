@@ -358,6 +358,10 @@ export const processCommand = async (table: Table, command: Command) => {
     ) {
       publish.tableStatus(newTable);
     }
+    if (command.type !== "Heartbeat" && (table.currentGame ?? gameId)) {
+      publish.gameEvent(table.tag, (table.currentGame ?? gameId)!, command);
+    }
+  } else if (command.type === "Chat") {
     if (table.currentGame ?? gameId) {
       publish.gameEvent(table.tag, (table.currentGame ?? gameId)!, command);
     }
