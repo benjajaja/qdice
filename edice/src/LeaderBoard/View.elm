@@ -61,7 +61,7 @@ table limit list =
                         tr []
                             [ td [ align "right" ] [ text <| String.fromInt profile.rank ]
                             , td [ align "right" ]
-                                [ playerPicture "small" profile.picture
+                                [ playerPicture "small" profile.picture profile.name
                                 ]
                             , td [ align "left" ]
                                 [ a [ href <| routeToString False <| ProfileRoute profile.id profile.name ]

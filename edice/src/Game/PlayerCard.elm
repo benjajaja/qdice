@@ -8,7 +8,7 @@ import Color.Interpolate
 import Game.Types exposing (GameStatus(..), Player)
 import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
-import Html.Attributes exposing (class, href, src, style)
+import Html.Attributes exposing (alt, class, href, src, style)
 import Ordinal exposing (ordinal)
 import Routing exposing (routeToString)
 import Svg
@@ -267,10 +267,11 @@ turnProgress model =
                 / turnTime
 
 
-playerPicture : String -> String -> Html Msg
-playerPicture size picture =
+playerPicture : String -> String -> String -> Html Msg
+playerPicture size picture name =
     Html.img
         [ class <| "edPlayerPicture edPlayerPicture--" ++ size
+        , alt <| "Avatar: " ++ name
         , src picture
         ]
         []

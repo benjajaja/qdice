@@ -422,7 +422,7 @@ playerBox model =
         , div [ class "edBox__inner" ] <|
             case model.user of
                 Logged user ->
-                    [ div [ class "edPlayerBox__Picture" ] [ playerPicture "medium" user.picture ]
+                    [ div [ class "edPlayerBox__Picture" ] [ playerPicture "medium" user.picture user.name ]
                     , div [ class "edPlayerBox__Name" ]
                         [ a [ href <| routeToString False <| ProfileRoute user.id user.name ]
                             [ text user.name

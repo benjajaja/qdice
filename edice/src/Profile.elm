@@ -37,7 +37,7 @@ view model id name =
 playerBox : Zone -> OtherProfile -> List (Html Msg)
 playerBox zone ( user, stats ) =
     [ div [ class "edPlayerBox__Picture" ]
-        [ playerPicture "large" user.picture
+        [ playerPicture "large" user.picture user.name
         ]
     , div [ class "edPlayerBox__Name" ]
         [ text user.name
