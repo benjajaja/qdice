@@ -2,7 +2,7 @@ module Board.View exposing (view)
 
 import Animation
 import Animation.Messenger
-import Array
+import Array exposing (Array)
 import Board.Colors
 import Board.Die exposing (die)
 import Board.PathCache
@@ -39,7 +39,7 @@ view model hovered diceVisible =
         diceVisible
 
 
-board : Land.Map -> ( MapSize, String ) -> PathCache -> Animations -> BoardMove -> Maybe Land.Emoji -> Bool -> Svg Msg
+board : Land.Map -> ( MapSize, String ) -> PathCache -> BoardAnimations -> BoardMove -> Maybe Land.Emoji -> Bool -> Svg Msg
 board map ( layout, mapViewBox ) pathCache animations move hovered diceVisible =
     Html.div [ class "edBoard" ]
         [ Svg.svg
@@ -56,7 +56,7 @@ board map ( layout, mapViewBox ) pathCache animations move hovered diceVisible =
                 move
                 hovered
                 map.lands
-            , Svg.Lazy.lazy4 allDies layout animations map.lands diceVisible
+            , Svg.Lazy.lazy5 allDies layout animations move map.lands diceVisible
             ]
         ]
 
@@ -135,88 +135,48 @@ landElement layout pathCache isSelected isHovered land =
         []
 
 
-allDies : MapSize -> Animations -> List Land.Land -> Bool -> Svg Msg
-allDies layout animations lands diceVisible =
-    g [] <| List.map (lazyLandDies layout animations diceVisible) lands
+allDies : MapSize -> BoardAnimations -> BoardMove -> List Land.Land -> Bool -> Svg Msg
+allDies layout animations move lands diceVisible =
+    g [] <| List.map (Svg.Lazy.lazy5 animatedStackDies layout animations move diceVisible) lands
 
 
-lazyLandDies : MapSize -> Animations -> Bool -> Land.Land -> Svg Msg
-lazyLandDies layout animations diceVisible land =
+animatedStackDies : MapSize -> BoardAnimations -> BoardMove -> Bool -> Land.Land -> Svg Msg
+animatedStackDies layout { stack, dice } move diceVisible land =
     let
-        stackAnimation : Maybe (Animation.Messenger.State Msg)
-        stackAnimation =
-            Dict.get ("attack_" ++ land.emoji) animations
-                |> Maybe.andThen
-                    (\a ->
-                        case a of
-                            Animation b ->
-                                Just b
+        animationAttrs =
+            case stack of
+                Just ( emoji, animation ) ->
+                    if emoji == land.emoji then
+                        Animation.render animation
 
-                            _ ->
-                                Nothing
-                    )
+                    else
+                        []
 
-        diceAnimations : Array.Array Bool
-        diceAnimations =
-            getDiceAnimations animations land
+                Nothing ->
+                    []
+
+        diceAnimation =
+            Dict.get land.emoji dice
     in
-    Svg.Lazy.lazy5 landDies layout stackAnimation diceAnimations diceVisible land
+    g
+        (class "edBoard--stack"
+            :: animationAttrs
+        )
+        [ Svg.Lazy.lazy4 landDies layout diceAnimation diceVisible land
+        ]
 
 
-getDiceAnimations : Animations -> Land.Land -> Array.Array Bool
-getDiceAnimations dict land =
-    let
-        animations =
-            List.range 0 (land.points - 1)
-                |> List.map (getLandDieKey land)
-                |> List.map (\k -> Dict.get k dict)
-                |> List.map
-                    (\v ->
-                        case v of
-                            Just a ->
-                                case a of
-                                    CssAnimation _ ->
-                                        True
-
-                                    _ ->
-                                        False
-
-                            Nothing ->
-                                False
-                    )
-    in
-    if
-        List.any
-            identity
-            animations
-    then
-        Array.fromList animations
-
-    else
-        Array.empty
-
-
-landDies : MapSize -> Maybe (Animation.Messenger.State Msg) -> Array.Array Bool -> Bool -> Land.Land -> Svg Msg
-landDies layout stackAnimation diceAnimations diceVisible land =
+landDies : MapSize -> Maybe (Array Bool) -> Bool -> Land.Land -> Svg Msg
+landDies layout diceAnimations diceVisible land =
     let
         ( x_, y_ ) =
             landCenter
                 layout
                 land.cells
-
-        animationAttrs =
-            case stackAnimation of
-                Just animation ->
-                    Animation.render animation
-
-                Nothing ->
-                    []
     in
     if diceVisible == True then
         g
-            (class "edBoard--stack"
-                :: animationAttrs
-            )
+            [ class "edBoard--stack--inner" ]
         <|
             List.map
                 (Svg.Lazy.lazy4 landDie diceAnimations x_ y_)
@@ -238,23 +198,21 @@ landDies layout stackAnimation diceAnimations diceVisible land =
                     |> Maybe.withDefault (Color.rgb255 255 255 255)
         in
         text_
-            ([ class "edBoard--stack edBoard--stack__text"
-             , x <| String.fromFloat x_
-             , y <| String.fromFloat y_
-             , oppositeColor
+            [ class "edBoard--stack edBoard--stack__text"
+            , x <| String.fromFloat x_
+            , y <| String.fromFloat y_
+            , oppositeColor
                 |> Board.Colors.cssRgb
                 |> stroke
-             , color
+            , color
                 |> Board.Colors.cssRgb
                 |> fill
-             , textAnchor "middle"
-             ]
-                ++ animationAttrs
-            )
+            , textAnchor "middle"
+            ]
             [ Svg.text <| String.fromInt land.points ]
 
 
-landDie : Array.Array Bool -> Float -> Float -> Int -> Svg Msg
+landDie : Maybe (Array Bool) -> Float -> Float -> Int -> Svg Msg
 landDie animations cx cy index =
     let
         ( xOffset, yOffset ) =
@@ -266,7 +224,7 @@ landDie animations cx cy index =
 
         animation : Bool
         animation =
-            case Array.get index animations of
+            case animations |> Maybe.andThen (Array.get index) of
                 Just b ->
                     b
 

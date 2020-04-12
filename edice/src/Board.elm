@@ -1,14 +1,11 @@
-module Board exposing (LandUpdate, Model, Msg, animations, canAttackFrom, canMove, clearCssAnimations, init, update, updateAnimations, view)
+module Board exposing (LandUpdate, Model, Msg, animations, canAttackFrom, canMove, init, update, updateAnimations, view)
 
 import Animation
-import Animation.Messenger
 import Board.State
 import Board.Types exposing (BoardMove, Model)
 import Board.View
-import Dict
 import Html.Lazy
 import Land exposing (Color, Emoji, Land, Map, findLand)
-import Time
 
 
 type alias Msg =
@@ -35,75 +32,28 @@ view =
     Html.Lazy.lazy3 Board.View.view
 
 
-animations : Model -> List (Animation.Messenger.State Msg)
+animations : Model -> List Animation.State
 animations model =
-    Dict.values model.animations
-        |> List.map
-            (\v ->
-                case v of
-                    Board.Types.Animation anim ->
-                        [ anim ]
+    case model.animations.stack of
+        Just ( _, a ) ->
+            [ a ]
 
-                    Board.Types.CssAnimation _ ->
-                        []
-            )
-        |> List.concat
+        Nothing ->
+            []
 
 
-clearCssAnimations : Model -> Time.Posix -> Model
-clearCssAnimations model posix =
-    { model
-        | animations =
-            Dict.filter
-                (\_ ->
-                    \v ->
-                        case v of
-                            Board.Types.Animation _ ->
-                                True
-
-                            Board.Types.CssAnimation time ->
-                                Time.posixToMillis posix - Time.posixToMillis time < 600
-                )
-                model.animations
-    }
-
-
-updateAnimations : Model -> Animation.Msg -> ( Model, Cmd Msg )
+updateAnimations : Model -> Animation.Msg -> Model
 updateAnimations model animMsg =
     let
-        updates =
-            model.animations
-                |> Dict.toList
-                |> List.map (updateAnimation animMsg)
-
         animations_ =
-            updates
-                |> List.map (\( k, v, _ ) -> ( k, v ))
-                |> Dict.fromList
+            model.animations
 
-        cmds =
-            updates
-                |> List.map (\( _, _, c ) -> c)
+        stack =
+            Maybe.map (Tuple.mapSecond (Animation.update animMsg)) animations_.stack
     in
-    ( { model
-        | animations = animations_
-      }
-    , Cmd.batch cmds
-    )
-
-
-updateAnimation : Animation.Msg -> ( String, Board.Types.AnimationState ) -> ( String, Board.Types.AnimationState, Cmd Msg )
-updateAnimation msg ( k, v ) =
-    case v of
-        Board.Types.Animation anim ->
-            let
-                ( new, cmd ) =
-                    Animation.Messenger.update msg anim
-            in
-            ( k, Board.Types.Animation new, cmd )
-
-        Board.Types.CssAnimation _ ->
-            ( k, v, Cmd.none )
+    { model
+        | animations = { animations_ | stack = stack }
+    }
 
 
 canAttackFrom : Map -> Color -> Land -> Result String ()

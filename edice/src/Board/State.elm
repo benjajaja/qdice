@@ -2,6 +2,7 @@ module Board.State exposing (init, update, updateLands)
 
 import Animation exposing (px)
 import Animation.Messenger
+import Array exposing (Array)
 import Board.PathCache
 import Board.Types exposing (..)
 import Dict
@@ -20,7 +21,7 @@ init map =
             Board.PathCache.addToDict layout map.lands Dict.empty
                 |> Board.PathCache.addToDictLines layout map.lands map.waterConnections
     in
-    Model map Nothing Idle pathCache ( layout, viewBox ) Dict.empty
+    Model map Nothing Idle pathCache ( layout, viewBox ) { stack = Nothing, dice = Dict.empty }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -66,18 +67,9 @@ update msg model =
             , Cmd.none
             )
 
-        AnimationDone id ->
-            let
-                animations_ =
-                    Dict.remove id model.animations
-            in
-            ( { model | animations = animations_ }
-            , Cmd.none
-            )
 
-
-updateLands : Model -> Time.Posix -> List LandUpdate -> Maybe BoardMove -> (String -> Msg) -> Model
-updateLands model posix updates mMove msg =
+updateLands : Model -> Time.Posix -> List LandUpdate -> Maybe BoardMove -> Model
+updateLands model posix updates mMove =
     if List.length updates == 0 then
         let
             ( layout, _ ) =
@@ -85,11 +77,12 @@ updateLands model posix updates mMove msg =
 
             move_ =
                 Maybe.withDefault model.move mMove
+
+            animations =
+                model.animations
         in
         { model
-            | animations =
-                -- new move replaces any older animations
-                attackAnimations layout move_ model.move msg
+            | animations = { animations | stack = attackAnimations layout move_ model.move }
             , move = move_
         }
 
@@ -101,7 +94,7 @@ updateLands model posix updates mMove msg =
             ( layout, _ ) =
                 model.layout
 
-            landUpdates : List ( Land.Land, List ( Int, AnimationState ) )
+            landUpdates : List ( Land.Land, Array Bool )
             landUpdates =
                 List.map (updateLand posix updates) map.lands
 
@@ -117,39 +110,32 @@ updateLands model posix updates mMove msg =
 
             move_ =
                 Maybe.withDefault model.move mMove
-
-            giveDiceAnimations =
-                animationsDict landUpdates
-
-            attackAnimations_ =
-                attackAnimations layout move_ model.move msg
         in
         { model
             | map = map_
             , move = move_
             , animations =
-                Dict.union giveDiceAnimations attackAnimations_
+                { stack = attackAnimations layout move_ model.move
+                , dice = giveDiceAnimations landUpdates
+                }
         }
 
 
-animationsDict : List ( Land.Land, List ( Int, AnimationState ) ) -> Animations
-animationsDict landUpdates =
+giveDiceAnimations : List ( Land.Land, Array Bool ) -> DiceAnimations
+giveDiceAnimations landUpdates =
     List.foldl
         (\( land, diceAnimations ) ->
-            \dict ->
-                List.foldl
-                    (\( index, animation ) ->
-                        \dict_ ->
-                            Dict.insert (getLandDieKey land index) animation dict_
-                    )
-                    dict
-                    diceAnimations
+            if Array.length diceAnimations == 0 then
+                identity
+
+            else
+                Dict.insert land.emoji diceAnimations
         )
         Dict.empty
         landUpdates
 
 
-updateLand : Time.Posix -> List LandUpdate -> Land.Land -> ( Land.Land, List ( Int, AnimationState ) )
+updateLand : Time.Posix -> List LandUpdate -> Land.Land -> ( Land.Land, Array Bool )
 updateLand posix updates land =
     let
         match =
@@ -166,62 +152,49 @@ updateLand posix updates land =
                 )
 
             else
-                ( land, [] )
+                ( land, Array.empty )
 
         Nothing ->
-            ( land, [] )
+            ( land, Array.empty )
 
 
-updateLandAnimations : Time.Posix -> Land.Land -> LandUpdate -> List ( Int, AnimationState )
+updateLandAnimations : Time.Posix -> Land.Land -> LandUpdate -> Array Bool
 updateLandAnimations posix land landUpdate =
     if landUpdate.color /= Land.Neutral && landUpdate.color == land.color && landUpdate.points > land.points then
-        List.map
-            (\index ->
-                ( index
-                , CssAnimation posix
-                )
-            )
-        <|
-            List.range
-                land.points
-                landUpdate.points
+        (List.range 0 (land.points - 1)
+            |> List.map (always False)
+        )
+            ++ (List.range
+                    land.points
+                    landUpdate.points
+                    |> List.map (always True)
+               )
+            |> Array.fromList
 
     else
-        []
+        Array.empty
 
 
-attackAnimations : Land.MapSize -> BoardMove -> BoardMove -> (String -> Msg) -> Animations
-attackAnimations layout move oldMove msg =
+attackAnimations : Land.MapSize -> BoardMove -> BoardMove -> Maybe ( Land.Emoji, AnimationState )
+attackAnimations layout move oldMove =
     case move of
         FromTo from to ->
-            Dict.fromList
-                [ ( "attack_" ++ from.emoji
-                  , translateStack False layout from to <| msg <| "attack_" ++ from.emoji
-                  )
-                ]
+            Just <| ( from.emoji, translateStack False layout from to )
 
         Idle ->
             case oldMove of
                 FromTo from to ->
-                    Dict.fromList
-                        [ ( "attack_" ++ from.emoji
-                          , translateStack True layout from to <| msg <| "attack_" ++ from.emoji
-                          )
-
-                        -- , ( "attack_" ++ to.emoji
-                        -- , translateStack True layout to from
-                        -- )
-                        ]
+                    Just <| ( from.emoji, translateStack True layout from to )
 
                 _ ->
-                    Dict.empty
+                    Nothing
 
         _ ->
-            Dict.empty
+            Nothing
 
 
-translateStack : Bool -> Land.MapSize -> Land.Land -> Land.Land -> Msg -> AnimationState
-translateStack reverse layout from to doneMsg =
+translateStack : Bool -> Land.MapSize -> Land.Land -> Land.Land -> AnimationState
+translateStack reverse layout from to =
     let
         ( fx, fy ) =
             Land.landCenter
@@ -250,26 +223,19 @@ translateStack reverse layout from to doneMsg =
                 , Animation.translate (Animation.px x) (Animation.px y)
                 )
     in
-    Animation <|
-        Animation.queue
-            (Animation.toWith
-                (Animation.easing
-                    { duration =
-                        if not reverse then
-                            100
-
-                        else
-                            100
-                    , ease = \z -> z ^ 2
-                    }
-                )
-                [ toAnimation ]
-                :: (if reverse == True then
-                        [ Animation.Messenger.send doneMsg ]
+    Animation.interrupt
+        [ Animation.toWith
+            (Animation.easing
+                { duration =
+                    if not reverse then
+                        200
 
                     else
-                        []
-                   )
+                        100
+                , ease = \z -> z ^ 2
+                }
             )
-        <|
-            Animation.style [ fromAnimation ]
+            [ toAnimation ]
+        ]
+    <|
+        Animation.style [ fromAnimation ]

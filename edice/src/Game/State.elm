@@ -275,7 +275,7 @@ updateTableStatus model status =
             model.game.board
 
         board_ =
-            Board.State.updateLands oldBoard model.time status.lands move AnimationDone
+            Board.State.updateLands oldBoard model.time status.lands move
 
         hasStarted =
             game.status /= Playing && status.status == Playing
@@ -465,7 +465,7 @@ showRoll model roll =
                     []
 
         board_ =
-            Board.State.updateLands model.game.board model.time updates (Just Board.Types.Idle) AnimationDone
+            Board.State.updateLands model.game.board model.time updates (Just Board.Types.Idle)
 
         game =
             model.game
@@ -665,7 +665,6 @@ updateTable model table msg =
                                                             []
                                                     )
                                                     (Just move_)
-                                                    AnimationDone
                                         }
                                   }
                                 , playSound model.sessionPreferences "kick"

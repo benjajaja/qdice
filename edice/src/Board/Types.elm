@@ -1,17 +1,15 @@
-module Board.Types exposing (AnimationState(..), Animations, BoardMove(..), LandUpdate, Model, Msg(..), PathCache, getLandDieKey, getLayout)
+module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), DiceAnimations, LandUpdate, Model, Msg(..), PathCache, getLayout)
 
-import Animation exposing (px)
-import Animation.Messenger
-import Dict
-import Land exposing (Land, Map, MapSize)
-import Time exposing (Posix)
+import Animation
+import Array exposing (Array)
+import Dict exposing (Dict)
+import Land exposing (Emoji, Land, Map, MapSize)
 
 
 type Msg
     = ClickLand Land.Emoji
     | HoverLand Land.Emoji
     | UnHoverLand Land.Emoji
-    | AnimationDone String
 
 
 type alias Model =
@@ -20,26 +18,26 @@ type alias Model =
     , move : BoardMove
     , pathCache : PathCache
     , layout : ( MapSize, String )
-    , animations : Animations
+    , animations : BoardAnimations
     }
 
 
+type alias BoardAnimations =
+    { stack : Maybe ( Emoji, AnimationState )
+    , dice : DiceAnimations
+    }
+
+
+type alias DiceAnimations =
+    Dict Emoji (Array Bool)
+
+
 type alias PathCache =
-    Dict.Dict String String
+    Dict String String
 
 
-type AnimationState
-    = Animation (Animation.Messenger.State Msg)
-    | CssAnimation Posix
-
-
-type alias Animations =
-    Dict.Dict String AnimationState
-
-
-getLandDieKey : Land -> Int -> String
-getLandDieKey land die =
-    land.emoji ++ "_" ++ String.fromInt die
+type alias AnimationState =
+    Animation.State
 
 
 type BoardMove

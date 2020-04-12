@@ -550,7 +550,7 @@ update msg model =
                 game =
                     model.game
 
-                ( board, cmds ) =
+                board =
                     Board.updateAnimations game.board animateMsg
 
                 loginPassword =
@@ -570,7 +570,7 @@ update msg model =
                             )
                     }
               }
-            , Cmd.map BoardMsg cmds
+            , Cmd.none
             )
 
         BoardMsg boardMsg ->
@@ -717,18 +717,7 @@ update msg model =
                         _ ->
                             Cmd.none
             in
-            if Time.posixToMillis newTime |> toFloat |> (*) 0.001 |> floor |> remainderBy 5 |> (==) 0 then
-                let
-                    game =
-                        model.game
-
-                    board =
-                        game.board
-                in
-                ( { model | time = newTime, game = { game | board = Board.clearCssAnimations board newTime } }, cmd )
-
-            else
-                ( { model | time = newTime }, cmd )
+            ( { model | time = newTime }, cmd )
 
         UserZone zone ->
             ( { model | zone = zone }, Cmd.none )
