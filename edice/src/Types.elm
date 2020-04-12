@@ -21,6 +21,7 @@ type Msg
     | OnLocationChange Url
     | OnUrlRequest Browser.UrlRequest
     | Tick Time.Posix
+    | Resized Int Int
     | UserZone Time.Zone
     | Animate Animation.Msg
     | MyProfileMsg MyProfile.Types.MyProfileMsg
@@ -144,6 +145,7 @@ type alias Model =
         , fetching : Maybe GamesSubRoute
         }
     , changelog : Changelog
+    , fullscreen : Bool
     }
 
 

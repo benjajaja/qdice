@@ -367,15 +367,18 @@ button .material-icons, .edButton .material-icons {
   align-items: center;
 }
 .edChatOverlay {
-  display: none;
   position: absolute;
-  top: 0;
+  top: -50%;
   left: 10px;
   padding: 4px 8px;
   background: rgba(255, 255, 255, 0.5);
   /* transform: translateY(-100%); */
   pointer-events: none;
   text-shadow: -1px -1px 0px white, -1px 1px 0px white, 1px -1px 0px white, 1px 1px 0px white;
+  max-width: 95%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .edPlayerChips {
@@ -925,17 +928,8 @@ button .material-icons, .edButton .material-icons {
   }
   .edGameBoardFooter {
   }
-  /*.edGameBoardFooter__content {*/
-    /*display: flex;*/
-    /*justify-content: space-between;*/
-    /*align-items: center;*/
-    /*height: 35px;*/
-  /*}*/
   .edGameStatus__button--landscape {
     display: flex;
-  }
-  .edChatOverlay {
-    display: block;
   }
 }
 

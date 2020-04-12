@@ -5,6 +5,7 @@ import Board exposing (LandUpdate)
 import Browser.Dom as Dom
 import Land exposing (Color, Emoji)
 import Tables exposing (Table)
+import Time exposing (Posix)
 
 
 type GameStatus
@@ -50,7 +51,7 @@ type alias Model =
     , chatInput : String
     , chatLog : List ChatLogEntry
     , gameLog : List ChatLogEntry
-    , chatOverlay : Animation.State
+    , chatOverlay : Maybe ( Posix, ChatLogEntry )
     , isPlayerOut : Bool
     , playerPosition : Int
     , roundCount : Int

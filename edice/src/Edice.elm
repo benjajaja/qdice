@@ -9,6 +9,7 @@ import Board
 import Board.Types
 import Browser
 import Browser.Dom
+import Browser.Events
 import Browser.Navigation exposing (Key)
 import Dict
 import Footer exposing (footer)
@@ -128,6 +129,7 @@ init flags location key =
                 , fetching = Nothing
                 }
             , changelog = ChangelogError "Not visited"
+            , fullscreen = False
             }
 
         ( model_, routeCmd ) =
@@ -145,6 +147,7 @@ init flags location key =
                     , [ routeCmd ]
                     , [ Task.perform UserZone Time.here ]
                     , [ gameCmd ]
+                    , [ Task.perform (\v -> Resized (round v.viewport.width) (round v.viewport.height)) Browser.Dom.getViewport ]
                     ]
     in
     ( model_, cmds )
@@ -557,11 +560,7 @@ update msg model =
                     model.loginPassword
             in
             ( { model
-                | game =
-                    { game
-                        | board = board
-                        , chatOverlay = Animation.update animateMsg model.game.chatOverlay
-                    }
+                | game = { game | board = board }
                 , loginPassword =
                     { loginPassword
                         | animations =
@@ -716,8 +715,23 @@ update msg model =
 
                         _ ->
                             Cmd.none
+
+                game =
+                    model.game
+
+                game_ =
+                    case game.chatOverlay of
+                        Just ( t, entry ) ->
+                            if Time.posixToMillis newTime - Time.posixToMillis t > 10000 then
+                                { game | chatOverlay = Nothing }
+
+                            else
+                                game
+
+                        Nothing ->
+                            game
             in
-            ( { model | time = newTime }, cmd )
+            ( { model | time = newTime, game = game_ }, cmd )
 
         UserZone zone ->
             ( { model | zone = zone }, Cmd.none )
@@ -813,6 +827,9 @@ update msg model =
                 Err err ->
                     ( { model | changelog = ChangelogError <| httpErrorToString err }, Cmd.none )
 
+        Resized w h ->
+            ( setPortrait model w h, Helpers.consoleDebug "resized" )
+
 
 tableFromRoute : Route -> Maybe Table
 tableFromRoute route =
@@ -822,6 +839,11 @@ tableFromRoute route =
 
         _ ->
             Nothing
+
+
+setPortrait : Model -> Int -> Int -> Model
+setPortrait model w h =
+    { model | fullscreen = w <= 820 && (toFloat w / toFloat h) > 13 / 9 }
 
 
 view : Model -> Browser.Document Msg
@@ -895,23 +917,17 @@ viewWrapper =
 
 mainViewSubscriptions : Model -> Sub Msg
 mainViewSubscriptions model =
-    let
-        list =
-            case model.route of
-                GameRoute _ ->
-                    Board.animations model.game.board
+    Animation.subscription Animate <|
+        (case model.route of
+            GameRoute _ ->
+                Board.animations model.game.board
 
-                _ ->
-                    []
-    in
-    Sub.batch
-        [ Animation.subscription Animate list
-        , Animation.subscription Animate
-            [ Tuple.first model.loginPassword.animations
-            , Tuple.second model.loginPassword.animations
-            , model.game.chatOverlay
-            ]
-        ]
+            _ ->
+                []
+        )
+            ++ [ Tuple.first model.loginPassword.animations
+               , Tuple.second model.loginPassword.animations
+               ]
 
 
 onLocationChange : Model -> Url -> ( Model, Cmd Msg )
@@ -952,6 +968,7 @@ subscriptions model =
         [ mainViewSubscriptions model
         , Backend.subscriptions model
         , Time.every 250 Tick
+        , Browser.Events.onResize Resized
         , notificationsChange NotificationsChange
         , pushGetKey (\_ -> PushGetKey)
         , pushRegister PushRegister

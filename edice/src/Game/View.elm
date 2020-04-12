@@ -10,7 +10,7 @@ import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
 import Game.State exposing (canSelect, isChat)
-import Game.Types exposing (Msg(..), Player, PlayerAction(..), isBot, statusToString)
+import Game.Types exposing (ChatLogEntry(..), Msg(..), Player, PlayerAction(..), isBot, statusToString)
 import Helpers exposing (dataTestId, find, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, style, type_)
@@ -43,7 +43,7 @@ view model =
                 model.game.diceVisible
                 |> Html.map BoardMsg
     in
-    div [ class "edMainScreen" ]
+    div [ class "edMainScreen" ] <|
         [ div [ class "edGameBoardWrapper" ]
             [ tableInfo model
             , header model
@@ -52,15 +52,21 @@ view model =
             , boardFooter model
             , tableDetails model
             ]
-        , div [ class "edGame__meta cartonCard" ]
-            [ gameChat model
-            , gameLog model
-            ]
-        , div [ class "edBoxes cartonCard" ] <|
-            playerBox model
-                ++ leaderboardBox model
-        , Game.Footer.footer model
         ]
+            ++ (if not model.fullscreen then
+                    [ div [ class "edGame__meta cartonCard" ]
+                        [ gameChat model
+                        , gameLog model
+                        ]
+                    , div [ class "edBoxes cartonCard" ] <|
+                        playerBox model
+                            ++ leaderboardBox model
+                    , Game.Footer.footer model
+                    ]
+
+                else
+                    []
+               )
 
 
 header : Model -> Html.Html Types.Msg
@@ -89,19 +95,20 @@ boardFooter model =
 
 chatOverlay : Model -> List (Html Msg)
 chatOverlay model =
-    case List.reverse model.game.chatLog |> List.filter isChat |> List.head of
-        Just last ->
-            [ div
-                (class "edChatOverlay"
-                    :: Animation.render
-                        model.game.chatOverlay
-                )
-                [ Game.Chat.chatLine last
-                ]
-            ]
+    if not model.fullscreen then
+        []
 
-        Nothing ->
-            []
+    else
+        case model.game.chatOverlay of
+            Just ( _, entry ) ->
+                [ div
+                    [ class "edChatOverlay" ]
+                    [ Game.Chat.chatLine entry
+                    ]
+                ]
+
+            Nothing ->
+                []
 
 
 playerBar : Int -> Model -> Html Msg

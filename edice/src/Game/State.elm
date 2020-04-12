@@ -69,11 +69,7 @@ init table tableMap_ =
 
                 Nothing ->
                     []
-      , chatOverlay =
-            Animation.style
-                [ Animation.translate (Animation.percent 0)
-                    (Animation.percent -100)
-                ]
+      , chatOverlay = Nothing
       , isPlayerOut = False
       , playerPosition = 0
       , roundCount = 0
@@ -707,19 +703,35 @@ isChat entry =
 
 updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
 updateChatLog model entry =
-    case model.game.table of
-        Nothing ->
-            ( model, Cmd.none )
+    if model.fullscreen then
+        let
+            game =
+                model.game
 
-        Just table ->
-            ( model
-            , updateChatCmd table entry <|
-                if isChat entry then
-                    "chatLog"
+            game_ =
+                case entry of
+                    LogChat _ _ _ ->
+                        { game | chatOverlay = Just ( model.time, entry ) }
 
-                else
-                    "gameLog"
-            )
+                    _ ->
+                        game
+        in
+        ( { model | game = game_ }, Cmd.none )
+
+    else
+        case model.game.table of
+            Nothing ->
+                ( model, Cmd.none )
+
+            Just table ->
+                ( model
+                , updateChatCmd table entry <|
+                    if isChat entry then
+                        "chatLog"
+
+                    else
+                        "gameLog"
+                )
 
 
 updateChatCmd : Table -> ChatLogEntry -> String -> Cmd Types.Msg
@@ -737,27 +749,6 @@ update model game msg =
                     | game =
                         { game
                             | chatLog = List.append game.chatLog [ entry ]
-                            , chatOverlay =
-                                case entry of
-                                    LogChat _ _ _ ->
-                                        Animation.interrupt
-                                            [ Animation.set [ Animation.translate (Animation.percent 0) (Animation.percent 300) ]
-                                            , Animation.toWith
-                                                (Animation.easing
-                                                    { duration = 500
-                                                    , ease = \x -> x ^ 2
-                                                    }
-                                                )
-                                                [ Animation.translate (Animation.percent 0) (Animation.percent -100) ]
-                                            , Animation.wait <| Time.millisToPosix 10000
-                                            , Animation.to
-                                                [ Animation.translate (Animation.percent 0) (Animation.percent 500)
-                                                ]
-                                            ]
-                                            model.game.chatOverlay
-
-                                    _ ->
-                                        model.game.chatOverlay
                         }
                 }
 
