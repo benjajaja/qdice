@@ -8,8 +8,6 @@ import {
   CommandResult,
   IllegalMoveError,
   Elimination,
-  UserLike,
-  BotPlayer,
   Color,
   Persona,
   Command,
@@ -176,7 +174,6 @@ export const join = (
   }
 
   return {
-    type: "Join",
     table: { status, turnCount, gameStart },
     players,
     lands,
@@ -252,7 +249,6 @@ const takeover = (
   });
 
   return {
-    type: "Takeover",
     players,
   };
 };
@@ -285,7 +281,6 @@ export const leave = (
     table: table.name,
   });
   return {
-    type: "Leave",
     table: { gameStart, status },
     players,
   };
@@ -333,7 +328,6 @@ export const attack = (
     to: emojiTo,
   });
   return {
-    type: "Attack",
     table: {
       turnStart: timestamp,
       turnActivity: true,
@@ -365,7 +359,7 @@ export const endTurn = (
     throw new IllegalMoveError("endTurn but did not exist in game", player);
   }
 
-  return nextTurn("EndTurn", table);
+  return nextTurn(table);
 };
 
 export const sitOut = (player: Player, table: Table): CommandResult => {
@@ -382,7 +376,6 @@ export const sitOut = (player: Player, table: Table): CommandResult => {
   //}
 
   return {
-    type: "SitOut",
     players: adjustPlayer(
       table.players.indexOf(player),
       { out: true },
@@ -403,7 +396,7 @@ export const sitIn = (user, table: Table): CommandResult => {
   const players = table.players.map(p =>
     p === player ? { ...p, out: false, outTurns: 0 } : p
   );
-  return { type: "SitIn", players };
+  return { players };
 };
 
 export const chat = (user: { name: string } | null, table, payload): null => {
@@ -427,7 +420,7 @@ export const toggleReady = (
   const players = table.players.map(p =>
     p === player ? { ...p, ready: payload } : p
   );
-  return { type: "ToggleReady", players };
+  return { players };
 };
 
 export const flag = (
@@ -502,7 +495,6 @@ export const flag = (
     }
 
     const result: CommandResult = {
-      type: "Flag",
       table: { turnStart: now(), turnIndex },
       lands: lands,
       players: players_,
@@ -520,5 +512,5 @@ export const flag = (
   const players = table.players.map(p =>
     p === player ? { ...p, flag: position } : p
   );
-  return [{ type: "Flag", players }, null];
+  return [{ players }, null];
 };

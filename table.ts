@@ -295,11 +295,11 @@ const commandResult = async (
     case "Heartbeat":
       return [heartbeat(command.user, table, command.clientId), null];
     case "TickTurnOver":
-      return nextTurn("TickTurnOver", table, command.sitPlayerOut);
+      return nextTurn(table, command.sitPlayerOut);
     case "TickTurnOut":
-      return nextTurn("TickTurnOut", table);
+      return nextTurn(table);
     case "TickTurnAllOut":
-      return nextTurn("TickTurnAllOut", table);
+      return nextTurn(table);
     case "EndGame":
       return [endGame(table, command.winner, command.turnCount), null];
     case "Roll":
@@ -326,7 +326,6 @@ export const processCommand = async (table: Table, command: Command) => {
 
   if (result !== null) {
     const {
-      type,
       table: props,
       lands,
       players,
@@ -354,7 +353,9 @@ export const processCommand = async (table: Table, command: Command) => {
     }
     if (
       eliminations ||
-      ["Heartbeat", "Enter", "Exit", "Attack", "Roll"].indexOf(type) === -1
+      ["Heartbeat", "Enter", "Exit", "Attack", "Roll", "Clear"].indexOf(
+        command.type
+      ) === -1
     ) {
       publish.tableStatus(newTable);
     }

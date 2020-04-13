@@ -215,7 +215,6 @@ export type Command =
   | CommandSkeleton<"BotState", { player: Player; botCommand: BotCommand }>;
 
 export type CommandResult = {
-  readonly type: CommandType;
   readonly table?: Partial<TableProps>;
   readonly lands?: ReadonlyArray<Land>;
   readonly players?: ReadonlyArray<Player>;

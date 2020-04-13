@@ -26,7 +26,6 @@ import {
 import { now } from "../timestamp";
 
 const turn = (
-  type: CommandType,
   table: Table,
   sitPlayerOut = false
 ): [CommandResult, Command | null] => {
@@ -92,7 +91,6 @@ const turn = (
     // props.turnIndex + 1 < players_.length ? props.turnIndex + 1 : 0;
 
     const result = {
-      type,
       table: props,
       lands: lands_,
       players: players_,
@@ -112,7 +110,7 @@ const turn = (
 
   if (!newPlayer.out) {
     // normal turn over
-    return [{ type, table: props, lands, players }, null];
+    return [{ table: props, lands, players }, null];
   }
 
   if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
@@ -134,7 +132,6 @@ const turn = (
     props.turnIndex = turnIndex;
 
     const result = {
-      type,
       table: props,
       lands: lands_,
       players: players_,
@@ -154,7 +151,6 @@ const turn = (
 
   return [
     {
-      type,
       table: props,
       lands: lands,
       players: players.map(player => {

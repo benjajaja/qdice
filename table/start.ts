@@ -33,7 +33,6 @@ export const startGame = (table: Table): CommandResult => {
   });
 
   return {
-    type: "TickStart",
     table: {
       status: STATUS_PLAYING,
       gameStart: now(),

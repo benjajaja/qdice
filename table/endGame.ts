@@ -23,7 +23,6 @@ const endGame = (
     : [];
 
   return {
-    type: "EndGame",
     table: {
       status: STATUS_FINISHED,
       turnIndex: -1,

@@ -259,7 +259,6 @@ export const botState = (
   const [newState, next] = setBotState(botCommand, player, player.bot.state);
   return [
     {
-      type: "BotState",
       players: table.players.map(p =>
         p === player
           ? {

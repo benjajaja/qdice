@@ -100,7 +100,6 @@ export const rollResult = (
       }
     );
     const result: CommandResult = {
-      type: "Roll",
       table: props,
       players,
       lands,

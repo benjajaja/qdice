@@ -63,7 +63,7 @@ export const heartbeat = (
         },
       ]);
 
-  return { type: "Heartbeat", watchers: watching };
+  return { watchers: watching };
 };
 
 export const enter = (
@@ -72,11 +72,9 @@ export const enter = (
   clientId: string
 ): CommandResult | null => {
   const existing = R.find(R.propEq("clientId", clientId), table.watching);
-  publish.tableStatus(table, clientId);
   if (!existing) {
     publish.enter(table, user ? user.name : null);
     return {
-      type: "Enter",
       watchers: R.append(
         {
           clientId,
@@ -90,7 +88,6 @@ export const enter = (
     };
   } else if (existing.death !== 0) {
     return {
-      type: "Enter",
       watchers: table.watching.map(w =>
         w === existing ? { ...w, death: 0 } : w
       ),
@@ -108,7 +105,6 @@ export const exit = (
   if (existing) {
     publish.exit(table, user ? user.name : null);
     return {
-      type: "Exit",
       watchers: R.filter(
         R.complement(R.propEq("clientId", clientId)),
         table.watching
@@ -131,7 +127,6 @@ export const cleanWatchers = (table: Table): CommandResult | null => {
 
     stoppedWatching.forEach(user => publish.exit(table, user.name));
     return {
-      type: "CleanWatchers",
       watchers: stillWatching,
     };
   }
