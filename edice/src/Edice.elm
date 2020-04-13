@@ -828,7 +828,7 @@ update msg model =
                     ( { model | changelog = ChangelogError <| httpErrorToString err }, Cmd.none )
 
         Resized w h ->
-            ( setPortrait model w h, Helpers.consoleDebug "resized" )
+            ( setPortrait model w h, Cmd.none )
 
 
 tableFromRoute : Route -> Maybe Table

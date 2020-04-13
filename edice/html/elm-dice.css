@@ -241,6 +241,46 @@ button .material-icons, .edButton .material-icons {
   vertical-align: middle;
 }
 
+#splash {
+  flex-direction: column;
+}
+#splash img {
+  animation: bounce 0.2s infinite alternate;
+  position: relative;
+  z-index: 2;
+}
+#splash:after {
+  content:"";
+  display: block;
+  border: 15px solid black;
+  opacity: 0.25;
+  border-radius: 50%;
+  width: 100px;
+  animation: pulse 0.2s infinite alternate;
+  position: relative;
+  margin-top: -30px;
+  margin-left: -10px;
+  z-index: 1;
+}
+@keyframes bounce {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-50px);
+  }
+}
+@keyframes pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(0.66);
+    opacity: 0.2;
+  }
+}
+
 .overlay-loading {
   opacity: 0.25;
   transition: opacity 0.25s;
