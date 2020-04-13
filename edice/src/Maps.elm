@@ -1,8 +1,8 @@
 module Maps exposing (consoleLogMap, emptyMap, load, symbols, toCharList)
 
-import Array exposing (Array)
-import Dict exposing (Dict)
-import Helpers exposing (combine, consoleDebug, resultCombine)
+import Array
+import Dict
+import Helpers exposing (combine, consoleDebug)
 import Hex
 import Land exposing (Cells, Emoji)
 import Maps.Sources exposing (mapAdjacency, mapSourceString)

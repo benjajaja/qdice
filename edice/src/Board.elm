@@ -4,6 +4,7 @@ import Animation
 import Board.State
 import Board.Types exposing (BoardMove, Model)
 import Board.View
+import Html
 import Html.Lazy
 import Land exposing (Color, Emoji, Land, Map, findLand)
 
@@ -20,14 +21,17 @@ type alias LandUpdate =
     Board.Types.LandUpdate
 
 
+init : Land.Map -> Model
 init =
     Board.State.init
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update =
     Board.State.update
 
 
+view : Model -> Maybe Land.Emoji -> Bool -> Html.Html Msg
 view =
     Html.Lazy.lazy3 Board.View.view
 

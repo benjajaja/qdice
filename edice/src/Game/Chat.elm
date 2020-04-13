@@ -1,7 +1,7 @@
 module Game.Chat exposing (chatBox, chatLine, chatPlayerTag, eliminationEmoji, eliminationReasonText, gameBox, input, maybeUserChatTag, playerTag, rollLine)
 
 import Board.Colors exposing (baseCssRgb, colorName)
-import Game.Types exposing (ChatLogEntry(..), Player, PlayerAction(..), RollLog, userColor)
+import Game.Types exposing (ChatLogEntry(..), EliminationReason, PlayerAction(..), RollLog)
 import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -13,8 +13,8 @@ import Ordinal exposing (ordinal)
 import Types exposing (Msg(..))
 
 
-chatBox : String -> List Color -> List ChatLogEntry -> String -> Html Types.Msg
-chatBox inputValue colors lines id_ =
+chatBox : String -> List ChatLogEntry -> String -> Html Types.Msg
+chatBox inputValue lines id_ =
     div [ class "chatbox" ] <|
         [ div [ class "chatbox--log", id id_ ]
             (List.map
@@ -221,6 +221,7 @@ rollLine roll =
     div [ class "chatbox--line--roll", dataTestId "logline-roll" ] text
 
 
+eliminationEmoji : EliminationReason -> Html msg
 eliminationEmoji reason =
     Html.text <|
         case reason of
@@ -237,6 +238,7 @@ eliminationEmoji reason =
                 "🏳"
 
 
+eliminationReasonText : EliminationReason -> String
 eliminationReasonText reason =
     case reason of
         Game.Types.ReasonDeath player points ->

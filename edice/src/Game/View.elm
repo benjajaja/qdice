@@ -310,7 +310,6 @@ gameChat model =
     div [ class "chatboxContainer" ]
         [ Game.Chat.chatBox
             model.game.chatInput
-            (List.map .color model.game.players)
             model.game.chatLog
           <|
             "chatLog-"
