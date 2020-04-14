@@ -279,7 +279,7 @@ decodeMessage clientId table ( stringTopic, message ) =
                             msg
 
                         Err err ->
-                            ErrorToast "Failed to parse an update" <| err ++ "/" ++ stringTopic ++ "/" ++ message
+                            RuntimeError "Failed to parse an update" <| err ++ "/" ++ stringTopic ++ "/" ++ message
 
                 Nothing ->
                     UnknownTopicMessage "unrecognized topic" stringTopic message clientId_

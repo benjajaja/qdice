@@ -116,6 +116,14 @@ app.ports.toast.subscribe(function(options) {
   );
 });
 
+app.ports.sentry.subscribe(function(message) {
+  if (Sentry) {
+    Sentry.captureMessage(message);
+  } else {
+    console.error("Sentry not loaded:", message);
+  }
+});
+
 var sounds = require("./sounds");
 app.ports.playSound.subscribe(sounds.play);
 

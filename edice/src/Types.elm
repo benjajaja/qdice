@@ -38,6 +38,7 @@ type Msg
     | PushRegisterEvent ( PushEvent, Bool )
     | LeaderboardMsg LeaderboardMsg
     | GamesMsg GamesMsg
+    | RuntimeError String String
       -- oauth
     | Nop
     | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))

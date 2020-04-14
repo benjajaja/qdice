@@ -548,6 +548,14 @@ update msg model =
             , toastMessage message ms
             )
 
+        RuntimeError message debugMessage ->
+            ( model
+            , Cmd.batch
+                [ toastError message debugMessage
+                , sentry debugMessage
+                ]
+            )
+
         Animate animateMsg ->
             let
                 game =
@@ -1000,3 +1008,6 @@ port pushRegister : (PushSubscription -> msg) -> Sub msg
 
 
 port setSessionPreference : ( String, String ) -> Cmd msg
+
+
+port sentry : String -> Cmd msg

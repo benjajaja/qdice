@@ -15,90 +15,63 @@ jobs:
     - image: circleci/node:10.15.3
     working_directory: ~/repo
     steps:
-    - setup_remote_docker:
-        docker_layer_caching: false
     - restore_cache:
         name: Checkout source code
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - setup_remote_docker:
+        docker_layer_caching: false
     - run:
         name: Build Docker image
         command: ./scripts/build.sh
     - run:
-        name: Push image to container registry
-        command: |
-          docker login \
-            --username $DOCKERHUB_USERNAME \
-            --password $DOCKERHUB_PASSWORD
-          docker push bgrosse/qdice:backend
-          docker push bgrosse/qdice:emqx
+        name: Make workdir
+        command: mkdir -p workspace
+    - run:
+        name: Save Docker image with nodejs
+        command: docker save -o workspace/docker_image_backend bgrosse/qdice:backend
+    - run:
+        name: Save Docker image of emqx
+        command: docker save -o workspace/docker_image_emqx bgrosse/qdice:emqx
+    - persist_to_workspace:
+          root: workspace
+          paths:
+            - docker_image_backend
+            - docker_image_emqx
   build_frontend:
     docker:
     - image: circleci/node:10.15.3
     working_directory: ~/repo
     steps:
-    - setup_remote_docker:
-        docker_layer_caching: false
     - restore_cache:
         name: Checkout source code
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - setup_remote_docker:
+        docker_layer_caching: false
     - run:
         name: Build Docker image
         command: |
           ./scripts/build.frontend.sh local
           ./scripts/build.frontend.sh production
     - run:
-        name: Push image to container registry
+        name: Make workdir
+        command: mkdir -p workspace
+    - run:
+        name: Save Docker images
         command: |
-          docker login \
-            --username $DOCKERHUB_USERNAME \
-            --password $DOCKERHUB_PASSWORD
-          docker push bgrosse/qdice:frontend-local
-          docker push bgrosse/qdice:frontend-production
-  test_e2e:
-    docker:
-    - image: zenato/puppeteer-renderer
-    working_directory: ~/repo
-    steps:
-    - restore_cache:
-        name: Checkout source code
-        key: repo-{{ .Environment.CIRCLE_SHA1 }}
-    - run:
-        name: Install Docker Compose
-        command: |
-          curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-          chmod +x ~/docker-compose
-          sudo mv ~/docker-compose /usr/local/bin/docker-compose
-    - setup_remote_docker:
-        docker_layer_caching: false
-    - run:
-        name: Create network
-        command: docker network create qdice || true
-    - run:
-        name: Start all containers
-        command: |
-          set -x
-          docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
-          cat << EOF > .env
-          JWT_SECRET=anything
-          MQTT_PASSWORD=anything
-          POSTGRES_PASSWORD=anything
-          EMQX_DASHBOARD_PASSWORD=anything
-          VAPID_PUBLIC_KEY=BEnGLJDU-XZxCNlZ0uS6AsjXdVLPRDcAtK3H9SL-k_rslQJE1B98x_Dcqx3uL99gp_aiaVaX3-t73bQtzpt_tKk
-          VAPID_PRIVATE_KEY=f7964cnG2s8Qt7fKIyaHKzv_d4AD1oqweZ5BQ7J444A
-          AVATAR_PATH=./avatars
-          EOF
-          docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-    - run:
-        name: Yarn install
-        command: yarn install --frozen-lockfile --production
-    - run:
-        name: Run e2e
-        command: yarn test
+          docker save -o workspace/docker_image_frontend-local bgrosse/qdice:frontend-local
+          docker save -o workspace/docker_image_frontend-production bgrosse/qdice:frontend-production
+    - persist_to_workspace:
+          root: workspace
+          paths:
+            - docker_image_frontend-local
+            - docker_image_frontend-production
   test_e2e_docker:
     docker:
     - image: circleci/node:10.15.3
     working_directory: ~/repo
     steps:
+    - setup_remote_docker:
+        docker_layer_caching: false
     - restore_cache:
         name: Checkout source code
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
@@ -108,16 +81,21 @@ jobs:
           curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
           chmod +x ~/docker-compose
           sudo mv ~/docker-compose /usr/local/bin/docker-compose
-    - setup_remote_docker:
-        docker_layer_caching: false
     - run:
         name: Create network
         command: docker network create qdice || true
+    - attach_workspace:
+        at: workspace
+    - run:
+        name: Load docker images from workspace
+        command: |
+          docker load -i workspace/docker_image_frontend-local
+          docker load -i workspace/docker_image_backend
+          docker load -i workspace/docker_image_emqx
     - run:
         name: Start all containers
         command: |
           set -x
-          docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
           cat << EOF > .env
           JWT_SECRET=anything
           MQTT_USERNAME=nodice
@@ -152,6 +130,25 @@ jobs:
     - restore_cache:
         name: Checkout source code
         key: repo-{{ .Environment.CIRCLE_SHA1 }}
+    - attach_workspace:
+        at: workspace
+    - run:
+        name: Load docker images from workspace
+        command: |
+          docker load -i workspace/docker_image_frontend-local
+          docker load -i workspace/docker_image_frontend-production
+          docker load -i workspace/docker_image_backend
+          docker load -i workspace/docker_image_emqx
+    - run:
+        name: Push image to container registry
+        command: |
+          docker login \
+            --username $DOCKERHUB_USERNAME \
+            --password $DOCKERHUB_PASSWORD
+          docker push bgrosse/qdice:backend
+          docker push bgrosse/qdice:frontend-local
+          docker push bgrosse/qdice:frontend-production
+          docker push bgrosse/qdice:emqx
     - run:
         name: Deploy Over SSH
         command: |
@@ -162,19 +159,17 @@ workflows:
     jobs:
     - checkout_code
     - build_backend:
-        context: qdice
         requires:
         - checkout_code
     - build_frontend:
-        context: qdice
         requires:
         - checkout_code
     - test_e2e_docker:
-        context: qdice
         requires:
         - build_backend
         - build_frontend
     - deploy:
+        context: qdice
         requires:
         - test_e2e_docker
         filters:
