@@ -13,7 +13,8 @@ RUN node ./scripts/generate-maps.js ./edice/maps/
 
 ARG git_log
 COPY scripts/generate-changelog.ts ./scripts/generate-changelog.ts
-RUN echo $git_log | yarn ts-node scripts/generate-changelog.ts
+ENV git_log=$git_log
+RUN yarn ts-node scripts/generate-changelog.ts
 
 COPY tsconfig.json ./
 COPY *.ts *.js ./
