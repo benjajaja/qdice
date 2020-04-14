@@ -64,6 +64,10 @@ baseUrl location =
                 "localhost" ->
                     "/api"
 
+                "nginx" ->
+                    -- e2e tests
+                    "/api"
+
                 _ ->
                     "https://qdice.wtf/api"
 

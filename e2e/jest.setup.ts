@@ -20,7 +20,7 @@ global.testValue = (id: string, key: string, value: string) =>
 beforeEach(async () => {
   while (true) {
     try {
-      console.log("API reset...");
+      console.log(`Wait for API (${E2E_API_RESET_URL}) reset...`);
       await got(E2E_API_RESET_URL);
       break;
     } catch (e) {

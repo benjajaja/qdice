@@ -120,12 +120,20 @@ jobs:
           docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
           cat << EOF > .env
           JWT_SECRET=anything
+          MQTT_USERNAME=nodice
           MQTT_PASSWORD=anything
+          MQTT_URL=mqtt://emqx:1883
           POSTGRES_PASSWORD=anything
+          PGPORT=5432
+          PGHOST=postgres
+          PGUSER=bgrosse
+          PGDATABASE=nodice
           EMQX_DASHBOARD_PASSWORD=anything
           VAPID_PUBLIC_KEY=BEnGLJDU-XZxCNlZ0uS6AsjXdVLPRDcAtK3H9SL-k_rslQJE1B98x_Dcqx3uL99gp_aiaVaX3-t73bQtzpt_tKk
           VAPID_PRIVATE_KEY=f7964cnG2s8Qt7fKIyaHKzv_d4AD1oqweZ5BQ7J444A
           AVATAR_PATH=./avatars
+          API_ROOT=/
+          E2E=1
           EOF
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
     - run:
