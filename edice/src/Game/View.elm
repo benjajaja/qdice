@@ -224,7 +224,7 @@ onlineButtons model =
             Just player ->
                 let
                     sitButton =
-                        if player.out then
+                        if model.game.isPlayerOut then
                             [ button
                                 [ class <|
                                     "edButton edGameHeader__button"
@@ -320,7 +320,7 @@ gameChat model =
 sitInModal : Model -> Html.Html Types.Msg
 sitInModal model =
     div
-        [ if model.game.isPlayerOut then
+        [ if model.game.player /= Nothing && model.game.isPlayerOut then
             style "" ""
 
           else

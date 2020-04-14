@@ -7,7 +7,6 @@ import {
   Land,
   Player,
   CommandResult,
-  CommandType,
   Command,
   Elimination,
 } from "../types";
@@ -43,7 +42,7 @@ const turn = (
     : [0, table.lands, table.players];
 
   if (receivedDice > 0) {
-    publish.receivedDice(table, receivedDice, currentPlayer);
+    publish.receivedDice(table, receivedDice, currentPlayer, lands, players);
   }
 
   const nextIndex =
@@ -61,6 +60,8 @@ const turn = (
 
   const positions = groupedPlayerPositions(table);
   const position = positions(newPlayer);
+
+  // next player flagged and surrenders
   if (
     newPlayer.flag !== null &&
     newPlayer.flag >= position &&
@@ -104,12 +105,14 @@ const turn = (
         { type: "EndGame", winner: players_[0], turnCount: table.turnCount },
       ];
     } else {
+      publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
       return [result, null];
     }
   }
 
   if (!newPlayer.out) {
     // normal turn over
+    publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
     return [{ table: props, lands, players }, null];
   }
 
@@ -145,10 +148,12 @@ const turn = (
         { type: "EndGame", winner: players_[0], turnCount: table.turnCount },
       ];
     } else {
+      publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
       return [result, null];
     }
   }
 
+  publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
   return [
     {
       table: props,
@@ -177,8 +182,7 @@ const giveDice = (
 
   let reserveDice = 0;
 
-  let filledLands = lands;
-  R.range(0, newDies).forEach(i => {
+  R.range(0, newDies).forEach(_ => {
     const targets = lands.filter(
       land => land.color === player.color && land.points < table.stackSize
     );

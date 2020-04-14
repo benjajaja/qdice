@@ -61,7 +61,9 @@ type TableMessage
     | Move Game.Types.Move
     | Elimination Game.Types.Elimination
     | Error String
-    | ReceiveDice Game.Types.Player Int
+    | ReceiveDice Game.Types.ReceiveDice
+    | Turn Int Int Int
+    | PlayerStatus Game.Types.Player
 
 
 type alias HttpStringError =

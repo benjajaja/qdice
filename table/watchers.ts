@@ -71,6 +71,7 @@ export const enter = (
   table: Table,
   clientId: string
 ): CommandResult | null => {
+  publish.tableStatus(table, clientId);
   const existing = R.find(R.propEq("clientId", clientId), table.watching);
   if (!existing) {
     publish.enter(table, user ? user.name : null);

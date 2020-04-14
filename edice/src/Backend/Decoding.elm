@@ -1,7 +1,8 @@
-module Backend.Decoding exposing (authStateDecoder, eliminationDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder)
+module Backend.Decoding exposing (authStateDecoder, eliminationDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, turnDecoder)
 
+import Backend.Types exposing (TableMessage(..))
 import Board.Types
-import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus)
+import Game.Types exposing (Award, Player, PlayerGameStats, ReceiveDice, TableParams, TableStatus)
 import Games.Types exposing (..)
 import Helpers exposing (triple)
 import Iso8601
@@ -261,11 +262,19 @@ eliminationReasonDecoder =
             )
 
 
-receiveDecoder : Decoder ( Player, Int )
+receiveDecoder : Decoder Game.Types.ReceiveDice
 receiveDecoder =
-    map2 (\a b -> ( a, b ))
-        (field "player" playersDecoder)
-        (field "count" int)
+    succeed Game.Types.ReceiveDice
+        |> required "player" playersDecoder
+        |> required "count" int
+        |> required "players" (list playersDecoder)
+        |> required "lands" (list landsUpdateDecoder)
+
+
+
+-- map2 (\a b -> ( a, b ))
+-- (field "player" playersDecoder)
+-- (field "count" int)
 
 
 globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo, ( String, List Profile ) )
@@ -488,3 +497,11 @@ gameRefDecoder =
         |> required "id" int
         |> required "tag" string
         |> required "gameStart" Iso8601.decoder
+
+
+turnDecoder : Decoder ( Int, Int, Int )
+turnDecoder =
+    succeed (\a b c -> ( a, b, c ))
+        |> required "turnIndex" int
+        |> required "turnStart" int
+        |> required "roundCount" int

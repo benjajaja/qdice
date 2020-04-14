@@ -351,22 +351,19 @@ export const processCommand = async (table: Table, command: Command) => {
     if (eliminations) {
       await processEliminations(newTable, eliminations);
     }
-    if (
-      eliminations ||
-      ["Heartbeat", "Enter", "Exit", "Attack", "Roll", "Clear"].indexOf(
-        command.type
-      ) === -1
-    ) {
+    if (["Join", "Leave", "Start", "EndGame"].indexOf(command.type) !== -1) {
+      logger.debug(`tableStatus: ${command.type}`);
       publish.tableStatus(newTable);
     }
-    if (command.type !== "Heartbeat" && (table.currentGame ?? gameId)) {
-      publish.gameEvent(table.tag, (table.currentGame ?? gameId)!, command);
-    }
-  } else if (command.type === "Chat") {
-    if (table.currentGame ?? gameId) {
-      publish.gameEvent(table.tag, (table.currentGame ?? gameId)!, command);
-    }
   }
+
+  if (
+    ["Heartbeat", "Clear"].indexOf(command.type) === -1 &&
+    (table.currentGame ?? gameId)
+  ) {
+    publish.gameEvent(table.tag, (table.currentGame ?? gameId)!, command);
+  }
+
   if (next !== null) {
     newTable = await processCommand(newTable, next);
   }

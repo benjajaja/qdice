@@ -215,14 +215,6 @@ updateTableStatus model status =
         player =
             findUserPlayer model.user status.players
 
-        hasChangedTurn : Maybe Player
-        hasChangedTurn =
-            if game.turnIndex /= status.turnIndex then
-                List.drop status.turnIndex status.players |> List.head
-
-            else
-                Nothing
-
         hasTurn =
             case player of
                 Nothing ->
@@ -230,22 +222,6 @@ updateTableStatus model status =
 
                 Just turnPlayer ->
                     indexOf turnPlayer status.players == status.turnIndex
-
-        hasGainedTurn =
-            case player of
-                Nothing ->
-                    False
-
-                Just _ ->
-                    hasTurn && not game.hasTurn
-
-        hasLostTurn =
-            case player of
-                Nothing ->
-                    False
-
-                Just _ ->
-                    not hasTurn && game.hasTurn
 
         isOut =
             case player of
@@ -255,23 +231,11 @@ updateTableStatus model status =
                 Just outPlayer ->
                     outPlayer.out
 
-        move =
-            if hasLostTurn then
-                Just Board.Types.Idle
-
-            else
-                Nothing
-
         oldBoard =
-            -- what was this hack?
-            -- if model.game.board.map == Maps.emptyMap then
-            -- Board.init <| Maps.load status.mapName
-            --
-            -- else
             model.game.board
 
         board_ =
-            Board.State.updateLands oldBoard model.time status.lands move
+            Board.State.updateLands oldBoard model.time status.lands Nothing
 
         hasStarted =
             game.status /= Playing && status.status == Playing
@@ -342,16 +306,8 @@ updateTableStatus model status =
                 , currentGame = status.currentGame
             }
 
-        ( model_, turnChangeCmd ) =
+        model_ =
             { model | game = game_ }
-                |> (\m ->
-                        case hasChangedTurn of
-                            Just changedTurnPlayer ->
-                                updateChatLog m <| LogTurn changedTurnPlayer.name changedTurnPlayer.color
-
-                            Nothing ->
-                                ( m, Cmd.none )
-                   )
     in
     ( model_
     , Cmd.batch
@@ -375,7 +331,119 @@ updateTableStatus model status =
 
           else
             Cmd.none
-        , if hasGainedTurn then
+        ]
+    )
+
+
+updateTurn : Types.Model -> Int -> Int -> Int -> ( Types.Model, Cmd Msg )
+updateTurn model turnIndex turnStart roundCount =
+    let
+        game =
+            model.game
+
+        player : Maybe Player
+        player =
+            findUserPlayer model.user game.players
+
+        newTurnPlayer : Maybe Player
+        newTurnPlayer =
+            List.drop turnIndex game.players |> List.head
+
+        hasTurn =
+            case player of
+                Nothing ->
+                    False
+
+                Just turnPlayer ->
+                    indexOf turnPlayer game.players == turnIndex
+
+        hasGainedTurn =
+            case player of
+                Nothing ->
+                    False
+
+                Just _ ->
+                    hasTurn && not game.hasTurn
+
+        hasLostTurn =
+            case player of
+                Nothing ->
+                    False
+
+                Just _ ->
+                    not hasTurn && game.hasTurn
+
+        isOut =
+            case player of
+                Nothing ->
+                    False
+
+                Just outPlayer ->
+                    outPlayer.out
+
+        move =
+            if hasLostTurn then
+                Just Board.Types.Idle
+
+            else
+                Nothing
+
+        canFlag =
+            case player of
+                Nothing ->
+                    False
+
+                Just canFlagPlayer ->
+                    (roundCount > game.params.noFlagRounds)
+                        && canFlagPlayer.gameStats.position
+                        > 1
+                        && (case canFlagPlayer.flag of
+                                Just f ->
+                                    f < canFlagPlayer.gameStats.position
+
+                                Nothing ->
+                                    True
+                           )
+
+        canMove =
+            if not hasTurn then
+                False
+
+            else
+                case player of
+                    Nothing ->
+                        False
+
+                    Just turnPlayer ->
+                        game.board.map.lands
+                            |> List.filter (\land -> land.color == turnPlayer.color && land.points > 1)
+                            |> List.map (Board.canAttackFrom game.board.map turnPlayer.color >> Result.toMaybe)
+                            |> List.any ((==) Nothing >> not)
+
+        game_ =
+            { game
+                | player = player
+                , turnIndex = turnIndex
+                , hasTurn = hasTurn
+                , canMove = canMove
+                , turnStart = turnStart
+                , isPlayerOut = isOut
+                , roundCount = roundCount
+                , canFlag = canFlag
+                , playerPosition = Maybe.withDefault 0 <| Maybe.map (.gameStats >> .position) player
+            }
+
+        ( model_, turnChangeCmd ) =
+            case newTurnPlayer of
+                Just p ->
+                    updateChatLog { model | game = game_ } <| LogTurn p.name p.color
+
+                Nothing ->
+                    ( { model | game = game_ }, Cmd.none )
+    in
+    ( model_
+    , Cmd.batch
+        [ if hasGainedTurn then
             Cmd.batch
                 [ playSound model.sessionPreferences "turn"
                 , Helpers.notification <| Just "game-turn"
@@ -391,6 +459,57 @@ updateTableStatus model status =
         , turnChangeCmd
         ]
     )
+
+
+updatePlayerStatus : Types.Model -> Player -> ( Types.Model, Cmd Msg )
+updatePlayerStatus model player =
+    let
+        game =
+            model.game
+
+        players =
+            List.map
+                (\p ->
+                    if p.id == player.id then
+                        player
+
+                    else
+                        p
+                )
+                game.players
+
+        isUser =
+            case game.player of
+                Just p ->
+                    player.id == p.id
+
+                Nothing ->
+                    False
+
+        game_ =
+            if isUser then
+                let
+                    isOut =
+                        player.out
+
+                    canFlag =
+                        (game.roundCount > game.params.noFlagRounds)
+                            && player.gameStats.position
+                            > 1
+                            && (case player.flag of
+                                    Just f ->
+                                        f < player.gameStats.position
+
+                                    Nothing ->
+                                        True
+                               )
+                in
+                { game | players = players, isPlayerOut = isOut, canFlag = canFlag }
+
+            else
+                { game | players = players }
+    in
+    ( { model | game = game_ }, Cmd.none )
 
 
 updateGameInfo : ( Game.Types.Model, Cmd Msg ) -> List Game.Types.TableInfo -> ( Game.Types.Model, Cmd Msg )
@@ -672,9 +791,28 @@ updateTable model table msg =
                         <|
                             Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
 
-                    Backend.Types.ReceiveDice player count ->
-                        updateChatLog model <|
-                            Game.Types.LogReceiveDice player count
+                    Backend.Types.ReceiveDice receive ->
+                        let
+                            ( model_, cmd ) =
+                                updateChatLog model <|
+                                    Game.Types.LogReceiveDice receive.player receive.count
+
+                            game =
+                                model_.game
+
+                            board =
+                                Board.State.updateLands game.board model_.time receive.lands Nothing
+
+                            game_ =
+                                { game | board = board, players = receive.players }
+                        in
+                        ( { model_ | game = game_ }, cmd )
+
+                    Backend.Types.Turn turnIndex turnStart roundCount ->
+                        updateTurn model turnIndex turnStart roundCount
+
+                    Backend.Types.PlayerStatus player ->
+                        updatePlayerStatus model player
 
             else
                 ( model
@@ -806,7 +944,27 @@ setUser model user =
 
 removePlayer : Model -> Player -> Model
 removePlayer model player =
-    { model | players = List.filter (.id >> (==) player.id >> not) model.players }
+    let
+        model_ =
+            { model | players = List.filter (.id >> (==) player.id >> not) model.players }
+    in
+    case model.player of
+        Just p ->
+            if p.id == player.id then
+                { model_
+                    | isPlayerOut = False
+                    , canFlag = False
+                    , player = Nothing
+                    , hasTurn = False
+                    , isReady = Nothing
+                    , flag = Nothing
+                }
+
+            else
+                model_
+
+        Nothing ->
+            model_
 
 
 playSound : SessionPreferences -> String -> Cmd Msg

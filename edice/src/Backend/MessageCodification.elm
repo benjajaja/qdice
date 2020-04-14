@@ -143,8 +143,8 @@ decodeTableMessage table message =
 
                 "receive" ->
                     case decodeString (field "payload" receiveDecoder) message of
-                        Ok ( player, count ) ->
-                            Ok <| TableMsg table <| ReceiveDice player count
+                        Ok receive ->
+                            Ok <| TableMsg table <| ReceiveDice receive
 
                         Err err ->
                             Err <| errorToString err
@@ -161,6 +161,22 @@ decodeTableMessage table message =
                     case decodeString (field "payload" playersDecoder) message of
                         Ok player ->
                             Ok <| TableMsg table <| Leave player
+
+                        Err err ->
+                            Err <| errorToString err
+
+                "turn" ->
+                    case decodeString (field "payload" turnDecoder) message of
+                        Ok ( turnIndex, turnStart, roundCount ) ->
+                            Ok <| TableMsg table <| Turn turnIndex turnStart roundCount
+
+                        Err err ->
+                            Err <| errorToString err
+
+                "player" ->
+                    case decodeString (field "payload" playersDecoder) message of
+                        Ok player ->
+                            Ok <| TableMsg table <| PlayerStatus player
 
                         Err err ->
                             Err <| errorToString err

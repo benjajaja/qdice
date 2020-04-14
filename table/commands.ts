@@ -375,6 +375,7 @@ export const sitOut = (player: Player, table: Table): CommandResult => {
   //return nextTurn('SitOut', table, true);
   //}
 
+  publish.playerStatus(table, { ...player, out: true });
   return {
     players: adjustPlayer(
       table.players.indexOf(player),
@@ -396,6 +397,7 @@ export const sitIn = (user, table: Table): CommandResult => {
   const players = table.players.map(p =>
     p === player ? { ...p, out: false, outTurns: 0 } : p
   );
+  publish.playerStatus(table, { ...player, out: false });
   return { players };
 };
 
@@ -512,5 +514,6 @@ export const flag = (
   const players = table.players.map(p =>
     p === player ? { ...p, flag: position } : p
   );
+  publish.playerStatus(table, { ...player, flag: position });
   return [{ players }, null];
 };

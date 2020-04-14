@@ -9,11 +9,7 @@ import { COLOR_NEUTRAL } from "../constants";
 export const serializeTable = (table: Table) => {
   const players = table.players.map(serializePlayer(table));
 
-  const lands = table.lands.map(({ emoji, color, points }) => [
-    emoji,
-    color ?? COLOR_NEUTRAL,
-    points ?? 1,
-  ]);
+  const lands = table.lands.map(serializeLand);
 
   return {
     tag: table.tag,
@@ -34,6 +30,12 @@ export const serializeTable = (table: Table) => {
     currentGame: table.currentGame,
   };
 };
+
+export const serializeLand = ({ emoji, color, points }) => [
+  emoji,
+  color ?? COLOR_NEUTRAL,
+  points ?? 1,
+];
 
 export const serializePlayer = (table: Table) => {
   const derived = computePlayerDerived(table);

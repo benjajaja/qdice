@@ -5,11 +5,13 @@ import {
   EliminationReason,
   EliminationSource,
   Command,
+  Land,
 } from "../types";
 import {
   serializeTable,
   serializePlayer,
   serializeEliminationReason,
+  serializeLand,
 } from "./serialize";
 import logger from "../logger";
 import * as jwt from "jsonwebtoken";
@@ -261,17 +263,69 @@ export const userUpdate = (clientId: string) => (profile, preferences) => {
   );
 };
 
-export const receivedDice = (table: Table, count: number, player: Player) => {
+export const receivedDice = (
+  table: Table,
+  count: number,
+  player: Player,
+  lands: readonly Land[],
+  players: readonly Player[]
+) => {
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
       type: "receive",
-      payload: { player: serializePlayer(table)(player), count },
+      payload: {
+        player: serializePlayer(table)(player),
+        count,
+        players: players.map(serializePlayer(table)),
+        lands: lands.map(serializeLand),
+      },
     }),
     undefined!,
     err => {
       if (err) {
-        console.log(err, "tables/" + table.name + "/clients roll", roll);
+        console.log(err, "tables/" + table.name + "/clients receive");
+      }
+    }
+  );
+};
+
+export const turn = (
+  table: Table,
+  turnIndex: number,
+  turnStart: number,
+  roundCount: number
+) => {
+  client.publish(
+    "tables/" + table.name + "/clients",
+    JSON.stringify({
+      type: "turn",
+      payload: {
+        turnIndex,
+        turnStart: Math.floor(turnStart / 1000),
+        roundCount,
+      },
+    }),
+    undefined!,
+    err => {
+      if (err) {
+        console.log(err, "tables/" + table.name + "/clients turn");
+      }
+    }
+  );
+};
+
+export const playerStatus = (table: Table, player: Player) => {
+  client.publish(
+    "tables/" + table.name + "/clients",
+    JSON.stringify({
+      type: "player",
+      payload: serializePlayer(table)(player),
+    }),
+    undefined!,
+    err => {
+      if (err) {
+        console.log(err, "tables/" + table.name + "/clients player");
       }
     }
   );

@@ -118,7 +118,7 @@ describe("A full game", () => {
     // const lines = await attack(page, "land-🍺", "land-🐸", "A");
 
     await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-last-child(3)`,
+      `${testId("logline-elimination")}:nth-last-child(2)`,
       {
         text: /^☠ A finished 2nd with -?\d+ ✪ \(Killed by B for \d+✪\)/,
       }

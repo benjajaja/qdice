@@ -1,9 +1,11 @@
 import * as R from "ramda";
-import { Table, Player, Land, CommandResult, Color } from "../types";
+import * as publish from "./publish";
+import { Table, Land, CommandResult } from "../types";
 import { now } from "../timestamp";
 import { rand, shuffle } from "../rand";
 import logger from "../logger";
 import { STATUS_PLAYING } from "../constants";
+import { props } from "ramda";
 
 const randomPoints = (stackSize: number) => {
   const r = rand(0, 999) / 1000;
@@ -32,16 +34,18 @@ export const startGame = (table: Table): CommandResult => {
     return oldLand;
   });
 
+  const props = {
+    status: STATUS_PLAYING,
+    gameStart: now(),
+    turnIndex: 0,
+    turnStart: now(),
+    turnActivity: false,
+    playerStartCount: table.players.length,
+    roundCount: 1,
+  };
+  publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
   return {
-    table: {
-      status: STATUS_PLAYING,
-      gameStart: now(),
-      turnIndex: 0,
-      turnStart: now(),
-      turnActivity: false,
-      playerStartCount: table.players.length,
-      roundCount: 1,
-    },
+    table: props,
     lands: allLands,
   };
 };
