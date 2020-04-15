@@ -5,4 +5,9 @@ node_modules
 .env
 yarn-error.log
 data
-
+workspace
+edice
+e2e
+starting_positions
+table
+test
