@@ -484,32 +484,17 @@ playerBox model =
                                ]
                             ++ (if not model.sessionPreferences.notificationsEnabled then
                                     [ p [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
-                                    , div [] [ button [ onClick RequestNotifications ] [ text "Enable notifications" ] ]
+                                    , div []
+                                        [ button [ onClick RequestNotifications ]
+                                            [ text "Enable notifications"
+                                            , Icon.icon "sms"
+                                            ]
+                                        ]
                                     ]
 
                                 else
                                     []
                                )
-                            ++ [ label
-                                    [ class <|
-                                        "edCheckbox edGameHeader__checkbox"
-                                            ++ (if model.sessionPreferences.muted then
-                                                    " edGameHeader__checkbox--checked"
-
-                                                else
-                                                    ""
-                                               )
-                                    , onClick <| SetSessionPreference <| Muted <| not model.sessionPreferences.muted
-                                    ]
-                                    [ Icon.icon <|
-                                        if model.sessionPreferences.muted then
-                                            "check_box"
-
-                                        else
-                                            "check_box_outline_blank"
-                                    , text "Mute sound"
-                                    ]
-                               ]
                     ]
 
                 Anonymous ->
