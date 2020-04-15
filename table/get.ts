@@ -155,9 +155,9 @@ export const save = async (
 export const getStatuses = () =>
   R.sortWith(
     [
-      R.descend(R.prop("playerCount")),
-      R.descend(R.prop("watchCount")),
       R.ascend(R.prop("name")),
+      // R.descend(R.prop("playerCount")),
+      // R.descend(R.prop("watchCount")),
     ],
     Object.values(memoryTables).map(table => ({
       ...R.omit(["lands", "players", "watchers"], table),
