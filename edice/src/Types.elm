@@ -55,6 +55,10 @@ type Msg
     | SetPassword ( String, String ) (Maybe String) -- (email, pass) check
     | UpdateUser LoggedUser String Preferences
     | GetChangelog (Result Error String)
+    | GetComments CommentKind (Result String String)
+    | InputComment CommentKind String
+    | PostComment CommentKind String
+    | GetPostComment CommentKind (Result String ())
       -- game
     | BoardMsg Board.Msg
     | InputChat String
@@ -147,6 +151,7 @@ type alias Model =
         }
     , changelog : Changelog
     , fullscreen : Bool
+    , comments : CommentsModel
     }
 
 
@@ -309,3 +314,48 @@ type Changelog
     = ChangelogFetching
     | ChangelogFetched String
     | ChangelogError String
+
+
+type CommentKind
+    = UserWall String String
+
+
+commentKindKey : CommentKind -> String
+commentKindKey kind =
+    case kind of
+        UserWall id _ ->
+            "user/" ++ id
+
+
+type alias Comment =
+    { kind : CommentKind
+    , author : Profile
+    , timestamp : Time.Posix
+    , text : String
+    }
+
+
+type CommentList
+    = CommentListFetching
+    | CommentListError String
+    | CommentListFetched (List Comment)
+
+
+type alias CommentModel =
+    { list : CommentList
+    , postState :
+        { value : String
+        , status : CommentPostStatus
+        }
+    }
+
+
+type CommentPostStatus
+    = CommentPostIdle
+    | CommentPosting
+    | CommentPostError String
+    | CommentPostSuccess
+
+
+type alias CommentsModel =
+    Dict String CommentModel

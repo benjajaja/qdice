@@ -2,6 +2,7 @@ module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, 
 
 import Backend.HttpCommands exposing (leaderBoard, profile)
 import Browser.Navigation exposing (Key)
+import Comments
 import LeaderBoard.State exposing (fetchLeaderboard)
 import Static.Changelog exposing (fetchChangelog)
 import String.Normalize exposing (slug)
@@ -129,38 +130,42 @@ routeToString useHash route =
 
 routeEnterCmd : Model -> Route -> ( Model, Cmd Msg )
 routeEnterCmd model route =
-    case route of
-        LeaderBoardRoute ->
-            fetchLeaderboard model model.leaderBoard.page
+    let
+        ( model_, cmd ) =
+            case route of
+                LeaderBoardRoute ->
+                    fetchLeaderboard model model.leaderBoard.page
 
-        ProfileRoute id _ ->
-            ( model
-            , profile model.backend id
-            )
+                ProfileRoute id _ ->
+                    ( model
+                    , profile model.backend id
+                    )
 
-        ChangelogRoute ->
-            fetchChangelog model
+                ChangelogRoute ->
+                    fetchChangelog model
 
-        HomeRoute ->
-            ( model
-            , if List.length model.tableList > 0 then
-                goToBestTable model
+                HomeRoute ->
+                    ( model
+                    , if List.length model.tableList > 0 then
+                        goToBestTable model
 
-              else
-                Cmd.none
-            )
+                      else
+                        Cmd.none
+                    )
 
-        GamesRoute sub ->
-            let
-                games =
-                    model.games
-            in
-            ( { model | games = { games | fetching = Just sub } }, Backend.HttpCommands.games model.backend sub )
+                GamesRoute sub ->
+                    let
+                        games =
+                            model.games
+                    in
+                    ( { model | games = { games | fetching = Just sub } }, Backend.HttpCommands.games model.backend sub )
 
-        _ ->
-            ( model
-            , Cmd.none
-            )
+                _ ->
+                    ( model
+                    , Cmd.none
+                    )
+    in
+    Comments.routeEnter route model_ cmd
 
 
 goToBestTable : Model -> Cmd Msg

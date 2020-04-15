@@ -1,6 +1,7 @@
 module Profile exposing (view)
 
 import Awards
+import Comments
 import DateFormat
 import Game.PlayerCard exposing (playerPicture)
 import Games.Types exposing (GameRef)
@@ -15,7 +16,7 @@ import Types exposing (..)
 
 view : Model -> UserId -> String -> Html Msg
 view model id name =
-    div [ class "" ]
+    div [ class "" ] <|
         [ div [ class "edPlayerBox__inner" ] <|
             playerBox model.zone <|
                 Maybe.withDefault
@@ -32,6 +33,14 @@ view model id name =
                     )
                     model.otherProfile
         ]
+            ++ (case model.otherProfile of
+                    Just ( p, _ ) ->
+                        -- [ Comments.view model.user model.comments <| Comments.profileComments p ]
+                        []
+
+                    Nothing ->
+                        []
+               )
 
 
 playerBox : Zone -> OtherProfile -> List (Html Msg)

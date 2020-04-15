@@ -11,6 +11,7 @@ import Browser
 import Browser.Dom
 import Browser.Events
 import Browser.Navigation exposing (Key)
+import Comments
 import Dict
 import Footer exposing (footer)
 import GA exposing (ga)
@@ -130,6 +131,7 @@ init flags location key =
                 }
             , changelog = ChangelogError "Not visited"
             , fullscreen = False
+            , comments = Comments.init
             }
 
         ( model_, routeCmd ) =
@@ -834,6 +836,18 @@ update msg model =
 
                 Err err ->
                     ( { model | changelog = ChangelogError <| httpErrorToString err }, Cmd.none )
+
+        GetComments kind res ->
+            Comments.got model kind res
+
+        InputComment kind value ->
+            Comments.input model kind value
+
+        PostComment kind text ->
+            Comments.post model kind text
+
+        GetPostComment kind res ->
+            Comments.posted model kind res
 
         Resized w h ->
             ( setPortrait model w h, Cmd.none )

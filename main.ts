@@ -140,6 +140,7 @@ export const server = async () => {
           (req: any) => req.path() === `${root}/topwebgames`,
           (req: any) => req.path().indexOf(`${root}/games`) === 0,
           (req: any) => req.path() === `${root}/changelog`,
+          (req: any) => req.path().indexOf(`${root}/comments`) === 0,
         ])(req);
         return ok;
       },
@@ -247,6 +248,16 @@ export const server = async () => {
   });
   server.get(`${root}/changelog`, (_, res, next) => {
     res.sendRaw(200, changelog);
+    next();
+  });
+
+  server.get(`${root}/comments/:kind/:id`, (req, res, next) => {
+    res.send([]);
+    next();
+  });
+
+  server.post(`${root}/comments/:kind/:id`, (req, res, next) => {
+    res.send([]);
     next();
   });
 

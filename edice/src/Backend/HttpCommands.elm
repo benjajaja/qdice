@@ -11,7 +11,7 @@ import Land exposing (Color(..))
 import MyProfile.Types exposing (MyProfileUpdate)
 import Snackbar exposing (toastError)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, GamesMsg(..), GamesSubRoute(..), LeaderboardMsg(..), LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
+import Types exposing (AuthNetwork(..), AuthState, CommentKind(..), GamesMsg(..), GamesSubRoute(..), LeaderboardMsg(..), LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
 import Url.Builder exposing (int)
 
 
@@ -314,4 +314,21 @@ changelog model =
     Http.get
         { url = model.baseUrl ++ "/changelog"
         , expect = expectString GetChangelog
+        }
+
+
+comments : Model -> CommentKind -> Cmd Msg
+comments model kind =
+    Http.get
+        { url = model.baseUrl ++ "/comments/" ++ Types.commentKindKey kind
+        , expect = expectString <| (Result.mapError httpErrorToString >> GetComments kind)
+        }
+
+
+postComment : Model -> CommentKind -> String -> Cmd Msg
+postComment model kind text =
+    Http.post
+        { url = model.baseUrl ++ "/comments/" ++ Types.commentKindKey kind
+        , body = stringBody "text/plain" text
+        , expect = expectWhatever <| (Result.mapError httpErrorToString >> GetPostComment kind)
         }
