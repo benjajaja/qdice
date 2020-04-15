@@ -13,8 +13,4 @@ yarn
 yarn test
 cd ..
 
-./scripts/build.frontend.sh production
-docker push bgrosse/qdice:frontend-production
-docker push bgrosse/qdice:backend
 
-./scripts/deploy.sh
