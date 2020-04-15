@@ -1,6 +1,5 @@
 module Game.View exposing (view)
 
-import Animation
 import Array
 import Awards
 import Backend.Types exposing (ConnectionStatus(..))
@@ -9,14 +8,13 @@ import Board.Colors
 import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
-import Game.State exposing (canSelect, isChat)
-import Game.Types exposing (ChatLogEntry(..), Msg(..), Player, PlayerAction(..), isBot, statusToString)
-import Helpers exposing (dataTestId, find, pointsSymbol, pointsToNextLevel)
+import Game.State exposing (canSelect)
+import Game.Types exposing (ChatLogEntry(..), GameStatus(..), Msg(..), Player, PlayerAction(..), isBot)
+import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
-import Html.Attributes exposing (class, disabled, href, style, type_)
+import Html.Attributes exposing (class, disabled, href, style)
 import Html.Events exposing (onClick)
 import Icon
-import Land
 import LeaderBoard.View
 import Ordinal exposing (ordinal)
 import Routing exposing (routeToString)
@@ -340,40 +338,37 @@ tableInfo model =
     div [ class "edGameStatus" ] <|
         (case model.game.table of
             Just table ->
-                [ text "Table "
-                , text <| table
-                , text " is"
-                , span [ class "edGameStatus__chip", dataTestId "game-status" ]
-                    [ text <| "\u{00A0}" ++ statusToString model.game.status ++ "\u{00A0}" ]
-                ]
-                    ++ (case model.game.gameStart of
-                            Nothing ->
-                                [ text <| "round " ++ String.fromInt model.game.roundCount ]
+                case model.game.currentGame of
+                    Just id ->
+                        [ span [ class "edGameStatus__chip" ] [ text <| table ++ "\u{00A0}" ]
+                        , a
+                            [ href <|
+                                routeToString False <|
+                                    GamesRoute <|
+                                        GameId table id
+                            ]
+                            [ text <|
+                                "game #"
+                                    ++ String.fromInt id
+                            ]
+                        , span
+                            [ dataTestId "game-round"
+                            ]
+                            [ text <|
+                                "\u{00A0}round "
+                                    ++ String.fromInt model.game.roundCount
+                            ]
+                        ]
 
-                            Just timestamp ->
-                                [ text "starting in"
-                                , span [ class "edGameStatus__chip--strong" ]
-                                    [ text <| "\u{00A0}" ++ String.fromInt (round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) ++ "s" ]
-                                ]
-                       )
-                    ++ (case model.game.currentGame of
-                            Just id ->
-                                [ a
-                                    [ class "edGameStatus__chip--right"
-                                    , href <|
-                                        routeToString False <|
-                                            GamesRoute <|
-                                                GameId table id
-                                    ]
-                                    [ text <| "Game " ++ String.fromInt id ]
-                                ]
-
-                            Nothing ->
-                                [ a [ class "edGameStatus__chip--right", href <| routeToString False <| GamesRoute <| GamesOfTable table ]
-                                    [ text "Games"
-                                    ]
-                                ]
-                       )
+                    Nothing ->
+                        [ a
+                            [ class "edGameStatus__chip"
+                            , href <| routeToString False <| GamesRoute <| GamesOfTable table
+                            , dataTestId "table-games-link"
+                            ]
+                            [ text table
+                            ]
+                        ]
 
             Nothing ->
                 []
@@ -390,6 +385,15 @@ tableInfo model =
                             else
                                 "visibility_off"
                         ]
+                    , button
+                        [ class "edGameStatus__button edButton--icon", onClick <| SetSessionPreference <| Muted <| not model.sessionPreferences.muted ]
+                        [ Icon.icon <|
+                            if model.sessionPreferences.muted then
+                                "volume_off"
+
+                            else
+                                "volume_up"
+                        ]
                     , button [ class "edGameStatus__button edGameStatus__button--landscape edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ]
                     ]
                ]
@@ -400,22 +404,36 @@ tableDetails model =
     div [ class "edGameDetails" ] <|
         case model.game.table of
             Just table ->
-                [ span [ class "edGameStatus__chip" ] <|
-                    [ text <|
-                        if model.game.playerSlots == 0 then
-                            "∅"
+                case model.game.status of
+                    Playing ->
+                        []
 
-                        else
-                            String.fromInt model.game.playerSlots
-                    , text " players"
-                    , if model.game.params.botLess then
-                        text ", no bots"
+                    _ ->
+                        [ span [ class "edGameStatus__chip" ] <|
+                            [ text <|
+                                if model.game.playerSlots == 0 then
+                                    "∅"
 
-                      else
-                        text ", bots will join"
-                    , text <| ", starts with " ++ String.fromInt model.game.startSlots ++ " players"
-                    ]
-                ]
+                                else
+                                    String.fromInt model.game.playerSlots
+                            , text " players"
+                            , if model.game.params.botLess then
+                                text ", no bots"
+
+                              else
+                                text ", bots will join"
+                            ]
+                                ++ (case model.game.gameStart of
+                                        Nothing ->
+                                            [ text <| ", starts with " ++ String.fromInt model.game.startSlots ++ " players"
+                                            ]
+
+                                        Just timestamp ->
+                                            [ text ", starting in"
+                                            , span [ class "edGameStatus__chip--strong" ] [ text <| "\u{00A0}" ++ String.fromInt ((round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) + 1) ++ "s" ]
+                                            ]
+                                   )
+                        ]
 
             Nothing ->
                 []

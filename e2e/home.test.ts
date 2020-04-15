@@ -4,8 +4,10 @@ describe("Home", () => {
     expect(title).toBe("Qdice.wtf");
   });
 
-  test('should display "Table..." text on page', async () => {
-    await expect(page).toMatch("Table Planeta");
+  test('should display "Table" games link on page', async () => {
+    await expect(page).toMatchElement(testId("table-games-link"), {
+      text: "Planeta",
+    });
   });
 
   test('should display "join" button on page', async () => {

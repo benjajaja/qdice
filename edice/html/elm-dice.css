@@ -573,6 +573,7 @@ button .material-icons, .edButton .material-icons {
   display: none;
 }
 .edGameStatus__chip {
+  margin-left: 8px;
 }
 .edGameStatus__chip--strong {
   font-weight: bold;

@@ -84,10 +84,12 @@ describe("A full game", () => {
 
     await expect(page2).toMatchElement(testId("player-name-1"), { text: "B" });
 
+    await expect(page2).not.toMatchElement(testId("game-round"));
+
     await expect(page2).toClick(testId("check-ready"));
 
-    await expect(page).toMatchElement(testId("game-status"), {
-      text: "playing",
+    await expect(page).toMatchElement(testId("game-round"), {
+      text: "round 1",
     });
 
     await hisTurn(page, "A");
