@@ -26,9 +26,9 @@ tableOfTables model =
                 [ th [ align "left" ] [ text "Table" ]
                 , th [ align "right" ] [ text "Points" ]
                 , th [ align "right" ] [ text "Players" ]
-                , th [ align "right" ] [ text "Bots" ]
+                , th [ align "right" ] [ text "Minimum" ]
                 , th [ align "right" ] [ text "Watching" ]
-                , th [ align "right" ] [ text "Status" ]
+                , th [ align "right" ] [ text "Bots" ]
                 , th [ align "right" ] [ text "Size" ]
 
                 -- , th [ align "right" ] [ text "Stacks" ]
@@ -48,11 +48,14 @@ tableOfTables model =
                                 String.concat
                                     [ String.fromInt table.playerCount
                                     , " / "
-                                    , String.fromInt table.startSlots
-                                    , "-"
                                     , String.fromInt table.playerSlots
                                     ]
                             ]
+                        , td [ align "right" ]
+                            [ text <|
+                                String.fromInt table.startSlots
+                            ]
+                        , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
                         , td [ align "right" ]
                             [ text <|
                                 if table.params.botLess then
@@ -61,9 +64,6 @@ tableOfTables model =
                                 else
                                     "Yes"
                             ]
-                        , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
-                        , td [ align "right" ]
-                            [ Icon.icon <| statusToIcon table.status ]
                         , td [ align "right" ] [ text <| String.fromInt table.landCount ]
 
                         -- , td [ align "right" ] [ text <| String.fromInt table.stackSize ]
