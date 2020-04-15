@@ -697,7 +697,10 @@ updateTable model table msg =
                         updateChatLog model <| LogJoin player
 
                     Backend.Types.Leave player ->
-                        updateChatLog model <| LogLeave player
+                        updateChatLog
+                            { model | game = removePlayer model.game player }
+                        <|
+                            LogLeave player
 
                     Backend.Types.Enter user ->
                         updateChatLog model <| LogEnter user
