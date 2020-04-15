@@ -17,6 +17,14 @@ export const addGameEvent = async (
     return null;
   }
 
+  if (
+    command.type === "Chat" &&
+    command.user &&
+    ((command.user as any).id ?? "").indexOf("bot_") === 0
+  ) {
+    return null;
+  }
+
   setImmediate(() => db.addGameEvent(gameId!, command));
 
   if (command.type === "EndGame") {
