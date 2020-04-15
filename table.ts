@@ -357,7 +357,6 @@ export const processCommand = async (table: Table, command: Command) => {
       ) !== -1
     ) {
       logger.debug(`tableStatus: ${command.type}`);
-      logger.debug(`players: ${newTable.players.length}`);
       publish.tableStatus(newTable);
     }
   }
@@ -367,6 +366,10 @@ export const processCommand = async (table: Table, command: Command) => {
     (table.currentGame ?? gameId)
   ) {
     publish.gameEvent(table.tag, (table.currentGame ?? gameId)!, command);
+  }
+
+  if (command.type !== "Heartbeat") {
+    publish.eventFromCommand(newTable, command, result);
   }
 
   if (next !== null) {

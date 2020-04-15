@@ -61,27 +61,27 @@ client.on("message", async (topic, message) => {
   if (topic === "events") {
     const event = JSON.parse(message.toString());
     if (event.type === "join") {
-      if (!event.player) {
+      if (!event.user || event.user.bot) {
         return;
       }
       subscribed.forEach(id =>
         telegram
           .sendMessage(
             id,
-            `${event.player.name} joined https://qdice.wtf/${event.table}`
+            `${event.user.name} joined https://qdice.wtf/${event.table}`
           )
           .catch(e => console.error(e))
       );
-      if (lastJoinPlayer === event.player.id) {
+      if (lastJoinPlayer === event.user.id) {
         return;
       }
-      lastJoinPlayer = event.player.id;
+      lastJoinPlayer = event.user.id;
       // push notifications
       const subscriptions = await db.getPushSubscriptions("player-join");
-      const text = `${event.player.name} joined table "${event.table}"`;
+      const text = `${event.user.name} joined table "${event.table}"`;
       subscriptions.forEach(async row => {
-        if (row.subscription && event.player.id !== row.id) {
-          console.log("PN", row.id, event.player.id);
+        if (row.subscription && event.user.id !== row.id) {
+          console.log("PN", row.id, event.user.id);
           try {
             const request = await webPush.sendNotification(
               row.subscription,
@@ -122,7 +122,7 @@ client.on("message", async (topic, message) => {
       if (process.env.TWITTER_CONSUMER_KEY) {
         try {
           await twitter.post("statuses/update", {
-            status: `A game with "${event.player.name}" is about to start at https://qdice.wtf/${event.table}. Play now!`,
+            status: `A game with "${event.user.name}" is about to start at https://qdice.wtf/${event.table}. Play now!`,
           });
         } catch (e) {
           logger.error(e);
@@ -137,8 +137,8 @@ client.on("message", async (topic, message) => {
       //}
 
       // case "elimination":
-      // if (event.player.telegram) {
-      // setScore(event.player.telegram, event.player.points);
+      // if (event.user.telegram) {
+      // setScore(event.user.telegram, event.user.points);
       // }
       // break;
     } else if (event.type === "countdown") {

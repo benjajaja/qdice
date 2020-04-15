@@ -49,43 +49,13 @@ export const onMessage = (lock: AsyncLock) => async (topic, message) => {
       const event = JSON.parse(message);
       const tables = getStatuses();
       switch (event.type) {
-        case "join": {
-          const table = findTable(tables)(event.table);
-          if (!table) {
-            return;
-          }
-          //table.players.push(event.player);
-          publish.tables(tables);
-
-          return;
-        }
-
-        case "leave": {
-          const table = findTable(tables)(event.table);
-          if (!table) {
-            return;
-          }
-          //table.players = table.players.filter(p => p.id !== event.player.id);
+        case "join":
+        case "leave":
+        case "clear":
+        case "elimination":
+        case "watching":
           publish.tables(tables);
           return;
-        }
-
-        case "elimination": {
-          publish.tables(tables);
-          return;
-        }
-
-        case "watching": {
-          const table = findTable(tables)(event.table);
-          if (!table) {
-            return;
-          }
-
-          //table.watching = event.watching;
-          publish.tables(tables);
-
-          return;
-        }
       }
     } else if (topic === "death") {
       death(lock)(message.toString());

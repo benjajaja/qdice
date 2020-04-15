@@ -157,20 +157,6 @@ export const join = (
         ? GAME_START_COUNTDOWN_FULL
         : GAME_START_COUNTDOWN
     );
-
-    publish.event({
-      type: "countdown",
-      table: table.name,
-      players: players,
-    });
-  }
-
-  if (!player.bot) {
-    publish.event({
-      type: "join",
-      table: table.name,
-      player,
-    });
   }
 
   return {
@@ -242,12 +228,6 @@ const takeover = (
   publish.leave(table, bestBot);
   publish.join(table, player);
 
-  publish.event({
-    type: "join",
-    table: table.name,
-    player,
-  });
-
   return {
     players,
   };
@@ -276,10 +256,6 @@ export const leave = (
       : table.status;
 
   publish.leave(table, existing);
-  publish.event({
-    type: "join",
-    table: table.name,
-  });
   return {
     table: { gameStart, status },
     players,

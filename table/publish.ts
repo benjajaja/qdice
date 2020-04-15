@@ -6,6 +6,7 @@ import {
   EliminationSource,
   Command,
   Land,
+  CommandResult,
 } from "../types";
 import {
   serializeTable,
@@ -208,6 +209,44 @@ export const event = event => {
       console.error("pub telegram error", err);
     }
   });
+};
+
+export const eventFromCommand = (
+  table: Table,
+  command: Command,
+  result: CommandResult | null
+) => {
+  switch (command.type) {
+    case "Join":
+      event({
+        type: "join",
+        table: table.name,
+        user: command.user,
+      });
+      return;
+    case "Leave":
+      event({
+        type: "leave",
+        table: table.name,
+        player: command.player,
+      });
+      return;
+    case "Clear":
+      if (result !== null) {
+        event({
+          type: "clear",
+          table: table.name,
+        });
+      }
+      return;
+    case "Enter":
+    case "Exit":
+      event({
+        type: "watching",
+        table: table.name,
+      });
+      return;
+  }
 };
 
 export const clientError = (clientId: string, error: Error) => {
