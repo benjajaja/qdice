@@ -222,6 +222,7 @@ export const eventFromCommand = (
         type: "join",
         table: table.name,
         user: command.user,
+        bot: !!command.bot,
       });
       return;
     case "Leave":

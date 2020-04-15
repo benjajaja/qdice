@@ -61,7 +61,7 @@ client.on("message", async (topic, message) => {
   if (topic === "events") {
     const event = JSON.parse(message.toString());
     if (event.type === "join") {
-      if (!event.user || event.user.bot) {
+      if (!event.user || event.bot) {
         return;
       }
       subscribed.forEach(id =>
