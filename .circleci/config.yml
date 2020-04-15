@@ -168,11 +168,11 @@ workflows:
         requires:
         - build_backend
         - build_frontend
-    - deploy:
-        context: qdice
-        requires:
-        - test_e2e_docker
-        filters:
-          branches:
-            only: master
+    # - deploy:
+        # context: qdice
+        # requires:
+        # - test_e2e_docker
+        # filters:
+          # branches:
+            # only: master
 
