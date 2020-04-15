@@ -1,4 +1,4 @@
-module Board.State exposing (init, update, updateLands)
+module Board.State exposing (init, removeColor, update, updateLands)
 
 import Animation exposing (px)
 import Animation.Messenger
@@ -6,7 +6,7 @@ import Array exposing (Array)
 import Board.PathCache
 import Board.Types exposing (..)
 import Dict
-import Land
+import Land exposing (Color(..))
 import Time
 
 
@@ -239,3 +239,26 @@ translateStack reverse layout from to =
         ]
     <|
         Animation.style [ fromAnimation ]
+
+
+removeColor : Model -> Color -> Model
+removeColor model color =
+    let
+        map =
+            model.map
+
+        map_ =
+            { map
+                | lands =
+                    List.map
+                        (\land ->
+                            if land.color == color then
+                                { land | color = Neutral }
+
+                            else
+                                land
+                        )
+                        map.lands
+            }
+    in
+    { model | map = map_ }

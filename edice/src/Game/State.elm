@@ -946,7 +946,10 @@ removePlayer : Model -> Player -> Model
 removePlayer model player =
     let
         model_ =
-            { model | players = List.filter (.id >> (==) player.id >> not) model.players }
+            { model
+                | players = List.filter (.id >> (==) player.id >> not) model.players
+                , board = Board.State.removeColor model.board player.color
+            }
     in
     case model.player of
         Just p ->
