@@ -129,7 +129,7 @@ button, .edButton {
   font-family: 'Rubik', sans-serif;
   min-height: 20px;
   line-height: 20px;
-  margin: 4px 8px;
+  padding: 4px 8px;
   flex: 0 0 auto;
   text-transform: uppercase;
   -moz-osx-font-smoothing: grayscale;
@@ -140,7 +140,7 @@ button, .edButton {
   text-decoration: none;
   text-transform: uppercase;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  padding: 0 8px 0 8px;
+  margin: 0 8px 0 8px;
   display: inline-flex;
   position: relative;
   align-items: center;
@@ -171,14 +171,12 @@ button .material-icons, .edButton .material-icons {
   font-size: 20px;
 }
 .edButton--icon {
-  padding: 0;
   min-width: 0;
 }
 
 .edCheckbox {
-  height: 20px;
   line-height: 20px;
-  margin: 4px 8px;
+  padding: 4px 8px;
   flex: 0 0 auto;
   text-transform: uppercase;
   -moz-osx-font-smoothing: grayscale;
@@ -189,7 +187,7 @@ button .material-icons, .edButton .material-icons {
   text-decoration: none;
   text-transform: uppercase;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  padding: 0 8px 0 8px;
+  margin: 0 8px 0 8px;
   display: inline-flex;
   position: relative;
   align-items: center;
