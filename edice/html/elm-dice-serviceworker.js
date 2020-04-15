@@ -100,10 +100,12 @@ self.addEventListener("fetch", function(event) {
   var url = new URL(event.request.url);
   var path = url.pathname;
   var destination = event.request.destination;
+  // console.log(destination, typeof destination, path);
   /* We should only cache GET requests, and deal with the rest of method in the
      client-side, by handling failed POST,PUT,PATCH,etc. requests.
   */
   if (
+    destination === "" ||
     path.indexOf("/api") === 0 ||
     /elm-dice\..*\.{css|js}/.test(path) ||
     event.request.method !== "GET"
@@ -114,6 +116,27 @@ self.addEventListener("fetch", function(event) {
     /* If we don't block the event as shown below, then the request will go to
        the network as usual.
     */
+    return;
+  }
+  if (destination === "document") {
+    var request = event.request;
+    var fetchThenCache = new Promise(function(resolve, reject) {
+      var timeoutId = setTimeout(reject, 1000);
+      fetch(request).then(function(response) {
+        clearTimeout(timeoutId);
+        resolve(response);
+      }, reject);
+    }).catch(function() {
+      return caches.open(CACHE).then(function(cache) {
+        return cache.match(request).then(function(matching) {
+          return (
+            matching ||
+            Promise.reject("offline and no cache for " + destination)
+          );
+        });
+      });
+    });
+    event.respondWith(fetchThenCache);
     return;
   }
   // console.log("network then cache", path);
