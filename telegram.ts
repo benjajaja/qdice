@@ -114,7 +114,6 @@ client.on("message", async (topic, message) => {
                 e
               );
             }
-            // TODO remove subscription if unsubscribed or expired
           }
         }
       });
