@@ -255,7 +255,7 @@ onlineButtons model =
                             ]
 
                     checkbox =
-                        if model.game.canFlag then
+                        if model.game.canFlag && player.gameStats.position > 1 then
                             [ label
                                 [ class "edCheckbox edGameHeader__checkbox edGameHeader__button--left"
                                 , onClick <| GameCmd <| Flag <| not <| Maybe.withDefault False model.game.flag
@@ -264,11 +264,11 @@ onlineButtons model =
                                 [ Icon.icon "flag"
                                 , text <|
                                     "Surrender"
-                                        ++ (if model.game.playerPosition == List.length model.game.players then
+                                        ++ (if player.gameStats.position == List.length model.game.players then
                                                 ""
 
                                             else
-                                                " " ++ ordinal model.game.playerPosition
+                                                " " ++ ordinal player.gameStats.position
                                            )
                                 ]
                             ]

@@ -53,7 +53,6 @@ type alias Model =
     , gameLog : List ChatLogEntry
     , chatOverlay : Maybe ( Posix, ChatLogEntry )
     , isPlayerOut : Bool
-    , playerPosition : Int
     , roundCount : Int
     , canFlag : Bool
     , isReady : Maybe Bool

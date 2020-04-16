@@ -71,7 +71,6 @@ init table tableMap_ =
                     []
       , chatOverlay = Nothing
       , isPlayerOut = False
-      , playerPosition = 0
       , roundCount = 0
       , canFlag = False
       , isReady = Nothing
@@ -302,7 +301,6 @@ updateTableStatus model status =
                 , board = board_
                 , roundCount = status.roundCount
                 , canFlag = canFlag
-                , playerPosition = Maybe.withDefault 0 <| Maybe.map (.gameStats >> .position) player
                 , currentGame = status.currentGame
             }
 
@@ -430,7 +428,6 @@ updateTurn model turnIndex turnStart roundCount =
                 , isPlayerOut = isOut
                 , roundCount = roundCount
                 , canFlag = canFlag
-                , playerPosition = Maybe.withDefault 0 <| Maybe.map (.gameStats >> .position) player
             }
 
         ( model_, turnChangeCmd ) =
