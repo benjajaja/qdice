@@ -62,7 +62,7 @@ type TableMessage
     | Elimination Game.Types.Elimination
     | Error String
     | ReceiveDice Game.Types.ReceiveDice
-    | Turn Int Int Int
+    | Turn Game.Types.TurnInfo
     | PlayerStatus Game.Types.Player
 
 

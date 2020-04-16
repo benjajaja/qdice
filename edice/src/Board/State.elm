@@ -1,13 +1,11 @@
 module Board.State exposing (init, removeColor, update, updateLands)
 
 import Animation exposing (px)
-import Animation.Messenger
 import Array exposing (Array)
 import Board.PathCache
 import Board.Types exposing (..)
 import Dict
 import Land exposing (Color(..))
-import Time
 
 
 init : Land.Map -> Model
@@ -68,8 +66,8 @@ update msg model =
             )
 
 
-updateLands : Model -> Time.Posix -> List LandUpdate -> Maybe BoardMove -> Model
-updateLands model posix updates mMove =
+updateLands : Model -> List LandUpdate -> Maybe BoardMove -> Model
+updateLands model updates mMove =
     if List.length updates == 0 then
         let
             ( layout, _ ) =
@@ -96,7 +94,7 @@ updateLands model posix updates mMove =
 
             landUpdates : List ( Land.Land, Array Bool )
             landUpdates =
-                List.map (updateLand posix updates) map.lands
+                List.map (updateLand updates) map.lands
 
             map_ =
                 { map
@@ -135,8 +133,8 @@ giveDiceAnimations landUpdates =
         landUpdates
 
 
-updateLand : Time.Posix -> List LandUpdate -> Land.Land -> ( Land.Land, Array Bool )
-updateLand posix updates land =
+updateLand : List LandUpdate -> Land.Land -> ( Land.Land, Array Bool )
+updateLand updates land =
     let
         match =
             List.filter (\l -> l.emoji == land.emoji) updates
@@ -156,7 +154,7 @@ updateLand posix updates land =
                     , points = landUpdate.points
                     , capital = landUpdate.capital
                   }
-                , updateLandAnimations posix land landUpdate
+                , updateLandAnimations land landUpdate
                 )
 
             else
@@ -166,8 +164,8 @@ updateLand posix updates land =
             ( land, Array.empty )
 
 
-updateLandAnimations : Time.Posix -> Land.Land -> LandUpdate -> Array Bool
-updateLandAnimations posix land landUpdate =
+updateLandAnimations : Land.Land -> LandUpdate -> Array Bool
+updateLandAnimations land landUpdate =
     if landUpdate.color /= Land.Neutral && landUpdate.color == land.color && landUpdate.points > land.points then
         (List.range 0 (land.points - 1)
             |> List.map (always False)

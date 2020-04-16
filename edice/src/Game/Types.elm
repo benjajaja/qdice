@@ -1,4 +1,4 @@
-module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, ReceiveDice, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, User, actionToString, isBot, makePlayer, statusToIcon, statusToString, userColor)
+module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, ReceiveDice, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, TurnInfo, User, actionToString, isBot, makePlayer, statusToIcon, statusToString, userColor)
 
 import Animation
 import Board exposing (LandUpdate)
@@ -116,7 +116,6 @@ type alias Roll =
     , to : RollPart
     , turnStart : Int
     , players : List Player
-    , capital : Maybe Emoji
     }
 
 
@@ -209,6 +208,14 @@ type alias Award =
     { type_ : String
     , position : Int
     , timestamp : String
+    }
+
+
+type alias TurnInfo =
+    { turnIndex : Int
+    , turnStart : Int
+    , roundCount : Int
+    , capitals : List LandUpdate
     }
 
 

@@ -52,7 +52,14 @@ export const startGame = (table: Table): CommandResult => {
     playerStartCount: table.players.length,
     roundCount: 1,
   };
-  publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
+  publish.turn(
+    table,
+    props.turnIndex,
+    props.turnStart,
+    props.roundCount,
+    table.players,
+    allLands
+  );
   return {
     table: props,
     lands: allLands,

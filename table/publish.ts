@@ -335,7 +335,9 @@ export const turn = (
   table: Table,
   turnIndex: number,
   turnStart: number,
-  roundCount: number
+  roundCount: number,
+  players: readonly Player[],
+  capitals: readonly Land[]
 ) => {
   client.publish(
     "tables/" + table.name + "/clients",
@@ -345,6 +347,7 @@ export const turn = (
         turnIndex,
         turnStart: Math.floor(turnStart / 1000),
         roundCount,
+        capitals: capitals.map(serializeLand(players)),
       },
     }),
     undefined!,

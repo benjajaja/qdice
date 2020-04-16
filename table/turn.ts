@@ -1,6 +1,6 @@
 import * as R from "ramda";
 import * as maps from "../maps";
-import { rand } from "../rand";
+import { rand, shuffle } from "../rand";
 import logger from "../logger";
 import {
   Table,
@@ -91,9 +91,10 @@ const turn = (
     // props.turnIndex =
     // props.turnIndex + 1 < players_.length ? props.turnIndex + 1 : 0;
 
+    const { newCapitals, newLands } = giveCapitals(players_, lands_);
     const result = {
       table: props,
-      lands: lands_,
+      lands: newLands,
       players: players_,
       eliminations,
     };
@@ -105,15 +106,30 @@ const turn = (
         { type: "EndGame", winner: players_[0], turnCount: table.turnCount },
       ];
     } else {
-      publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
+      publish.turn(
+        table,
+        props.turnIndex,
+        props.turnStart,
+        props.roundCount,
+        players_,
+        newCapitals
+      );
       return [result, null];
     }
   }
 
   if (!newPlayer.out) {
     // normal turn over
-    publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
-    return [{ table: props, lands, players }, null];
+    const { newCapitals, newLands } = giveCapitals(players, lands);
+    publish.turn(
+      table,
+      props.turnIndex,
+      props.turnStart,
+      props.roundCount,
+      players,
+      newCapitals
+    );
+    return [{ table: props, lands: newLands, players }, null];
   }
 
   if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
@@ -134,9 +150,10 @@ const turn = (
     );
     props.turnIndex = turnIndex;
 
+    const { newCapitals, newLands } = giveCapitals(players_, lands_);
     const result = {
       table: props,
-      lands: lands_,
+      lands: newLands,
       players: players_,
       eliminations,
     };
@@ -148,16 +165,31 @@ const turn = (
         { type: "EndGame", winner: players_[0], turnCount: table.turnCount },
       ];
     } else {
-      publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
+      publish.turn(
+        table,
+        props.turnIndex,
+        props.turnStart,
+        props.roundCount,
+        players_,
+        newCapitals
+      );
       return [result, null];
     }
   }
 
-  publish.turn(table, props.turnIndex, props.turnStart, props.roundCount);
+  const { newCapitals, newLands } = giveCapitals(players, lands);
+  publish.turn(
+    table,
+    props.turnIndex,
+    props.turnStart,
+    props.roundCount,
+    players,
+    newCapitals
+  );
   return [
     {
       table: props,
-      lands: lands,
+      lands: newLands,
       players: players.map(player => {
         if (player === newPlayer) {
           return { ...player, outTurns: player.outTurns + 1 };
@@ -206,5 +238,35 @@ const giveDice = (
     players.map(p => (p === player ? { ...player, reserveDice } : p)),
   ];
 };
+
+const giveCapitals = (
+  players: readonly Player[],
+  lands: readonly Land[]
+): { newLands: readonly Land[]; newCapitals: readonly Land[] } =>
+  players.reduce(
+    (result, { color }) => {
+      const playerLands = result.newLands.filter(R.propEq("color", color));
+      if (playerLands.every(R.propEq("capital", false))) {
+        logger.debug(`giving new capital to #${color}`);
+        const match = R.sortWith(
+          [R.ascend(R.prop("points"))],
+          shuffle(playerLands)
+        ).pop();
+        if (match) {
+          const newCapital = { ...match, capital: true };
+          return {
+            newLands: result.newLands.map(l =>
+              l.emoji === newCapital.emoji ? newCapital : l
+            ),
+            newCapitals: [...result.newCapitals, newCapital],
+          };
+        } else {
+          logger.error(`#${color} has no capital but I can't find it again!`);
+        }
+      }
+      return result;
+    },
+    { newLands: lands, newCapitals: [] }
+  );
 
 export default turn;

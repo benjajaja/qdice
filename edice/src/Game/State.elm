@@ -234,7 +234,7 @@ updateTableStatus model status =
             model.game.board
 
         board_ =
-            Board.State.updateLands oldBoard model.time status.lands Nothing
+            Board.State.updateLands oldBoard status.lands Nothing
 
         hasStarted =
             game.status /= Playing && status.status == Playing
@@ -333,8 +333,8 @@ updateTableStatus model status =
     )
 
 
-updateTurn : Types.Model -> Int -> Int -> Int -> ( Types.Model, Cmd Msg )
-updateTurn model turnIndex turnStart roundCount =
+updateTurn : Types.Model -> TurnInfo -> ( Types.Model, Cmd Msg )
+updateTurn model { turnIndex, turnStart, roundCount, capitals } =
     let
         game =
             model.game
@@ -418,9 +418,17 @@ updateTurn model turnIndex turnStart roundCount =
                             |> List.map (Board.canAttackFrom game.board.map turnPlayer.color >> Result.toMaybe)
                             |> List.any ((==) Nothing >> not)
 
+        board =
+            if List.length capitals == 0 then
+                game.board
+
+            else
+                Board.State.updateLands game.board capitals Nothing
+
         game_ =
             { game
-                | player = player
+                | board = board
+                , player = player
                 , turnIndex = turnIndex
                 , hasTurn = hasTurn
                 , canMove = canMove
@@ -550,13 +558,9 @@ showRoll model roll =
         tuple =
             Maybe.map2 Tuple.pair fromLand toLand
 
-        newCapital =
-            roll.capital
-                |> Maybe.andThen (\e -> Land.findLand e model.game.board.map.lands)
-
         updates : List Board.Types.LandUpdate
         updates =
-            (case tuple of
+            case tuple of
                 Just ( from, to ) ->
                     let
                         success =
@@ -566,7 +570,7 @@ showRoll model roll =
                     , color = from.color
                     , points = 1
                     , capital =
-                        if from.capital /= -1 && to.capital /= -1 then
+                        if success && from.capital /= -1 && to.capital /= -1 then
                             from.capital + to.capital + to.points
 
                         else
@@ -579,8 +583,8 @@ showRoll model roll =
                                   , capital = -1
                                   }
                                 ]
-                                    ++ (if from.capital == -1 && to.capital /= -1 then
-                                            case find (\l -> l.capital /= -1) game.board.map.lands of
+                                    ++ (if success && from.capital == -1 && to.capital /= -1 then
+                                            case find (\l -> l.color == from.color && l.capital /= -1) game.board.map.lands of
                                                 Just capital ->
                                                     [ { emoji = capital.emoji
                                                       , color = capital.color
@@ -603,17 +607,9 @@ showRoll model roll =
 
                 Nothing ->
                     []
-            )
-                ++ (case newCapital of
-                        Just land ->
-                            [ { emoji = land.emoji, color = land.color, points = land.points, capital = 0 } ]
-
-                        Nothing ->
-                            []
-                   )
 
         board_ =
-            Board.State.updateLands model.game.board model.time updates (Just Board.Types.Idle)
+            Board.State.updateLands model.game.board updates (Just Board.Types.Idle)
 
         game =
             model.game
@@ -803,7 +799,6 @@ updateTable model table msg =
                                             | board =
                                                 Board.State.updateLands
                                                     board
-                                                    model.time
                                                     (case move_ of
                                                         Board.Types.FromTo from _ ->
                                                             [ { color = from.color
@@ -838,15 +833,15 @@ updateTable model table msg =
                                 model_.game
 
                             board =
-                                Board.State.updateLands game.board model_.time receive.lands Nothing
+                                Board.State.updateLands game.board receive.lands Nothing
 
                             game_ =
                                 { game | board = board, players = receive.players }
                         in
                         ( { model_ | game = game_ }, cmd )
 
-                    Backend.Types.Turn turnIndex turnStart roundCount ->
-                        updateTurn model turnIndex turnStart roundCount
+                    Backend.Types.Turn info ->
+                        updateTurn model info
 
                     Backend.Types.PlayerStatus player ->
                         updatePlayerStatus model player

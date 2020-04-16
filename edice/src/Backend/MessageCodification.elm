@@ -167,8 +167,8 @@ decodeTableMessage table message =
 
                 "turn" ->
                     case decodeString (field "payload" turnDecoder) message of
-                        Ok ( turnIndex, turnStart, roundCount ) ->
-                            Ok <| TableMsg table <| Turn turnIndex turnStart roundCount
+                        Ok info ->
+                            Ok <| TableMsg table <| Turn info
 
                         Err err ->
                             Err <| errorToString err

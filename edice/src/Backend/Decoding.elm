@@ -208,7 +208,6 @@ rollDecoder =
         |> required "to" singleRollDecoder
         |> required "turnStart" int
         |> required "players" (list playersDecoder)
-        |> required "capital" (nullable string)
 
 
 singleRollDecoder : Decoder Game.Types.RollPart
@@ -504,9 +503,10 @@ gameRefDecoder =
         |> required "gameStart" Iso8601.decoder
 
 
-turnDecoder : Decoder ( Int, Int, Int )
+turnDecoder : Decoder Game.Types.TurnInfo
 turnDecoder =
-    succeed (\a b c -> ( a, b, c ))
+    succeed Game.Types.TurnInfo
         |> required "turnIndex" int
         |> required "turnStart" int
         |> required "roundCount" int
+        |> required "capitals" (list landsUpdateDecoder)
