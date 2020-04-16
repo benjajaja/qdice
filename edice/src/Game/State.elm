@@ -550,9 +550,13 @@ showRoll model roll =
         tuple =
             Maybe.map2 Tuple.pair fromLand toLand
 
+        newCapital =
+            roll.capital
+                |> Maybe.andThen (\e -> Land.findLand e model.game.board.map.lands)
+
         updates : List Board.Types.LandUpdate
         updates =
-            case tuple of
+            (case tuple of
                 Just ( from, to ) ->
                     let
                         success =
@@ -561,15 +565,36 @@ showRoll model roll =
                     { emoji = from.emoji
                     , color = from.color
                     , points = 1
-                    , capital = from.capital
+                    , capital =
+                        if from.capital /= -1 && to.capital /= -1 then
+                            from.capital + to.capital
+
+                        else
+                            from.capital
                     }
                         :: (if success then
                                 [ { emoji = to.emoji
                                   , color = from.color
                                   , points = from.points - 1
-                                  , capital = to.capital
+                                  , capital = -1
                                   }
                                 ]
+                                    ++ (if from.capital == -1 && to.capital > 0 then
+                                            case find (\l -> l.capital /= -1) game.board.map.lands of
+                                                Just capital ->
+                                                    [ { emoji = capital.emoji
+                                                      , color = capital.color
+                                                      , points = capital.points
+                                                      , capital = capital.capital + to.capital
+                                                      }
+                                                    ]
+
+                                                Nothing ->
+                                                    []
+
+                                        else
+                                            []
+                                       )
 
                             else
                                 []
@@ -577,6 +602,14 @@ showRoll model roll =
 
                 Nothing ->
                     []
+            )
+                ++ (case newCapital of
+                        Just land ->
+                            [ { emoji = land.emoji, color = land.color, points = land.points, capital = 0 } ]
+
+                        Nothing ->
+                            []
+                   )
 
         board_ =
             Board.State.updateLands model.game.board model.time updates (Just Board.Types.Idle)

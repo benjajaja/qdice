@@ -15,7 +15,7 @@ import logger from "../logger";
 export const serializeTable = (table: Table) => {
   const players = table.players.map(serializePlayer(table));
 
-  const lands = table.lands.map(serializeLand);
+  const lands = table.lands.map(serializeLand(table.players));
 
   return {
     tag: table.tag,
@@ -37,40 +37,68 @@ export const serializeTable = (table: Table) => {
   };
 };
 
-export const serializeLand = ({
+export const serializeLand = (players: readonly Player[]) => ({
   emoji,
   color,
   points,
   capital,
 }: Land): [string, Color, number, number] => {
-  logger.debug(`land ${emoji} ${!!capital}`);
-  return [emoji, color ?? Color.Neutral, points ?? 1, capital ? 1 : 0];
+  if (color !== Color.Neutral && capital) {
+    const extraDice = players.find(R.propEq("color", color))?.reserveDice;
+    if (extraDice === undefined) {
+      logger.error("serializeLand capital has not found its player!");
+    }
+    return [emoji, color ?? Color.Neutral, points ?? 1, extraDice ?? -1];
+  } else {
+    return [emoji, color ?? Color.Neutral, points ?? 1, -1];
+  }
 };
 
-export const serializePlayer = (table: Table) => {
+export const serializePlayer = (
+  table: Table
+): ((p: Player) => SerializedPlayer) => {
   const derived = computePlayerDerived(table);
   return (player: Player) => {
-    return Object.assign(
-      {},
-      R.pick([
-        "id",
-        "name",
-        "picture",
-        "color",
-        "reserveDice",
-        "out",
-        "outTurns",
-        "points",
-        "level",
-        "score",
-        "flag",
-        "ready",
-        "awards",
-      ])(player),
-      { derived: derived(player) }
-    );
+    return {
+      ...R.pick(
+        [
+          "id",
+          "name",
+          "picture",
+          "color",
+          "reserveDice",
+          "out",
+          "outTurns",
+          "points",
+          "level",
+          "score",
+          "flag",
+          "ready",
+          "awards",
+        ],
+        player
+      ),
+      derived: derived(player),
+    };
   };
 };
+
+export type SerializedPlayer = Pick<
+  Player,
+  | "id"
+  | "name"
+  | "picture"
+  | "color"
+  | "reserveDice"
+  | "out"
+  | "outTurns"
+  | "points"
+  | "level"
+  | "score"
+  | "flag"
+  | "ready"
+  | "awards"
+> & { derived: PlayerDerived };
 
 export type PlayerDerived = {
   connectedLands: number;

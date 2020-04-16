@@ -16,6 +16,7 @@ const mkLand = (
   points,
   color,
   emoji,
+  capital: false,
 });
 
 const mkPlayer = (color: Color = Color.Red): Player =>

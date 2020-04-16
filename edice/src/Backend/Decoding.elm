@@ -168,17 +168,7 @@ landsUpdateDecoder =
         (index 0 string)
         (index 1 colorDecoder)
         (index 2 int)
-        (index 3 <|
-            map
-                (\i ->
-                    if i == 0 then
-                        False
-
-                    else
-                        True
-                )
-                int
-        )
+        (index 3 int)
 
 
 colorDecoder : Decoder Color
@@ -218,6 +208,7 @@ rollDecoder =
         |> required "to" singleRollDecoder
         |> required "turnStart" int
         |> required "players" (list playersDecoder)
+        |> required "capital" (nullable string)
 
 
 singleRollDecoder : Decoder Game.Types.RollPart

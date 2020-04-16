@@ -11,7 +11,6 @@ module.exports = {
       params: {
         noFlagRounds: 5,
         botLess: false,
-        capitals: true,
       },
     },
     {
@@ -91,6 +90,7 @@ module.exports = {
       params: {
         noFlagRounds: 5,
         botLess: false,
+        capitals: true,
       },
     },
   ],

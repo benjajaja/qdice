@@ -116,6 +116,7 @@ type alias Roll =
     , to : RollPart
     , turnStart : Int
     , players : List Player
+    , capital : Maybe Emoji
     }
 
 

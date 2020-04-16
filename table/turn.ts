@@ -182,15 +182,21 @@ const giveDice = (
 
   let reserveDice = 0;
 
-  R.range(0, newDies).forEach(_ => {
+  R.range(0, newDies).forEach(i => {
     const targets = lands.filter(
       land => land.color === player.color && land.points < table.stackSize
     );
     if (targets.length === 0) {
       reserveDice += 1;
     } else {
-      let index = rand(0, targets.length - 1);
-      const target = targets[index];
+      let target: Land;
+      if (table.params.capitals && i >= connectLandCount) {
+        target =
+          targets.find(R.propEq("capital", true)) ??
+          targets[rand(0, targets.length - 1)];
+      } else {
+        target = targets[rand(0, targets.length - 1)];
+      }
       lands = updateLand(lands, target, { points: target.points + 1 });
     }
   });

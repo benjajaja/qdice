@@ -170,25 +170,8 @@ animatedStackDies layout { stack, dice } move diceVisible land =
             [ Svg.Lazy.lazy4 landDies diceAnimation diceVisible land ( x_, y_ )
             ]
         ]
-            ++ (if land.capital then
-                    let
-                        ( oppositeColor, color ) =
-                            contrastColors land.color ( 0, 255 )
-                    in
-                    [ Svg.text_
-                        [ class "edBoard--stack edBoard--stack__text"
-                        , x <| String.fromFloat (x_ - 1.5)
-                        , y <| String.fromFloat (y_ + 1.0)
-                        , oppositeColor
-                            |> Board.Colors.cssRgb
-                            |> stroke
-                        , color
-                            |> Board.Colors.cssRgb
-                            |> fill
-                        , textAnchor "middle"
-                        ]
-                        [ Svg.text "★" ]
-                    ]
+            ++ (if land.capital /= -1 then
+                    [ Svg.Lazy.lazy4 capitalText x_ y_ land.capital land.color ]
 
                 else
                     []
@@ -304,3 +287,58 @@ landColor selected hovered color =
                 identity
            )
         |> Board.Colors.cssRgb
+
+
+capitalText : Float -> Float -> Int -> Land.Color -> Svg.Svg msg
+capitalText x_ y_ reserveDice color =
+    let
+        ( oppositeColor, mainColor ) =
+            contrastColors color ( 0, 255 )
+    in
+    g
+        []
+    <|
+        if reserveDice > 0 then
+            [ Svg.text_
+                [ class "edBoard--stack__capital"
+                , x <| String.fromFloat (x_ - 1.5)
+                , y <| String.fromFloat (y_ + 1.0)
+                , oppositeColor
+                    |> Board.Colors.cssRgb
+                    |> stroke
+                , mainColor
+                    |> Board.Colors.cssRgb
+                    |> fill
+                , textAnchor "middle"
+                ]
+                [ Svg.text "★" ]
+            , Svg.text_
+                [ class "edBoard--stack__reserveDice"
+                , x <| String.fromFloat (x_ - 0.1)
+                , y <| String.fromFloat (y_ - 0.7)
+                , oppositeColor
+                    |> Board.Colors.cssRgb
+                    |> stroke
+                , mainColor
+                    |> Board.Colors.cssRgb
+                    |> fill
+                , textAnchor "middle"
+                ]
+                [ Svg.text <| "+" ++ String.fromInt reserveDice ]
+            ]
+
+        else
+            [ Svg.text_
+                [ class "edBoard--stack__capital"
+                , x <| String.fromFloat (x_ - 1.5)
+                , y <| String.fromFloat (y_ + 1.0)
+                , oppositeColor
+                    |> Board.Colors.cssRgb
+                    |> stroke
+                , mainColor
+                    |> Board.Colors.cssRgb
+                    |> fill
+                , textAnchor "middle"
+                ]
+                [ Svg.text "★" ]
+            ]

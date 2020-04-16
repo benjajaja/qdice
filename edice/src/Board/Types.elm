@@ -50,7 +50,7 @@ type alias LandUpdate =
     { emoji : Land.Emoji
     , color : Land.Color
     , points : Int
-    , capital : Bool
+    , capital : Int
     }
 
 

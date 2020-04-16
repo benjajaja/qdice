@@ -6,13 +6,21 @@ import {
   tablePoints,
 } from "../helpers";
 import * as publish from "./publish";
-import { Table, Land, CommandResult, Elimination, Command } from "../types";
+import {
+  Table,
+  Land,
+  CommandResult,
+  Elimination,
+  Command,
+  Player,
+} from "../types";
 import { now } from "../timestamp";
 import logger from "../logger";
 import { botsNotifyAttack } from "./bots";
 import { playerWithDerived } from "./serialize";
 import { ELIMINATION_REASON_DIE, TURN_SECONDS } from "../constants";
 import { isBorder } from "../maps";
+import { shuffle } from "../rand";
 
 export const rollResult = (
   table: Table,
@@ -29,15 +37,20 @@ export const rollResult = (
     const isSuccess = R.sum(fromRoll) > R.sum(toRoll);
 
     let lands = table.lands;
+    let newCapital: Land | null = null;
     let players = botsNotifyAttack(table);
     let eliminations: ReadonlyArray<Elimination> | undefined = undefined;
     let turnIndex: number | undefined = undefined;
     const attacker = players[table.turnIndex];
     if (isSuccess) {
-      const loser = R.find(R.propEq("color", toLand.color), players);
+      const loser: Player | undefined = R.find(
+        R.propEq("color", toLand.color),
+        players
+      );
       lands = updateLand(table.lands, toLand, {
         points: fromLand.points - 1,
         color: fromLand.color,
+        capital: false,
       });
       if (
         loser &&
@@ -68,6 +81,25 @@ export const rollResult = (
           }
           return player;
         });
+      } else if (table.params.capitals && loser && toLand.capital) {
+        newCapital = shuffle(lands.filter(R.propEq("color", loser.color)))[0];
+        lands = updateLand(lands, newCapital, { capital: true });
+        if (loser.reserveDice > 0) {
+          logger.debug(
+            `Giving ${loser.reserveDice} reserveDice from ${loser.name} to ${attacker.name}`
+          );
+          players = players.map(player => {
+            if (player.id === loser.id) {
+              return { ...player, reserveDice: 0 };
+            } else if (player.id === attacker.id) {
+              return {
+                ...player,
+                reserveDice: player.reserveDice + loser.reserveDice,
+              };
+            }
+            return player;
+          });
+        }
       }
     }
 
@@ -97,6 +129,7 @@ export const rollResult = (
         to: { emoji: table.attack.to, roll: toRoll },
         turnStart: Math.floor(props.turnStart / 1000),
         players: players,
+        capital: newCapital?.emoji ?? null,
       }
     );
     const result: CommandResult = {

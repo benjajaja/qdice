@@ -113,6 +113,7 @@ type Roll = {
   to: { emoji: Emoji; roll: number[] };
   turnStart: number;
   players: readonly Player[];
+  capital: Emoji | null;
 };
 export const roll = (table: Table, roll: Roll) => {
   client.publish(
@@ -318,7 +319,7 @@ export const receivedDice = (
         player: serializePlayer(table)(player),
         count,
         players: players.map(serializePlayer(table)),
-        lands: lands.map(serializeLand),
+        lands: lands.map(serializeLand(players)),
       },
     }),
     undefined!,
