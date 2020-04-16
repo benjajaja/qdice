@@ -3,12 +3,11 @@ module Board.View exposing (view)
 import Animation
 import Animation.Messenger
 import Array exposing (Array)
-import Board.Colors
+import Board.Colors exposing (contrastColors)
 import Board.Die exposing (die)
 import Board.PathCache
 import Board.Types exposing (..)
 import Color
-import Color.Accessibility
 import Dict
 import Helpers exposing (dataTestId, dataTestValue)
 import Html
@@ -143,6 +142,11 @@ allDies layout animations move lands diceVisible =
 animatedStackDies : MapSize -> BoardAnimations -> BoardMove -> Bool -> Land.Land -> Svg Msg
 animatedStackDies layout { stack, dice } move diceVisible land =
     let
+        ( x_, y_ ) =
+            landCenter
+                layout
+                land.cells
+
         animationAttrs =
             case stack of
                 Just ( emoji, animation ) ->
@@ -158,44 +162,57 @@ animatedStackDies layout { stack, dice } move diceVisible land =
         diceAnimation =
             Dict.get land.emoji dice
     in
-    g
-        (class "edBoard--stack"
-            :: animationAttrs
-        )
-        [ Svg.Lazy.lazy4 landDies layout diceAnimation diceVisible land
+    g [] <|
+        [ g
+            (class "edBoard--stack"
+                :: animationAttrs
+            )
+            [ Svg.Lazy.lazy4 landDies diceAnimation diceVisible land ( x_, y_ )
+            ]
         ]
+            ++ (if land.capital then
+                    let
+                        ( oppositeColor, color ) =
+                            contrastColors land.color ( 0, 255 )
+                    in
+                    [ Svg.text_
+                        [ class "edBoard--stack edBoard--stack__text"
+                        , x <| String.fromFloat (x_ - 1.5)
+                        , y <| String.fromFloat (y_ + 1.0)
+                        , oppositeColor
+                            |> Board.Colors.cssRgb
+                            |> stroke
+                        , color
+                            |> Board.Colors.cssRgb
+                            |> fill
+                        , textAnchor "middle"
+                        ]
+                        [ Svg.text "★" ]
+                    ]
+
+                else
+                    []
+               )
 
 
-landDies : MapSize -> Maybe (Array Bool) -> Bool -> Land.Land -> Svg Msg
-landDies layout diceAnimations diceVisible land =
-    let
-        ( x_, y_ ) =
-            landCenter
-                layout
-                land.cells
-    in
+landDies : Maybe (Array Bool) -> Bool -> Land.Land -> ( Float, Float ) -> Svg Msg
+landDies diceAnimations diceVisible land ( x_, y_ ) =
     if diceVisible == True then
         g
             [ class "edBoard--stack--inner" ]
         <|
-            List.map
+            (List.map
                 (Svg.Lazy.lazy4 landDie diceAnimations x_ y_)
-            <|
+             <|
                 List.range
                     0
                     (land.points - 1)
+            )
 
     else
         let
-            color =
-                Color.Accessibility.maximumContrast (Board.Colors.base land.color)
-                    [ Color.rgb255 30 30 30, Color.rgb255 225 225 225 ]
-                    |> Maybe.withDefault (Color.rgb255 30 30 30)
-
-            oppositeColor =
-                Color.Accessibility.maximumContrast color
-                    [ Color.rgb255 30 30 30, Color.rgb255 225 225 225 ]
-                    |> Maybe.withDefault (Color.rgb255 255 255 255)
+            ( color, oppositeColor ) =
+                contrastColors land.color ( 30, 225 )
         in
         text_
             [ class "edBoard--stack edBoard--stack__text"

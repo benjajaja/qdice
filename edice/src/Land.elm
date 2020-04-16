@@ -27,6 +27,7 @@ type alias Land =
     , color : Color
     , emoji : Emoji
     , points : Int
+    , capital : Bool
     }
 
 
@@ -229,10 +230,10 @@ concat map =
     in
     case hexes of
         [] ->
-            Land [] Neutral emptyEmoji 0
+            Land [] Neutral emptyEmoji 0 False
 
         _ ->
-            Land hexes Neutral emptyEmoji 0
+            Land hexes Neutral emptyEmoji 0 False
 
 
 playerColor : Int -> Color

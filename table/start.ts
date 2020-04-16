@@ -1,6 +1,6 @@
 import * as R from "ramda";
 import * as publish from "./publish";
-import { Table, Land, CommandResult } from "../types";
+import { Table, Land, CommandResult, Color } from "../types";
 import { now } from "../timestamp";
 import { rand, shuffle } from "../rand";
 import logger from "../logger";
@@ -20,11 +20,20 @@ export const startGame = (table: Table): CommandResult => {
   ).map(land =>
     Object.assign({}, land, {
       points: randomPoints(table.stackSize),
-      color: -1,
+      color: 0,
     })
   );
 
-  const assignedLands = assignLands(table, lands);
+  const assignedLands = assignLands(table, lands).map(
+    table.params.capitals
+      ? land => ({ ...land, capital: land.color !== Color.Neutral })
+      : land => ({ ...land, capital: false })
+  );
+
+  if (table.params.capitals) {
+    logger.debug("Starting game with capitals = on");
+    logger.debug(`capitals: ${assignedLands.filter(R.prop("capital")).length}`);
+  }
 
   const allLands = lands.map(oldLand => {
     const match = assignedLands.filter(l => l.emoji === oldLand.emoji).pop();

@@ -50,12 +50,14 @@ export type Table = TableProps & {
 export type TableParams = {
   noFlagRounds: number;
   botLess: boolean;
+  capitals: boolean;
 };
 
 export type Land = {
   readonly emoji: Emoji;
   readonly color: Color;
   readonly points: number;
+  readonly capital: boolean;
 };
 
 export type Attack = {

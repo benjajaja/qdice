@@ -143,10 +143,18 @@ updateLand posix updates land =
     in
     case List.head match of
         Just landUpdate ->
-            if landUpdate.color /= land.color || landUpdate.points /= land.points then
+            if
+                landUpdate.color
+                    /= land.color
+                    || landUpdate.points
+                    /= land.points
+                    || landUpdate.capital
+                    /= land.capital
+            then
                 ( { land
                     | color = landUpdate.color
                     , points = landUpdate.points
+                    , capital = landUpdate.capital
                   }
                 , updateLandAnimations posix land landUpdate
                 )

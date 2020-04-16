@@ -1,7 +1,8 @@
-module Board.Colors exposing (animationColor, base, baseCssRgb, colorIndex, colorName, cssRgb, highlight, hover)
+module Board.Colors exposing (animationColor, base, baseCssRgb, colorIndex, colorName, contrastColors, cssRgb, highlight, hover)
 
 import Animation
 import Color
+import Color.Accessibility
 import Color.Convert exposing (colorToHex)
 import Color.Manipulate exposing (darken, lighten)
 import Land exposing (Color(..))
@@ -141,3 +142,19 @@ colorIndex color =
 
         Neutral ->
             0
+
+
+contrastColors : Color -> ( Int, Int ) -> ( Color.Color, Color.Color )
+contrastColors from ( min, max ) =
+    let
+        color =
+            Color.Accessibility.maximumContrast (base from)
+                [ Color.rgb255 min min min, Color.rgb255 max max max ]
+                |> Maybe.withDefault (Color.rgb255 min min min)
+
+        oppositeColor =
+            Color.Accessibility.maximumContrast color
+                [ Color.rgb255 min min min, Color.rgb255 max max max ]
+                |> Maybe.withDefault (Color.rgb255 255 255 255)
+    in
+    ( color, oppositeColor )

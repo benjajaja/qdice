@@ -137,12 +137,12 @@ export const join = (
     table.status === STATUS_FINISHED ? STATUS_PAUSED : table.status;
   const lands =
     table.status === STATUS_FINISHED
-      ? table.lands.map(land =>
-          Object.assign({}, land, {
-            points: 1,
-            color: -1,
-          })
-        )
+      ? table.lands.map(land => ({
+          ...land,
+          points: 0,
+          color: 0,
+          capital: false,
+        }))
       : table.lands;
   const turnCount = table.status === STATUS_FINISHED ? 1 : table.turnCount;
 

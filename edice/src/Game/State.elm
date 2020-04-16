@@ -561,11 +561,13 @@ showRoll model roll =
                     { emoji = from.emoji
                     , color = from.color
                     , points = 1
+                    , capital = from.capital
                     }
                         :: (if success then
                                 [ { emoji = to.emoji
                                   , color = from.color
                                   , points = from.points - 1
+                                  , capital = to.capital
                                   }
                                 ]
 
@@ -773,6 +775,7 @@ updateTable model table msg =
                                                             [ { color = from.color
                                                               , emoji = from.emoji
                                                               , points = from.points
+                                                              , capital = from.capital
                                                               }
                                                             ]
 

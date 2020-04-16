@@ -123,6 +123,7 @@ export const save = async (
         emoji: land.emoji,
         color: land.color,
         points: land.points,
+        capital: !!land.capital,
       }))
     : undefined;
   const saved =

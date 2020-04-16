@@ -6,7 +6,7 @@ import Game.Types exposing (Award, Player, PlayerGameStats, ReceiveDice, TablePa
 import Games.Types exposing (..)
 import Helpers exposing (triple)
 import Iso8601
-import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, list, map, map2, map3, maybe, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, list, map, map2, map3, map4, maybe, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
@@ -164,7 +164,21 @@ playerGameStatsDecoder =
 
 landsUpdateDecoder : Decoder Board.Types.LandUpdate
 landsUpdateDecoder =
-    map3 Board.Types.LandUpdate (index 0 string) (index 1 colorDecoder) (index 2 int)
+    map4 Board.Types.LandUpdate
+        (index 0 string)
+        (index 1 colorDecoder)
+        (index 2 int)
+        (index 3 <|
+            map
+                (\i ->
+                    if i == 0 then
+                        False
+
+                    else
+                        True
+                )
+                int
+        )
 
 
 colorDecoder : Decoder Color

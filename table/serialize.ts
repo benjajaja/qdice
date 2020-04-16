@@ -8,6 +8,7 @@ import {
   EliminationReason,
   EliminationSource,
   Color,
+  Land,
 } from "../types";
 import logger from "../logger";
 
@@ -40,11 +41,11 @@ export const serializeLand = ({
   emoji,
   color,
   points,
-}: {
-  emoji: string;
-  color: Color;
-  points: number;
-}): [string, Color, number] => [emoji, color ?? Color.Neutral, points ?? 1];
+  capital,
+}: Land): [string, Color, number, number] => {
+  logger.debug(`land ${emoji} ${!!capital}`);
+  return [emoji, color ?? Color.Neutral, points ?? 1, capital ? 1 : 0];
+};
 
 export const serializePlayer = (table: Table) => {
   const derived = computePlayerDerived(table);
