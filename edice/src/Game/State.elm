@@ -567,7 +567,7 @@ showRoll model roll =
                     , points = 1
                     , capital =
                         if from.capital /= -1 && to.capital /= -1 then
-                            from.capital + to.capital
+                            from.capital + to.capital + to.points
 
                         else
                             from.capital
@@ -579,18 +579,19 @@ showRoll model roll =
                                   , capital = -1
                                   }
                                 ]
-                                    ++ (if from.capital == -1 && to.capital > 0 then
+                                    ++ (if from.capital == -1 && to.capital /= -1 then
                                             case find (\l -> l.capital /= -1) game.board.map.lands of
                                                 Just capital ->
                                                     [ { emoji = capital.emoji
                                                       , color = capital.color
                                                       , points = capital.points
-                                                      , capital = capital.capital + to.capital
+                                                      , capital = capital.capital + to.capital + to.points
                                                       }
                                                     ]
 
                                                 Nothing ->
                                                     []
+                                            -- TODO runtime error here - Result?
 
                                         else
                                             []

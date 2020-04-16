@@ -81,25 +81,27 @@ export const rollResult = (
           }
           return player;
         });
-      } else if (table.params.capitals && loser && toLand.capital) {
-        newCapital = shuffle(lands.filter(R.propEq("color", loser.color)))[0];
-        lands = updateLand(lands, newCapital, { capital: true });
-        if (loser.reserveDice > 0) {
-          logger.debug(
-            `Giving ${loser.reserveDice} reserveDice from ${loser.name} to ${attacker.name}`
-          );
-          players = players.map(player => {
-            if (player.id === loser.id) {
-              return { ...player, reserveDice: 0 };
-            } else if (player.id === attacker.id) {
-              return {
-                ...player,
-                reserveDice: player.reserveDice + loser.reserveDice,
-              };
-            }
-            return player;
-          });
+      }
+      if (table.params.capitals && loser && toLand.capital) {
+        if (R.filter(R.propEq("color", loser.color), lands).length !== 0) {
+          newCapital = shuffle(lands.filter(R.propEq("color", loser.color)))[0];
+          lands = updateLand(lands, newCapital, { capital: true });
         }
+        logger.debug(
+          `Giving ${loser.reserveDice} + ${toLand.points} reserveDice from ${loser.name} to ${attacker.name}`
+        );
+        players = players.map(player => {
+          if (player.id === loser.id) {
+            return { ...player, reserveDice: 0 };
+          } else if (player.id === attacker.id) {
+            return {
+              ...player,
+              reserveDice:
+                player.reserveDice + loser.reserveDice + toLand.points,
+            };
+          }
+          return player;
+        });
       }
     }
 
