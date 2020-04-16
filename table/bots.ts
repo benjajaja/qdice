@@ -242,10 +242,10 @@ const spanishName = (color: Color): string => {
       return "Fantasma de Franco";
     case Color.Orange:
       return "Arrimadas";
-    case Color.Beige:
-      return "Felipe VI";
     case Color.Black:
-      return "N";
+      return "Felipe VI";
+    case Color.Beige:
+      return "Marron";
     case Color.Neutral:
       return "Neutral";
   }

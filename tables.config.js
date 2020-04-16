@@ -17,7 +17,7 @@ module.exports = {
       tag: "España",
       name: "España",
       mapName: "Serrano",
-      playerSlots: 8,
+      playerSlots: 7,
       startSlots: 7,
       points: 0,
       stackSize: 8,

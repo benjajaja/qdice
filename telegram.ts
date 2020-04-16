@@ -97,11 +97,7 @@ client.on("message", async (topic, message) => {
               }
             );
           } catch (e) {
-            console.error(
-              "push subscription expired, removing",
-              row.id,
-              row.subscription
-            );
+            console.error("push subscription expired, removing", row.id);
             try {
               const result = await db.removePushSubscription(
                 row.id,
