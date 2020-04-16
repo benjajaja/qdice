@@ -1,15 +1,9 @@
 import * as R from "ramda";
-import { UserId, Table, Player, Land, Watcher } from "../types";
+import { Table, Player, Land, Watcher } from "../types";
 import * as maps from "../maps";
 import * as db from "../db";
 import * as Sentry from "@sentry/node";
-import {
-  STATUS_PAUSED,
-  STATUS_PLAYING,
-  STATUS_FINISHED,
-  COLOR_NEUTRAL,
-  GAME_START_COUNTDOWN,
-} from "../constants";
+import { STATUS_FINISHED } from "../constants";
 import * as config from "../tables.config";
 import logger from "../logger";
 

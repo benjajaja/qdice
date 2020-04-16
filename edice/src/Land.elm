@@ -1,4 +1,4 @@
-module Land exposing (Cells, Color(..), Emoji, Land, Map, MapSize, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasAttackableNeighbours, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, nextBorders, nextBorders_, oppositeSide, playerColor, playerColors, randomPlayerColor, rightSide)
+module Land exposing (Cells, Color(..), Emoji, Land, Map, MapSize, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasAttackableNeighbours, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, nextBorders, nextBorders_, oppositeSide, playerColor, randomPlayerColor, rightSide)
 
 import Array exposing (Array)
 import Bitwise
@@ -60,28 +60,6 @@ type Color
     | Orange {- 7 -}
     | Black
     | Brown
-
-
-playerColors : List Color
-playerColors =
-    [ Red
-    , Green
-    , Blue
-
-    {- 3 -}
-    , Yellow
-    , Magenta
-    , Cyan
-    , Orange
-
-    {- 7 -}
-    , Black
-
-    {- 8 -}
-    , Brown
-
-    {- 9 -}
-    ]
 
 
 cellToKey : Hex -> String

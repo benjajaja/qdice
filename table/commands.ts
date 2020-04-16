@@ -28,7 +28,6 @@ import {
   STATUS_PAUSED,
   STATUS_PLAYING,
   STATUS_FINISHED,
-  COLOR_NEUTRAL,
   GAME_START_COUNTDOWN,
   ELIMINATION_REASON_SURRENDER,
   GAME_START_COUNTDOWN_FULL,
@@ -285,7 +284,8 @@ export const attack = (
     logger.debug(table.lands.map(l => l.emoji));
     throw new IllegalMoveError("some land not found in attack", player);
   }
-  if (fromLand.color === COLOR_NEUTRAL) {
+  if (fromLand.color < 1) {
+    // TODO === Color.Neutral
     throw new IllegalMoveError("attack from neutral", player);
   }
   if (fromLand.points === 1) {

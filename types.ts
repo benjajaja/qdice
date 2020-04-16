@@ -4,7 +4,7 @@ export type Emoji = string;
 export type Timestamp = number;
 
 export enum Color {
-  Neutral = -1,
+  Neutral = 0,
   Red = 1,
   Blue = 2,
   Green = 3,

@@ -2,9 +2,14 @@ import * as R from "ramda";
 
 import * as maps from "../maps";
 import { groupedPlayerPositions, positionScore, tablePoints } from "../helpers";
-import { Table, Player, EliminationReason, EliminationSource } from "../types";
+import {
+  Table,
+  Player,
+  EliminationReason,
+  EliminationSource,
+  Color,
+} from "../types";
 import logger from "../logger";
-import { COLOR_NEUTRAL } from "../constants";
 
 export const serializeTable = (table: Table) => {
   const players = table.players.map(serializePlayer(table));
@@ -31,11 +36,15 @@ export const serializeTable = (table: Table) => {
   };
 };
 
-export const serializeLand = ({ emoji, color, points }) => [
+export const serializeLand = ({
   emoji,
-  color ?? COLOR_NEUTRAL,
-  points ?? 1,
-];
+  color,
+  points,
+}: {
+  emoji: string;
+  color: Color;
+  points: number;
+}): [string, Color, number] => [emoji, color ?? Color.Neutral, points ?? 1];
 
 export const serializePlayer = (table: Table) => {
   const derived = computePlayerDerived(table);

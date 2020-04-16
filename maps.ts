@@ -1,7 +1,6 @@
 import * as R from "ramda";
 import logger from "./logger";
 import { Adjacency, Land, Emoji, Color } from "./types";
-import { COLOR_NEUTRAL } from "./constants";
 
 import * as mapJson from "./map-sources.json";
 
@@ -13,7 +12,7 @@ type LimitedTable = {
 export const loadMap = (mapName: string): [Land[], Adjacency, string] => {
   const { lands, adjacency, name } = mapJson.maps[mapName];
   return [
-    lands.map(land => ({ ...land, color: COLOR_NEUTRAL, points: 0 })),
+    lands.map(land => ({ ...land, color: Color.Neutral, points: 0 })),
     adjacency,
     name,
   ];

@@ -7,9 +7,9 @@ import * as pics from "pics";
 import * as resize from "resizer-stream";
 
 import * as R from "ramda";
-import { Table, Land, UserId, Player, Elimination } from "./types";
+import { Table, Land, UserId, Player, Elimination, Color } from "./types";
 import logger from "./logger";
-import { COLOR_NEUTRAL, ELIMINATION_REASON_SURRENDER } from "./constants";
+import { ELIMINATION_REASON_SURRENDER } from "./constants";
 
 pics.use(require("gif-stream"));
 pics.use(require("jpg-stream"));
@@ -119,7 +119,7 @@ export const removePlayer = (
     players_,
     lands.map(
       R.when(R.propEq("color", player.color), land =>
-        Object.assign(land, { color: COLOR_NEUTRAL })
+        Object.assign(land, { color: Color.Neutral })
       )
     ),
     newTurnIndex,
