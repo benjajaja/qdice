@@ -187,6 +187,7 @@ type alias RollLog =
     , defendRoll : Int
     , defendDiceCount : Int
     , success : Bool
+    , steal : Maybe Int
     }
 
 

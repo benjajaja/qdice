@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, triple)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, triple, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -129,3 +129,8 @@ combine =
 resultCombine : List (Result s a) -> Result s (List a)
 resultCombine =
     List.foldr (Result.map2 (::)) (Ok [])
+
+
+tupleCombine : ( Maybe a, Maybe b ) -> Maybe ( a, b )
+tupleCombine ( ma, mb ) =
+    Maybe.andThen (\a -> Maybe.andThen (Tuple.pair a >> Just) mb) ma

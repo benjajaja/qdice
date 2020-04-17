@@ -214,9 +214,25 @@ rollLine roll =
                     ++ ")"
                     ++ ": "
                     ++ roll.attackDiesEmojis
-                    ++ " → "
+                    ++ (if roll.success then
+                            " → "
+
+                        else
+                            " ↩ "
+                       )
                     ++ roll.defendDiesEmojis
             ]
+                ++ (case roll.steal of
+                        Just n ->
+                            [ Html.text <|
+                                " stealing "
+                                    ++ String.fromInt n
+                                    ++ " extra dice from capital"
+                            ]
+
+                        Nothing ->
+                            []
+                   )
     in
     div [ class "chatbox--line--roll", dataTestId "logline-roll" ] text
 

@@ -40,7 +40,7 @@
     },
     {
       "path": "./dist/elm-dice.*.css",
-      "maxSize": "5 kB"
+      "maxSize": "10 kB"
     }
   ],
   "dependencies": {
