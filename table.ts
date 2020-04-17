@@ -21,7 +21,7 @@ import * as db from "./db";
 import * as publish from "./table/publish";
 import * as tick from "./table/tick";
 import { getTable } from "./table/get";
-import { addGameEvent, startGameEvent } from "./table/games";
+import { startGameEvent } from "./table/games";
 import nextTurn from "./table/turn";
 import { startGame, preloadStartingPositions } from "./table/start";
 import {
@@ -47,7 +47,6 @@ import {
   flag,
 } from "./table/commands";
 import { save } from "./table/get";
-import { STATUS_FINISHED } from "./constants";
 import endGame from "./table/endGame";
 import { rollResult } from "./table/attack";
 import { botState } from "./table/bots";
@@ -289,7 +288,7 @@ const commandResult = async (
     case "Chat":
       return [chat(command.user, table, command.message), null];
     case "ToggleReady":
-      return [toggleReady(command.player, table, command.ready), null];
+      return toggleReady(command.player, table, command.ready);
     case "Flag":
       return flag(command.player, table);
     case "Heartbeat":

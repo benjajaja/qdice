@@ -33,13 +33,14 @@ module.exports = {
       name: "Lagos",
       mapName: "DeLucía",
       playerSlots: 8,
-      startSlots: 2,
+      startSlots: 4,
       points: 0,
       stackSize: 8,
       params: {
         noFlagRounds: 5,
         botLess: true,
         startingCapitals: true,
+        readySlots: 2,
       },
     },
     {
@@ -54,6 +55,7 @@ module.exports = {
         noFlagRounds: 1,
         botLess: true,
         startingCapitals: true,
+        readySlots: 2,
       },
     },
     // {
@@ -81,6 +83,7 @@ module.exports = {
         noFlagRounds: 5,
         botLess: true,
         startingCapitals: true,
+        readySlots: 2,
       },
     },
     {

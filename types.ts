@@ -51,6 +51,7 @@ export type TableParams = {
   noFlagRounds: number;
   botLess: boolean;
   startingCapitals: boolean;
+  readySlots: number | null;
 };
 
 export type Land = {

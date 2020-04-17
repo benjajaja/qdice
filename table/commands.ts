@@ -386,7 +386,7 @@ export const toggleReady = (
   user,
   table: Table,
   payload: boolean
-): CommandResult => {
+): [CommandResult, Command | null] => {
   if (table.status === STATUS_PLAYING) {
     throw new IllegalMoveError("toggleReady while STATUS_PLAYING", user.id);
   }
@@ -398,7 +398,14 @@ export const toggleReady = (
   const players = table.players.map(p =>
     p === player ? { ...p, ready: payload } : p
   );
-  return { players };
+  if (
+    table.params.readySlots !== null &&
+    players.length >= table.params.readySlots &&
+    players.every(p => p.ready)
+  ) {
+    return [{ players }, { type: "Start" }];
+  }
+  return [{ players }, null];
 };
 
 export const flag = (
