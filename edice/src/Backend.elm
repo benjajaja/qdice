@@ -411,11 +411,7 @@ toRollLog model roll =
             Helpers.tupleCombine ( defender, defenderLand )
                 |> Maybe.andThen
                     (\( player, land ) ->
-                        if land.capital /= -1 then
-                            Just <| land.points + player.reserveDice
-
-                        else
-                            Nothing
+                        Maybe.andThen (\_ -> Just <| land.points + player.reserveDice) land.capital
                     )
     in
     { attacker = Maybe.withDefault errorPlayer attacker |> .name

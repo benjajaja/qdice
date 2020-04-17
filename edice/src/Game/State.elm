@@ -571,8 +571,13 @@ showRoll model roll =
                     , color = from.color
                     , points = 1
                     , capital =
-                        if success && from.capital /= -1 && to.capital /= -1 then
-                            from.capital + to.capital + to.points
+                        if success then
+                            case Helpers.tupleCombine ( from.capital, to.capital ) of
+                                Just ( fc, tc ) ->
+                                    Just <| Land.Capital <| fc.count + tc.count + to.points
+
+                                Nothing ->
+                                    from.capital
 
                         else
                             from.capital
@@ -581,18 +586,27 @@ showRoll model roll =
                                 [ { emoji = to.emoji
                                   , color = from.color
                                   , points = from.points - 1
-                                  , capital = -1
+                                  , capital = Nothing
                                   }
                                 ]
-                                    ++ (if success && from.capital == -1 && to.capital /= -1 then
-                                            case find (\l -> l.color == from.color && l.capital /= -1) game.board.map.lands of
-                                                Just capital ->
-                                                    [ { emoji = capital.emoji
-                                                      , color = capital.color
-                                                      , points = capital.points
-                                                      , capital = capital.capital + to.capital + to.points
-                                                      }
-                                                    ]
+                                    ++ (if success && from.capital == Nothing then
+                                            case to.capital of
+                                                Just tc ->
+                                                    find (\l -> l.color == from.color && l.capital /= Nothing) game.board.map.lands
+                                                        |> Maybe.andThen
+                                                            (\capitalLand ->
+                                                                capitalLand.capital |> Maybe.map (Tuple.pair capitalLand)
+                                                            )
+                                                        |> Maybe.map
+                                                            (\( land, capital ) ->
+                                                                [ { emoji = land.emoji
+                                                                  , color = land.color
+                                                                  , points = land.points
+                                                                  , capital = Just <| Land.Capital <| capital.count + tc.count + to.points
+                                                                  }
+                                                                ]
+                                                            )
+                                                        |> Maybe.withDefault []
 
                                                 Nothing ->
                                                     []

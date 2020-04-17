@@ -1,19 +1,17 @@
 module Board.View exposing (view)
 
 import Animation
-import Animation.Messenger
 import Array exposing (Array)
 import Board.Colors exposing (contrastColors)
 import Board.Die exposing (die)
 import Board.PathCache
 import Board.Types exposing (..)
-import Color
 import Dict
 import Helpers exposing (dataTestId, dataTestValue)
 import Html
 import Html.Attributes
 import Html.Lazy
-import Land exposing (Land, MapSize, landCenter)
+import Land exposing (Capital, Land, MapSize, landCenter)
 import String
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -21,14 +19,9 @@ import Svg.Events exposing (..)
 import Svg.Lazy
 
 
-empty : List a
-empty =
-    []
-
-
-view : Model -> Maybe Land.Emoji -> Bool -> Html.Html Msg
-view model hovered diceVisible =
-    Html.Lazy.lazy7 board
+view : Model -> Maybe Land.Emoji -> Bool -> List ( Land.Color, String ) -> Html.Html Msg
+view model hovered diceVisible avatarUrls =
+    Html.Lazy.lazy8 board
         model.map
         model.layout
         model.pathCache
@@ -36,10 +29,11 @@ view model hovered diceVisible =
         model.move
         hovered
         diceVisible
+        avatarUrls
 
 
-board : Land.Map -> ( MapSize, String ) -> PathCache -> BoardAnimations -> BoardMove -> Maybe Land.Emoji -> Bool -> Svg Msg
-board map ( layout, mapViewBox ) pathCache animations move hovered diceVisible =
+board : Land.Map -> ( MapSize, String ) -> PathCache -> BoardAnimations -> BoardMove -> Maybe Land.Emoji -> Bool -> List ( Land.Color, String ) -> Svg Msg
+board map ( layout, mapViewBox ) pathCache animations move hovered diceVisible avatarUrls =
     Html.div [ class "edBoard" ]
         [ Svg.svg
             [ viewBox mapViewBox
@@ -48,6 +42,7 @@ board map ( layout, mapViewBox ) pathCache animations move hovered diceVisible =
             , class "edBoard--svg"
             ]
             [ die
+            , avatarDefs avatarUrls
             , Svg.Lazy.lazy4 waterConnections layout pathCache map.waterConnections map.lands
             , Svg.Lazy.lazy5 realLands
                 layout
@@ -170,11 +165,12 @@ animatedStackDies layout { stack, dice } move diceVisible land =
             [ Svg.Lazy.lazy4 landDies diceAnimation diceVisible land ( x_, y_ )
             ]
         ]
-            ++ (if land.capital /= -1 then
-                    [ Svg.Lazy.lazy4 capitalText x_ y_ land.capital land.color ]
+            ++ (case land.capital of
+                    Just capital ->
+                        [ Svg.Lazy.lazy4 capitalText x_ y_ capital land.color ]
 
-                else
-                    []
+                    Nothing ->
+                        []
                )
 
 
@@ -275,7 +271,7 @@ landColor : Bool -> Bool -> Land.Color -> String
 landColor selected hovered color =
     Board.Colors.base color
         |> (if selected then
-                Board.Colors.highlight
+                Board.Colors.highlight 0.4
 
             else
                 identity
@@ -289,56 +285,90 @@ landColor selected hovered color =
         |> Board.Colors.cssRgb
 
 
-capitalText : Float -> Float -> Int -> Land.Color -> Svg.Svg msg
-capitalText x_ y_ reserveDice color =
+capitalText : Float -> Float -> Capital -> Land.Color -> Svg.Svg msg
+capitalText x_ y_ { count } color =
     let
         ( oppositeColor, mainColor ) =
             contrastColors color ( 0, 255 )
     in
     g
-        []
+        [ class "edBoard--stack__capital" ]
     <|
-        if reserveDice > 0 then
-            [ Svg.text_
-                [ class "edBoard--stack__capital"
-                , x <| String.fromFloat (x_ - 1.5)
-                , y <| String.fromFloat (y_ + 1.0)
-                , oppositeColor
-                    |> Board.Colors.cssRgb
-                    |> stroke
-                , mainColor
-                    |> Board.Colors.cssRgb
-                    |> fill
-                , textAnchor "middle"
-                ]
-                [ Svg.text "★" ]
-            , Svg.text_
-                [ class "edBoard--stack__reserveDice"
-                , x <| String.fromFloat (x_ - 0.1)
-                , y <| String.fromFloat (y_ - 0.7)
-                , oppositeColor
-                    |> Board.Colors.cssRgb
-                    |> stroke
-                , mainColor
-                    |> Board.Colors.cssRgb
-                    |> fill
-                , textAnchor "middle"
-                ]
-                [ Svg.text <| "+" ++ String.fromInt reserveDice ]
-            ]
+        [ Svg.circle
+            [ cx <| String.fromFloat (x_ - 1.5)
+            , cy <| String.fromFloat (y_ + 1.0)
+            , r <| String.fromInt <| round (toFloat capitalAvatarSize / 2)
+            , color
+                |> Board.Colors.base
+                |> Board.Colors.downlight 0.1
+                |> Board.Colors.cssRgb
+                |> stroke
 
-        else
-            [ Svg.text_
-                [ class "edBoard--stack__capital"
-                , x <| String.fromFloat (x_ - 1.5)
-                , y <| String.fromFloat (y_ + 1.0)
-                , oppositeColor
-                    |> Board.Colors.cssRgb
-                    |> stroke
-                , mainColor
-                    |> Board.Colors.cssRgb
-                    |> fill
-                , textAnchor "middle"
-                ]
-                [ Svg.text "★" ]
+            -- , color
+            -- |> Board.Colors.base
+            -- |> Board.Colors.cssRgb
+            -- |> fill
+            , fill <| "url(#player_" ++ (color |> Board.Colors.colorIndex |> String.fromInt) ++ ")"
             ]
+            []
+        ]
+            ++ (if count > 0 then
+                    [ Svg.text_
+                        [ class "edBoard--stack__reserveDice"
+                        , x <| String.fromFloat (x_ - 0.1)
+                        , y <| String.fromFloat (y_ + 2.7)
+                        , oppositeColor
+                            |> Board.Colors.cssRgb
+                            |> stroke
+                        , mainColor
+                            |> Board.Colors.cssRgb
+                            |> fill
+                        , textAnchor "middle"
+                        ]
+                        [ Svg.text <| "+" ++ String.fromInt count ]
+                    ]
+
+                else
+                    []
+               )
+
+
+avatarDefs : List ( Land.Color, String ) -> Html.Html Msg
+avatarDefs list =
+    defs [] <|
+        List.map
+            (\( color, url ) ->
+                pattern
+                    [ id <| "player_" ++ String.fromInt (Board.Colors.colorIndex color)
+
+                    -- , patternUnits "userSpaceOnUse"
+                    , x "0"
+                    , y "0"
+                    , width <| String.fromInt capitalAvatarSize
+                    , height <| String.fromInt capitalAvatarSize
+                    ]
+                    [ rect
+                        [ x "0"
+                        , y "0"
+                        , width <| String.fromInt capitalAvatarSize
+                        , height <| String.fromInt capitalAvatarSize
+                        , fill "black"
+                        ]
+                        []
+                    , image
+                        [ xlinkHref url
+                        , x "0"
+                        , y "0"
+                        , width <| String.fromInt capitalAvatarSize
+                        , height <| String.fromInt capitalAvatarSize
+                        ]
+                        []
+                    ]
+            )
+        <|
+            list
+
+
+capitalAvatarSize : Int
+capitalAvatarSize =
+    4

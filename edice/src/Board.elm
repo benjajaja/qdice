@@ -31,9 +31,9 @@ update =
     Board.State.update
 
 
-view : Model -> Maybe Land.Emoji -> Bool -> Html.Html Msg
+view : Model -> Maybe Land.Emoji -> Bool -> List ( Land.Color, String ) -> Html.Html Msg
 view =
-    Html.Lazy.lazy3 Board.View.view
+    Html.Lazy.lazy4 Board.View.view
 
 
 animations : Model -> List Animation.State

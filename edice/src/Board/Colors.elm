@@ -1,4 +1,4 @@
-module Board.Colors exposing (animationColor, base, baseCssRgb, colorIndex, colorName, contrastColors, cssRgb, highlight, hover)
+module Board.Colors exposing (animationColor, base, baseCssRgb, colorIndex, colorName, contrastColors, cssRgb, downlight, highlight, hover)
 
 import Animation
 import Color
@@ -43,9 +43,14 @@ base color =
             Color.rgb255 175 135 90
 
 
-highlight : Color.Color -> Color.Color
-highlight =
-    lighten 0.5
+highlight : Float -> Color.Color -> Color.Color
+highlight amount =
+    lighten amount
+
+
+downlight : Float -> Color.Color -> Color.Color
+downlight amount =
+    darken amount
 
 
 hover : Color.Color -> Color.Color

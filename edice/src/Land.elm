@@ -1,4 +1,4 @@
-module Land exposing (Cells, Color(..), Emoji, Land, Map, MapSize, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasAttackableNeighbours, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, nextBorders, nextBorders_, oppositeSide, playerColor, randomPlayerColor, rightSide)
+module Land exposing (Capital, Cells, Color(..), Emoji, Land, Map, MapSize, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasAttackableNeighbours, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, nextBorders, nextBorders_, oppositeSide, playerColor, randomPlayerColor, rightSide)
 
 import Array exposing (Array)
 import Bitwise
@@ -27,7 +27,12 @@ type alias Land =
     , color : Color
     , emoji : Emoji
     , points : Int
-    , capital : Int
+    , capital : Maybe Capital
+    }
+
+
+type alias Capital =
+    { count : Int
     }
 
 
@@ -230,10 +235,10 @@ concat map =
     in
     case hexes of
         [] ->
-            Land [] Neutral emptyEmoji 0 -1
+            Land [] Neutral emptyEmoji 0 Nothing
 
         _ ->
-            Land hexes Neutral emptyEmoji 0 -1
+            Land hexes Neutral emptyEmoji 0 Nothing
 
 
 playerColor : Int -> Color

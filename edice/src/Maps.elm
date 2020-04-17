@@ -146,7 +146,7 @@ emojisToMap name raw =
             List.map (List.filter isEmptyEmoji) lines
                 |> foldLines
                 |> List.foldr dedupeEmojis []
-                |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1 -1)
+                |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1 Nothing)
     in
     Result.map
         (\a ->

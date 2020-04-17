@@ -39,6 +39,12 @@ view model =
                     model.game.board.hovered
                 )
                 model.game.diceVisible
+                (List.map
+                    (\p ->
+                        ( p.color, p.picture )
+                    )
+                    model.game.players
+                )
                 |> Html.map BoardMsg
     in
     div [ class "edMainScreen" ] <|

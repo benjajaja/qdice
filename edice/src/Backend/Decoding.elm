@@ -168,7 +168,18 @@ landsUpdateDecoder =
         (index 0 string)
         (index 1 colorDecoder)
         (index 2 int)
-        (index 3 int)
+        (index 3
+            (map
+                (\i ->
+                    if i == -1 then
+                        Nothing
+
+                    else
+                        Just <| Land.Capital i
+                )
+                int
+            )
+        )
 
 
 colorDecoder : Decoder Color

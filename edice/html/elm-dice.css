@@ -319,7 +319,8 @@ button .material-icons, .edButton .material-icons {
   dominant-baseline: middle;
   font-size: 4px;
   font-weight: bold;
-  stroke-width: 0.2px;
+  stroke-width: 0.3px;
+  pointer-events: none;
 }
 .edBoard--stack__reserveDice {
   dominant-baseline: middle;
