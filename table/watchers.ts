@@ -137,7 +137,7 @@ export const cleanWatchers = (table: Table): CommandResult | null => {
 export const cleanPlayers = (table: Table): CommandResult | null => {
   if (table.status !== STATUS_PLAYING) {
     const [_, stoppedWatching] = checkWatchers(table.players, p => [
-      60 * 5,
+      60 * 20,
       p.lastBeat,
     ]);
     if (stoppedWatching.length > 0) {
