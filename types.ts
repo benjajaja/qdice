@@ -50,7 +50,7 @@ export type Table = TableProps & {
 export type TableParams = {
   noFlagRounds: number;
   botLess: boolean;
-  capitals: boolean;
+  startingCapitals: boolean;
 };
 
 export type Land = {

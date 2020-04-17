@@ -347,6 +347,7 @@ tableParamsDecoder =
     succeed TableParams
         |> required "noFlagRounds" int
         |> required "botLess" bool
+        |> required "startingCapitals" bool
 
 
 profileDecoder : Decoder Profile

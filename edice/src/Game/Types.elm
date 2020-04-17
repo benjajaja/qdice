@@ -147,6 +147,7 @@ type alias TableInfo =
 type alias TableParams =
     { noFlagRounds : Int
     , botLess : Bool
+    , startingCapitals : Bool
     }
 
 

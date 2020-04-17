@@ -37,9 +37,9 @@ const turn = (
     : table.players;
 
   const currentPlayer = inPlayers[table.turnIndex];
-  const [receivedDice, lands, players] = currentPlayer
+  const [receivedDice, lands, players, hasReserveDice] = currentPlayer
     ? giveDice(table, table.lands, inPlayers)(currentPlayer) // not just removed
-    : [0, table.lands, table.players];
+    : [0, table.lands, table.players, false];
 
   if (receivedDice > 0) {
     publish.receivedDice(table, receivedDice, currentPlayer, lands, players);
@@ -91,7 +91,12 @@ const turn = (
     // props.turnIndex =
     // props.turnIndex + 1 < players_.length ? props.turnIndex + 1 : 0;
 
-    const { newCapitals, newLands } = giveCapitals(players_, lands_);
+    const { newCapitals, newLands } = giveCapitals(
+      table,
+      hasReserveDice,
+      players_,
+      lands_
+    );
     const result = {
       table: props,
       lands: newLands,
@@ -120,7 +125,12 @@ const turn = (
 
   if (!newPlayer.out) {
     // normal turn over
-    const { newCapitals, newLands } = giveCapitals(players, lands);
+    const { newCapitals, newLands } = giveCapitals(
+      table,
+      hasReserveDice,
+      players,
+      lands
+    );
     publish.turn(
       table,
       props.turnIndex,
@@ -150,7 +160,12 @@ const turn = (
     );
     props.turnIndex = turnIndex;
 
-    const { newCapitals, newLands } = giveCapitals(players_, lands_);
+    const { newCapitals, newLands } = giveCapitals(
+      table,
+      hasReserveDice,
+      players_,
+      lands_
+    );
     const result = {
       table: props,
       lands: newLands,
@@ -177,7 +192,12 @@ const turn = (
     }
   }
 
-  const { newCapitals, newLands } = giveCapitals(players, lands);
+  const { newCapitals, newLands } = giveCapitals(
+    table,
+    hasReserveDice,
+    players,
+    lands
+  );
   publish.turn(
     table,
     props.turnIndex,
@@ -205,7 +225,9 @@ const giveDice = (
   table: Table,
   lands: ReadonlyArray<Land>,
   players: ReadonlyArray<Player>
-) => (player: Player): [number, ReadonlyArray<Land>, ReadonlyArray<Player>] => {
+) => (
+  player: Player
+): [number, ReadonlyArray<Land>, ReadonlyArray<Player>, boolean] => {
   const connectLandCount = maps.countConnectedLands({
     lands,
     adjacency: table.adjacency,
@@ -222,7 +244,7 @@ const giveDice = (
       reserveDice += 1;
     } else {
       let target: Land;
-      if (table.params.capitals && i >= connectLandCount) {
+      if (i >= connectLandCount) {
         target =
           targets.find(R.propEq("capital", true)) ??
           targets[rand(0, targets.length - 1)];
@@ -236,37 +258,55 @@ const giveDice = (
     connectLandCount,
     lands,
     players.map(p => (p === player ? { ...player, reserveDice } : p)),
+    reserveDice > 0,
   ];
 };
 
 const giveCapitals = (
+  table: Table,
+  hasReserveDice: boolean,
   players: readonly Player[],
   lands: readonly Land[]
-): { newLands: readonly Land[]; newCapitals: readonly Land[] } =>
-  players.reduce(
-    (result, { color }) => {
-      const playerLands = result.newLands.filter(R.propEq("color", color));
-      if (playerLands.every(R.propEq("capital", false))) {
-        logger.debug(`giving new capital to #${color}`);
-        const match = R.sortWith(
-          [R.ascend(R.prop("points"))],
-          shuffle(playerLands)
-        ).pop();
-        if (match) {
-          const newCapital = { ...match, capital: true };
-          return {
-            newLands: result.newLands.map(l =>
-              l.emoji === newCapital.emoji ? newCapital : l
-            ),
-            newCapitals: [...result.newCapitals, newCapital],
-          };
-        } else {
-          logger.error(`#${color} has no capital but I can't find it again!`);
+): { newLands: readonly Land[]; newCapitals: readonly Land[] } => {
+  // logger.debug(
+  // `giveCapitals: params:${
+  // table.params.startingCapitals
+  // }, reserve:${hasReserveDice}, previousCapitals:${lands.some(
+  // land => land.capital
+  // )}`
+  // );
+  if (
+    table.params.startingCapitals ||
+    hasReserveDice ||
+    lands.some(land => land.capital)
+  ) {
+    return players.reduce(
+      (result, { color }) => {
+        const playerLands = result.newLands.filter(R.propEq("color", color));
+        if (playerLands.every(R.propEq("capital", false))) {
+          logger.debug(`giving new capital to #${color}`);
+          const match = R.sortWith(
+            [R.ascend(R.prop("points"))],
+            shuffle(playerLands)
+          ).pop();
+          if (match) {
+            const newCapital = { ...match, capital: true };
+            return {
+              newLands: result.newLands.map(l =>
+                l.emoji === newCapital.emoji ? newCapital : l
+              ),
+              newCapitals: [...result.newCapitals, newCapital],
+            };
+          } else {
+            logger.error(`#${color} has no capital but I can't find it again!`);
+          }
         }
-      }
-      return result;
-    },
-    { newLands: lands, newCapitals: [] }
-  );
+        return result;
+      },
+      { newLands: lands, newCapitals: [] }
+    );
+  }
+  return { newLands: lands, newCapitals: [] };
+};
 
 export default turn;

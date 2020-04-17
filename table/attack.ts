@@ -82,7 +82,7 @@ export const rollResult = (
           return player;
         });
       }
-      if (table.params.capitals && loser && toLand.capital) {
+      if (loser && toLand.capital) {
         if (R.filter(R.propEq("color", loser.color), lands).length !== 0) {
           newCapital = shuffle(lands.filter(R.propEq("color", loser.color)))[0];
           lands = updateLand(lands, newCapital, { capital: true });

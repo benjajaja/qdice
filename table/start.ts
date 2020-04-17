@@ -25,15 +25,10 @@ export const startGame = (table: Table): CommandResult => {
   );
 
   const assignedLands = assignLands(table, lands).map(
-    table.params.capitals
+    table.params.startingCapitals
       ? land => ({ ...land, capital: land.color !== Color.Neutral })
       : land => ({ ...land, capital: false })
   );
-
-  if (table.params.capitals) {
-    logger.debug("Starting game with capitals = on");
-    logger.debug(`capitals: ${assignedLands.filter(R.prop("capital")).length}`);
-  }
 
   const allLands = lands.map(oldLand => {
     const match = assignedLands.filter(l => l.emoji === oldLand.emoji).pop();

@@ -11,6 +11,7 @@ module.exports = {
       params: {
         noFlagRounds: 5,
         botLess: false,
+        startingCapitals: false,
       },
     },
     {
@@ -24,6 +25,7 @@ module.exports = {
       params: {
         noFlagRounds: 2,
         botLess: false,
+        startingCapitals: false,
       },
     },
     {
@@ -37,7 +39,7 @@ module.exports = {
       params: {
         noFlagRounds: 5,
         botLess: true,
-        capitals: true,
+        startingCapitals: true,
       },
     },
     {
@@ -51,6 +53,7 @@ module.exports = {
       params: {
         noFlagRounds: 1,
         botLess: true,
+        startingCapitals: true,
       },
     },
     // {
@@ -77,6 +80,7 @@ module.exports = {
       params: {
         noFlagRounds: 5,
         botLess: true,
+        startingCapitals: true,
       },
     },
     {
@@ -90,7 +94,7 @@ module.exports = {
       params: {
         noFlagRounds: 5,
         botLess: false,
-        capitals: true,
+        startingCapitals: true,
       },
     },
   ],
