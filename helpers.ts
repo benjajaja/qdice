@@ -213,8 +213,8 @@ export const hasChanged = (lands: readonly Land[]) => (land: Land): boolean => {
     return true;
   }
   if (
+    land.capital || // always send capital as update to force clients to update it
     land.points !== match.points ||
-    land.capital !== match.capital ||
     land.color !== match.color
   ) {
     return true;
