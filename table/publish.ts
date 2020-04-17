@@ -17,6 +17,7 @@ import {
 import logger from "../logger";
 import * as jwt from "jsonwebtoken";
 import { MqttClient } from "mqtt";
+import { hasChanged } from "../helpers";
 
 let client: MqttClient;
 export const setMqtt = (client_: MqttClient) => {
@@ -319,7 +320,9 @@ export const receivedDice = (
         player: serializePlayer(table)(player),
         count,
         players: players.map(serializePlayer(table)),
-        lands: lands.map(serializeLand(players)),
+        lands: lands
+          .filter(hasChanged(table.lands))
+          .map(serializeLand(players)),
       },
     }),
     undefined!,

@@ -205,3 +205,19 @@ export const downloadPicture = async (
 export const assertNever = (x: never): never => {
   throw new Error("Unexpected value: " + x);
 };
+
+export const hasChanged = (lands: readonly Land[]) => (land: Land): boolean => {
+  const match = lands.find(R.propEq("emoji", land.emoji));
+  if (!match) {
+    logger.debug(`did not find ${land.emoji} in lands: ${lands}`);
+    return true;
+  }
+  if (
+    land.points !== match.points ||
+    land.capital !== match.capital ||
+    land.color !== match.color
+  ) {
+    return true;
+  }
+  return false;
+};
