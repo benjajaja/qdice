@@ -96,15 +96,17 @@ updateLands model updates mMove =
             landUpdates =
                 List.map (updateLand updates) map.lands
 
-            map_ =
-                { map
-                    | lands =
-                        if List.length landUpdates == 0 then
-                            map.lands
+            lands_ =
+                List.map Tuple.first landUpdates
 
-                        else
-                            List.map Tuple.first landUpdates
-                }
+            map_ =
+                if List.length updates == 0 || lands_ == map.lands then
+                    map
+
+                else
+                    { map
+                        | lands = lands_
+                    }
 
             move_ =
                 Maybe.withDefault model.move mMove
