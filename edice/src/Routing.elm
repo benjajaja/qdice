@@ -1,9 +1,10 @@
-module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, replaceNavigateTo, routeEnterCmd, routeToString)
+module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, replaceNavigateTo, routeEnterCmd)
 
 import Backend.HttpCommands exposing (leaderBoard, profile)
 import Browser.Navigation exposing (Key)
 import Comments
 import LeaderBoard.State exposing (fetchLeaderboard)
+import Routing.String exposing (routeToString)
 import Static.Changelog exposing (fetchChangelog)
 import String.Normalize exposing (slug)
 import Types exposing (GamesSubRoute(..), Model, Msg, Route(..), StaticPage(..))
@@ -70,62 +71,6 @@ navigateTo useHash key route =
 replaceNavigateTo : Bool -> Key -> Route -> Cmd Msg
 replaceNavigateTo useHash key route =
     Browser.Navigation.replaceUrl key <| routeToString useHash route
-
-
-routeToString : Bool -> Route -> String
-routeToString useHash route =
-    (if useHash then
-        "#"
-
-     else
-        ""
-    )
-        ++ (case route of
-                HomeRoute ->
-                    ""
-
-                GameRoute table ->
-                    table
-
-                StaticPageRoute page ->
-                    case page of
-                        Help ->
-                            "static/help"
-
-                        About ->
-                            "static/about"
-
-                ChangelogRoute ->
-                    "changelog"
-
-                NotFoundRoute ->
-                    "404"
-
-                MyProfileRoute ->
-                    "me"
-
-                TokenRoute token ->
-                    "token/" ++ token
-
-                ProfileRoute id name ->
-                    Url.Builder.relative [ "profile", id, slug name ] []
-
-                LeaderBoardRoute ->
-                    "leaderboard"
-
-                GamesRoute sub ->
-                    "games"
-                        ++ (case sub of
-                                GamesOfTable table ->
-                                    "/" ++ table
-
-                                GameId table id ->
-                                    "/" ++ table ++ "/" ++ String.fromInt id
-
-                                AllGames ->
-                                    ""
-                           )
-           )
 
 
 routeEnterCmd : Model -> Route -> ( Model, Cmd Msg )

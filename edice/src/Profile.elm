@@ -9,7 +9,7 @@ import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Ordinal exposing (ordinal)
-import Routing exposing (routeToString)
+import Routing.String exposing (routeToString)
 import Time exposing (Zone)
 import Types exposing (..)
 
@@ -35,9 +35,8 @@ view model id name =
         ]
             ++ (case model.otherProfile of
                     Just ( p, _ ) ->
-                        [ Comments.view model.user model.comments <| Comments.profileComments p ]
+                        [ Comments.view model.zone model.user model.comments <| Comments.profileComments p ]
 
-                    -- []
                     Nothing ->
                         []
                )
@@ -66,8 +65,7 @@ playerBox zone ( user, stats ) =
     , div [ class "edPlayerBox__stat" ] [ text <| "Games won: " ++ String.fromInt stats.gamesWon ]
     , div [ class "edPlayerBox__stat" ] [ text <| "Games played: " ++ String.fromInt stats.gamesPlayed ]
     , div [ class "edPlayerBox__stat" ] [ text "Games: " ]
-
-    -- , div [ class "edPlayerBox__stat" ] [ ul [] <| List.map (gameLink zone) stats.games ]
+    , div [ class "edPlayerBox__games" ] [ ul [] <| List.map (gameLink zone) stats.games ]
     ]
 
 

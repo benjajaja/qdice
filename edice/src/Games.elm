@@ -7,7 +7,7 @@ import Games.Types exposing (Game, GameEvent(..))
 import Helpers
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Routing exposing (routeToString)
+import Routing.String exposing (routeToString)
 import Snackbar exposing (toastError, toastMessage)
 import Time exposing (Zone)
 import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg, Route(..))

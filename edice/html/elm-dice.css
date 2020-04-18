@@ -824,6 +824,10 @@ button .material-icons, .edButton .material-icons {
 .edPlayerBox__settings {
   margin-top: 10px;
 }
+.edPlayerBox__games {
+  max-height: 300px;
+  overflow: auto;
+}
 
 .edLeaderboard {
   width: 100%;
@@ -1047,4 +1051,32 @@ button .material-icons, .edButton .material-icons {
 .edLoginPassword_input-last {
   position: absolute;
   top: 0;
+}
+
+.edComments {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+.edComments__header {
+  font-size: 1.2em;
+}
+.edComments__comment {
+}
+.edComments__comment__header {
+  display: flex;
+  align-items: flex-end;
+}
+.edComments__comment__header__author {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+.edComments__comment__header__author > img {
+  margin-right: 6px;
+}
+.edComments__comment__header__timestamp {
+  font-size: 0.8em;
+}
+.edComments__comment__body {
+  margin-inline-start: 20px;
 }

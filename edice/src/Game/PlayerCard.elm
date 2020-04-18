@@ -10,7 +10,7 @@ import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (alt, class, href, src, style)
 import Ordinal exposing (ordinal)
-import Routing exposing (routeToString)
+import Routing.String exposing (routeToString)
 import Svg
 import Svg.Attributes
 import Time exposing (posixToMillis)

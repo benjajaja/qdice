@@ -1,10 +1,14 @@
 module Comments exposing (got, init, input, post, posted, profileComments, routeEnter, view)
 
 import Backend.HttpCommands
+import DateFormat
 import Dict
-import Html exposing (Html, a, button, div, form, text, textarea)
+import Game.PlayerCard exposing (playerPicture)
+import Html exposing (Html, a, blockquote, button, div, form, span, text, textarea)
 import Html.Attributes exposing (class, disabled, href, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Routing.String exposing (routeToString)
+import Time exposing (Zone)
 import Types exposing (Comment, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, Model, Msg(..), Profile, Route(..), User(..))
 
 
@@ -37,7 +41,7 @@ kindName : CommentKind -> String
 kindName kind =
     case kind of
         UserWall _ name ->
-            name
+            "player " ++ name
 
 
 profileComments : Profile -> CommentKind
@@ -167,8 +171,8 @@ post model kind text =
     )
 
 
-view : User -> CommentsModel -> CommentKind -> Html Msg
-view user comments kind =
+view : Zone -> User -> CommentsModel -> CommentKind -> Html Msg
+view zone user comments kind =
     let
         myComments =
             Dict.get (Types.commentKindKey kind) comments
@@ -184,7 +188,7 @@ view user comments kind =
                 |> Maybe.withDefault { value = "", status = CommentPostIdle }
     in
     div [ class "edComments" ] <|
-        [ div [] [ text <| "Comments of " ++ kindName kind ]
+        [ div [ class "edComments__header" ] [ text <| "Comments of " ++ kindName kind ]
         , div [] <|
             case list of
                 CommentListFetching ->
@@ -199,7 +203,7 @@ view user comments kind =
                             [ text "No comments yet" ]
 
                         _ ->
-                            List.map singleComment list_
+                            List.map (singleComment zone) list_
         ]
             ++ (case user of
                     Logged _ ->
@@ -254,14 +258,22 @@ view user comments kind =
                )
 
 
-singleComment : Comment -> Html msg
-singleComment comment =
-    div []
-        [ div []
-            [ a [ href <| "/profile/" ++ String.fromInt comment.author.id ++ "/" ++ comment.author.name ]
-                [ text <| comment.author.name ]
+singleComment : Zone -> Comment -> Html Msg
+singleComment zone comment =
+    div [ class "edComments__comment" ]
+        [ div [ class "edComments__comment__header" ]
+            [ a
+                [ href <|
+                    routeToString False <|
+                        ProfileRoute (String.fromInt comment.author.id) comment.author.name
+                , class "edComments__comment__header__author"
+                ]
+                [ playerPicture "small" comment.author.picture comment.author.name
+                , span [] [ text <| comment.author.name ]
+                ]
+            , span
+                [ class "edComments__comment__header__timestamp" ]
+                [ text <| DateFormat.format "dddd, dd MMMM yyyy HH:mm:ss" zone <| Time.millisToPosix comment.timestamp ]
             ]
-
-        -- , div [] [ text <| comment.timestamp ]
-        , div [] [ text <| comment.text ]
+        , blockquote [ class "edComments__comment__body" ] [ text <| comment.text ]
         ]

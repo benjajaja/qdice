@@ -5,7 +5,7 @@ import Helpers exposing (pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (align, class, disabled, href)
 import Html.Events exposing (onClick)
-import Routing exposing (routeToString)
+import Routing.String exposing (routeToString)
 import Types exposing (..)
 
 

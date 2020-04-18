@@ -17,7 +17,7 @@ import Html.Events exposing (onClick)
 import Icon
 import LeaderBoard.View
 import Ordinal exposing (ordinal)
-import Routing exposing (routeToString)
+import Routing.String exposing (routeToString)
 import Time exposing (posixToMillis)
 import Types exposing (AuthNetwork(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
 

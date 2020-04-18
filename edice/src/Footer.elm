@@ -6,7 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
 import Icon
-import Routing exposing (routeToString)
+import Routing.String exposing (routeToString)
 import Types exposing (LoginDialogStatus(..), Model, Msg(..), Route(..), StaticPage(..), User(..))
 
 
