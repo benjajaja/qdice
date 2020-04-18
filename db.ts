@@ -17,10 +17,11 @@ import {
   CommandResult,
   Command,
 } from "./types";
-import { date } from "./timestamp";
+import { date, now, ts } from "./timestamp";
 import * as sleep from "sleep-promise";
 import * as config from "./tables.config"; // for e2e only
 import AsyncLock = require("async-lock");
+import { EMPTY_PROFILE_PICTURE } from "./constants";
 
 const pool = new Pool({
   host: process.env.PGHOST,
@@ -375,11 +376,27 @@ LIMIT $1 OFFSET $2`,
     level: Math.max(1, row.level),
     levelPoints: Math.max(1, row.level_points),
     awards: row.awards,
-    picture: row.picture || "assets/empty_profile_picture.svg",
+    picture: row.picture || EMPTY_PROFILE_PICTURE,
   }));
 };
 
-export const userProfile = (rows: any[]): User => {
+export const userProfile = (
+  rows: {
+    id: number;
+    email: string;
+    name: string;
+    picture: string;
+    level: number;
+    level_points: number;
+    points: string;
+    rank: string;
+    preferences: any;
+    voted: any[];
+    awards: any[];
+    network: Network;
+    network_id: string | null;
+  }[]
+): User => {
   const {
     id,
     name,
@@ -710,4 +727,68 @@ export const getUserStats = async (id: string) => {
     gamesWon: parseInt(gamesWonCount[0].games_won, 10),
     gamesPlayed: parseInt(gamesPlayedCount[0].games_played, 10),
   };
+};
+
+export const comments = async (kind: string, kindId: string) => {
+  const result = await pool.query({
+    name: "comments",
+    text: `SELECT comments.*,
+      users.id as author_id, users.name as author_name, users.picture as author_picture
+    FROM comments
+    LEFT JOIN users ON users.id = comments.author
+    WHERE kind = $1 AND kind_id = $2
+    ORDER BY timestamp
+    DESC LIMIT 100`,
+    values: [kind, kindId],
+  });
+  // logger.info("created game event", event.id, event.game_id, event.command);
+  return result.rows.map(camelize).map((row: any) => ({
+    id: row.id,
+    kind: [row.kind, row.kindId],
+    body: row.body,
+    author: {
+      id: row.authorId,
+      name: row.authorName,
+      picture: row.authorPicture || EMPTY_PROFILE_PICTURE,
+    },
+    timestamp: ts(date(row.timestamp)),
+  }));
+};
+
+export const postComment = async (
+  user: User,
+  kind: string,
+  kindId: string,
+  body: string
+) => {
+  const result = await pool.query({
+    name: "post-comment",
+    text: `INSERT INTO comments (author, kind, kind_id, body, timestamp)
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING *`,
+    values: [user.id, kind, kindId, body, date(now())],
+  });
+  const id = result.rows[0].id;
+  const { rows } = await pool.query({
+    name: "comment",
+    text: `SELECT comments.*,
+      users.id as author_id, users.name as author_name, users.picture as author_picture
+    FROM comments
+    LEFT JOIN users ON users.id = comments.author
+    WHERE comments.id = $1
+    ORDER BY timestamp
+    DESC LIMIT 100`,
+    values: [id],
+  });
+  return rows.map(camelize).map((row: any) => ({
+    id: row.id,
+    kind: [row.kind, row.kindId],
+    body: row.body,
+    author: {
+      id: row.authorId,
+      name: row.authorName,
+      picture: row.authorPicture || EMPTY_PROFILE_PICTURE,
+    },
+    timestamp: ts(date(row.timestamp)),
+  }))[0];
 };

@@ -321,14 +321,27 @@ comments : Model -> CommentKind -> Cmd Msg
 comments model kind =
     Http.get
         { url = model.baseUrl ++ "/comments/" ++ Types.commentKindKey kind
-        , expect = expectString <| (Result.mapError httpErrorToString >> GetComments kind)
+        , expect =
+            expectJson
+                (Result.mapError httpErrorToString >> GetComments kind)
+                commentsDecoder
         }
 
 
 postComment : Model -> CommentKind -> String -> Cmd Msg
 postComment model kind text =
-    Http.post
-        { url = model.baseUrl ++ "/comments/" ++ Types.commentKindKey kind
+    Http.request
+        { method = "POST"
+        , url = model.baseUrl ++ "/comments/" ++ Types.commentKindKey kind
+        , headers =
+            case model.jwt of
+                Just jwt ->
+                    [ header "authorization" ("Bearer " ++ jwt) ]
+
+                Nothing ->
+                    []
         , body = stringBody "text/plain" text
-        , expect = expectWhatever <| (Result.mapError httpErrorToString >> GetPostComment kind)
+        , expect = expectJson (Result.mapError httpErrorToString >> GetPostComment kind) commentDecoder
+        , timeout = Nothing
+        , tracker = Nothing
         }

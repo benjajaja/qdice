@@ -55,10 +55,10 @@ type Msg
     | SetPassword ( String, String ) (Maybe String) -- (email, pass) check
     | UpdateUser LoggedUser String Preferences
     | GetChangelog (Result Error String)
-    | GetComments CommentKind (Result String String)
+    | GetComments CommentKind (Result String (List Comment))
     | InputComment CommentKind String
     | PostComment CommentKind String
-    | GetPostComment CommentKind (Result String ())
+    | GetPostComment CommentKind (Result String Comment)
       -- game
     | BoardMsg Board.Msg
     | InputChat String
@@ -336,10 +336,18 @@ commentKindKey kind =
 
 
 type alias Comment =
-    { kind : CommentKind
-    , author : Profile
-    , timestamp : Time.Posix
+    { id : Int
+    , kind : CommentKind
+    , author : CommentAuthor
+    , timestamp : Int
     , text : String
+    }
+
+
+type alias CommentAuthor =
+    { id : Int
+    , name : String
+    , picture : String
     }
 
 

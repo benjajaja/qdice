@@ -288,3 +288,25 @@ ALTER TABLE ONLY game_events
 
 
 
+CREATE TABLE comments (
+    id integer NOT NULL,
+    author integer NOT NULL,
+    kind character varying(100) NOT NULL,
+    kind_id character varying(100) NOT NULL,
+    body text  NOT NULL,
+    timestamp timestamp with time zone NOT NULL
+);
+
+ALTER TABLE comments OWNER TO bgrosse;
+CREATE SEQUENCE comments_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER TABLE comments_id_seq OWNER TO bgrosse;
+ALTER SEQUENCE comments_id_seq OWNED BY comments.id;
+ALTER TABLE ONLY comments ALTER COLUMN id SET DEFAULT nextval('comments_id_seq'::regclass);
+ALTER TABLE ONLY comments
+    ADD CONSTRAINT comments_pkey PRIMARY KEY (id);
+

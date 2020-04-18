@@ -126,21 +126,23 @@ export const server = async () => {
         return null;
       },
     }).unless({
-      custom: (req: any) => {
-        const ok = R.anyPass([
-          (req: any) => req.path().indexOf(`${root}/login`) === 0,
-          (req: any) => req.path() === `${root}/register`,
-          (req: any) => req.path() === `${root}/global`,
-          (req: any) => req.path() === `${root}/findtable`,
-          (req: any) => req.path() === `${root}/leaderboard`,
-          (req: any) => req.path() === `${root}/e2e`,
-          (req: any) => req.path() === `${root}/push/key`,
-          (req: any) => req.path().indexOf(`${root}/screenshot`) === 0,
-          (req: any) => req.path().indexOf(`${root}/profile`) === 0,
-          (req: any) => req.path() === `${root}/topwebgames`,
-          (req: any) => req.path().indexOf(`${root}/games`) === 0,
-          (req: any) => req.path() === `${root}/changelog`,
-          (req: any) => req.path().indexOf(`${root}/comments`) === 0,
+      custom: (req: restify.Request) => {
+        const ok = R.anyPass<typeof req>([
+          req => req.path().indexOf(`${root}/login`) === 0,
+          req => req.path() === `${root}/register`,
+          req => req.path() === `${root}/global`,
+          req => req.path() === `${root}/findtable`,
+          req => req.path() === `${root}/leaderboard`,
+          req => req.path() === `${root}/e2e`,
+          req => req.path() === `${root}/push/key`,
+          req => req.path().indexOf(`${root}/screenshot`) === 0,
+          req => req.path().indexOf(`${root}/profile`) === 0,
+          req => req.path() === `${root}/topwebgames`,
+          req => req.path().indexOf(`${root}/games`) === 0,
+          req => req.path() === `${root}/changelog`,
+          req =>
+            req.method === "GET" &&
+            req.path().indexOf(`${root}/comments`) === 0,
         ])(req);
         return ok;
       },
@@ -251,13 +253,25 @@ export const server = async () => {
     next();
   });
 
-  server.get(`${root}/comments/:kind/:id`, (req, res, next) => {
-    res.send([]);
+  server.get(`${root}/comments/:kind/:id`, async (req, res, next) => {
+    if (
+      ["user"].indexOf(req.params.kind) === -1 ||
+      isNaN(parseInt(req.params.id))
+    ) {
+      res.sendRaw(401, "bad kind/id");
+      return next();
+    }
+    res.send(await db.comments(req.params.kind, req.params.id));
     next();
   });
 
-  server.post(`${root}/comments/:kind/:id`, (req, res, next) => {
-    res.send([]);
+  server.post(`${root}/comments/:kind/:id`, async (req, res, next) => {
+    const body = req.body;
+    const user = (req as any).user;
+    const kind = req.params.kind;
+    const id = req.params.id;
+    const result = await db.postComment(user, kind, id, body);
+    res.send(result);
     next();
   });
 

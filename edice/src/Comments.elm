@@ -2,10 +2,10 @@ module Comments exposing (got, init, input, post, posted, profileComments, route
 
 import Backend.HttpCommands
 import Dict
-import Html exposing (Html, button, div, form, text, textarea)
-import Html.Attributes exposing (class, disabled, type_, value)
+import Html exposing (Html, a, button, div, form, text, textarea)
+import Html.Attributes exposing (class, disabled, href, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Types exposing (CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, Model, Msg(..), Profile, Route(..), User(..))
+import Types exposing (Comment, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, Model, Msg(..), Profile, Route(..), User(..))
 
 
 init : CommentsModel
@@ -70,7 +70,7 @@ fetchWith model cmds kind =
     ( { model | comments = comments_ }, Cmd.batch [ cmds, httpCmd ] )
 
 
-got : Model -> CommentKind -> Result String String -> ( Model, Cmd Msg )
+got : Model -> CommentKind -> Result String (List Comment) -> ( Model, Cmd Msg )
 got model kind res =
     ( updateComments model
         kind
@@ -78,8 +78,8 @@ got model kind res =
             { comments
                 | list =
                     case res of
-                        Ok str ->
-                            CommentListFetched []
+                        Ok list ->
+                            CommentListFetched list
 
                         Err err ->
                             CommentListError err
@@ -89,7 +89,7 @@ got model kind res =
     )
 
 
-posted : Model -> CommentKind -> Result String () -> ( Model, Cmd Msg )
+posted : Model -> CommentKind -> Result String Comment -> ( Model, Cmd Msg )
 posted model kind res =
     ( updateComments model
         kind
@@ -108,9 +108,23 @@ posted model kind res =
                                 Err err ->
                                     CommentPostError err
                     }
+
+                list =
+                    case res of
+                        Ok comment ->
+                            case comments.list of
+                                CommentListFetched list_ ->
+                                    CommentListFetched <| comment :: list_
+
+                                _ ->
+                                    comments.list
+
+                        Err _ ->
+                            comments.list
             in
             { comments
                 | postState = postState_
+                , list = list
             }
         )
     , Cmd.none
@@ -185,7 +199,7 @@ view user comments kind =
                             [ text "No comments yet" ]
 
                         _ ->
-                            [ text "(Comment list here)" ]
+                            List.map singleComment list_
         ]
             ++ (case user of
                     Logged _ ->
@@ -238,3 +252,16 @@ view user comments kind =
                     _ ->
                         []
                )
+
+
+singleComment : Comment -> Html msg
+singleComment comment =
+    div []
+        [ div []
+            [ a [ href <| "/profile/" ++ String.fromInt comment.author.id ++ "/" ++ comment.author.name ]
+                [ text <| comment.author.name ]
+            ]
+
+        -- , div [] [ text <| comment.timestamp ]
+        , div [] [ text <| comment.text ]
+        ]

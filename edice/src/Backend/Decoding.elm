@@ -1,4 +1,4 @@
-module Backend.Decoding exposing (authStateDecoder, eliminationDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, turnDecoder)
+module Backend.Decoding exposing (authStateDecoder, commentDecoder, commentsDecoder, eliminationDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, turnDecoder)
 
 import Backend.Types exposing (TableMessage(..))
 import Board.Types
@@ -10,7 +10,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, li
 import Json.Decode.Pipeline exposing (required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..))
+import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..))
 
 
 stringDecoder : Decoder String
@@ -377,7 +377,7 @@ profileDecoder =
 
 leaderBoardTopDecoder : Decoder ( String, List Profile )
 leaderBoardTopDecoder =
-    map2 (\a b -> ( a, b ))
+    map2 Tuple.pair
         (field "month" string)
         (field "top" (list profileDecoder))
 
@@ -523,3 +523,50 @@ turnDecoder =
         |> required "turnStart" int
         |> required "roundCount" int
         |> required "capitals" (list landsUpdateDecoder)
+
+
+commentsDecoder : Decoder (List Comment)
+commentsDecoder =
+    list commentDecoder
+
+
+commentDecoder : Decoder Comment
+commentDecoder =
+    succeed Comment
+        |> required "id" int
+        |> required "kind" kindDecoder
+        |> required "author" authorDecoder
+        |> required "timestamp" int
+        |> required "body" string
+
+
+kindDecoder : Decoder CommentKind
+kindDecoder =
+    map2
+        (\kind kindId ->
+            case kind of
+                "user" ->
+                    Just <| UserWall kindId ""
+
+                _ ->
+                    Nothing
+        )
+        (index 0 string)
+        (index 1 string)
+        |> andThen
+            (\k ->
+                case k of
+                    Just ok ->
+                        succeed ok
+
+                    Nothing ->
+                        fail "unknown comment kind"
+            )
+
+
+authorDecoder : Decoder CommentAuthor
+authorDecoder =
+    succeed CommentAuthor
+        |> required "id" int
+        |> required "name" string
+        |> required "picture" string
