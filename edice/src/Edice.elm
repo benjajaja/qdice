@@ -225,28 +225,28 @@ update msg model =
                                     ( model_, Cmd.none )
                     in
                     ( modelWithTable
-                    , if
-                        version
-                            /= ""
-                            && version
-                            /= "dev"
-                            && model.backend.version
-                            /= ""
-                            && model.backend.version
-                            /= "dev"
-                            && model.backend.version
-                            /= version
-                      then
-                        Cmd.batch
-                            [ cmd
-                            , toastError "Please refresh for latest version" <|
-                                model.backend.version
-                                    ++ "/"
-                                    ++ version
-                            ]
-
-                      else
-                        cmd
+                      -- , if
+                      -- version
+                      -- /= ""
+                      -- && version
+                      -- /= "dev"
+                      -- && model.backend.version
+                      -- /= ""
+                      -- && model.backend.version
+                      -- /= "dev"
+                      -- && model.backend.version
+                      -- /= version
+                      -- then
+                      -- Cmd.batch
+                      -- [ cmd
+                      -- , toastError "Please refresh for latest version" <|
+                      -- model.backend.version
+                      -- ++ "/"
+                      -- ++ version
+                      -- ]
+                      --
+                      -- else
+                    , cmd
                     )
 
         GetToken joinTable res ->
