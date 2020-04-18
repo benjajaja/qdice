@@ -1,29 +1,38 @@
-module Board.PathCache exposing (addPointToString, addToDict, addToDictLines, landPointsString, line, pointToString, points, toKey)
+module Board.PathCache exposing (addPointToString, addToDict, addToDictLines, center, landPointsString, line, pointToString, points)
 
 import Board.Types exposing (..)
 import Dict
-import Helpers exposing (find)
+import Helpers exposing (combine, find)
 import Land
 
 
-points : PathCache -> Land.MapSize -> Land.Land -> String
-points dict layout land =
-    case Dict.get (toKey layout land) dict of
-        Just path ->
-            path
-
-        Nothing ->
-            Land.landPath layout land.cells |> landPointsString
+points : PathCache -> Land.Emoji -> Maybe String
+points dict emoji =
+    Dict.get emoji dict
 
 
-line : PathCache -> Land.MapSize -> List Land.Land -> Land.Emoji -> Land.Emoji -> String
-line dict layout lands from to =
-    case Dict.get ("line_" ++ from ++ to) dict of
-        Just linePoints ->
-            linePoints
+line : PathCache -> Land.Emoji -> Land.Emoji -> Maybe String
+line dict from to =
+    Dict.get ("line_" ++ from ++ to) dict
 
-        Nothing ->
-            lineConnection layout lands from to
+
+center : PathCache -> Land.Emoji -> Maybe ( Float, Float )
+center dict emoji =
+    Dict.get ("center_" ++ emoji) dict
+        |> Maybe.andThen
+            (String.split ","
+                >> List.map String.toFloat
+                >> combine
+            )
+        |> Maybe.andThen
+            (\list ->
+                case list of
+                    a :: b :: _ ->
+                        Just ( a, b )
+
+                    _ ->
+                        Nothing
+            )
 
 
 addToDict : Land.MapSize -> List Land.Land -> Dict.Dict String String -> Dict.Dict String String
@@ -31,7 +40,12 @@ addToDict layout list dict =
     case list of
         f :: tail ->
             addToDict layout tail <|
-                Dict.insert (toKey layout f) (Land.landPath layout f.cells |> landPointsString) dict
+                Dict.insert f.emoji (Land.landPath layout f.cells |> landPointsString) <|
+                    Dict.insert ("center_" ++ f.emoji)
+                        (Land.landCenter layout f.cells
+                            |> (\( a, b ) -> String.fromFloat a ++ "," ++ String.fromFloat b)
+                        )
+                        dict
 
         [] ->
             dict
@@ -46,20 +60,6 @@ addToDictLines layout lands connections dict =
 
         [] ->
             dict
-
-
-toKey : Land.MapSize -> Land.Land -> String
-toKey layout land =
-    -- let
-    -- layoutKey =
-    -- String.fromFloat (Tuple.first layout.size)
-    -- ++ ","
-    -- ++ String.fromFloat (Tuple.second layout.size)
-    -- ++ ","
-    -- ++ String.fromFloat layout.padding
-    -- in
-    -- layoutKey ++ "_" ++ land.emoji
-    land.emoji
 
 
 landPointsString : List Land.Point -> String

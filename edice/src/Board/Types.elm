@@ -17,7 +17,8 @@ type alias Model =
     , hovered : Maybe Land.Emoji
     , move : BoardMove
     , pathCache : PathCache
-    , layout : ( MapSize, String )
+    , layout : MapSize
+    , viewBox : String
     , animations : BoardAnimations
     }
 

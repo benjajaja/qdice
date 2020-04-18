@@ -19,7 +19,7 @@ init map =
             Board.PathCache.addToDict layout map.lands Dict.empty
                 |> Board.PathCache.addToDictLines layout map.lands map.waterConnections
     in
-    Model map Nothing Idle pathCache ( layout, viewBox ) { stack = Nothing, dice = Dict.empty }
+    Model map Nothing Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -70,9 +70,6 @@ updateLands : Model -> List LandUpdate -> Maybe BoardMove -> Model
 updateLands model updates mMove =
     if List.length updates == 0 then
         let
-            ( layout, _ ) =
-                model.layout
-
             move_ =
                 Maybe.withDefault model.move mMove
 
@@ -80,7 +77,7 @@ updateLands model updates mMove =
                 model.animations
         in
         { model
-            | animations = { animations | stack = attackAnimations layout move_ model.move }
+            | animations = { animations | stack = attackAnimations model.pathCache move_ model.move }
             , move = move_
         }
 
@@ -88,9 +85,6 @@ updateLands model updates mMove =
         let
             map =
                 model.map
-
-            ( layout, _ ) =
-                model.layout
 
             landUpdates : List ( Land.Land, Array Bool )
             landUpdates =
@@ -115,7 +109,7 @@ updateLands model updates mMove =
             | map = map_
             , move = move_
             , animations =
-                { stack = attackAnimations layout move_ model.move
+                { stack = attackAnimations model.pathCache move_ model.move
                 , dice = giveDiceAnimations landUpdates
                 }
         }
@@ -183,16 +177,16 @@ updateLandAnimations land landUpdate =
         Array.empty
 
 
-attackAnimations : Land.MapSize -> BoardMove -> BoardMove -> Maybe ( Land.Emoji, AnimationState )
-attackAnimations layout move oldMove =
+attackAnimations : PathCache -> BoardMove -> BoardMove -> Maybe ( Land.Emoji, AnimationState )
+attackAnimations pathCache move oldMove =
     case move of
         FromTo from to ->
-            Just <| ( from.emoji, translateStack False layout from to )
+            Just <| ( from.emoji, translateStack False pathCache from to )
 
         Idle ->
             case oldMove of
                 FromTo from to ->
-                    Just <| ( from.emoji, translateStack True layout from to )
+                    Just <| ( from.emoji, translateStack True pathCache from to )
 
                 _ ->
                     Nothing
@@ -201,18 +195,16 @@ attackAnimations layout move oldMove =
             Nothing
 
 
-translateStack : Bool -> Land.MapSize -> Land.Land -> Land.Land -> AnimationState
-translateStack reverse layout from to =
+translateStack : Bool -> PathCache -> Land.Land -> Land.Land -> AnimationState
+translateStack reverse pathCache from to =
     let
         ( fx, fy ) =
-            Land.landCenter
-                layout
-                from.cells
+            Board.PathCache.center pathCache from.emoji
+                |> Maybe.withDefault ( 0, 0 )
 
         ( tx, ty ) =
-            Land.landCenter
-                layout
-                to.cells
+            Board.PathCache.center pathCache to.emoji
+                |> Maybe.withDefault ( 0, 0 )
 
         x =
             (tx - fx) * 0.75
