@@ -407,12 +407,19 @@ toRollLog model roll =
                 )
                 defenderLand
 
+        success =
+            List.sum roll.from.roll > List.sum roll.to.roll
+
         steal =
-            Helpers.tupleCombine ( defender, defenderLand )
-                |> Maybe.andThen
-                    (\( player, land ) ->
-                        Maybe.andThen (\_ -> Just <| land.points + player.reserveDice) land.capital
-                    )
+            if success then
+                Helpers.tupleCombine ( defender, defenderLand )
+                    |> Maybe.andThen
+                        (\( player, land ) ->
+                            Maybe.andThen (\_ -> Just <| land.points + player.reserveDice) land.capital
+                        )
+
+            else
+                Nothing
     in
     { attacker = Maybe.withDefault errorPlayer attacker |> .name
     , attackerColor = Maybe.withDefault errorPlayer attacker |> .color
@@ -433,7 +440,7 @@ toRollLog model roll =
     , defendRoll = List.sum roll.to.roll
     , defendDiesEmojis = toDiesEmojis roll.to.roll
     , defendDiceCount = List.length roll.to.roll
-    , success = List.sum roll.from.roll > List.sum roll.to.roll
+    , success = success
     , steal = steal
     }
 
