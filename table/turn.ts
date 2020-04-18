@@ -91,12 +91,7 @@ const turn = (
     // props.turnIndex =
     // props.turnIndex + 1 < players_.length ? props.turnIndex + 1 : 0;
 
-    const { newCapitals, newLands } = giveCapitals(
-      table,
-      hasReserveDice,
-      players_,
-      lands_
-    );
+    const { newCapitals, newLands } = giveCapitals(table, players_, lands_);
     const result = {
       table: props,
       lands: newLands,
@@ -125,12 +120,7 @@ const turn = (
 
   if (!newPlayer.out) {
     // normal turn over
-    const { newCapitals, newLands } = giveCapitals(
-      table,
-      hasReserveDice,
-      players,
-      lands
-    );
+    const { newCapitals, newLands } = giveCapitals(table, players, lands);
     publish.turn(
       table,
       props.turnIndex,
@@ -160,12 +150,7 @@ const turn = (
     );
     props.turnIndex = turnIndex;
 
-    const { newCapitals, newLands } = giveCapitals(
-      table,
-      hasReserveDice,
-      players_,
-      lands_
-    );
+    const { newCapitals, newLands } = giveCapitals(table, players_, lands_);
     const result = {
       table: props,
       lands: newLands,
@@ -192,12 +177,7 @@ const turn = (
     }
   }
 
-  const { newCapitals, newLands } = giveCapitals(
-    table,
-    hasReserveDice,
-    players,
-    lands
-  );
+  const { newCapitals, newLands } = giveCapitals(table, players, lands);
   publish.turn(
     table,
     props.turnIndex,
@@ -264,7 +244,6 @@ const giveDice = (
 
 const giveCapitals = (
   table: Table,
-  hasReserveDice: boolean,
   players: readonly Player[],
   lands: readonly Land[]
 ): { newLands: readonly Land[]; newCapitals: readonly Land[] } => {
@@ -275,11 +254,7 @@ const giveCapitals = (
   // land => land.capital
   // )}`
   // );
-  if (
-    table.params.startingCapitals ||
-    hasReserveDice ||
-    lands.some(land => land.capital)
-  ) {
+  if (table.params.startingCapitals) {
     return players.reduce(
       (result, { color }) => {
         const playerLands = result.newLands.filter(R.propEq("color", color));

@@ -54,7 +54,7 @@ module.exports = {
       params: {
         noFlagRounds: 1,
         botLess: true,
-        startingCapitals: true,
+        startingCapitals: false,
         readySlots: 2,
       },
     },
