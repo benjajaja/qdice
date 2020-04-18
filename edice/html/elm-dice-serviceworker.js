@@ -95,7 +95,7 @@ function preCache() {
       console.error("preCache", err);
     });
 }
-
+var hostname = new URL(self.registration.scope).hostname;
 self.addEventListener("fetch", function(event) {
   var url = new URL(event.request.url);
   var path = url.pathname;
@@ -105,6 +105,7 @@ self.addEventListener("fetch", function(event) {
      client-side, by handling failed POST,PUT,PATCH,etc. requests.
   */
   if (
+    hostname === "localhost" ||
     destination === "" ||
     path.indexOf("/api") === 0 ||
     /elm-dice\..*\.{css|js}/.test(path) ||
