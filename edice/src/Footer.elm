@@ -31,43 +31,18 @@ footer model =
 links1 : User -> List (Html Msg)
 links1 user =
     [ link HomeRoute "Play!" "casino"
-    , case user of
-        Anonymous ->
-            span [ onClick <| ShowLogin LoginShow, class "edFooter--box__link" ] [ i [ class "material-icons" ] [ text "account_circle" ], text "Login" ]
-
-        Logged _ ->
-            link MyProfileRoute "Account & Settings" "account_circle"
-    , link LeaderBoardRoute "Leaderboard" "list"
     ]
 
 
 links2 : User -> List (Html Msg)
 links2 user =
     [ link (StaticPageRoute Help) "Gameplay & Rules" "help"
-    , link (StaticPageRoute About) "About qdice" "info"
-    , link ChangelogRoute "Changelog" "call_merge"
     ]
 
 
 links3 : User -> List (Html Msg)
 links3 user =
-    [ a [ href "https://www.reddit.com/r/Qdice/", class "edFooter--box__link" ]
-        [ i [ class "material-icons" ] [ text "group_work" ]
-        , text "Reddit"
-        ]
-
-    --, a [ href "https://t.me/joinchat/DGkiGhEYyjf8bauoWkAGNA", class "edFooter--box__link" ]
-    --[ i [ class "material-icons" ] [ text "chat" ]
-    --, text "Telegram group"
-    --]
-    , a [ href "https://twitter.com/qdicewtf", class "edFooter--box__link" ]
-        [ i [ class "material-icons" ] [ text "receipt" ]
-        , text "Twitter"
-        ]
-    , a [ href "https://discord.gg/E2m3Gra", class "edFooter--box__link" ]
-        [ i [ class "material-icons" ] [ text "headset_mic" ]
-        , text "Discord"
-        ]
+    [ link (StaticPageRoute About) "About qdice" "info"
     ]
 
 

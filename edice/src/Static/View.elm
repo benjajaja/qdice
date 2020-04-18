@@ -16,9 +16,15 @@ view model page =
             Markdown.toHtml [] """
 ## About Qdice
 
-A dice game, written in [Elm](https://elm-lang.org). A simplified Risk, inspired by [dicewars](http://www.gamedesign.jp/games/dicewars/) and its successor.
+A dice game, written in [Elm](https://elm-lang.org). A simplified Risk, inspired by [dicewars](http://www.gamedesign.jp/games/dicewars/) and its successors.
 
 Created by <ste3ls@gmail.com>.
+
+## Forums
+
+  * [Qdice reddit](https://www.reddit.com/r/Qdice/) to post any questions or opinion
+  * [Discord](https://discord.gg/E2m3Gra) to chat with fellow players
+  * [@qdicewtf](https://twitter.com/qdicewtf) same as with reddit
 
 ## Development
 
@@ -26,7 +32,7 @@ Check the sticky **[Development post](https://www.reddit.com/r/Qdice/comments/ep
 
 There is also the **[changelog](/changelog)** with a complete list of all changes that go live.
 
-Qdice is Free Open Source Software! See repo here: [github.com/gipsy-king/qdice](https://github.com/gipsy-king/qdice).
+Qdice is **Free Open Source Software**! See repo here: [github.com/gipsy-king/qdice](https://github.com/gipsy-king/qdice).
 
 Before making a PR, I suggest to get in contact with me however you want, an issue in github is a good start.
 
