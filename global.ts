@@ -17,6 +17,8 @@ import logger from "./logger";
 import { death } from "./table/watchers";
 import AsyncLock = require("async-lock");
 
+const buildId = process.env.build_id ?? "dev";
+
 export const global = async (req, res, next) => {
   const tables = getStatuses();
   const top = await db.leaderBoardTop(10);
@@ -31,6 +33,7 @@ export const global = async (req, res, next) => {
       month: new Date().toLocaleString("en-us", { month: "long" }),
       top,
     },
+    version: buildId,
   });
 };
 
