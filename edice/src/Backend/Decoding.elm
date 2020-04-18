@@ -551,6 +551,9 @@ kindDecoder =
                 "games" ->
                     Maybe.map (\i -> GameComments i "") (String.toInt kindId)
 
+                "tables" ->
+                    Just <| TableComments kindId
+
                 _ ->
                     Nothing
         )

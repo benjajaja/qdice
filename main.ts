@@ -255,8 +255,8 @@ export const server = async () => {
 
   server.get(`${root}/comments/:kind/:id`, async (req, res, next) => {
     if (
-      ["user", "games"].indexOf(req.params.kind) === -1 ||
-      isNaN(parseInt(req.params.id))
+      ["user", "games", "tables"].indexOf(req.params.kind) === -1 ||
+      R.empty(req.params.id)
     ) {
       res.sendRaw(401, "bad kind/id");
       return next();

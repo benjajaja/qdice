@@ -5,6 +5,7 @@ import Awards
 import Backend.Types exposing (ConnectionStatus(..))
 import Board
 import Board.Colors
+import Comments
 import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
@@ -66,6 +67,13 @@ view model =
                         playerBox model
                             ++ leaderboardBox model
                     , Game.Footer.footer model
+                    , div [ class "cartonCard cartonCard--padded" ] <|
+                        case model.game.table of
+                            Just table ->
+                                [ Comments.view model.zone model.user model.comments <| Comments.tableComments table ]
+
+                            Nothing ->
+                                []
                     ]
 
                 else

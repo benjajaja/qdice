@@ -1,4 +1,4 @@
-module Comments exposing (gameComments, got, init, input, post, posted, profileComments, routeEnter, view)
+module Comments exposing (gameComments, got, init, input, post, posted, profileComments, routeEnter, tableComments, view)
 
 import Backend.HttpCommands
 import DateFormat
@@ -47,6 +47,9 @@ kindName kind =
         GameComments id table ->
             "game #" ++ String.fromInt id ++ " of " ++ table
 
+        TableComments table ->
+            "table " ++ table
+
 
 profileComments : Profile -> CommentKind
 profileComments profile =
@@ -56,6 +59,11 @@ profileComments profile =
 gameComments : Table -> Int -> CommentKind
 gameComments table gameId =
     GameComments gameId table
+
+
+tableComments : Table -> CommentKind
+tableComments table =
+    TableComments table
 
 
 routeEnter : Route -> Model -> Cmd Msg -> ( Model, Cmd Msg )
@@ -71,6 +79,9 @@ routeEnter route model cmd =
 
                 _ ->
                     ( model, cmd )
+
+        GameRoute table ->
+            fetchWith model cmd <| TableComments table
 
         _ ->
             ( model, cmd )
@@ -290,7 +301,12 @@ singleComment zone comment =
                 ]
             , span
                 [ class "edComments__comment__header__timestamp" ]
-                [ text <| DateFormat.format "dddd, dd MMMM yyyy HH:mm:ss" zone <| Time.millisToPosix comment.timestamp ]
+                [ text <|
+                    (DateFormat.format "dddd, dd MMMM yyyy HH:mm:ss" zone <| Time.millisToPosix comment.timestamp)
+                        ++ " (#"
+                        ++ String.fromInt comment.id
+                        ++ ")"
+                ]
             ]
         , blockquote [ class "edComments__comment__body" ] [ text <| comment.text ]
         ]

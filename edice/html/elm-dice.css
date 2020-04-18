@@ -1007,6 +1007,9 @@ button .material-icons, .edButton .material-icons {
             /* -5px -5px 10px #49ffff; */
   /* overflow: hidden; */
 }
+.cartonCard--padded {
+  padding: 8px;
+}
 
 .edPlayerPicture {
   flex-shrink: 0;

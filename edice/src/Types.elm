@@ -327,6 +327,7 @@ type Changelog
 type CommentKind
     = UserWall String String
     | GameComments Int String
+    | TableComments String
 
 
 commentKindKey : CommentKind -> String
@@ -337,6 +338,9 @@ commentKindKey kind =
 
         GameComments id _ ->
             "games/" ++ String.fromInt id
+
+        TableComments table ->
+            "tables/" ++ table
 
 
 type alias Comment =
