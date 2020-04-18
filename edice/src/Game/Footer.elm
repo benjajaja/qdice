@@ -29,6 +29,7 @@ tableOfTables model =
                 , th [ align "right" ] [ text "Minimum" ]
                 , th [ align "right" ] [ text "Watching" ]
                 , th [ align "right" ] [ text "Bots" ]
+                , th [ align "right" ] [ text "Capitals" ]
                 , th [ align "right" ] [ text "Size" ]
 
                 -- , th [ align "right" ] [ text "Stacks" ]
@@ -63,6 +64,14 @@ tableOfTables model =
 
                                 else
                                     "Yes"
+                            ]
+                        , td [ align "right" ]
+                            [ text <|
+                                if table.params.startingCapitals then
+                                    "Yes"
+
+                                else
+                                    "No"
                             ]
                         , td [ align "right" ] [ text <| String.fromInt table.landCount ]
 
