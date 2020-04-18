@@ -41,7 +41,7 @@ type Msg
     | RuntimeError String String
       -- oauth
     | Nop
-    | GetGlobalSettings (Result Error ( GlobalSettings, List TableInfo, ( String, List Profile ) ))
+    | GetGlobalSettings (Result Error GlobalQdice)
     | Authorize AuthState
     | GetToken (Maybe Table) (Result Error String)
     | GetUpdateProfile (Result String String)
@@ -223,6 +223,14 @@ type alias UserId =
 
 type alias Username =
     String
+
+
+type alias GlobalQdice =
+    { settings : GlobalSettings
+    , tables : List TableInfo
+    , leaderBoard : ( String, List Profile )
+    , version : String
+    }
 
 
 type alias GlobalSettings =

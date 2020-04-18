@@ -190,8 +190,11 @@ update msg model =
                     else
                         ( model, toastError "Could not load global configuration!" <| httpErrorToString err )
 
-                Ok ( settings, tables, ( month, top ) ) ->
+                Ok { settings, tables, leaderBoard, version } ->
                     let
+                        ( month, top ) =
+                            leaderBoard
+
                         model_ =
                             { model
                                 | settings = settings
@@ -204,21 +207,47 @@ update msg model =
                                     , page = model.leaderBoard.page
                                     }
                             }
-                    in
-                    case model.route of
-                        GameRoute table ->
-                            case model.backend.status of
-                                Online ->
-                                    Game.State.changeTable model_ table
+
+                        ( modelWithTable, cmd ) =
+                            case model.route of
+                                GameRoute table ->
+                                    case model.backend.status of
+                                        Online ->
+                                            Game.State.changeTable model_ table
+
+                                        _ ->
+                                            Game.State.changeTable model_ table
+
+                                HomeRoute ->
+                                    ( model_, Routing.goToBestTable model_ )
 
                                 _ ->
-                                    Game.State.changeTable model_ table
+                                    ( model_, Cmd.none )
+                    in
+                    ( modelWithTable
+                    , if
+                        version
+                            /= ""
+                            && version
+                            /= "dev"
+                            && model.backend.version
+                            /= ""
+                            && model.backend.version
+                            /= "dev"
+                            && model.backend.version
+                            /= version
+                      then
+                        Cmd.batch
+                            [ cmd
+                            , toastError "Please refresh for latest version" <|
+                                model.backend.version
+                                    ++ "/"
+                                    ++ version
+                            ]
 
-                        HomeRoute ->
-                            ( model_, Routing.goToBestTable model_ )
-
-                        _ ->
-                            ( model_, Cmd.none )
+                      else
+                        cmd
+                    )
 
         GetToken joinTable res ->
             case res of

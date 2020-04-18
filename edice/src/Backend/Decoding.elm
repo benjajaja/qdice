@@ -10,7 +10,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, li
 import Json.Decode.Pipeline exposing (required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..))
+import Types exposing (AuthNetwork(..), AuthState, GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..))
 
 
 stringDecoder : Decoder String
@@ -292,12 +292,13 @@ receiveDecoder =
 -- (field "count" int)
 
 
-globalDecoder : Decoder ( Types.GlobalSettings, List Game.Types.TableInfo, ( String, List Profile ) )
+globalDecoder : Decoder GlobalQdice
 globalDecoder =
-    map3 (\a b c -> ( a, b, c ))
-        (field "settings" globalSettingsDecoder)
-        (field "tables" (list tableInfoDecoder))
-        (field "leaderboard" leaderBoardTopDecoder)
+    succeed GlobalQdice
+        |> required "settings" globalSettingsDecoder
+        |> required "tables" (list tableInfoDecoder)
+        |> required "leaderboard" leaderBoardTopDecoder
+        |> required "version" string
 
 
 globalSettingsDecoder : Decoder Types.GlobalSettings
