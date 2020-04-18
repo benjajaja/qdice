@@ -5,6 +5,7 @@ import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
 import Html.Events exposing (onClick)
+import Icon
 import Routing exposing (routeToString)
 import Types exposing (LoginDialogStatus(..), Model, Msg(..), Route(..), StaticPage(..), User(..))
 
@@ -103,6 +104,11 @@ statusMessage version status =
                     "network_wifi"
     in
     div []
-        [ span [] [ text <| "Version: " ++ version ++ ", Status: " ]
-        , span [ dataTestId "connection-status" ] [ text message ]
+        [ span []
+            [ text <| "Version: "
+            , a [ href <| "https://github.com/gipsy-king/qdice/commit/" ++ version ]
+                [ text version ]
+            , text <| ", Status: "
+            ]
+        , span [ dataTestId "connection-status" ] [ text <| message ++ " ", Icon.iconSized 8 icon ]
         ]
