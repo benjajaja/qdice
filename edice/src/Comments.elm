@@ -1,4 +1,4 @@
-module Comments exposing (got, init, input, post, posted, profileComments, routeEnter, view)
+module Comments exposing (gameComments, got, init, input, post, posted, profileComments, routeEnter, view)
 
 import Backend.HttpCommands
 import DateFormat
@@ -8,8 +8,9 @@ import Html exposing (Html, a, blockquote, button, div, form, span, text, textar
 import Html.Attributes exposing (class, disabled, href, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Routing.String exposing (routeToString)
+import Tables exposing (Table)
 import Time exposing (Zone)
-import Types exposing (Comment, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, Model, Msg(..), Profile, Route(..), User(..))
+import Types exposing (Comment, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, GamesSubRoute(..), Model, Msg(..), Profile, Route(..), User(..))
 
 
 init : CommentsModel
@@ -43,10 +44,18 @@ kindName kind =
         UserWall _ name ->
             "player " ++ name
 
+        GameComments id table ->
+            "game #" ++ String.fromInt id ++ " of " ++ table
+
 
 profileComments : Profile -> CommentKind
 profileComments profile =
     UserWall profile.id profile.name
+
+
+gameComments : Table -> Int -> CommentKind
+gameComments table gameId =
+    GameComments gameId table
 
 
 routeEnter : Route -> Model -> Cmd Msg -> ( Model, Cmd Msg )
@@ -54,6 +63,14 @@ routeEnter route model cmd =
     case route of
         ProfileRoute id name ->
             fetchWith model cmd <| UserWall id name
+
+        GamesRoute sub ->
+            case sub of
+                GameId table id ->
+                    fetchWith model cmd <| GameComments id table
+
+                _ ->
+                    ( model, cmd )
 
         _ ->
             ( model, cmd )

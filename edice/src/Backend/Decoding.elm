@@ -548,6 +548,9 @@ kindDecoder =
                 "user" ->
                     Just <| UserWall kindId ""
 
+                "games" ->
+                    Maybe.map (\i -> GameComments i "") (String.toInt kindId)
+
                 _ ->
                     Nothing
         )

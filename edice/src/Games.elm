@@ -1,6 +1,7 @@
 module Games exposing (..)
 
 import Backend.HttpCommands
+import Comments
 import DateFormat
 import Dict
 import Games.Types exposing (Game, GameEvent(..))
@@ -61,7 +62,7 @@ update model msg =
 
 view : Model -> GamesSubRoute -> Html Msg
 view model sub =
-    div []
+    div [] <|
         [ h3 []
             [ text <|
                 case sub of
@@ -107,6 +108,16 @@ view model sub =
                 _ ->
                     items
         ]
+            ++ (case sub of
+                    AllGames ->
+                        []
+
+                    GamesOfTable table ->
+                        []
+
+                    GameId table id ->
+                        [ Comments.view model.zone model.user model.comments <| Comments.gameComments table id ]
+               )
 
 
 crumbs : GamesSubRoute -> List (Html Msg)
