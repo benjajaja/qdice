@@ -395,6 +395,24 @@ export const sigint = async () =>
     );
   });
 
+export const toast = async (message: string) =>
+  new Promise(resolve => {
+    client.publish(
+      "clients",
+      JSON.stringify({
+        type: "toast",
+        payload: message,
+      }),
+      undefined!,
+      err => {
+        if (err) {
+          console.log(err, "clients");
+        }
+        resolve();
+      }
+    );
+  });
+
 export const userMessage = async (clientId: string, message: string) =>
   new Promise(resolve => {
     client.publish(

@@ -53,6 +53,14 @@ decodeTopicMessage userTable topic message =
                         "sigint" ->
                             Ok <| AllClientsMsg <| SigInt
 
+                        "toast" ->
+                            case decodeString (field "payload" <| Dec.string) message of
+                                Ok toastMessage ->
+                                    Ok <| AllClientsMsg <| Toast toastMessage
+
+                                Err err ->
+                                    Err <| errorToString err
+
                         _ ->
                             Err <| "unknown global message type \"" ++ mtype ++ "\""
 

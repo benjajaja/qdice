@@ -728,6 +728,9 @@ update msg model =
                 Backend.Types.SigInt ->
                     ( model, toastMessage "Server is restarting..." <| Just 3000 )
 
+                Backend.Types.Toast message ->
+                    ( model, toastMessage message <| Just 10000 )
+
         TableMsg table tableMsg ->
             Game.State.updateTable model table tableMsg
 
