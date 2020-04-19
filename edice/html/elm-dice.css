@@ -772,6 +772,8 @@ button .material-icons, .edButton .material-icons {
 .edTables {
   margin-top: 20px;
   margin-bottom: 20px;
+  max-width: 100%;
+  overflow-y: auto;
 }
 
 .edBoxes {
@@ -1079,7 +1081,24 @@ button .material-icons, .edButton .material-icons {
 }
 .edComments__comment__header__timestamp {
   font-size: 0.8em;
+  margin-right: 6px;
+}
+.edComments__comment__header__reply {
+  font-size: 0.8em;
+  text-decoration: underline;
+  cursor: pointer;
 }
 .edComments__comment__body {
   margin-inline-start: 20px;
+  white-space: pre;
+}
+.edComments__form__cancelReply {
+  font-size: 0.8em;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.edComments__form__input {
+  width: 100%;
+  height: 100px;
+  max-width: 300px;
 }

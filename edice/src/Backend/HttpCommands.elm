@@ -328,8 +328,8 @@ comments model kind =
         }
 
 
-postComment : Model -> CommentKind -> String -> Cmd Msg
-postComment model kind text =
+postComment : Model -> CommentKind -> Maybe CommentKind -> String -> Cmd Msg
+postComment model kind replyKind text =
     Http.request
         { method = "POST"
         , url = model.baseUrl ++ "/comments/" ++ Types.commentKindKey kind
@@ -341,7 +341,7 @@ postComment model kind text =
                 Nothing ->
                     []
         , body = stringBody "text/plain" text
-        , expect = expectJson (Result.mapError httpErrorToString >> GetPostComment kind) commentDecoder
+        , expect = expectJson (Result.mapError httpErrorToString >> GetPostComment kind replyKind) commentDecoder
         , timeout = Nothing
         , tracker = Nothing
         }

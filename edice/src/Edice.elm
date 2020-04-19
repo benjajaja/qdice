@@ -872,11 +872,14 @@ update msg model =
         InputComment kind value ->
             Comments.input model kind value
 
-        PostComment kind text ->
-            Comments.post model kind text
+        ReplyComment kind to ->
+            Comments.reply model kind to
 
-        GetPostComment kind res ->
-            Comments.posted model kind res
+        PostComment kind parentKind text ->
+            Comments.post model kind parentKind text
+
+        GetPostComment kind parentKind res ->
+            Comments.posted model kind parentKind res
 
         Resized w h ->
             ( setPortrait model w h, Cmd.none )

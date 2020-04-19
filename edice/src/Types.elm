@@ -57,8 +57,9 @@ type Msg
     | GetChangelog (Result Error String)
     | GetComments CommentKind (Result String (List Comment))
     | InputComment CommentKind String
-    | PostComment CommentKind String
-    | GetPostComment CommentKind (Result String Comment)
+    | PostComment CommentKind (Maybe CommentKind) String
+    | GetPostComment CommentKind (Maybe CommentKind) (Result String Comment)
+    | ReplyComment CommentKind (Maybe ( Int, String ))
       -- game
     | BoardMsg Board.Msg
     | InputChat String
@@ -328,6 +329,7 @@ type CommentKind
     = UserWall String String
     | GameComments Int String
     | TableComments String
+    | ReplyComments Int String
 
 
 commentKindKey : CommentKind -> String
@@ -342,6 +344,9 @@ commentKindKey kind =
         TableComments table ->
             "tables/" ++ table
 
+        ReplyComments id _ ->
+            "comments/" ++ String.fromInt id
+
 
 type alias Comment =
     { id : Int
@@ -349,7 +354,12 @@ type alias Comment =
     , author : CommentAuthor
     , timestamp : Int
     , text : String
+    , replies : Replies
     }
+
+
+type Replies
+    = Replies (List Comment)
 
 
 type alias CommentAuthor =
@@ -370,6 +380,7 @@ type alias CommentModel =
     , postState :
         { value : String
         , status : CommentPostStatus
+        , kind : Maybe CommentKind
         }
     }
 

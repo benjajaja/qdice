@@ -736,13 +736,16 @@ export const comments = async (kind: string, kindId: string) => {
       users.id as author_id, users.name as author_name, users.picture as author_picture
     FROM comments
     LEFT JOIN users ON users.id = comments.author
-    WHERE kind = $1 AND kind_id = $2
+    WHERE (comments.kind = $1 AND comments.kind_id = $2)
+      OR (comments.kind = 'comments' AND comments.kind_id::int IN
+        (SELECT id FROM comments WHERE comments.kind = $1 AND comments.kind_id = $2)
+      )
     ORDER BY timestamp
     DESC LIMIT 100`,
     values: [kind, kindId],
   });
-  // logger.info("created game event", event.id, event.game_id, event.command);
-  return result.rows.map(camelize).map((row: any) => ({
+
+  const list = result.rows.map(camelize).map((row: any) => ({
     id: row.id,
     kind: [row.kind, row.kindId],
     body: row.body,
@@ -752,7 +755,23 @@ export const comments = async (kind: string, kindId: string) => {
       picture: row.authorPicture || EMPTY_PROFILE_PICTURE,
     },
     timestamp: ts(date(row.timestamp)),
+    replies: [],
   }));
+
+  const topComments = list.filter(comment => comment.kind[0] === kind);
+  return list
+    .filter(comment => comment.kind[0] === "comments")
+    .reduce((list, reply) => {
+      return list.map(top => {
+        if (top.id.toString() === reply.kind[1]) {
+          return {
+            ...top,
+            replies: R.sortBy(R.prop("timestamp"), [...top.replies, reply]),
+          };
+        }
+        return top;
+      });
+    }, topComments);
 };
 
 export const postComment = async (
@@ -790,5 +809,6 @@ export const postComment = async (
       picture: row.authorPicture || EMPTY_PROFILE_PICTURE,
     },
     timestamp: ts(date(row.timestamp)),
+    replies: [],
   }))[0];
 };

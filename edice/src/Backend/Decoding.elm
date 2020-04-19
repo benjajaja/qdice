@@ -6,11 +6,11 @@ import Game.Types exposing (Award, Player, PlayerGameStats, ReceiveDice, TablePa
 import Games.Types exposing (..)
 import Helpers exposing (triple)
 import Iso8601
-import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, list, map, map2, map3, map4, maybe, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, lazy, list, map, map2, map3, map4, maybe, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..))
+import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..), Replies(..))
 
 
 stringDecoder : Decoder String
@@ -538,6 +538,7 @@ commentDecoder =
         |> required "author" authorDecoder
         |> required "timestamp" int
         |> required "body" string
+        |> required "replies" (map Replies (list (lazy (\_ -> commentDecoder))))
 
 
 kindDecoder : Decoder CommentKind
@@ -553,6 +554,9 @@ kindDecoder =
 
                 "tables" ->
                     Just <| TableComments kindId
+
+                "comments" ->
+                    Maybe.map (\i -> ReplyComments i "") (String.toInt kindId)
 
                 _ ->
                     Nothing

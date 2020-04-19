@@ -1,16 +1,16 @@
-module Comments exposing (gameComments, got, init, input, post, posted, profileComments, routeEnter, tableComments, view)
+module Comments exposing (gameComments, got, init, input, post, posted, profileComments, reply, routeEnter, tableComments, view)
 
 import Backend.HttpCommands
 import DateFormat
 import Dict
 import Game.PlayerCard exposing (playerPicture)
 import Html exposing (Html, a, blockquote, button, div, form, span, text, textarea)
-import Html.Attributes exposing (class, disabled, href, type_, value)
+import Html.Attributes exposing (class, disabled, href, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Routing.String exposing (routeToString)
 import Tables exposing (Table)
 import Time exposing (Zone)
-import Types exposing (Comment, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, GamesSubRoute(..), Model, Msg(..), Profile, Route(..), User(..))
+import Types exposing (Comment, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, GamesSubRoute(..), Model, Msg(..), Profile, Replies(..), Route(..), User(..))
 
 
 init : CommentsModel
@@ -31,6 +31,7 @@ updateComments model kind fn =
                     , postState =
                         { value = ""
                         , status = CommentPostIdle
+                        , kind = Nothing
                         }
                     }
                 |> fn
@@ -49,6 +50,9 @@ kindName kind =
 
         TableComments table ->
             "table " ++ table
+
+        ReplyComments id name ->
+            "comment #" ++ String.fromInt id ++ " by " ++ name
 
 
 profileComments : Profile -> CommentKind
@@ -121,10 +125,10 @@ got model kind res =
     )
 
 
-posted : Model -> CommentKind -> Result String Comment -> ( Model, Cmd Msg )
-posted model kind res =
+posted : Model -> CommentKind -> Maybe CommentKind -> Result String Comment -> ( Model, Cmd Msg )
+posted model kind parentKind res =
     ( updateComments model
-        kind
+        (Maybe.withDefault kind parentKind)
         (\comments ->
             let
                 postState =
@@ -139,6 +143,13 @@ posted model kind res =
 
                                 Err err ->
                                     CommentPostError err
+                        , kind =
+                            case res of
+                                Ok _ ->
+                                    Nothing
+
+                                Err _ ->
+                                    postState.kind
                     }
 
                 list =
@@ -146,7 +157,7 @@ posted model kind res =
                         Ok comment ->
                             case comments.list of
                                 CommentListFetched list_ ->
-                                    CommentListFetched <| comment :: list_
+                                    appendComment list_ comment
 
                                 _ ->
                                     comments.list
@@ -161,6 +172,30 @@ posted model kind res =
         )
     , Cmd.none
     )
+
+
+appendComment : List Comment -> Comment -> CommentList
+appendComment list comment =
+    CommentListFetched <|
+        case comment.kind of
+            ReplyComments id _ ->
+                List.map
+                    (\p ->
+                        if p.id == id then
+                            { p
+                                | replies =
+                                    case p.replies of
+                                        Replies l ->
+                                            Replies <| l ++ [ comment ]
+                            }
+
+                        else
+                            p
+                    )
+                    list
+
+            _ ->
+                comment :: list
 
 
 input : Model -> CommentKind -> String -> ( Model, Cmd Msg )
@@ -181,8 +216,8 @@ input model kind value =
     )
 
 
-post : Model -> CommentKind -> String -> ( Model, Cmd Msg )
-post model kind text =
+post : Model -> CommentKind -> Maybe CommentKind -> String -> ( Model, Cmd Msg )
+post model kind parentKind text =
     ( updateComments model
         kind
         (\comments ->
@@ -195,7 +230,33 @@ post model kind text =
             in
             { comments | postState = postState_ }
         )
-    , Backend.HttpCommands.postComment model.backend kind text
+    , Backend.HttpCommands.postComment model.backend kind parentKind text
+    )
+
+
+reply : Model -> CommentKind -> Maybe ( Int, String ) -> ( Model, Cmd Msg )
+reply model kind to =
+    ( updateComments model
+        kind
+        (\comments ->
+            let
+                postState =
+                    comments.postState
+
+                postState_ =
+                    { postState
+                        | kind =
+                            case to of
+                                Just ( id, name ) ->
+                                    Just <| ReplyComments id name
+
+                                Nothing ->
+                                    Nothing
+                    }
+            in
+            { comments | postState = postState_ }
+        )
+    , Cmd.none
     )
 
 
@@ -213,7 +274,10 @@ view zone user comments kind =
         postState =
             myComments
                 |> Maybe.map .postState
-                |> Maybe.withDefault { value = "", status = CommentPostIdle }
+                |> Maybe.withDefault { value = "", status = CommentPostIdle, kind = Nothing }
+
+        replyKind =
+            postState.kind |> Maybe.withDefault kind
     in
     div [ class "edComments" ] <|
         [ div [ class "edComments__header" ] [ text <| "Comments of " ++ kindName kind ]
@@ -231,7 +295,7 @@ view zone user comments kind =
                             [ text "No comments yet" ]
 
                         _ ->
-                            List.map (singleComment zone) list_
+                            List.map (singleComment zone 0) list_
         ]
             ++ (case user of
                     Logged _ ->
@@ -241,43 +305,67 @@ view zone user comments kind =
 
                             _ ->
                                 [ div []
-                                    [ form []
-                                        [ div []
-                                            [ textarea
-                                                [ value postState.value, onInput <| InputComment kind ]
-                                                []
-                                            ]
-                                        , div []
-                                            ([ button
-                                                ([ type_ "button"
-                                                 , onClick <|
-                                                    PostComment kind postState.value
-                                                 ]
-                                                    ++ (case postState.status of
+                                    [ form [] <|
+                                        (case replyKind of
+                                            ReplyComments _ _ ->
+                                                [ div []
+                                                    [ text <| "Replying to " ++ kindName replyKind ++ " "
+                                                    , span
+                                                        [ class "edComments__form__cancelReply", onClick <| ReplyComment kind Nothing ]
+                                                        [ text "(cancel)" ]
+                                                    ]
+                                                ]
+
+                                            _ ->
+                                                [ div [] [ text <| "Commenting on " ++ kindName replyKind ] ]
+                                        )
+                                            ++ [ div []
+                                                    [ textarea
+                                                        [ value postState.value
+                                                        , onInput <| InputComment kind
+                                                        , class "edComments__form__input"
+                                                        ]
+                                                        []
+                                                    ]
+                                               , div []
+                                                    ([ button
+                                                        ([ type_ "button"
+                                                         , onClick <|
+                                                            PostComment replyKind
+                                                                (case postState.kind of
+                                                                    Just _ ->
+                                                                        Just kind
+
+                                                                    Nothing ->
+                                                                        Nothing
+                                                                )
+                                                                postState.value
+                                                         ]
+                                                            ++ (case postState.status of
+                                                                    CommentPosting ->
+                                                                        [ disabled True ]
+
+                                                                    _ ->
+                                                                        []
+                                                               )
+                                                        )
+                                                        (case postState.status of
                                                             CommentPosting ->
-                                                                [ disabled True ]
+                                                                [ text "Posting..." ]
 
                                                             _ ->
-                                                                []
-                                                       )
-                                                )
-                                                (case postState.status of
-                                                    CommentPosting ->
-                                                        [ text "Posting..." ]
+                                                                [ text "Post comment" ]
+                                                        )
+                                                     ]
+                                                        ++ (case postState.status of
+                                                                CommentPostError err ->
+                                                                    [ text <| "Error: " ++ err ]
 
-                                                    _ ->
-                                                        [ text "Post comment" ]
-                                                )
-                                             ]
-                                                ++ (case postState.status of
-                                                        CommentPostError err ->
-                                                            [ text <| "Error: " ++ err ]
-
-                                                        _ ->
-                                                            []
-                                                   )
-                                            )
-                                        ]
+                                                                _ ->
+                                                                    []
+                                                           )
+                                                    )
+                                               ]
                                     ]
                                 ]
 
@@ -286,10 +374,10 @@ view zone user comments kind =
                )
 
 
-singleComment : Zone -> Comment -> Html Msg
-singleComment zone comment =
-    div [ class "edComments__comment" ]
-        [ div [ class "edComments__comment__header" ]
+singleComment : Zone -> Int -> Comment -> Html Msg
+singleComment zone depth comment =
+    div [ class "edComments__comment", style "margin-left" <| String.fromInt (depth * 30) ++ "px" ] <|
+        [ div [ class "edComments__comment__header" ] <|
             [ a
                 [ href <|
                     routeToString False <|
@@ -308,5 +396,21 @@ singleComment zone comment =
                         ++ ")"
                 ]
             ]
+                ++ (case depth of
+                        0 ->
+                            [ span
+                                [ class "edComments__comment__header__reply"
+                                , onClick <| ReplyComment comment.kind <| Just ( comment.id, comment.author.name )
+                                ]
+                                [ text "Reply" ]
+                            ]
+
+                        _ ->
+                            []
+                   )
         , blockquote [ class "edComments__comment__body" ] [ text <| comment.text ]
         ]
+            ++ (case comment.replies of
+                    Replies list ->
+                        List.map (singleComment zone (depth + 1)) list
+               )
