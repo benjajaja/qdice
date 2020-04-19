@@ -28,9 +28,6 @@ routeToString useHash route =
                         About ->
                             "static/about"
 
-                ChangelogRoute ->
-                    "changelog"
-
                 NotFoundRoute ->
                     "404"
 

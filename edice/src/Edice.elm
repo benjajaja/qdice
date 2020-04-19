@@ -32,7 +32,6 @@ import MyProfile.Types
 import Profile
 import Routing exposing (navigateTo, parseLocation)
 import Snackbar exposing (toastError, toastMessage)
-import Static.Changelog
 import Static.View
 import Tables exposing (Map(..), Table)
 import Task
@@ -129,7 +128,6 @@ init flags location key =
                 , all = []
                 , fetching = Nothing
                 }
-            , changelog = ChangelogError "Not visited"
             , fullscreen = False
             , comments = Comments.init
             }
@@ -858,14 +856,6 @@ update msg model =
                         )
                     )
 
-        GetChangelog res ->
-            case res of
-                Ok changelog ->
-                    ( { model | changelog = ChangelogFetched changelog }, Cmd.none )
-
-                Err err ->
-                    ( { model | changelog = ChangelogError <| httpErrorToString err }, Cmd.none )
-
         GetComments kind res ->
             Comments.got model kind res
 
@@ -926,11 +916,6 @@ mainView model =
         StaticPageRoute page ->
             viewWrapper
                 [ Static.View.view model page
-                ]
-
-        ChangelogRoute ->
-            viewWrapper
-                [ Static.Changelog.view model
                 ]
 
         NotFoundRoute ->

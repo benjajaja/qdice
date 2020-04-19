@@ -309,14 +309,6 @@ games model sub =
         }
 
 
-changelog : Model -> Cmd Msg
-changelog model =
-    Http.get
-        { url = model.baseUrl ++ "/changelog"
-        , expect = expectString GetChangelog
-        }
-
-
 comments : Model -> CommentKind -> Cmd Msg
 comments model kind =
     Http.get
