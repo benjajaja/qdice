@@ -1090,7 +1090,7 @@ button .material-icons, .edButton .material-icons {
 }
 .edComments__comment__body {
   margin-inline-start: 20px;
-  white-space: pre;
+  white-space: pre-wrap;
 }
 .edComments__form__cancelReply {
   font-size: 0.8em;
