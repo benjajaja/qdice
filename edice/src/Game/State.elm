@@ -12,17 +12,23 @@ import Game.Types exposing (..)
 import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
 import Land
 import Maps exposing (load)
-import Snackbar exposing (toastMessage)
+import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (Map(..), Table)
 import Task
 import Time
 import Types exposing (Msg(..), SessionPreferences, User(..))
 
 
+type MapLoadError
+    = NoTableNoMapError
+    | BadTableError
+    | MapLoadError String
+
+
 init : Maybe Table -> Maybe Map -> ( Game.Types.Model, Cmd Msg )
 init table tableMap_ =
     let
-        map : Result String Land.Map
+        map : Result MapLoadError Land.Map
         map =
             case tableMap_ |> Result.fromMaybe "no current table-map" |> Result.andThen Maps.load of
                 Ok landMap ->
@@ -33,13 +39,13 @@ init table tableMap_ =
                         Just t ->
                             case mapFromTable t of
                                 Ok m ->
-                                    Maps.load m
+                                    Maps.load m |> Result.mapError MapLoadError
 
                                 Err err2 ->
-                                    Err err2
+                                    Err BadTableError
 
                         Nothing ->
-                            Err "no table no map"
+                            Err NoTableNoMapError
 
         board =
             Board.init <| Result.withDefault Maps.emptyMap map
@@ -90,7 +96,15 @@ init table tableMap_ =
             Cmd.none
 
         Err err ->
-            consoleDebug err
+            case err of
+                MapLoadError str ->
+                    consoleDebug <| "Map loading error: " ++ str
+
+                NoTableNoMapError ->
+                    Cmd.none
+
+                BadTableError ->
+                    toastError "This table does not seem to exist" "BadTableError"
     )
 
 
