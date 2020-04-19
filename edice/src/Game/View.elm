@@ -63,10 +63,10 @@ view model =
                         [ gameChat model
                         , gameLog model
                         ]
+                    , Game.Footer.footer model
                     , div [ class "edBoxes cartonCard" ] <|
                         playerBox model
                             ++ leaderboardBox model
-                    , Game.Footer.footer model
                     , div [ class "cartonCard cartonCard--padded" ] <|
                         case model.game.table of
                             Just table ->
