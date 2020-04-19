@@ -166,13 +166,14 @@ landDies diceAnimations diceVisible land ( x_, y_ ) =
         g
             [ class "edBoard--stack--inner" ]
         <|
-            (List.map
-                (Svg.Lazy.lazy4 landDie diceAnimations x_ y_)
-             <|
-                List.range
-                    0
-                    (land.points - 1)
-            )
+            [ Html.Lazy.lazy3 Board.Die.shadow land.points x_ y_ ]
+                ++ (List.map
+                        (Svg.Lazy.lazy4 landDie diceAnimations x_ y_)
+                    <|
+                        List.range
+                            0
+                            (land.points - 1)
+                   )
 
     else
         let

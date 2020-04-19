@@ -1,4 +1,4 @@
-module Board.Die exposing (die)
+module Board.Die exposing (die, shadow)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -123,4 +123,60 @@ die =
                 ]
                 []
             ]
+        , Svg.path
+            [ id "shadow"
+            , transform "scale(0.5)"
+            , stroke "black"
+            , fill "black"
+            , strokeWidth "2"
+            , strokeLinejoin "round"
+            , opacity "0.3"
+            , d "M 0,0 1,0 2,1 1,2 -0.4,2 -1,1 Z"
+            ]
+            []
+        , Svg.path
+            [ id "shadow-double"
+            , transform "scale(0.5)"
+            , stroke "black"
+            , fill "black"
+            , strokeWidth "2"
+            , strokeLinejoin "round"
+            , opacity "0.3"
+            , d "M -2,-2 1,0 2,1 1,2 -0.4,2 -3,0 -3,-1 Z"
+            ]
+            []
         ]
+
+
+shadow : Int -> Float -> Float -> Svg msg
+shadow points x_ y_ =
+    if points == 0 then
+        Svg.g [] []
+
+    else
+        let
+            x__ =
+                if points > 4 then
+                    x_ + 1.0
+
+                else
+                    x_ - 0.2
+
+            y__ =
+                if points > 4 then
+                    y_ + 0.5
+
+                else
+                    y_ - 0.3
+        in
+        Svg.use
+            [ x <| String.fromFloat x__
+            , y <| String.fromFloat y__
+            , xlinkHref <|
+                if points > 4 then
+                    "#shadow-double"
+
+                else
+                    "#shadow"
+            ]
+            []

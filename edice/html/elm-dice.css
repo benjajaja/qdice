@@ -308,6 +308,7 @@ button .material-icons, .edButton .material-icons {
 }
 .edBoard--stack {
   will-change: transform;
+  pointer-events: none;
 }
 .edBoard--stack__text {
   dominant-baseline: middle;
