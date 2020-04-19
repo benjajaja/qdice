@@ -27,6 +27,7 @@ view model ( maybePlayer, index ) =
         Just player ->
             playerContainer player
                 (index == model.game.turnIndex)
+                (model.game.player |> Maybe.map ((==) player) |> Maybe.withDefault False)
                 [ playerImageProgress model index player
                 , div [ class "edPlayerChip__info" ]
                     [ a
@@ -128,7 +129,8 @@ playerStats player =
         ++ Awards.awardsShortList 10 player.awards
 
 
-playerContainer player hasTurn =
+playerContainer : Player -> Bool -> Bool -> List (Html Msg) -> Html Msg
+playerContainer player hasTurn isUser =
     div
         [ class <|
             String.join " " <|
@@ -144,6 +146,11 @@ playerContainer player hasTurn =
                         []
                     , if hasTurn then
                         [ "edPlayerChip--turn" ]
+
+                      else
+                        []
+                    , if isUser then
+                        [ "edPlayerChip--me" ]
 
                       else
                         []
