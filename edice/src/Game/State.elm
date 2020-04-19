@@ -665,7 +665,21 @@ showRoll model roll =
 
         soundName =
             if List.sum roll.from.roll > List.sum roll.to.roll then
-                "rollSuccess"
+                case game.player of
+                    Just turnPlayer ->
+                        case fromLand of
+                            Just land ->
+                                if land.color == turnPlayer.color then
+                                    "rollSuccessPlayer"
+
+                                else
+                                    "rollSuccess"
+
+                            Nothing ->
+                                "rollSuccess"
+
+                    Nothing ->
+                        "rollSuccess"
 
             else
                 "rollDefeat"
@@ -696,7 +710,13 @@ clickLand model emoji =
                                                     gameCmd =
                                                         attack model.backend table from.emoji to.emoji
                                                 in
-                                                ( newMove, Cmd.batch [ playSound model.sessionPreferences "diceroll", gameCmd ] )
+                                                ( newMove
+                                                , Cmd.batch
+                                                    [ gameCmd
+
+                                                    -- , playSound model.sessionPreferences "diceroll"
+                                                    ]
+                                                )
 
                                             Nothing ->
                                                 -- no table!
@@ -869,7 +889,12 @@ updateTable model table msg =
                             game_ =
                                 { game | board = board, players = receive.players }
                         in
-                        ( { model_ | game = game_ }, cmd )
+                        ( { model_ | game = game_ }
+                        , Cmd.batch
+                            [ cmd
+                            , playSound model.sessionPreferences "giveDice"
+                            ]
+                        )
 
                     Backend.Types.Turn info ->
                         updateTurn model info

@@ -5,7 +5,9 @@ var keys = [
   "turn",
   "diceroll",
   "rollSuccess",
+  "rollSuccessPlayer",
   "rollDefeat",
+  "giveDice",
 ];
 
 var sounds = {};
