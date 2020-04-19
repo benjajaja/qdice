@@ -423,7 +423,7 @@ tableDetails model =
                         []
 
                     _ ->
-                        [ span [ class "edGameStatus__chip" ] <|
+                        [ div [ class "edGameStatus__chip" ] <|
                             [ text <|
                                 if model.game.playerSlots == 0 then
                                     "∅"
@@ -439,7 +439,17 @@ tableDetails model =
                             ]
                                 ++ (case model.game.gameStart of
                                         Nothing ->
-                                            [ text <| ", starts with " ++ String.fromInt model.game.startSlots ++ " players"
+                                            [ text <|
+                                                ", starts with "
+                                                    ++ String.fromInt model.game.startSlots
+                                                    ++ " players"
+                                                    ++ (case model.game.params.readySlots of
+                                                            Just n ->
+                                                                " or when " ++ String.fromInt n ++ " are ready"
+
+                                                            Nothing ->
+                                                                ""
+                                                       )
                                             ]
 
                                         Just timestamp ->
@@ -447,6 +457,13 @@ tableDetails model =
                                             , span [ class "edGameStatus__chip--strong" ] [ text <| "\u{00A0}" ++ String.fromInt ((round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) + 1) ++ "s" ]
                                             ]
                                    )
+                        , div [ class "edGameStatus__chip" ] <|
+                            case model.game.params.turnSeconds of
+                                Just n ->
+                                    [ text <| "Turn timeout is " ++ turnTimeDisplay n ]
+
+                                Nothing ->
+                                    [ text "\u{00A0}" ]
                         ]
 
             Nothing ->
@@ -536,3 +553,20 @@ leaderboardBox model =
             [ LeaderBoard.View.table 10 model.leaderBoard.top ]
         ]
     ]
+
+
+turnTimeDisplay : Int -> String
+turnTimeDisplay seconds =
+    let
+        ( value, unit ) =
+            Helpers.timeUnits seconds
+    in
+    String.fromInt value
+        ++ " "
+        ++ (case value of
+                1 ->
+                    unit
+
+                _ ->
+                    unit ++ "s"
+           )

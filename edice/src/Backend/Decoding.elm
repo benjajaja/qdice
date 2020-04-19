@@ -360,6 +360,8 @@ tableParamsDecoder =
         |> required "noFlagRounds" int
         |> required "botLess" bool
         |> required "startingCapitals" bool
+        |> required "readySlots" (nullable int)
+        |> required "turnSeconds" (nullable int)
 
 
 profileDecoder : Decoder Profile

@@ -79,6 +79,8 @@ init table tableMap_ =
             { noFlagRounds = 0
             , botLess = True
             , startingCapitals = False
+            , readySlots = Nothing
+            , turnSeconds = Nothing
             }
       , currentGame = Nothing
       , diceVisible = True

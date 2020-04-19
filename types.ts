@@ -52,6 +52,7 @@ export type TableParams = {
   botLess: boolean;
   startingCapitals: boolean;
   readySlots: number | null;
+  turnSeconds: number | null;
 };
 
 export type Land = {

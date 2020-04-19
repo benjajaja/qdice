@@ -111,7 +111,9 @@ const tick = async (tableTag: string, lock) => {
         // never process anything else during attack
       } else if (table.players[table.turnIndex].out) {
         command = { type: "TickTurnOut" };
-      } else if (havePassed(TURN_SECONDS, table.turnStart)) {
+      } else if (
+        havePassed(table.params.turnSeconds ?? TURN_SECONDS, table.turnStart)
+      ) {
         command = { type: "TickTurnOver", sitPlayerOut: !table.turnActivity };
       } else if (table.players.every(R.prop("out"))) {
         command = { type: "TickTurnAllOut" };

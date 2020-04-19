@@ -148,6 +148,8 @@ type alias TableParams =
     { noFlagRounds : Int
     , botLess : Bool
     , startingCapitals : Bool
+    , readySlots : Maybe Int
+    , turnSeconds : Maybe Int
     }
 
 

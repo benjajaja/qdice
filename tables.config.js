@@ -12,6 +12,8 @@ module.exports = {
         noFlagRounds: 5,
         botLess: false,
         startingCapitals: false,
+        readySlots: null,
+        turnSeconds: null,
       },
     },
     {
@@ -26,6 +28,8 @@ module.exports = {
         noFlagRounds: 2,
         botLess: false,
         startingCapitals: false,
+        readySlots: null,
+        turnSeconds: null,
       },
     },
     {
@@ -41,6 +45,7 @@ module.exports = {
         botLess: true,
         startingCapitals: true,
         readySlots: 2,
+        turnSeconds: 60,
       },
     },
     {
@@ -56,6 +61,7 @@ module.exports = {
         botLess: true,
         startingCapitals: false,
         readySlots: 2,
+        turnSeconds: null,
       },
     },
     // {
@@ -84,6 +90,7 @@ module.exports = {
         botLess: true,
         startingCapitals: true,
         readySlots: 2,
+        turnSeconds: null,
       },
     },
     {
@@ -98,6 +105,8 @@ module.exports = {
         noFlagRounds: 5,
         botLess: false,
         startingCapitals: true,
+        readySlots: null,
+        turnSeconds: null,
       },
     },
   ],

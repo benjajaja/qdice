@@ -577,9 +577,11 @@ button .material-icons, .edButton .material-icons {
   margin-bottom: 8px;
 }
 .edGameStatus, .edGameDetails {
+  font-size: 0.875rem;
+}
+.edGameStatus {
   display: flex;
   align-items: center;
-  font-size: 0.875rem;
 }
 .edGameStatus > div {
   padding-left: 10px;

@@ -260,7 +260,10 @@ turnProgress : Model -> Float
 turnProgress model =
     let
         turnTime =
-            toFloat model.settings.turnSeconds
+            Maybe.withDefault
+                model.settings.turnSeconds
+                model.game.params.turnSeconds
+                |> toFloat
 
         timestamp =
             (posixToMillis model.time |> toFloat) / 1000

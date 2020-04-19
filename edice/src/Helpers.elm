@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, triple, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, timeUnits, triple, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -134,3 +134,21 @@ resultCombine =
 tupleCombine : ( Maybe a, Maybe b ) -> Maybe ( a, b )
 tupleCombine ( ma, mb ) =
     Maybe.andThen (\a -> Maybe.andThen (Tuple.pair a >> Just) mb) ma
+
+
+timeUnits : Int -> ( Int, String )
+timeUnits seconds =
+    if seconds < 60 then
+        ( seconds, "second" )
+
+    else if seconds < 60 * 60 then
+        ( round <| toFloat seconds / 60, "minute" )
+
+    else if seconds < 60 * 60 * 60 then
+        ( round <| toFloat seconds / (60 * 60), "hour" )
+
+    else if seconds < 60 * 60 * 60 * 24 then
+        ( round <| toFloat seconds / (60 * 60 * 24), "day" )
+
+    else
+        ( seconds, "second" )
