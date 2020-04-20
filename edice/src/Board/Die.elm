@@ -157,14 +157,14 @@ shadow points x_ y_ =
         let
             x__ =
                 if points > 4 then
-                    x_ + 1.0
+                    x_ + 0.9
 
                 else
-                    x_ - 0.2
+                    x_ - 0.3
 
             y__ =
                 if points > 4 then
-                    y_ + 0.5
+                    y_ + 0.6
 
                 else
                     y_ - 0.3
