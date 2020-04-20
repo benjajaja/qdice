@@ -353,16 +353,13 @@ updateTableStatus model status =
 updateTurn : Types.Model -> TurnInfo -> ( Types.Model, Cmd Msg )
 updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } =
     let
-        game =
-            model.game
-
         player : Maybe Player
         player =
-            findUserPlayer model.user game.players
+            findUserPlayer model.user players
 
         newTurnPlayer : Maybe Player
         newTurnPlayer =
-            List.drop turnIndex game.players |> List.head
+            List.drop turnIndex players |> List.head
 
         hasTurn =
             case player of
@@ -370,7 +367,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                     False
 
                 Just turnPlayer ->
-                    indexOf turnPlayer game.players == turnIndex
+                    indexOf turnPlayer players == turnIndex
 
         hasGainedTurn =
             case player of
@@ -378,7 +375,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                     False
 
                 Just _ ->
-                    hasTurn && not game.hasTurn
+                    hasTurn && not model.game.hasTurn
 
         hasLostTurn =
             case player of
@@ -386,7 +383,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                     False
 
                 Just _ ->
-                    not hasTurn && game.hasTurn
+                    not hasTurn && model.game.hasTurn
 
         isOut =
             case player of
@@ -409,7 +406,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                     False
 
                 Just canFlagPlayer ->
-                    (roundCount > game.params.noFlagRounds)
+                    (roundCount > model.game.params.noFlagRounds)
                         && canFlagPlayer.gameStats.position
                         > 1
                         && (case canFlagPlayer.flag of
@@ -419,6 +416,13 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                                 Nothing ->
                                     True
                            )
+
+        board =
+            if List.length lands == 0 then
+                game.board
+
+            else
+                Board.State.updateLands game.board lands Nothing
 
         canMove =
             if not hasTurn then
@@ -430,17 +434,13 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                         False
 
                     Just turnPlayer ->
-                        game.board.map.lands
+                        board.map.lands
                             |> List.filter (\land -> land.color == turnPlayer.color && land.points > 1)
-                            |> List.map (Board.canAttackFrom game.board.map turnPlayer.color >> Result.toMaybe)
+                            |> List.map (Board.canAttackFrom board.map turnPlayer.color >> Result.toMaybe)
                             |> List.any ((==) Nothing >> not)
 
-        board =
-            if List.length lands == 0 then
-                game.board
-
-            else
-                Board.State.updateLands game.board lands Nothing
+        game =
+            model.game
 
         game_ =
             { game
