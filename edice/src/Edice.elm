@@ -223,28 +223,25 @@ update msg model =
                                     ( model_, Cmd.none )
                     in
                     ( modelWithTable
-                      -- , if
-                      -- version
-                      -- /= ""
-                      -- && version
-                      -- /= "dev"
-                      -- && model.backend.version
-                      -- /= ""
-                      -- && model.backend.version
-                      -- /= "dev"
-                      -- && model.backend.version
-                      -- /= version
-                      -- then
-                      -- Cmd.batch
-                      -- [ cmd
-                      -- , toastError "Please refresh for latest version" <|
-                      -- model.backend.version
-                      -- ++ "/"
-                      -- ++ version
-                      -- ]
-                      --
-                      -- else
-                    , cmd
+                    , if
+                        String.length version
+                            > 0
+                            && String.length model.backend.version
+                            > 0
+                            && model.backend.version
+                            /= "dev"
+                            && version
+                            /= "dev"
+                            && version
+                            /= model.backend.version
+                      then
+                        Cmd.batch
+                            [ cmd
+                            , toastMessage "Page has outdated version, please refresh the page or go to qdice.wtf" <| Just 10000
+                            ]
+
+                      else
+                        cmd
                     )
 
         GetToken joinTable res ->
@@ -715,9 +712,6 @@ update msg model =
             case allClientsMsg of
                 Backend.Types.TablesInfo tables ->
                     let
-                        game =
-                            model.game
-
                         ( game_, gameCmd ) =
                             Game.State.updateGameInfo ( model.game, Cmd.none ) tables
                     in
@@ -729,7 +723,25 @@ update msg model =
                     ( model, toastMessage "Server is restarting..." <| Just 3000 )
 
                 Backend.Types.Toast message ->
-                    ( model, toastMessage message <| Just 10000 )
+                    ( model, toastMessage message <| Just 20000 )
+
+                Backend.Types.ServerOnline version message ->
+                    if
+                        String.length version
+                            > 0
+                            && String.length model.backend.version
+                            > 0
+                            && model.backend.version
+                            /= "dev"
+                            && version
+                            /= "dev"
+                            && version
+                            /= model.backend.version
+                    then
+                        ( model, toastMessage "New version has been deployed, please refresh the page" <| Just 30000 )
+
+                    else
+                        ( model, toastMessage message <| Just 10000 )
 
         TableMsg table tableMsg ->
             Game.State.updateTable model table tableMsg

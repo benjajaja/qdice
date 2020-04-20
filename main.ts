@@ -204,7 +204,7 @@ export const server = async () => {
     password: process.env.MQTT_PASSWORD,
   });
   publish.setMqtt(client);
-  publish.toast("Server is back online.");
+  publish.online(version, "Server is back online.");
 
   client.subscribe("events");
   client.subscribe("death");

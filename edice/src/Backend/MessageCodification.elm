@@ -61,6 +61,22 @@ decodeTopicMessage userTable topic message =
                                 Err err ->
                                     Err <| errorToString err
 
+                        "online" ->
+                            case
+                                decodeString
+                                    (field "payload" <|
+                                        Dec.map2 Tuple.pair
+                                            (field "version" Dec.string)
+                                            (field "message" Dec.string)
+                                    )
+                                    message
+                            of
+                                Ok ( version, toastMessage ) ->
+                                    Ok <| AllClientsMsg <| ServerOnline version toastMessage
+
+                                Err err ->
+                                    Err <| errorToString err
+
                         _ ->
                             Err <| "unknown global message type \"" ++ mtype ++ "\""
 

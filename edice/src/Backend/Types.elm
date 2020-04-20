@@ -49,6 +49,7 @@ type AllClientsMessage
     = TablesInfo (List Game.Types.TableInfo)
     | SigInt
     | Toast String
+    | ServerOnline String String
 
 
 type TableMessage
