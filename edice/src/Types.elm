@@ -321,6 +321,7 @@ type CommentKind
     | GameComments Int String
     | TableComments String
     | ReplyComments Int String
+    | StaticPageComments StaticPage
 
 
 commentKindKey : CommentKind -> String
@@ -337,6 +338,16 @@ commentKindKey kind =
 
         ReplyComments id _ ->
             "comments/" ++ String.fromInt id
+
+        StaticPageComments page ->
+            "page/"
+                ++ (case page of
+                        Help ->
+                            "help"
+
+                        About ->
+                            "about"
+                   )
 
 
 type alias Comment =

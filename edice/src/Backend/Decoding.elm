@@ -10,7 +10,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, la
 import Json.Decode.Pipeline exposing (required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..), Replies(..))
+import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..), Replies(..), StaticPage(..))
 
 
 stringDecoder : Decoder String
@@ -560,6 +560,17 @@ kindDecoder =
 
                 "comments" ->
                     Maybe.map (\i -> ReplyComments i "") (String.toInt kindId)
+
+                "page" ->
+                    case kindId of
+                        "about" ->
+                            Just <| StaticPageComments About
+
+                        "help" ->
+                            Just <| StaticPageComments Help
+
+                        _ ->
+                            Nothing
 
                 _ ->
                     Nothing

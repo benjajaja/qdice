@@ -1,4 +1,4 @@
-module Comments exposing (gameComments, got, init, input, post, posted, profileComments, reply, routeEnter, tableComments, view)
+module Comments exposing (gameComments, got, init, input, post, posted, profileComments, reply, routeEnter, staticComments, tableComments, view)
 
 import Backend.HttpCommands
 import DateFormat
@@ -10,7 +10,7 @@ import Html.Events exposing (onClick, onInput)
 import Routing.String exposing (routeToString)
 import Tables exposing (Table)
 import Time exposing (Zone)
-import Types exposing (Comment, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, GamesSubRoute(..), Model, Msg(..), Profile, Replies(..), Route(..), User(..))
+import Types exposing (Comment, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, GamesSubRoute(..), Model, Msg(..), Profile, Replies(..), Route(..), StaticPage(..), User(..))
 
 
 init : CommentsModel
@@ -54,6 +54,17 @@ kindName kind =
         ReplyComments id name ->
             "comment #" ++ String.fromInt id ++ " by " ++ name
 
+        StaticPageComments page ->
+            "page \""
+                ++ (case page of
+                        Help ->
+                            "Help"
+
+                        About ->
+                            "About"
+                   )
+                ++ "\""
+
 
 profileComments : Profile -> CommentKind
 profileComments profile =
@@ -68,6 +79,11 @@ gameComments table gameId =
 tableComments : Table -> CommentKind
 tableComments table =
     TableComments table
+
+
+staticComments : StaticPage -> CommentKind
+staticComments page =
+    StaticPageComments page
 
 
 routeEnter : Route -> Model -> Cmd Msg -> ( Model, Cmd Msg )
@@ -86,6 +102,9 @@ routeEnter route model cmd =
 
         GameRoute table ->
             fetchWith model cmd <| TableComments table
+
+        StaticPageRoute page ->
+            fetchWith model cmd <| StaticPageComments page
 
         _ ->
             ( model, cmd )

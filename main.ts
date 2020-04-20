@@ -252,7 +252,9 @@ export const server = async () => {
 
   server.get(`${root}/comments/:kind/:id`, async (req, res, next) => {
     if (
-      ["user", "games", "tables", "comments"].indexOf(req.params.kind) === -1 ||
+      ["user", "games", "tables", "comments", "page"].indexOf(
+        req.params.kind
+      ) === -1 ||
       R.empty(req.params.id)
     ) {
       res.sendRaw(401, "bad kind/id");

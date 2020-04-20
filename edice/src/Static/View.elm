@@ -1,5 +1,6 @@
 module Static.View exposing (view)
 
+import Comments
 import Html exposing (..)
 import Markdown
 import Static.Help
@@ -8,12 +9,13 @@ import Types exposing (..)
 
 view : Model -> StaticPage -> Html Msg
 view model page =
-    case page of
-        Help ->
-            Static.Help.markdown
+    div []
+        [ case page of
+            Help ->
+                Static.Help.markdown
 
-        About ->
-            Markdown.toHtml [] """
+            About ->
+                Markdown.toHtml [] """
 ## About Qdice
 
 A dice game, written in [Elm](https://elm-lang.org). A simplified Risk, inspired by [dicewars](http://www.gamedesign.jp/games/dicewars/) and its successors.
@@ -25,10 +27,9 @@ Created by <ste3ls@gmail.com>.
   * [Qdice reddit](https://www.reddit.com/r/Qdice/) to post any questions or opinion
   * [Discord](https://discord.gg/E2m3Gra) to chat with fellow players
   * [@qdicewtf](https://twitter.com/qdicewtf) same as with reddit
+  * [github](https://github.com/gipsy-king/qdice) same as with reddit
 
 ## Development
-
-Check the sticky **[Development post](https://www.reddit.com/r/Qdice/comments/epy4hh/development_updates/)** on the subreddit that will be updated. You can post issues and wishes on that post or generally in the sub.
 
 There is also the **[changelog](/changelog)** with a complete list of all changes that go live.
 
@@ -63,3 +64,5 @@ Before making a PR, I suggest to get in contact with me however you want, an iss
   The node.js server has a greater number of unit tests.
 * **CI/CD** - Everything is built and e2e-tested before deploying automatically.
 """
+        , Comments.view model.zone model.user model.comments <| Comments.staticComments page
+        ]
