@@ -11,10 +11,9 @@ COPY edice/scripts/generate-maps.js ./scripts/generate-maps.js
 COPY edice/maps ./edice/maps
 RUN node ./scripts/generate-maps.js ./edice/maps/
 
-ARG git_log
-COPY scripts/generate-changelog.ts ./scripts/generate-changelog.ts
-ENV git_log=$git_log
-RUN yarn ts-node scripts/generate-changelog.ts
+ARG build_id
+COPY scripts/write-version.ts ./scripts/write-version.ts
+RUN yarn ts-node scripts/write-version.ts $build_id
 
 COPY tsconfig.json ./
 COPY *.ts *.js ./

@@ -1,7 +1,17 @@
 import logger from "./logger";
-logger.info("Qdice server starting");
-
 import * as fs from "fs";
+let version = "unknown";
+try {
+  version = fs
+    .readFileSync("./version")
+    .toString()
+    .slice(0, 7);
+  logger.info(`Qdice server starting version: ${version}`);
+} catch (e) {
+  logger.error("Coult not read version file");
+}
+logger.info("go...");
+
 import * as db from "./db";
 import * as table from "./table";
 
@@ -139,7 +149,6 @@ export const server = async () => {
           req => req.path().indexOf(`${root}/profile`) === 0,
           req => req.path() === `${root}/topwebgames`,
           req => req.path().indexOf(`${root}/games`) === 0,
-          req => req.path() === `${root}/changelog`,
           req =>
             req.method === "GET" &&
             req.path().indexOf(`${root}/comments`) === 0,
@@ -164,7 +173,7 @@ export const server = async () => {
   server.put(`${root}/me/password`, user.password);
   server.post(`${root}/register`, user.register);
 
-  server.get(`${root}/global`, globalServer.global);
+  server.get(`${root}/global`, globalServer.global(version));
   server.get(`${root}/findtable`, globalServer.findtable);
   server.get(`${root}/leaderboard`, leaderboard);
   server.get(`${root}/profile/:id`, profile);
@@ -240,19 +249,6 @@ export const server = async () => {
   server.get(`${root}/games`, games.games);
   server.get(`${root}/games/:table`, games.games);
   server.get(`${root}/games/:table/:id`, games.game);
-
-  let changelog = "not loaded";
-  fs.readFile("./changelog.md", undefined, (err, file) => {
-    if (err) {
-      logger.error(err);
-    }
-    changelog = file.toString();
-    logger.debug(`Loaded changelog md (${changelog.split("\n").length} lines)`);
-  });
-  server.get(`${root}/changelog`, (_, res, next) => {
-    res.sendRaw(200, changelog);
-    next();
-  });
 
   server.get(`${root}/comments/:kind/:id`, async (req, res, next) => {
     if (

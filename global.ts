@@ -1,25 +1,17 @@
 import * as R from "ramda";
-import { Table } from "./types";
-import { findTable } from "./helpers";
 //import { get } from './table/get';
 import {
   TURN_SECONDS,
   GAME_START_COUNTDOWN,
   MAX_NAME_LENGTH,
-  STATUS_PAUSED,
-  STATUS_PLAYING,
-  STATUS_FINISHED,
 } from "./constants";
 import * as publish from "./table/publish";
 import { getStatuses } from "./table/get";
 import * as db from "./db";
-import logger from "./logger";
 import { death } from "./table/watchers";
 import AsyncLock = require("async-lock");
 
-const buildId = process.env.build_id ?? "dev";
-
-export const global = async (req, res, next) => {
+export const global = (version: string) => async (req, res, next) => {
   const tables = getStatuses();
   const top = await db.leaderBoardTop(10);
   res.send(200, {
@@ -33,7 +25,7 @@ export const global = async (req, res, next) => {
       month: new Date().toLocaleString("en-us", { month: "long" }),
       top,
     },
-    version: buildId,
+    version,
   });
 };
 
