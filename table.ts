@@ -16,6 +16,7 @@ import {
   CommandType,
   Player,
   BotPlayer,
+  ScoredElimination,
 } from "./types";
 import * as db from "./db";
 import * as publish from "./table/publish";
@@ -348,7 +349,11 @@ export const processCommand = async (table: Table, command: Command) => {
         : undefined
     );
     if (eliminations) {
-      await processEliminations(newTable, eliminations);
+      await processEliminations(
+        newTable,
+        eliminations,
+        players ?? newTable.players
+      );
     }
     if (
       ["Join", "Leave", "Start", "EndGame", "ToggleReady"].indexOf(
@@ -379,17 +384,17 @@ export const processCommand = async (table: Table, command: Command) => {
 
 const processEliminations = async (
   table: Table,
-  eliminations: ReadonlyArray<Elimination>
+  eliminations: readonly Elimination[],
+  players: readonly Player[]
 ): Promise<void> => {
-  return Promise.all(
+  const scoredEliminations: readonly ScoredElimination[] = await Promise.all(
     eliminations.map(async elimination => {
-      const { player, position, reason, source } = elimination;
+      const { player, position } = elimination;
 
       const score =
         player.score +
         positionScore(tablePoints(table))(table.playerStartCount)(position);
 
-      publish.elimination(table, player, position, score, reason, source);
       publish.event({
         type: "elimination",
         table: table.name,
@@ -416,6 +421,11 @@ const processEliminations = async (
           throw e;
         }
       }
+      return { ...elimination, score };
     })
-  ).then(() => undefined);
+  );
+  if (scoredEliminations.length > 0) {
+    publish.eliminations(table, scoredEliminations, players);
+  }
+  return;
 };

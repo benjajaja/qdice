@@ -60,9 +60,8 @@ type TableMessage
     | Update Game.Types.TableStatus
     | Roll Game.Types.Roll
     | Move Game.Types.Move
-    | Elimination Game.Types.Elimination
+    | Eliminations (List Game.Types.Elimination) (List Game.Types.Player)
     | Error String
-    | ReceiveDice Game.Types.ReceiveDice
     | Turn Game.Types.TurnInfo
     | PlayerStatus Game.Types.Player
 

@@ -351,7 +351,7 @@ updateTableStatus model status =
 
 
 updateTurn : Types.Model -> TurnInfo -> ( Types.Model, Cmd Msg )
-updateTurn model { turnIndex, turnStart, roundCount, capitals } =
+updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } =
     let
         game =
             model.game
@@ -436,11 +436,11 @@ updateTurn model { turnIndex, turnStart, roundCount, capitals } =
                             |> List.any ((==) Nothing >> not)
 
         board =
-            if List.length capitals == 0 then
+            if List.length lands == 0 then
                 game.board
 
             else
-                Board.State.updateLands game.board capitals Nothing
+                Board.State.updateLands game.board lands Nothing
 
         game_ =
             { game
@@ -453,18 +453,27 @@ updateTurn model { turnIndex, turnStart, roundCount, capitals } =
                 , isPlayerOut = isOut
                 , roundCount = roundCount
                 , canFlag = canFlag
+                , players = players
             }
 
-        ( model_, turnChangeCmd ) =
+        ( tmpModel, turnCmd ) =
             case newTurnPlayer of
                 Just p ->
                     updateChatLog { model | game = game_ } <| LogTurn p.name p.color
 
                 Nothing ->
                     ( { model | game = game_ }, Cmd.none )
+
+        ( ( model_, receiveCmd ), givenDiceCount ) =
+            case giveDice of
+                Just ( p, count ) ->
+                    ( updateChatLog tmpModel <| Game.Types.LogReceiveDice p count, count )
+
+                Nothing ->
+                    ( ( tmpModel, Cmd.none ), 0 )
     in
     ( model_
-    , Cmd.batch
+    , Cmd.batch <|
         [ if hasGainedTurn then
             Cmd.batch
                 [ playSound model.sessionPreferences "turn"
@@ -478,8 +487,15 @@ updateTurn model { turnIndex, turnStart, roundCount, capitals } =
 
           else
             Cmd.none
-        , turnChangeCmd
+        , turnCmd
+        , receiveCmd
         ]
+            ++ (if givenDiceCount > 0 then
+                    [ playSound model.sessionPreferences "giveDice" ]
+
+                else
+                    []
+               )
     )
 
 
@@ -778,7 +794,7 @@ updateTable model table msg =
 
                     Backend.Types.Leave player ->
                         updateChatLog
-                            { model | game = removePlayer model.game player }
+                            { model | game = updatePlayers model.game (List.filter (.id >> (/=) player.id) model.game.players) [] }
                         <|
                             LogLeave player
 
@@ -868,33 +884,18 @@ updateTable model table msg =
                                 , playSound model.sessionPreferences "kick"
                                 )
 
-                    Backend.Types.Elimination elimination ->
-                        updateChatLog
-                            { model | game = removePlayer model.game elimination.player }
-                        <|
-                            Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
-
-                    Backend.Types.ReceiveDice receive ->
-                        let
-                            ( model_, cmd ) =
-                                updateChatLog model <|
-                                    Game.Types.LogReceiveDice receive.player receive.count
-
-                            game =
-                                model_.game
-
-                            board =
-                                Board.State.updateLands game.board receive.lands Nothing
-
-                            game_ =
-                                { game | board = board, players = receive.players }
-                        in
-                        ( { model_ | game = game_ }
-                        , Cmd.batch
-                            [ cmd
-                            , playSound model.sessionPreferences "giveDice"
-                            ]
-                        )
+                    Backend.Types.Eliminations eliminations players ->
+                        List.foldl
+                            (\elimination ( model_, cmd ) ->
+                                let
+                                    ( m, c ) =
+                                        updateChatLog model_ <|
+                                            Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
+                                in
+                                ( m, Cmd.batch [ cmd, c ] )
+                            )
+                            ( { model | game = updatePlayers model.game players (List.map (.player >> .color) eliminations) }, Cmd.none )
+                            eliminations
 
                     Backend.Types.Turn info ->
                         updateTurn model info
@@ -1030,18 +1031,24 @@ setUser model user =
     { model | player = findLoggedUserPlayer user model.players }
 
 
-removePlayer : Model -> Player -> Model
-removePlayer model player =
+updatePlayers : Model -> List Player -> List Land.Color -> Model
+updatePlayers model newPlayers removedColor =
     let
         model_ =
             { model
-                | players = List.filter (.id >> (==) player.id >> not) model.players
-                , board = Board.State.removeColor model.board player.color
+                | players = newPlayers
+                , board =
+                    List.foldl
+                        (\color board ->
+                            Board.State.removeColor board color
+                        )
+                        model.board
+                        removedColor
             }
     in
     case model.player of
         Just p ->
-            if p.id == player.id then
+            if not <| List.any (.id >> (==) p.id) newPlayers then
                 { model_
                     | isPlayerOut = False
                     , canFlag = False

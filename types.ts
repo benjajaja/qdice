@@ -141,6 +141,10 @@ export type EliminationSource =
 
 export type EliminationReason = "☠" | "💤" | "🏆" | "🏳";
 
+export type ScoredElimination = Elimination & {
+  score: number;
+};
+
 export class IllegalMoveError extends Error {
   bot: boolean;
 

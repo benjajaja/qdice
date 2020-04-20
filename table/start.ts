@@ -5,7 +5,6 @@ import { now } from "../timestamp";
 import { rand, shuffle } from "../rand";
 import logger from "../logger";
 import { STATUS_PLAYING } from "../constants";
-import { props } from "ramda";
 
 const randomPoints = (stackSize: number) => {
   const r = rand(0, 999) / 1000;
@@ -52,6 +51,7 @@ export const startGame = (table: Table): CommandResult => {
     props.turnIndex,
     props.turnStart,
     props.roundCount,
+    null,
     table.players,
     allLands
   );

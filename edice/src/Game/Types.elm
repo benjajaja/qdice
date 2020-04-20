@@ -1,4 +1,4 @@
-module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, ReceiveDice, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, TurnInfo, User, actionToString, isBot, makePlayer, statusToIcon, statusToString, userColor)
+module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, TurnInfo, User, actionToString, isBot, makePlayer, statusToIcon, statusToString, userColor)
 
 import Animation
 import Board exposing (LandUpdate)
@@ -125,10 +125,6 @@ type alias RollPart =
     }
 
 
-type alias ReceiveDice =
-    { player : Player, count : Int, players : List Player, lands : List LandUpdate }
-
-
 type alias TableInfo =
     { table : Table
     , mapName : Tables.Map
@@ -219,7 +215,9 @@ type alias TurnInfo =
     { turnIndex : Int
     , turnStart : Int
     , roundCount : Int
-    , capitals : List LandUpdate
+    , giveDice : Maybe ( Player, Int )
+    , players : List Player
+    , lands : List LandUpdate
     }
 
 

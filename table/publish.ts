@@ -7,6 +7,8 @@ import {
   Command,
   Land,
   CommandResult,
+  Color,
+  ScoredElimination,
 } from "../types";
 import {
   serializeTable,
@@ -148,23 +150,24 @@ export const move = (table: Table, move: any) => {
   );
 };
 
-export const elimination = (
+export const eliminations = (
   table: Table,
-  player: Player,
-  position: number,
-  score: number,
-  reason: EliminationReason,
-  source: EliminationSource
+  eliminations: readonly ScoredElimination[],
+  players: readonly Player[]
 ) => {
+  const ser = serializePlayer(table);
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
-      type: "elimination",
+      type: "eliminations",
       payload: {
-        player: serializePlayer(table)(player),
-        position,
-        score,
-        reason: serializeEliminationReason(table, reason, source),
+        eliminations: eliminations.map(e => ({
+          player: ser(e.player),
+          position: e.position,
+          score: e.score,
+          reason: serializeEliminationReason(table, e.reason, e.source),
+        })),
+        players: players.map(serializePlayer(table)),
       },
     }),
     undefined!,
@@ -176,15 +179,6 @@ export const elimination = (
           table
         );
       }
-
-      event({
-        type: "elimination",
-        table: table.name,
-        player,
-        position,
-        score,
-        reason,
-      });
     }
   );
 };
@@ -305,42 +299,14 @@ export const userUpdate = (clientId: string) => (profile, preferences) => {
   );
 };
 
-export const receivedDice = (
-  table: Table,
-  count: number,
-  player: Player,
-  lands: readonly Land[],
-  players: readonly Player[]
-) => {
-  client.publish(
-    "tables/" + table.name + "/clients",
-    JSON.stringify({
-      type: "receive",
-      payload: {
-        player: serializePlayer(table)(player),
-        count,
-        players: players.map(serializePlayer(table)),
-        lands: lands
-          .filter(hasChanged(table.lands))
-          .map(serializeLand(players)),
-      },
-    }),
-    undefined!,
-    err => {
-      if (err) {
-        console.log(err, "tables/" + table.name + "/clients receive");
-      }
-    }
-  );
-};
-
 export const turn = (
   table: Table,
   turnIndex: number,
   turnStart: number,
   roundCount: number,
+  giveDice: [Player, number] | null,
   players: readonly Player[],
-  capitals: readonly Land[]
+  lands: readonly Land[]
 ) => {
   client.publish(
     "tables/" + table.name + "/clients",
@@ -350,7 +316,13 @@ export const turn = (
         turnIndex,
         turnStart: Math.floor(turnStart / 1000),
         roundCount,
-        capitals: capitals.map(serializeLand(players)),
+        giveDice: giveDice
+          ? [serializePlayer(table)(giveDice[0]), giveDice[1]]
+          : null,
+        players: players.map(serializePlayer(table)),
+        lands: lands
+          .filter(hasChanged(table.lands))
+          .map(serializeLand(players)),
       },
     }),
     undefined!,

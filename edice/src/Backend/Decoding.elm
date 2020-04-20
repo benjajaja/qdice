@@ -1,8 +1,8 @@
-module Backend.Decoding exposing (authStateDecoder, commentDecoder, commentsDecoder, eliminationDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, receiveDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, turnDecoder)
+module Backend.Decoding exposing (authStateDecoder, commentDecoder, commentsDecoder, eliminationsDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, turnDecoder)
 
 import Backend.Types exposing (TableMessage(..))
 import Board.Types
-import Game.Types exposing (Award, Player, PlayerGameStats, ReceiveDice, TableParams, TableStatus)
+import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus)
 import Games.Types exposing (..)
 import Helpers exposing (triple)
 import Iso8601
@@ -244,6 +244,13 @@ eliminationDecoder =
         |> required "reason" eliminationReasonDecoder
 
 
+eliminationsDecoder : Decoder ( List Game.Types.Elimination, List Game.Types.Player )
+eliminationsDecoder =
+    succeed Tuple.pair
+        |> required "eliminations" (list eliminationDecoder)
+        |> required "players" (list playersDecoder)
+
+
 eliminationReasonDecoder : Decoder Game.Types.EliminationReason
 eliminationReasonDecoder =
     field "type" string
@@ -275,21 +282,6 @@ eliminationReasonDecoder =
                     _ ->
                         Json.Decode.fail <| "unknown elimination type: " ++ t
             )
-
-
-receiveDecoder : Decoder Game.Types.ReceiveDice
-receiveDecoder =
-    succeed Game.Types.ReceiveDice
-        |> required "player" playersDecoder
-        |> required "count" int
-        |> required "players" (list playersDecoder)
-        |> required "lands" (list landsUpdateDecoder)
-
-
-
--- map2 (\a b -> ( a, b ))
--- (field "player" playersDecoder)
--- (field "count" int)
 
 
 globalDecoder : Decoder GlobalQdice
@@ -524,7 +516,16 @@ turnDecoder =
         |> required "turnIndex" int
         |> required "turnStart" int
         |> required "roundCount" int
-        |> required "capitals" (list landsUpdateDecoder)
+        |> required "giveDice" (nullable giveDiceDecoder)
+        |> required "players" (list playersDecoder)
+        |> required "lands" (list landsUpdateDecoder)
+
+
+giveDiceDecoder : Decoder ( Player, Int )
+giveDiceDecoder =
+    map2 Tuple.pair
+        (index 0 playersDecoder)
+        (index 1 int)
 
 
 commentsDecoder : Decoder (List Comment)

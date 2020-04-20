@@ -133,10 +133,10 @@ decodeTableMessage table message =
                         Err err ->
                             Err <| errorToString err
 
-                "elimination" ->
-                    case decodeString (field "payload" eliminationDecoder) message of
-                        Ok elimination ->
-                            Ok <| TableMsg table <| Elimination elimination
+                "eliminations" ->
+                    case decodeString (field "payload" eliminationsDecoder) message of
+                        Ok ( eliminations, players ) ->
+                            Ok <| TableMsg table <| Eliminations eliminations players
 
                         Err err ->
                             Err <| errorToString err
@@ -148,14 +148,6 @@ decodeTableMessage table message =
 
                         Err _ ->
                             Ok <| TableMsg table <| Error <| "💣"
-
-                "receive" ->
-                    case decodeString (field "payload" receiveDecoder) message of
-                        Ok receive ->
-                            Ok <| TableMsg table <| ReceiveDice receive
-
-                        Err err ->
-                            Err <| errorToString err
 
                 "join" ->
                     case decodeString (field "payload" playersDecoder) message of
