@@ -1038,12 +1038,16 @@ updatePlayers model newPlayers removedColor =
             { model
                 | players = newPlayers
                 , board =
-                    List.foldl
-                        (\color board ->
-                            Board.State.removeColor board color
-                        )
+                    if List.length newPlayers > 1 then
+                        List.foldl
+                            (\color board ->
+                                Board.State.removeColor board color
+                            )
+                            model.board
+                            removedColor
+
+                    else
                         model.board
-                        removedColor
             }
     in
     case model.player of
