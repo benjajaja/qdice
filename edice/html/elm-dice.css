@@ -560,13 +560,16 @@ button .material-icons, .edButton .material-icons {
   transform: translateY(-10px);
 }
 .edPlayerChip--me.edPlayerChip--turn {
-  animation: bounceplayer 0.2s infinite alternate;
+  animation: bounceplayer 0.5s infinite alternate;
 }
 @keyframes bounceplayer {
-  from {
-    transform: translateY(-5px);
+  0% {
+    transform: translateY(0px);
   }
-  to {
+  25% {
+    transform: translateY(-15px);
+  }
+  100% {
     transform: translateY(-15px);
   }
 }
