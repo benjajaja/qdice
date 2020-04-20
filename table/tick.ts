@@ -115,8 +115,6 @@ const tick = async (tableTag: string, lock) => {
         havePassed(table.params.turnSeconds ?? TURN_SECONDS, table.turnStart)
       ) {
         command = { type: "TickTurnOver", sitPlayerOut: !table.turnActivity };
-      } else if (table.players.every(R.prop("out"))) {
-        command = { type: "TickTurnAllOut" };
       } else if (table.players[table.turnIndex].bot !== null) {
         command = tickBotTurn(table);
       }

@@ -449,9 +449,6 @@ gameEventDecoder =
                         succeed Games.Types.TickTurnOver
                             |> required "sitPlayerOut" bool
 
-                    "TickTurnAllOut" ->
-                        succeed Games.Types.TickTurnAllOut
-
                     "SitOut" ->
                         succeed Games.Types.SitOut
                             |> required "player" shortPlayerDecoder
@@ -475,8 +472,7 @@ gameEventDecoder =
                             |> required "turnCount" int
 
                     _ ->
-                        succeed Games.Types.Start
-             -- fail <| "Unknown game event type: " ++ t
+                        succeed <| Games.Types.Unknown t
             )
 
 

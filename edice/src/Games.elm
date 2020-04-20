@@ -245,9 +245,6 @@ foldGame event ( game, list ) =
                        )
             )
 
-        TickTurnAllOut ->
-            ( game, foldGameItem list <| "All players are out" )
-
         SitOut player ->
             ( game, foldGameItem list <| player.name ++ " sat out" )
 
@@ -255,7 +252,16 @@ foldGame event ( game, list ) =
             ( game, foldGameItem list <| player.name ++ " sat in" )
 
         ToggleReady player ready ->
-            ( game, foldGameItem list <| player.name ++ " toggled ready" )
+            ( game
+            , foldGameItem list <|
+                player.name ++ " toggled ready -> "
+                    ++ (if ready then
+                            "yes"
+
+                        else
+                            "no"
+                       )
+            )
 
         Flag player ->
             ( game, foldGameItem list <| player.name ++ " flagged" )
@@ -274,6 +280,9 @@ foldGame event ( game, list ) =
                     ++ String.fromInt turnCount
                     ++ " rounds"
             )
+
+        Unknown str ->
+            ( game, foldGameItem list <| "Unknown event \"" ++ str ++ "\"" )
 
 
 foldGameItem : List (Html Msg) -> String -> List (Html Msg)

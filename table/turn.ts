@@ -36,10 +36,21 @@ const turn = (
       )
     : table.players;
 
-  const currentPlayer = inPlayers[table.turnIndex];
-  const [receivedDice, lands, players, hasReserveDice] = currentPlayer
-    ? giveDice(table, table.lands, inPlayers)(currentPlayer) // not just removed
-    : [0, table.lands, table.players, false];
+  const currentPlayer: Player = inPlayers[table.turnIndex];
+  if (!currentPlayer) {
+    throw new Error(
+      "turn without current player by index: " +
+        table.turnIndex +
+        " of (" +
+        inPlayers.length +
+        ")"
+    );
+  }
+  const [receivedDice, lands, players, hasReserveDice] = giveDice(
+    table,
+    table.lands,
+    inPlayers
+  )(currentPlayer); // not just removed
 
   const nextIndex =
     table.turnIndex + 1 < players.length ? table.turnIndex + 1 : 0;
@@ -61,7 +72,7 @@ const turn = (
   if (
     newPlayer.flag !== null &&
     newPlayer.flag >= position &&
-    position === table.players.length
+    position === players.length
   ) {
     const elimination: Elimination = {
       player: newPlayer,
@@ -73,8 +84,8 @@ const turn = (
       },
     };
     const [players_, lands_, turnIndex, eliminations] = removePlayerCascade(
-      table.players,
-      table.lands,
+      players,
+      lands,
       newPlayer,
       props.turnIndex,
       elimination
@@ -138,8 +149,8 @@ const turn = (
       },
     };
     const [players_, lands_, turnIndex, eliminations] = removePlayerCascade(
-      table.players,
-      table.lands,
+      players,
+      lands,
       newPlayer,
       props.turnIndex,
       elimination

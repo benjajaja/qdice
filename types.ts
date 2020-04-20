@@ -177,7 +177,6 @@ export type CommandType =
   | "Roll"
   | "TickTurnOver"
   | "TickTurnOut"
-  | "TickTurnAllOut"
   | "TickStart"
   | "CleanWatchers"
   | "CleanPlayers"
@@ -216,7 +215,6 @@ export type Command =
   | CommandSkeleton<"Flag", { player: Player }>
   | CommandSkeleton<"TickTurnOver", { sitPlayerOut: boolean }>
   | CommandSkeleton<"TickTurnOut">
-  | CommandSkeleton<"TickTurnAllOut">
   | CommandSkeleton<"EndGame", { winner: Player | null; turnCount: number }>
   | CommandSkeleton<"Clear">
   | CommandSkeleton<"Heartbeat", { user: User | null; clientId: string }>

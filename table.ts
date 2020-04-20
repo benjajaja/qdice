@@ -298,8 +298,6 @@ const commandResult = async (
       return nextTurn(table, command.sitPlayerOut);
     case "TickTurnOut":
       return nextTurn(table);
-    case "TickTurnAllOut":
-      return nextTurn(table);
     case "EndGame":
       return [endGame(table, command.winner, command.turnCount), null];
     case "Roll":

@@ -30,12 +30,12 @@ type GameEvent
     | EndTurn ShortGamePlayer
     | TickTurnOut
     | TickTurnOver Bool
-    | TickTurnAllOut
     | SitOut ShortGamePlayer
     | SitIn ShortGamePlayer
     | ToggleReady ShortGamePlayer Bool
     | Flag ShortGamePlayer
     | EndGame (Maybe ShortGamePlayer) Int
+    | Unknown String
 
 
 type alias ShortGamePlayer =
