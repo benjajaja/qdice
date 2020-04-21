@@ -28,9 +28,15 @@ export const game = async (req, res, next) => {
   }
 };
 
-export const chat = async (req, res: Response, next) => {
+export const chat = (source: "table" | "game") => async (
+  req,
+  res: Response,
+  next
+) => {
   try {
-    const chat: any = await db.chat(req.params.table);
+    const chat: any = await (source === "table"
+      ? db.chat(req.params.table)
+      : db.chatByGame(req.params.id));
     if (req.query.text === "plain") {
       res.sendRaw(
         200,

@@ -710,6 +710,19 @@ export const chat = async (table: string) => {
   return gameEvents;
 };
 
+export const chatByGame = async (gameId: number) => {
+  const { rows: gameEvents } = await pool.query({
+    name: "games-events-chat-game",
+    text: `SELECT params->'user' as user, params->>'message' as message
+      FROM game_events
+      WHERE command = 'Chat' AND game_id = $1
+      ORDER BY game_events.id DESC
+      LIMIT 100`,
+    values: [gameId],
+  });
+  return gameEvents;
+};
+
 export const isAvailable = async (email: string) => {
   const { rows } = await pool.query({
     text: `SELECT email FROM users WHERE email = $1`,
