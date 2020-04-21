@@ -60,27 +60,31 @@ export const serializePlayer = (
   const derived = computePlayerDerived(table);
   return (player: Player) => {
     return {
-      ...R.pick(
-        [
-          "id",
-          "name",
-          "picture",
-          "color",
-          "reserveDice",
-          "out",
-          "outTurns",
-          "points",
-          "level",
-          "score",
-          "flag",
-          "ready",
-          "awards",
-        ],
-        player
-      ),
+      ...trimPlayer(player),
       derived: derived(player),
     };
   };
+};
+
+export const trimPlayer = (player: Player) => {
+  return R.pick(
+    [
+      "id",
+      "name",
+      "picture",
+      "color",
+      "reserveDice",
+      "out",
+      "outTurns",
+      "points",
+      "level",
+      "score",
+      "flag",
+      "ready",
+      "awards",
+    ],
+    player
+  );
 };
 
 export type SerializedPlayer = Pick<

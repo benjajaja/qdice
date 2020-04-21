@@ -697,6 +697,19 @@ export const game = async (id: string) => {
   return camelize(game);
 };
 
+export const chat = async (table: string) => {
+  const { rows: gameEvents } = await pool.query({
+    name: "games-events-chat",
+    text: `SELECT params->'user' as user, params->>'message' as message, game_id
+      FROM game_events
+      WHERE command = 'Chat' AND game_id IN (SELECT id FROM games WHERE tag = $1 ORDER BY id DESC LIMIT 1000)
+      ORDER BY game_events.id DESC
+      LIMIT 1000`,
+    values: [table],
+  });
+  return gameEvents;
+};
+
 export const isAvailable = async (email: string) => {
   const { rows } = await pool.query({
     text: `SELECT email FROM users WHERE email = $1`,

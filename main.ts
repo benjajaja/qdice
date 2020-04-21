@@ -248,6 +248,7 @@ export const server = async () => {
   server.get(`${root}/topwebgames`, user.registerVote("topwebgames"));
   server.get(`${root}/games`, games.games);
   server.get(`${root}/games/:table`, games.games);
+  server.get(`${root}/games/:table/chat`, games.chat);
   server.get(`${root}/games/:table/:id`, games.game);
 
   server.get(`${root}/comments/:kind/:id`, async (req, res, next) => {
