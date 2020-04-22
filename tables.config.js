@@ -57,7 +57,7 @@ module.exports = {
       points: 100,
       stackSize: 8,
       params: {
-        noFlagRounds: 1,
+        noFlagRounds: 2,
         botLess: true,
         startingCapitals: false,
         readySlots: 2,

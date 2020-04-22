@@ -889,6 +889,16 @@ update msg model =
         Resized w h ->
             ( setPortrait model w h, Cmd.none )
 
+        ExpandChats ->
+            let
+                game =
+                    model.game
+
+                game_ =
+                    { game | expandChat = not game.expandChat }
+            in
+            ( { model | game = game_ }, Cmd.none )
+
 
 tableFromRoute : Route -> Maybe Table
 tableFromRoute route =

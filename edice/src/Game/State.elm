@@ -86,6 +86,7 @@ init table tableMap_ =
             }
       , currentGame = Nothing
       , diceVisible = True
+      , expandChat = False
       }
     , case map of
         Ok _ ->

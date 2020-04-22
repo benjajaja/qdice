@@ -633,6 +633,20 @@ button .material-icons, .edButton .material-icons {
   justify-content: space-between;
   flex-wrap: wrap;
 }
+.edGame__meta--open .chatbox, .edGame__meta--open .gamelogContainer {
+  height: 250px;
+}
+.edGame__meta__expander {
+  flex-grow: 2;
+  min-width: 300px;
+  text-align: center;
+  line-height: 10px;
+  cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: -moz-none;
+      -ms-user-select: none;
+          user-select: none;
+}
 .edGame__meta2 {
   display: flex;
   justify-content: space-between;
@@ -687,10 +701,12 @@ button .material-icons, .edButton .material-icons {
   flex: 1 1 50%;
 }
 .chatbox {
-  height: 200px;
+  height: 100px;
   width: 100%;
   display: flex;
   flex-direction: column;
+  transition-property: height;
+  transition-duration: 0.1s;
 }
 .chatbox--log {
   flex: 100 1 auto;
@@ -737,10 +753,12 @@ button .material-icons, .edButton .material-icons {
 .gamelogContainer {
   background: #fcfcd4;
   flex: 1 1 50%;
-  height: 200px;
+  height: 100px;
   font-size: 12px;
   min-width: 300px;
   display: flex;
+  transition-property: height;
+  transition-duration: 0.1s;
 }
 .gamelog {
   background-color: inherit;

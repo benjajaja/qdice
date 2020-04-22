@@ -66,6 +66,7 @@ type Msg
     | GameCmd PlayerAction
     | GameMsg Game.Types.Msg
     | EnterGame Table
+    | ExpandChats
       -- backend
     | Connected Backend.Types.ClientId
     | StatusConnect String

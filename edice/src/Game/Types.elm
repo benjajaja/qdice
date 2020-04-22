@@ -58,6 +58,7 @@ type alias Model =
     , params : TableParams
     , currentGame : Maybe Int
     , diceVisible : Bool
+    , expandChat : Bool
     }
 
 

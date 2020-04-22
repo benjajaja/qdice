@@ -59,9 +59,23 @@ view model =
             ]
         ]
             ++ (if not model.fullscreen then
-                    [ div [ class "edGame__meta cartonCard" ]
+                    [ div
+                        [ class <|
+                            "edGame__meta cartonCard"
+                                ++ (if model.game.expandChat then
+                                        " edGame__meta--open"
+
+                                    else
+                                        ""
+                                   )
+                        ]
                         [ gameChat model
                         , gameLog model
+                        , div
+                            [ class "edGame__meta__expander"
+                            , onClick <| ExpandChats
+                            ]
+                            [ Icon.iconSized 10 "more_horiz" ]
                         ]
                     , Game.Footer.footer model
                     , div [ class "edBoxes cartonCard" ] <|
