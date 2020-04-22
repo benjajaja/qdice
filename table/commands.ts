@@ -479,7 +479,8 @@ export const flag = (
       table.lands,
       player,
       table.turnIndex,
-      elimination
+      elimination,
+      tablePoints(table) / 2
     );
 
     if (players_.length === table.players.length) {

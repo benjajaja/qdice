@@ -1,7 +1,7 @@
 import * as assert from "assert";
 import * as R from "ramda";
 import * as helpers from "../helpers";
-import { Table, Elimination, Player } from "../types";
+import { Table, Elimination, Player, Color } from "../types";
 import {
   ELIMINATION_REASON_SURRENDER,
   ELIMINATION_REASON_DIE,
@@ -160,7 +160,7 @@ describe("Helpers", function() {
         lands_,
         turnIndex,
         eliminations,
-      ] = helpers.removePlayerCascade(players, [], player, 2, elimination);
+      ] = helpers.removePlayerCascade(players, [], player, 2, elimination, 100);
 
       assert.deepEqual(turnIndex, 1);
       assert.deepEqual(players_, [players[1], players[2]]);
@@ -189,7 +189,7 @@ describe("Helpers", function() {
         lands_,
         turnIndex,
         eliminations,
-      ] = helpers.removePlayerCascade(players, [], player, 1, elimination);
+      ] = helpers.removePlayerCascade(players, [], player, 1, elimination, 100);
 
       assert.deepEqual(turnIndex, 1);
       assert.deepEqual(players_, [players[0], players[2]]);
@@ -218,7 +218,7 @@ describe("Helpers", function() {
         lands_,
         turnIndex,
         eliminations,
-      ] = helpers.removePlayerCascade(players, [], player, 2, elimination);
+      ] = helpers.removePlayerCascade(players, [], player, 2, elimination, 100);
 
       assert.deepEqual(turnIndex, 0);
       assert.deepEqual(players_, [players[0], players[1]]);
@@ -247,7 +247,7 @@ describe("Helpers", function() {
         lands_,
         turnIndex,
         eliminations,
-      ] = helpers.removePlayerCascade(players, [], player, 2, elimination);
+      ] = helpers.removePlayerCascade(players, [], player, 2, elimination, 100);
 
       assert.deepEqual(turnIndex, 1);
       assert.deepEqual(players_, [players[1], players[2]]);
@@ -257,7 +257,7 @@ describe("Helpers", function() {
 
     it("surrender out of turn", () => {
       const players: Player[] = [
-        { id: "a" } as any,
+        { id: "a", color: Color.Red } as any,
         { id: "b" } as any,
         { id: "c", flag: 3 } as any,
         { id: "d", flag: 4 } as any,
@@ -270,7 +270,10 @@ describe("Helpers", function() {
         reason: ELIMINATION_REASON_SURRENDER,
         source: {
           flag: player.flag!,
-          under: null,
+          under: {
+            player: players[3],
+            points: 50,
+          },
         },
       };
       const [
@@ -278,7 +281,14 @@ describe("Helpers", function() {
         lands_,
         turnIndex,
         eliminations,
-      ] = helpers.removePlayerCascade(players, [], player, 3, elimination);
+      ] = helpers.removePlayerCascade(
+        players,
+        [{ color: Color.Red } as any],
+        player,
+        3,
+        elimination,
+        100
+      );
 
       assert.deepEqual(turnIndex, 0);
       assert.deepEqual(players_, [players[0], players[1]]);
@@ -319,7 +329,7 @@ describe("Helpers", function() {
         lands_,
         turnIndex,
         eliminations,
-      ] = helpers.removePlayerCascade(players, [], player, 3, elimination);
+      ] = helpers.removePlayerCascade(players, [], player, 3, elimination, 100);
 
       assert.deepEqual(turnIndex, 0);
       assert.deepEqual(players_, [players[0]]);
@@ -340,7 +350,10 @@ describe("Helpers", function() {
           reason: ELIMINATION_REASON_SURRENDER,
           source: {
             flag: players[1].flag!,
-            under: null,
+            under: {
+              player: players[0],
+              points: 50,
+            },
           },
         },
       ]);
@@ -368,7 +381,7 @@ describe("Helpers", function() {
         lands_,
         turnIndex,
         eliminations,
-      ] = helpers.removePlayerCascade(players, [], player, 1, elimination);
+      ] = helpers.removePlayerCascade(players, [], player, 1, elimination, 100);
 
       assert.deepEqual(turnIndex, 0);
       assert.deepEqual(players_, [players[0]]);
@@ -380,7 +393,10 @@ describe("Helpers", function() {
           reason: ELIMINATION_REASON_SURRENDER,
           source: {
             flag: players[1].flag!,
-            under: null,
+            under: {
+              player: players[0],
+              points: 50,
+            },
           },
         },
       ]);
@@ -407,7 +423,7 @@ describe("Helpers", function() {
         lands_,
         turnIndex,
         eliminations,
-      ] = helpers.removePlayerCascade(players, [], player, 1, elimination);
+      ] = helpers.removePlayerCascade(players, [], player, 1, elimination, 100);
 
       assert.deepEqual(turnIndex, 1);
       assert.deepEqual(players_, [players[0], players[2]]);

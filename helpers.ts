@@ -59,14 +59,19 @@ export const groupedPlayerPositions = (table: {
   players: ReadonlyArray<{ id: string; color: number }>;
   lands: ReadonlyArray<{ color: number }>;
 }): ((player: { id: string; color: number }) => number) => {
-  const idLandCounts = table.players.map<[UserId, number]>(player => [
-    player.id,
-    table.lands.filter(R.propEq("color", player.color)).length,
-  ]);
-  const sorted = R.sortBy(([_, count]) => count)(idLandCounts);
-  const reversed = R.reverse(sorted);
+  const idLandCounts = table.players.map<[UserId, number, number]>(
+    (player, i) => [
+      player.id,
+      table.lands.filter(R.propEq("color", player.color)).length,
+      i,
+    ]
+  );
+  const sorted = R.sortWith(
+    [R.descend(R.nth(1)), R.ascend(R.nth(2))],
+    idLandCounts
+  );
 
-  const positions = reversed.reduce((dict, [id, landCount], i) => {
+  const positions = sorted.reduce((dict, [id, _, __], i) => {
     dict[id] = i + 1;
     return dict;
   }, {} as { [userId: number]: number });
@@ -131,7 +136,8 @@ export const removePlayerCascade = (
   lands: readonly Land[],
   player: Player,
   turnIndex: number,
-  elimination: Elimination
+  elimination: Elimination,
+  tablePoints: number
 ): [readonly Player[], readonly Land[], number, readonly Elimination[]] => {
   let [players_, lands_, turnIndex_] = removePlayer(
     players,
@@ -141,24 +147,31 @@ export const removePlayerCascade = (
   );
   let eliminations: Elimination[] = [elimination];
 
-  return removeNext([players_, lands_, turnIndex_, eliminations]);
+  return removeNext([players_, lands_, turnIndex_, eliminations, tablePoints]);
 };
 
-const removeNext = ([players, lands, turnIndex, eliminations]: [
+const removeNext = ([players, lands, turnIndex, eliminations, tablePoints]: [
   readonly Player[],
   readonly Land[],
   number,
-  readonly Elimination[]
+  readonly Elimination[],
+  number
 ]): [readonly Player[], readonly Land[], number, readonly Elimination[]] => {
   const next = players.find(
     player => player.flag && player.flag === players.length
   );
   if (next) {
-    const [a, b, c] = removePlayer(players, lands, next, turnIndex);
+    const [players_, lands_, turnIndex_] = removePlayer(
+      players,
+      lands,
+      next,
+      turnIndex
+    );
+    const last = players_.length === 1 ? players_[0] : null;
     return removeNext([
-      a,
-      b,
-      c,
+      players_,
+      lands_,
+      turnIndex_,
       eliminations.concat([
         {
           player: next,
@@ -166,10 +179,16 @@ const removeNext = ([players, lands, turnIndex, eliminations]: [
           reason: ELIMINATION_REASON_SURRENDER,
           source: {
             flag: next.flag!,
-            under: null,
+            under: last
+              ? {
+                  player: last,
+                  points: tablePoints / 2,
+                }
+              : null,
           },
         },
       ]),
+      tablePoints,
     ]);
   }
   return [players, lands, turnIndex, eliminations];

@@ -331,16 +331,17 @@ updateTableStatus model status =
 
           else
             Cmd.none
-        , case status.currentGame of
-            Just id ->
-                if status.currentGame /= game.currentGame then
-                    consoleDebug <| "gameId: " ++ String.fromInt id
 
-                else
-                    Cmd.none
-
-            Nothing ->
-                Cmd.none
+        -- , case status.currentGame of
+        -- Just id ->
+        -- if status.currentGame /= game.currentGame then
+        -- consoleDebug <| "gameId: " ++ String.fromInt id ++ ", " ++ String.fromInt (List.length game.chatLog)
+        --
+        -- else
+        -- Cmd.none
+        --
+        -- Nothing ->
+        -- Cmd.none
         ]
     )
 

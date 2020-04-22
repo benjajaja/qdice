@@ -69,7 +69,8 @@ export const rollResult = (
               player: playerWithDerived(table, attacker),
               points: tablePoints(table) / 2,
             },
-          }
+          },
+          tablePoints(table) / 2
         );
         logger.debug(
           `Attack produced ${eliminations.length} eliminations: ${table.players.length} -> ${players.length}`
