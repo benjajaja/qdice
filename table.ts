@@ -239,7 +239,11 @@ const toCommand = (
         ready: payload as boolean,
       };
     case "Flag":
-      return { type: "Flag", player: findPlayer(type, table, user) };
+      return {
+        type: "Flag",
+        player: findPlayer(type, table, user),
+        position: payload as number,
+      };
     case "Heartbeat":
       return { type: "Heartbeat", user, clientId };
     default:
@@ -291,7 +295,7 @@ const commandResult = async (
     case "ToggleReady":
       return toggleReady(command.player, table, command.ready);
     case "Flag":
-      return flag(command.player, table);
+      return flag(command.player, command.position, table);
     case "Heartbeat":
       return [heartbeat(command.user, table, command.clientId), null];
     case "TickTurnOver":

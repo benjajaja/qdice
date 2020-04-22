@@ -235,12 +235,18 @@ onlineButtons model =
 
             Just player ->
                 let
+                    canFlag =
+                        canPlayerFlag model.game.roundCount
+                            model.game.params.noFlagRounds
+                            model.game.flag
+                            player
+
                     sitButton =
                         if model.game.isPlayerOut then
                             [ button
                                 [ class <|
                                     "edButton edGameHeader__button"
-                                        ++ (if not model.game.canFlag then
+                                        ++ (if canFlag then
                                                 " edGameHeader__button--left"
 
                                             else
@@ -256,7 +262,7 @@ onlineButtons model =
                             [ button
                                 [ class <|
                                     "edButton edGameHeader__button"
-                                        ++ (if not model.game.canFlag then
+                                        ++ (if not canFlag then
                                                 " edGameHeader__button--left"
 
                                             else
@@ -269,21 +275,19 @@ onlineButtons model =
                             ]
 
                     checkbox =
-                        if model.game.canFlag && player.gameStats.position > 1 then
+                        if canFlag then
                             [ label
                                 [ class "edCheckbox edGameHeader__checkbox edGameHeader__button--left"
-                                , onClick <| GameCmd <| Flag <| not <| Maybe.withDefault False model.game.flag
+                                , onClick <| GameCmd <| Flag player.gameStats.position
                                 , dataTestId "check-flag"
                                 ]
                                 [ Icon.icon "flag"
                                 , text <|
-                                    "Surrender"
-                                        ++ (if player.gameStats.position == List.length model.game.players then
-                                                ""
+                                    if player.gameStats.position == List.length model.game.players then
+                                        "Surrender"
 
-                                            else
-                                                " " ++ ordinal player.gameStats.position
-                                           )
+                                    else
+                                        " " ++ ordinal player.gameStats.position
                                 ]
                             ]
 
@@ -569,4 +573,18 @@ turnTimeDisplay seconds =
 
                 _ ->
                     unit ++ "s"
+           )
+
+
+canPlayerFlag : Int -> Int -> Maybe Int -> Player -> Bool
+canPlayerFlag roundCount noFlagRounds uiFlagged player =
+    (roundCount > noFlagRounds)
+        && player.gameStats.position
+        > 1
+        && (case player.flag of
+                Just f ->
+                    f < player.gameStats.position
+
+                Nothing ->
+                    uiFlagged == Nothing
            )

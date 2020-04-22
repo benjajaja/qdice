@@ -212,7 +212,7 @@ export type Command =
   | CommandSkeleton<"SitOut", { player: Player }>
   | CommandSkeleton<"SitIn", { player: Player }>
   | CommandSkeleton<"ToggleReady", { player: Player; ready: boolean }>
-  | CommandSkeleton<"Flag", { player: Player }>
+  | CommandSkeleton<"Flag", { player: Player; position: number }>
   | CommandSkeleton<"TickTurnOver", { sitPlayerOut: boolean }>
   | CommandSkeleton<"TickTurnOut">
   | CommandSkeleton<"EndGame", { winner: Player | null; turnCount: number }>

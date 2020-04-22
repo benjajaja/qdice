@@ -119,10 +119,12 @@ export const tickBotTurn = (table: Table): Command | undefined => {
   ) {
     if (position > 1) {
       if (player.flag === null || player.flag < position) {
-        return { type: "Flag", player };
+        return { type: "Flag", player, position };
       } else {
         return { type: "EndTurn", player };
       }
+    } else {
+      return { type: "EndTurn", player };
     }
   }
   if (table.roundCount >= 10 && table.players.length === 2 && position === 2) {
@@ -137,7 +139,7 @@ export const tickBotTurn = (table: Table): Command | undefined => {
         if (!player.bot.state.surrender) {
           return { type: "BotState", player, botCommand: "Surrender" };
         } else {
-          return { type: "Flag", player };
+          return { type: "Flag", player, position };
         }
       }
     }

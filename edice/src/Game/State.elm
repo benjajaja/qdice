@@ -49,13 +49,10 @@ init table tableMap_ =
 
         board =
             Board.init <| Result.withDefault Maps.emptyMap map
-
-        players =
-            []
     in
     ( { table = table
       , board = board
-      , players = players
+      , players = []
       , player = Nothing
       , status = Paused
       , gameStart = Nothing
@@ -78,7 +75,6 @@ init table tableMap_ =
       , chatOverlay = Nothing
       , isPlayerOut = False
       , roundCount = 0
-      , canFlag = False
       , isReady = Nothing
       , flag = Nothing
       , params =
@@ -221,6 +217,12 @@ findLoggedUserPlayer logged players =
         |> List.head
 
 
+findPlayer : Model -> List Player -> Maybe Player
+findPlayer game list =
+    game.player
+        |> Maybe.andThen (\p -> find (.id >> (==) p.id) list)
+
+
 updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
 updateTableStatus model status =
     let
@@ -272,23 +274,6 @@ updateTableStatus model status =
                         timestamp ->
                             Just timestamp
 
-        canFlag =
-            case player of
-                Nothing ->
-                    False
-
-                Just canFlagPlayer ->
-                    (status.roundCount > game.params.noFlagRounds)
-                        && canFlagPlayer.gameStats.position
-                        > 1
-                        && (case canFlagPlayer.flag of
-                                Just f ->
-                                    f < canFlagPlayer.gameStats.position
-
-                                Nothing ->
-                                    True
-                           )
-
         canMove =
             if not hasTurn then
                 False
@@ -317,7 +302,6 @@ updateTableStatus model status =
                 , isPlayerOut = isOut
                 , board = board_
                 , roundCount = status.roundCount
-                , canFlag = canFlag
                 , currentGame = status.currentGame
             }
 
@@ -346,6 +330,16 @@ updateTableStatus model status =
 
           else
             Cmd.none
+        , case status.currentGame of
+            Just id ->
+                if status.currentGame /= game.currentGame then
+                    consoleDebug <| "gameId: " ++ String.fromInt id
+
+                else
+                    Cmd.none
+
+            Nothing ->
+                Cmd.none
         ]
     )
 
@@ -400,23 +394,6 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
             else
                 Nothing
 
-        canFlag =
-            case player of
-                Nothing ->
-                    False
-
-                Just canFlagPlayer ->
-                    (roundCount > model.game.params.noFlagRounds)
-                        && canFlagPlayer.gameStats.position
-                        > 1
-                        && (case canFlagPlayer.flag of
-                                Just f ->
-                                    f < canFlagPlayer.gameStats.position
-
-                                Nothing ->
-                                    True
-                           )
-
         board =
             if List.length lands == 0 then
                 game.board
@@ -445,6 +422,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
         game_ =
             { game
                 | board = board
+                , players = players
                 , player = player
                 , turnIndex = turnIndex
                 , hasTurn = hasTurn
@@ -452,8 +430,6 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                 , turnStart = turnStart
                 , isPlayerOut = isOut
                 , roundCount = roundCount
-                , canFlag = canFlag
-                , players = players
             }
 
         ( tmpModel, turnCmd ) =
@@ -530,22 +506,36 @@ updatePlayerStatus model player =
                     isOut =
                         player.out
 
-                    canFlag =
-                        (game.roundCount > game.params.noFlagRounds)
-                            && player.gameStats.position
-                            > 1
-                            && (case player.flag of
-                                    Just f ->
-                                        f < player.gameStats.position
+                    flag =
+                        case player.flag of
+                            Just _ ->
+                                Nothing
 
-                                    Nothing ->
-                                        True
-                               )
+                            Nothing ->
+                                Nothing
                 in
-                { game | players = players, isPlayerOut = isOut, canFlag = canFlag }
+                { game
+                    | players = players
+                    , player =
+                        if isUser then
+                            Just player
+
+                        else
+                            game.player
+                    , isPlayerOut = isOut
+                    , flag = flag
+                }
 
             else
-                { game | players = players }
+                { game
+                    | players = players
+                    , player =
+                        if isUser then
+                            Just player
+
+                        else
+                            game.player
+                }
     in
     ( { model | game = game_ }, Cmd.none )
 
@@ -590,6 +580,12 @@ showRoll model roll =
         tuple : Maybe ( Land.Land, Land.Land )
         tuple =
             Maybe.map2 Tuple.pair fromLand toLand
+
+        players =
+            roll.players
+
+        player =
+            findUserPlayer model.user players
 
         updates : List Board.Types.LandUpdate
         updates =
@@ -666,26 +662,32 @@ showRoll model roll =
                 False
 
             else
-                case game.player of
+                case player of
                     Nothing ->
                         False
 
-                    Just turnPlayer ->
+                    Just p ->
                         board_.map.lands
-                            |> List.filter (\land -> land.color == turnPlayer.color && land.points > 1)
-                            |> List.map (Board.canAttackFrom board_.map turnPlayer.color >> Result.toMaybe)
+                            |> List.filter (\land -> land.color == p.color && land.points > 1)
+                            |> List.map (Board.canAttackFrom board_.map p.color >> Result.toMaybe)
                             |> List.any ((==) Nothing >> not)
 
         game_ =
-            { game | board = board_, turnStart = roll.turnStart, players = roll.players, canMove = canMove }
+            { game
+                | board = board_
+                , players = players
+                , player = player
+                , turnStart = roll.turnStart
+                , canMove = canMove
+            }
 
         soundName =
             if List.sum roll.from.roll > List.sum roll.to.roll then
-                case game.player of
-                    Just turnPlayer ->
+                case player of
+                    Just p ->
                         case fromLand of
                             Just land ->
-                                if land.color == turnPlayer.color then
+                                if land.color == p.color then
                                     "rollSuccessPlayer"
 
                                 else
@@ -839,16 +841,13 @@ updateTable model table msg =
                             board =
                                 game.board
 
-                            findLand =
-                                \emoji -> find (.emoji >> (==) emoji)
-
                             newMove =
-                                case findLand move.from board.map.lands of
+                                case Land.findLand move.from board.map.lands of
                                     Nothing ->
                                         Nothing
 
                                     Just fromLand ->
-                                        case findLand move.to board.map.lands of
+                                        case Land.findLand move.to board.map.lands of
                                             Nothing ->
                                                 Nothing
 
@@ -1034,28 +1033,42 @@ setUser model user =
 updatePlayers : Model -> List Player -> List Land.Color -> Model
 updatePlayers model newPlayers removedColor =
     let
-        model_ =
-            { model
-                | players = newPlayers
-                , board =
-                    if List.length newPlayers > 1 then
-                        List.foldl
-                            (\color board ->
-                                Board.State.removeColor board color
-                            )
-                            model.board
-                            removedColor
+        player : Maybe Player
+        player =
+            findPlayer model newPlayers
 
-                    else
-                        model.board
-            }
+        model_ =
+            if List.length removedColor > 0 then
+                { model
+                    | players = newPlayers
+                    , player =
+                        case player of
+                            Just p ->
+                                Just p
+
+                            Nothing ->
+                                model.player
+                    , board =
+                        if List.length newPlayers > 1 then
+                            List.foldl
+                                (\color board ->
+                                    Board.State.removeColor board color
+                                )
+                                model.board
+                                removedColor
+
+                        else
+                            model.board
+                }
+
+            else
+                model
     in
     case model.player of
         Just p ->
             if not <| List.any (.id >> (==) p.id) newPlayers then
                 { model_
                     | isPlayerOut = False
-                    , canFlag = False
                     , player = Nothing
                     , hasTurn = False
                     , isReady = Nothing

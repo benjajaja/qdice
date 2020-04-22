@@ -1,7 +1,7 @@
 module Backend.Encoding exposing (authStateEncoder, encodeAuthNetwork, encodePlayerAction, loginEncoder, myProfileUpdateEncoder, passwordEncoder, profileEncoder)
 
 import Game.Types exposing (PlayerAction(..), actionToString)
-import Json.Encode exposing (Value, bool, encode, list, null, object, string)
+import Json.Encode exposing (Value, bool, encode, int, list, null, object, string)
 import MyProfile.Types exposing (MyProfileUpdate)
 import Types exposing (..)
 
@@ -57,6 +57,9 @@ actionPayload action =
 
         Chat text ->
             Just <| string text
+
+        Flag position ->
+            Just <| int position
 
         ToggleReady ready ->
             Just <| bool ready

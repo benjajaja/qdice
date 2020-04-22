@@ -23,7 +23,7 @@ type PlayerAction
     | SitIn
     | Attack Emoji Emoji
     | EndTurn
-    | Flag Bool
+    | Flag Int
     | ToggleReady Bool
     | Heartbeat
 
@@ -53,9 +53,8 @@ type alias Model =
     , chatOverlay : Maybe ( Posix, ChatLogEntry )
     , isPlayerOut : Bool
     , roundCount : Int
-    , canFlag : Bool
     , isReady : Maybe Bool
-    , flag : Maybe Bool
+    , flag : Maybe Int
     , params : TableParams
     , currentGame : Maybe Int
     , diceVisible : Bool

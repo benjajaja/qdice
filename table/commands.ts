@@ -410,6 +410,7 @@ export const toggleReady = (
 
 export const flag = (
   player: Player,
+  clientPosition: number,
   table: Table
 ): [CommandResult, Command | null] => {
   if (table.status !== STATUS_PLAYING) {
@@ -420,6 +421,12 @@ export const flag = (
   const position = positions(player);
   if (position === 1) {
     throw new IllegalMoveError("cannot flag first", player);
+  }
+  if (position !== clientPosition) {
+    throw new IllegalMoveError(
+      `client flagged ${clientPosition} but server is ${position}`,
+      player
+    );
   }
 
   if (player.flag !== null && player.flag >= position) {
