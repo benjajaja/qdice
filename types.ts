@@ -145,12 +145,50 @@ export type ScoredElimination = Elimination & {
   score: number;
 };
 
+export enum IllegalMoveCode {
+  UserIsNull = 1,
+  NotPlaying,
+  JoinWhilePlaying,
+  AlreadyJoined,
+  NotEnoughPoints,
+  TableFull,
+  IsRetired,
+  NoTakeoverTargets,
+  LeaveWhilePlaying,
+  NotJoined,
+  AttackWhileStopped,
+  AttackOutOfTurn,
+  AttackWhileAttack,
+  AttackLandsNotFound,
+  AttackFromNeutral,
+  AttackFromOnePoint,
+  AttackSameColor,
+  AttackNotBorder,
+  EndTurnWhileStopped,
+  EndTurnOutOfTurn,
+  EndTurnDuringAttack,
+  EndTurnNoPlayer,
+  SitOutNotPlaying,
+  SitOutNoPlayer,
+  SitInNoPlayerfalse,
+  FlagWhileNotPlaying,
+  FlagFirst,
+  FlagMismatch,
+  FlagUp,
+}
+
 export class IllegalMoveError extends Error {
+  code: IllegalMoveCode;
   bot: boolean;
 
-  constructor(message: string, player?: Player | boolean) {
+  constructor(
+    message: string,
+    code: IllegalMoveCode,
+    player?: Player | boolean
+  ) {
     super(message);
     Object.setPrototypeOf(this, IllegalMoveError.prototype);
+    this.code = code;
     this.bot =
       player === undefined
         ? false

@@ -17,6 +17,7 @@ import {
   Player,
   BotPlayer,
   ScoredElimination,
+  IllegalMoveCode,
 } from "./types";
 import * as db from "./db";
 import * as publish from "./table/publish";
@@ -148,8 +149,19 @@ export const start = async (
       } catch (e) {
         publish.clientError(clientId, e);
         if (e instanceof IllegalMoveError) {
-          logger.error(e, e.bot, "illegal move caught gracefully");
-          Sentry.captureException(e);
+          logger.error(e, e.code, e.bot, "illegal move caught gracefully");
+          switch (e.code) {
+            case IllegalMoveCode.IsRetired:
+            case IllegalMoveCode.NotEnoughPoints:
+            case IllegalMoveCode.EndTurnOutOfTurn:
+              break;
+            default: {
+              Sentry.setTag("IllegalMoveSource", "user-command");
+              Sentry.setTag("IllegalMoveCode", e.code.toString());
+              Sentry.setTag("isBot", e.bot ? "yes" : "no");
+              Sentry.captureException(e);
+            }
+          }
         } else if (e instanceof jwt.JsonWebTokenError) {
           logger.error(e, "bad JWT token");
           Sentry.captureException(e);
@@ -252,7 +264,10 @@ const toCommand = (
 };
 const assertUser = (type: CommandType, user: User | null): User => {
   if (user === null) {
-    throw new IllegalMoveError(`user is null (for command "${type}")`);
+    throw new IllegalMoveError(
+      `user is null (for command "${type}")`,
+      IllegalMoveCode.UserIsNull
+    );
   }
   return user;
 };
@@ -264,7 +279,7 @@ const findPlayer = (
   const u = assertUser(type, user);
   const existing = table.players.filter(p => p.id === u.id).pop();
   if (!existing) {
-    throw new IllegalMoveError("not playing");
+    throw new IllegalMoveError("not playing", IllegalMoveCode.NotPlaying);
   }
   return existing;
 };

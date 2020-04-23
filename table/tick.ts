@@ -150,6 +150,9 @@ const tick = async (tableTag: string, lock) => {
           "illegal move from tick caught gracefully",
           command
         );
+        Sentry.setTag("IllegalMoveSource", "tick");
+        Sentry.setTag("IllegalMoveCode", e.code.toString());
+        Sentry.setTag("isBot", e.bot ? "yes" : "no");
         Sentry.captureException(e);
       } else {
         await publish.sigint();

@@ -11,6 +11,7 @@ import {
   Color,
   Persona,
   Command,
+  IllegalMoveCode,
 } from "../types";
 import * as publish from "./publish";
 import { addSeconds, now } from "../timestamp";
@@ -86,19 +87,35 @@ export const join = (
     if (clientId !== null && table.players.some(isBot)) {
       return takeover(user, table, clientId);
     }
-    throw new IllegalMoveError("join while STATUS_PLAYING", !!bot);
+    throw new IllegalMoveError(
+      "join while STATUS_PLAYING",
+      IllegalMoveCode.JoinWhilePlaying,
+      !!bot
+    );
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
-    throw new IllegalMoveError("already joined", !!bot);
+    throw new IllegalMoveError(
+      "already joined",
+      IllegalMoveCode.AlreadyJoined,
+      !!bot
+    );
   }
 
   if (bot === null && user.points < table.points) {
-    throw new IllegalMoveError("not enough points to join", !!bot);
+    throw new IllegalMoveError(
+      "not enough points to join",
+      IllegalMoveCode.NotEnoughPoints,
+      !!bot
+    );
   }
 
   if (!table.players.some(isBot) && table.players.length >= table.playerSlots) {
-    throw new IllegalMoveError("table already full", !!bot);
+    throw new IllegalMoveError(
+      "table already full",
+      IllegalMoveCode.TableFull,
+      !!bot
+    );
   }
 
   let result: [readonly Player[], Player];
@@ -182,19 +199,35 @@ const takeover = (
 ): CommandResult => {
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (existing) {
-    throw new IllegalMoveError("already joined", false);
+    throw new IllegalMoveError(
+      "already joined",
+      IllegalMoveCode.AlreadyJoined,
+      false
+    );
   }
 
   if (user.points < table.points) {
-    throw new IllegalMoveError("not enough points to join", false);
+    throw new IllegalMoveError(
+      "not enough points to join",
+      IllegalMoveCode.NotEnoughPoints,
+      false
+    );
   }
 
   if (!table.players.some(isBot) && table.players.length >= table.startSlots) {
-    throw new IllegalMoveError("table already full", false);
+    throw new IllegalMoveError(
+      "table already full",
+      IllegalMoveCode.TableFull,
+      false
+    );
   }
 
   if (table.retired.some(retiree => retiree.id === user.id)) {
-    throw new IllegalMoveError("cannot join again", false);
+    throw new IllegalMoveError(
+      "cannot join again",
+      IllegalMoveCode.IsRetired,
+      false
+    );
   }
   logger.debug(
     table.retired.map(r => r.id),
@@ -218,7 +251,11 @@ const takeover = (
   const bestBot = sortedBots.length >= 2 ? sortedBots[1] : sortedBots[0];
 
   if (!bestBot) {
-    throw new IllegalMoveError("could not find a bot to takeover", false);
+    throw new IllegalMoveError(
+      "could not find a bot to takeover",
+      IllegalMoveCode.NoTakeoverTargets,
+      false
+    );
   }
 
   const player = makePlayer(user, clientId, table.players, bestBot.color);
@@ -237,11 +274,15 @@ export const leave = (
   table: Table
 ): CommandResult => {
   if (table.status === STATUS_PLAYING) {
-    throw new IllegalMoveError("leave while STATUS_PLAYING", false);
+    throw new IllegalMoveError(
+      "leave while STATUS_PLAYING",
+      IllegalMoveCode.LeaveWhilePlaying,
+      false
+    );
   }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
-    throw new IllegalMoveError("not joined", false);
+    throw new IllegalMoveError("not joined", IllegalMoveCode.NotJoined, false);
   }
 
   const players = table.players.filter(p => p !== existing);
@@ -268,13 +309,25 @@ export const attack = (
   emojiTo: string
 ): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError("attack while not STATUS_PLAYING", player);
+    throw new IllegalMoveError(
+      "attack while not STATUS_PLAYING",
+      IllegalMoveCode.AttackWhileStopped,
+      player
+    );
   }
   if (!hasTurn(table)(player)) {
-    throw new IllegalMoveError("attack while not having turn", player);
+    throw new IllegalMoveError(
+      "attack while not having turn",
+      IllegalMoveCode.AttackOutOfTurn,
+      player
+    );
   }
   if (table.attack !== null) {
-    throw new IllegalMoveError("attack while ongoing attack", player);
+    throw new IllegalMoveError(
+      "attack while ongoing attack",
+      IllegalMoveCode.AttackWhileAttack,
+      player
+    );
   }
 
   const find = findLand(table.lands);
@@ -282,20 +335,40 @@ export const attack = (
   const toLand = find(emojiTo);
   if (!fromLand || !toLand) {
     logger.debug(table.lands.map(l => l.emoji));
-    throw new IllegalMoveError("some land not found in attack", player);
+    throw new IllegalMoveError(
+      "some land not found in attack",
+      IllegalMoveCode.AttackLandsNotFound,
+      player
+    );
   }
   if (fromLand.color < 1) {
     // TODO === Color.Neutral
-    throw new IllegalMoveError("attack from neutral", player);
+    throw new IllegalMoveError(
+      "attack from neutral",
+      IllegalMoveCode.AttackFromNeutral,
+      player
+    );
   }
   if (fromLand.points === 1) {
-    throw new IllegalMoveError("attack from single-die land", player);
+    throw new IllegalMoveError(
+      "attack from single-die land",
+      IllegalMoveCode.AttackFromOnePoint,
+      player
+    );
   }
   if (fromLand.color === toLand.color) {
-    throw new IllegalMoveError("attack same color", player);
+    throw new IllegalMoveError(
+      "attack same color",
+      IllegalMoveCode.AttackSameColor,
+      player
+    );
   }
   if (!isBorder(table.adjacency, emojiFrom, emojiTo)) {
-    throw new IllegalMoveError("attack not border", player);
+    throw new IllegalMoveError(
+      "attack not border",
+      IllegalMoveCode.AttackNotBorder,
+      player
+    );
   }
 
   const timestamp = now();
@@ -321,18 +394,34 @@ export const endTurn = (
   table: Table
 ): [CommandResult, Command | null] => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError("endTurn while not STATUS_PLAYING", player);
+    throw new IllegalMoveError(
+      "endTurn while not STATUS_PLAYING",
+      IllegalMoveCode.EndTurnWhileStopped,
+      player
+    );
   }
   if (!hasTurn(table)(player)) {
-    throw new IllegalMoveError("endTurn while not having turn", player);
+    throw new IllegalMoveError(
+      "endTurn while not having turn",
+      IllegalMoveCode.EndTurnOutOfTurn,
+      player
+    );
   }
   if (table.attack !== null) {
-    throw new IllegalMoveError("endTurn while ongoing attack", player);
+    throw new IllegalMoveError(
+      "endTurn while ongoing attack",
+      IllegalMoveCode.EndTurnDuringAttack,
+      player
+    );
   }
 
   const existing = table.players.filter(p => p.id === player.id).pop();
   if (!existing) {
-    throw new IllegalMoveError("endTurn but did not exist in game", player);
+    throw new IllegalMoveError(
+      "endTurn but did not exist in game",
+      IllegalMoveCode.EndTurnNoPlayer,
+      player
+    );
   }
 
   return nextTurn(table);
@@ -340,11 +429,19 @@ export const endTurn = (
 
 export const sitOut = (player: Player, table: Table): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError("sitOut while not STATUS_PLAYING", player);
+    throw new IllegalMoveError(
+      "sitOut while not STATUS_PLAYING",
+      IllegalMoveCode.SitOutNotPlaying,
+      player
+    );
   }
 
   if (table.players.filter(p => p.id === player.id).length === 0) {
-    throw new IllegalMoveError("sitOut while not in game", player);
+    throw new IllegalMoveError(
+      "sitOut while not in game",
+      IllegalMoveCode.SitOutNoPlayer,
+      player
+    );
   }
 
   //if (hasTurn({ turnIndex: table.turnIndex, players: table.players })(player)) {
@@ -363,11 +460,18 @@ export const sitOut = (player: Player, table: Table): CommandResult => {
 
 export const sitIn = (user, table: Table): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError("sitIn while not STATUS_PLAYING", false);
+    throw new IllegalMoveError(
+      "sitIn while not STATUS_PLAYING",
+      IllegalMoveCode.SitOutNotPlaying,
+      false
+    );
   }
   const player = table.players.filter(p => p.id === user.id).pop();
   if (!player) {
-    throw new IllegalMoveError("sitIn while not in game", false);
+    throw new IllegalMoveError(
+      "sitIn while not in game",
+      IllegalMoveCode.SitInNoPlayerfalse
+    );
   }
 
   const players = table.players.map(p =>
@@ -414,17 +518,26 @@ export const flag = (
   table: Table
 ): [CommandResult, Command | null] => {
   if (table.status !== STATUS_PLAYING) {
-    throw new IllegalMoveError("Flag while not STATUS_PLAYING", player);
+    throw new IllegalMoveError(
+      "Flag while not STATUS_PLAYING",
+      IllegalMoveCode.FlagWhileNotPlaying,
+      player
+    );
   }
 
   const positions = groupedPlayerPositions(table);
   const position = positions(player);
   if (position === 1) {
-    throw new IllegalMoveError("cannot flag first", player);
+    throw new IllegalMoveError(
+      "cannot flag first",
+      IllegalMoveCode.FlagFirst,
+      player
+    );
   }
   if (position !== clientPosition) {
     throw new IllegalMoveError(
       `client flagged ${clientPosition} but server is ${position}`,
+      IllegalMoveCode.FlagMismatch,
       player
     );
   }
@@ -432,6 +545,7 @@ export const flag = (
   if (player.flag !== null && player.flag >= position) {
     throw new IllegalMoveError(
       "cannot flag higher or equal than before",
+      IllegalMoveCode.FlagUp,
       player
     );
   }
