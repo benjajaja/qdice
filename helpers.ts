@@ -82,6 +82,9 @@ export const groupedPlayerPositions = (table: {
 export const tablePoints = (table: Table): number =>
   table.points === 0 ? 50 : table.points;
 
+export const killPoints = (table: Table): number =>
+  Math.floor((table.points === 0 ? 50 : table.points) / 2);
+
 export const updateLand = (
   lands: ReadonlyArray<Land>,
   target: Land,
@@ -137,7 +140,7 @@ export const removePlayerCascade = (
   player: Player,
   turnIndex: number,
   elimination: Elimination,
-  tablePoints: number
+  killPoints: number
 ): [readonly Player[], readonly Land[], number, readonly Elimination[]] => {
   let [players_, lands_, turnIndex_] = removePlayer(
     players,
@@ -147,10 +150,10 @@ export const removePlayerCascade = (
   );
   let eliminations: Elimination[] = [elimination];
 
-  return removeNext([players_, lands_, turnIndex_, eliminations, tablePoints]);
+  return removeNext([players_, lands_, turnIndex_, eliminations, killPoints]);
 };
 
-const removeNext = ([players, lands, turnIndex, eliminations, tablePoints]: [
+const removeNext = ([players, lands, turnIndex, eliminations, killPoints]: [
   readonly Player[],
   readonly Land[],
   number,
@@ -182,13 +185,13 @@ const removeNext = ([players, lands, turnIndex, eliminations, tablePoints]: [
             under: last
               ? {
                   player: last,
-                  points: tablePoints / 2,
+                  points: killPoints,
                 }
               : null,
           },
         },
       ]),
-      tablePoints,
+      killPoints,
     ]);
   }
   return [players, lands, turnIndex, eliminations];

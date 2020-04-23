@@ -159,11 +159,12 @@ export const serializeEliminationReason = (
   reason: EliminationReason,
   source: EliminationSource
 ) => {
+  let ser = serializePlayer(table);
   let merge = {};
   switch (reason) {
     case "☠":
       merge = {
-        player: playerWithDerived(table, (source as any).player),
+        player: ser(playerWithDerived(table, (source as any).player)),
         points: (source as any).points,
       };
       break;
@@ -180,7 +181,9 @@ export const serializeEliminationReason = (
           (source as any).under === null
             ? null
             : {
-                player: playerWithDerived(table, (source as any).under.player),
+                player: ser(
+                  playerWithDerived(table, (source as any).under.player)
+                ),
                 points: (source as any).under.points,
               },
       };

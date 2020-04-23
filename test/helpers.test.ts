@@ -352,7 +352,7 @@ describe("Helpers", function() {
             flag: players[1].flag!,
             under: {
               player: players[0],
-              points: 50,
+              points: 100,
             },
           },
         },
@@ -395,7 +395,7 @@ describe("Helpers", function() {
             flag: players[1].flag!,
             under: {
               player: players[0],
-              points: 50,
+              points: 100,
             },
           },
         },

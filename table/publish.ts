@@ -167,7 +167,7 @@ export const eliminations = (
           score: e.score,
           reason: serializeEliminationReason(table, e.reason, e.source),
         })),
-        players: players.map(serializePlayer(table)),
+        players: players.map(ser),
       },
     }),
     undefined!,

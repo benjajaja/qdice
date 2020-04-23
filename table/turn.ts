@@ -14,7 +14,7 @@ import {
   updateLand,
   groupedPlayerPositions,
   removePlayerCascade,
-  tablePoints,
+  killPoints,
 } from "../helpers";
 import * as publish from "./publish";
 
@@ -90,7 +90,7 @@ const turn = (
       newPlayer,
       props.turnIndex,
       elimination,
-      tablePoints(table) / 2
+      killPoints(table)
     );
 
     if (players_.length === players.length) {
@@ -156,7 +156,7 @@ const turn = (
       newPlayer,
       props.turnIndex,
       elimination,
-      tablePoints(table) / 2
+      killPoints(table)
     );
     props.turnIndex = turnIndex;
 

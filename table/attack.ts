@@ -3,7 +3,7 @@ import {
   findLand,
   updateLand,
   removePlayerCascade,
-  tablePoints,
+  killPoints,
 } from "../helpers";
 import * as publish from "./publish";
 import {
@@ -67,10 +67,10 @@ export const rollResult = (
             reason: ELIMINATION_REASON_DIE,
             source: {
               player: playerWithDerived(table, attacker),
-              points: tablePoints(table) / 2,
+              points: killPoints(table),
             },
           },
-          tablePoints(table) / 2
+          killPoints(table)
         );
         logger.debug(
           `Attack produced ${eliminations.length} eliminations: ${table.players.length} -> ${players.length}`
@@ -78,7 +78,7 @@ export const rollResult = (
         // update attacker score
         players = players.map(player => {
           if (player === attacker) {
-            return { ...player, score: player.score + tablePoints(table) / 2 };
+            return { ...player, score: player.score + killPoints(table) };
           }
           return player;
         });

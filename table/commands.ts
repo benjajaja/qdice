@@ -20,7 +20,7 @@ import {
   adjustPlayer,
   groupedPlayerPositions,
   removePlayerCascade,
-  tablePoints,
+  killPoints,
 } from "../helpers";
 import { isBorder } from "../maps";
 import nextTurn from "./turn";
@@ -453,13 +453,13 @@ export const flag = (
       const penultimate = sorted.pop()!;
       under = {
         player: penultimate,
-        points: tablePoints(table) / 2,
+        points: killPoints(table),
       };
       players = players.map(p =>
         p === penultimate
           ? {
               ...penultimate,
-              score: penultimate.score + tablePoints(table) / 2,
+              score: penultimate.score + killPoints(table),
             }
           : p
       );
@@ -480,7 +480,7 @@ export const flag = (
       player,
       table.turnIndex,
       elimination,
-      tablePoints(table) / 2
+      killPoints(table)
     );
 
     if (players_.length === table.players.length) {
