@@ -109,5 +109,22 @@ module.exports = {
         turnSeconds: null,
       },
     },
+    {
+      tag: "Twitter",
+      name: "Twitter",
+      mapName: "Planeta",
+      playerSlots: 8,
+      startSlots: 8,
+      points: 0,
+      stackSize: 8,
+      params: {
+        noFlagRounds: 5,
+        botLess: false,
+        startingCapitals: false,
+        readySlots: null,
+        turnSeconds: 86400,
+        twitter: true,
+      },
+    },
   ],
 };

@@ -154,10 +154,12 @@ export const getStatuses = () =>
       // R.descend(R.prop("playerCount")),
       // R.descend(R.prop("watchCount")),
     ],
-    Object.values(memoryTables).map(table => ({
-      ...R.omit(["lands", "players", "watchers", "adjacency"], table),
-      landCount: table.lands.length,
-      playerCount: table.players.length,
-      watchCount: table.watching.length,
-    }))
+    Object.values(memoryTables)
+      .filter(table => !table.params.twitter)
+      .map(table => ({
+        ...R.omit(["lands", "players", "watchers", "adjacency"], table),
+        landCount: table.lands.length,
+        playerCount: table.players.length,
+        watchCount: table.watching.length,
+      }))
   );

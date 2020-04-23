@@ -197,6 +197,9 @@ mapFromTable table =
         "Europa" ->
             Ok Montoya
 
+        "Twitter" ->
+            Ok Planeta
+
         _ ->
             Tables.decodeMap table
 
