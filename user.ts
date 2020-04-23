@@ -3,6 +3,7 @@ import * as path from "path";
 import * as R from "ramda";
 import * as errs from "restify-errors";
 import * as request from "request";
+import * as restify from "restify";
 import * as jwt from "jsonwebtoken";
 import * as Scrypt from "scrypt-kdf";
 import * as db from "./db";
@@ -70,7 +71,12 @@ export const login = async (req, res, next) => {
       );
 
       // TODO move this into db.createUser somehow
-      const picture = await downloadPicture(user.id, profile.picture);
+      let picture: string | null = null;
+      try {
+        picture = await downloadPicture(user.id, profile.picture);
+      } catch (e) {
+        logger.error(e);
+      }
       user = await db.updateUser(user.id, {
         name: null,
         email: null,
@@ -83,7 +89,7 @@ export const login = async (req, res, next) => {
     res.sendRaw(200, token);
     next();
   } catch (e) {
-    logger.error("login error", e.toString());
+    logger.error(`login error: ${e.toString()}`);
     next(new errs.InternalError("could not log in"));
   }
 };
@@ -283,7 +289,7 @@ const hashPassword = async function(password: string) {
   return buffer.toString("base64");
 };
 
-export const register = function(req, res, next) {
+export const register = function(req: restify.Request, res, next) {
   db.createUser(db.NETWORK_PASSWORD, null, req.body.name, null, null, null)
     .then(profile => {
       const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);

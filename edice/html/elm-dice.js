@@ -262,6 +262,9 @@ app.ports.requestNotifications.subscribe(function() {
 });
 
 app.ports.renounceNotifications.subscribe(function(jwt) {
+  if (!navigator || !navigator.serviceWorker) {
+    return;
+  }
   navigator.serviceWorker.ready.then(function(registration) {
     return registration.pushManager
       .getSubscription()
