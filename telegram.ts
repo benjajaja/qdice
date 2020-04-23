@@ -12,6 +12,8 @@ import * as puppeteer from "puppeteer";
 import * as mqtt from "mqtt";
 import * as webPush from "web-push";
 import * as Twitter from "twitter";
+import { uploadFile } from "s3-bucket";
+import * as getFileFromUrl from "@appgeist/get-file-from-url";
 import { rand } from "./rand";
 import * as db from "./db";
 import logger from "./logger";
@@ -114,15 +116,15 @@ client.on("message", async (topic, message) => {
         }
       });
 
-      if (process.env.TWITTER_CONSUMER_KEY) {
-        try {
-          await twitter.post("statuses/update", {
-            status: `A game with "${event.user.name}" is about to start at https://qdice.wtf/${event.table}. Play now!`,
-          });
-        } catch (e) {
-          logger.error(e);
-        }
-      }
+      // if (process.env.TWITTER_CONSUMER_KEY) {
+      // try {
+      // await twitter.post("statuses/update", {
+      // status: `A game with "${event.user.name}" is about to start at https://qdice.wtf/${event.table}. Play now!`,
+      // });
+      // } catch (e) {
+      // logger.error(e);
+      // }
+      // }
 
       //if (officialGroups.length) {
       //const { table, players } = event;
@@ -217,7 +219,7 @@ client.on("message", async (topic, message) => {
   }
 });
 
-const twitterGames: { [index: number]: string } = {};
+const twitterGames: { [index: number]: { id: string; table: string } } = {};
 const postTwitterGame = async (
   tableName: string,
   gameId: number,
@@ -235,7 +237,7 @@ const postTwitterGame = async (
   } else {
     const post = twitterGames[gameId];
     if (!post) {
-      logger.warn("Twitter post for game not found: " + gameId);
+      logger.debug(`no twitter id for game ${gameId}`);
       return;
     }
     let status: string | null = null;
@@ -248,6 +250,22 @@ const postTwitterGame = async (
             : "failed"
         }`;
         break;
+      case "SitOut":
+      case "EndTurn":
+        const ssUrl = `http://renderer:3000?type=screenshot&url=http://nginx/${tableName}`;
+        logger.debug(ssUrl);
+        const screenshot = await getFileFromUrl({
+          url: ssUrl,
+          file: `tmp_image_${eventId}.png`,
+        });
+        const { url } = await uploadFile({
+          filePath: screenshot,
+          Key: `event_${eventId}`,
+        });
+        await new Promise((resolve, reject) =>
+          fs.unlink(screenshot, err => (err ? reject(err) : resolve()))
+        );
+        status = `${command.player.name}'s turn has finished. ${url}`;
     }
     logger.debug("posting", status);
     if (status !== null) {

@@ -66,6 +66,11 @@ services:
     command: "--no-global-config --config-file=/srv/data/goaccess.conf"
     cap_drop:
       - all
+  renderer:
+    image: zenato/puppeteer-renderer
+    restart: always
+    ports:
+      - "3000:3000"
 
 networks:
   default:

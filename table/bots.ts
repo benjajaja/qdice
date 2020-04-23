@@ -15,7 +15,7 @@ import {
 import { havePassed } from "../timestamp";
 import { shuffle, rand } from "../rand";
 import logger from "../logger";
-import { BOT_DEADLOCK_MAX } from "../constants";
+import { BOT_DEADLOCK_MAX, TURN_SECONDS } from "../constants";
 import { isBorder } from "../maps";
 import { findLand, groupedPlayerPositions } from "../helpers";
 import { move, Source } from "./bot_strategies";
@@ -102,7 +102,8 @@ export const addBots = (table: Table, persona?: Persona): Command => {
 };
 
 export const tickBotTurn = (table: Table): Command | undefined => {
-  if (!havePassed(0.5, table.turnStart)) {
+  const passTimeNeeded = table.params.twitter ? TURN_SECONDS - 1 : 0.5;
+  if (!havePassed(passTimeNeeded, table.turnStart)) {
     return;
   }
 
@@ -110,12 +111,16 @@ export const tickBotTurn = (table: Table): Command | undefined => {
   if (!isBot(player)) {
     throw new Error("cannot tick non-bot");
   }
+  // if (table.params.twitter) {
+  // return { type: "SitOut", player };
+  // }
 
   const positions = groupedPlayerPositions(table);
   const position = positions(player);
   if (
-    table.players.every(p => p.bot !== null) ||
-    player.bot.state.deadlockCount > BOT_DEADLOCK_MAX
+    !table.params.twitter &&
+    (table.players.every(p => p.bot !== null) ||
+      player.bot.state.deadlockCount > BOT_DEADLOCK_MAX)
   ) {
     if (position > 1) {
       if (player.flag === null || player.flag < position) {

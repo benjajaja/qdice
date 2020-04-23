@@ -19,6 +19,7 @@ import {
   TURN_SECONDS,
   ROLL_SECONDS,
   ROLL_SECONDS_BOT,
+  STATUS_FINISHED,
 } from "../constants";
 import { addBots, tickBotTurn, isBot, mkBot } from "./bots";
 import logger from "../logger";
@@ -118,7 +119,7 @@ const tick = async (tableTag: string, lock) => {
       } else if (table.players[table.turnIndex].bot !== null) {
         command = tickBotTurn(table);
       }
-    } else if (table.status === STATUS_PAUSED) {
+    } else {
       if (shouldStart(table)) {
         command = { type: "Start", players: table.players };
       } else if (
@@ -129,6 +130,13 @@ const tick = async (tableTag: string, lock) => {
       ) {
         const persona =
           table.name === "Planeta" &&
+          table.players.length === table.playerSlots - 1
+            ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
+            : undefined;
+        command = addBots(table, persona);
+      } else if (!process.env.E2E && table.params.twitter) {
+        const persona =
+          table.name === "Twitter" &&
           table.players.length === table.playerSlots - 1
             ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
             : undefined;
