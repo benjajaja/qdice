@@ -38,7 +38,7 @@ decodeTopicMessage userTable topic message =
         AllClients ->
             case decodeString (field "type" Dec.string) message of
                 Err err ->
-                    Err <| errorToString err
+                    Err <| decodeErrorToString "AllClients" "type" err
 
                 Ok mtype ->
                     case mtype of
@@ -48,7 +48,7 @@ decodeTopicMessage userTable topic message =
                                     Ok <| AllClientsMsg <| TablesInfo tables
 
                                 Err err ->
-                                    Err <| errorToString err
+                                    Err <| decodeErrorToString "AllClients" mtype err
 
                         "sigint" ->
                             Ok <| AllClientsMsg <| SigInt
@@ -59,7 +59,7 @@ decodeTopicMessage userTable topic message =
                                     Ok <| AllClientsMsg <| Toast toastMessage
 
                                 Err err ->
-                                    Err <| errorToString err
+                                    Err <| decodeErrorToString "AllClients" mtype err
 
                         "online" ->
                             case
@@ -75,7 +75,7 @@ decodeTopicMessage userTable topic message =
                                     Ok <| AllClientsMsg <| ServerOnline version toastMessage
 
                                 Err err ->
-                                    Err <| errorToString err
+                                    Err <| decodeErrorToString "AllClients" mtype err
 
                         _ ->
                             Err <| "unknown global message type \"" ++ mtype ++ "\""
@@ -88,7 +88,7 @@ decodeTableMessage : Table -> String -> Result String Msg
 decodeTableMessage table message =
     case decodeString (field "type" Dec.string) message of
         Err err ->
-            Err <| errorToString err
+            Err <| decodeErrorToString "table" "type" err
 
         Ok mtype ->
             case mtype of
@@ -107,7 +107,7 @@ decodeTableMessage table message =
                             Ok (TableMsg table <| (\( a, b ) -> Chat a b) <| chat)
 
                         Err err ->
-                            Err <| errorToString err
+                            Err <| decodeErrorToString "table" mtype err
 
                 "enter" ->
                     case decodeString (field "payload" Dec.string) message of
@@ -131,7 +131,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Update update
 
                         Err err ->
-                            Err <| errorToString err
+                            Err <| decodeErrorToString "table" mtype err
 
                 "roll" ->
                     case decodeString (field "payload" rollDecoder) message of
@@ -139,7 +139,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Roll roll
 
                         Err err ->
-                            Err <| errorToString err
+                            Err <| decodeErrorToString "table" mtype err
 
                 "move" ->
                     case decodeString (field "payload" moveDecoder) message of
@@ -147,7 +147,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Move move
 
                         Err err ->
-                            Err <| errorToString err
+                            Err <| decodeErrorToString "table" mtype err
 
                 "eliminations" ->
                     case decodeString (field "payload" eliminationsDecoder) message of
@@ -155,7 +155,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Eliminations eliminations players
 
                         Err err ->
-                            Err <| errorToString err
+                            Err <| decodeErrorToString "table" mtype err
 
                 "error" ->
                     case decodeString (field "payload" Dec.string) message of
@@ -171,7 +171,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| Join player
 
                         Err err ->
-                            Err <| errorToString err
+                            Err <| decodeErrorToString "table" mtype err
 
                 "leave" ->
                     case decodeString (field "payload" playersDecoder) message of
@@ -195,7 +195,7 @@ decodeTableMessage table message =
                             Ok <| TableMsg table <| PlayerStatus player
 
                         Err err ->
-                            Err <| errorToString err
+                            Err <| decodeErrorToString "table" mtype err
 
                 _ ->
                     Err <| "unknown table message type \"" ++ mtype ++ "\""
@@ -215,7 +215,7 @@ decodeClientMessage message =
                             Ok <| UpdateUser user token preferences
 
                         Err err ->
-                            Err <| errorToString err
+                            Err <| decodeErrorToString "client" mtype err
 
                 "error" ->
                     case decodeString (field "payload" Dec.string) message of
@@ -276,3 +276,8 @@ decodeDirection string =
 
         _ ->
             Nothing
+
+
+decodeErrorToString : String -> String -> Error -> String
+decodeErrorToString topic type_ err =
+    "(" ++ topic ++ "/" ++ type_ ++ ") " ++ Dec.errorToString err
