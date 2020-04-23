@@ -13,7 +13,12 @@ export const addGameEvent = async (
   gameId: number,
   command: Command
 ): Promise<number | null> => {
-  if (command.type === "Clear" || command.type === "Heartbeat") {
+  if (
+    command.type === "Clear" ||
+    command.type === "Heartbeat" ||
+    command.type === "Enter" ||
+    command.type === "Exit"
+  ) {
     return null;
   }
 

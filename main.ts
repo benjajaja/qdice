@@ -1,3 +1,9 @@
+if (process.env.NODE_ENV === "production") {
+  const Sentry = require("@sentry/node");
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+  });
+}
 import logger from "./logger";
 import * as fs from "fs";
 let version = "unknown";
@@ -10,7 +16,10 @@ try {
 } catch (e) {
   logger.error("Coult not read version file");
 }
-logger.info("go...");
+
+if (!fs.existsSync("./map-sources.json")) {
+  throw new Error("map-sources.json not generated.");
+}
 
 import * as db from "./db";
 import * as table from "./table";
@@ -296,3 +305,5 @@ export const server = async () => {
     logger.info("connected to postgres.");
   }
 };
+
+server();

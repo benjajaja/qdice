@@ -7,3 +7,4 @@ docker build \
   --build-arg build_id=$(git rev-parse HEAD) \
   .
 
+docker build --tag bgrosse/qdice:beancounter -f Dockerfile.beancounter .

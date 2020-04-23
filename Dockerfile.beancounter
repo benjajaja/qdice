@@ -1,0 +1,19 @@
+# node.js server build
+
+FROM node:10.15.3-alpine AS build
+
+WORKDIR /usr/src/nodice
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile --production
+
+COPY tsconfig.json *.ts
+COPY table ./table
+
+FROM zenato/puppeteer-renderer AS server
+
+COPY --from=build /usr/src/nodice /usr/src/nodice
+
+WORKDIR /usr/src/nodice
+CMD ["yarn", "ts-node", "beancounter.ts"]
+
+

@@ -13,9 +13,4 @@ services:
       - 11883:11883
   nginx:
     image: bgrosse/qdice:frontend-local
-  renderer:
-    image: zenato/puppeteer-renderer
-    restart: always
-    ports:
-      - "3000:3000"
 

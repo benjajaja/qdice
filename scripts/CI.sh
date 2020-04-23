@@ -4,8 +4,7 @@ set -e
 ./scripts/build.sh
 ./scripts/build.frontend.sh local
 
-docker-compose down -v
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+./scripts/docker-compose.sh
 
 cd e2e
 yarn

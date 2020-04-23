@@ -134,13 +134,13 @@ const tick = async (tableTag: string, lock) => {
             ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
             : undefined;
         command = addBots(table, persona);
-      } else if (!process.env.E2E && table.params.twitter) {
-        const persona =
-          table.name === "Twitter" &&
-          table.players.length === table.playerSlots - 1
-            ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
-            : undefined;
-        command = addBots(table, persona);
+        // } else if (!process.env.E2E && table.params.twitter) {
+        // const persona =
+        // table.name === "Twitter" &&
+        // table.players.length === table.playerSlots - 1
+        // ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
+        // : undefined;
+        // command = addBots(table, persona);
       }
     }
 

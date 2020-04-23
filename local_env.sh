@@ -2,4 +2,4 @@
 docker-compose stop nodice &
 export $(cat .env | xargs)
 export $(cat .local_env | xargs)
-node server.js
+nodemon -e .ts main.ts

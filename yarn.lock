@@ -534,6 +534,13 @@
     "@types/node" "*"
     "@types/pg-types" "*"
 
+"@types/puppeteer@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@types/puppeteer/-/puppeteer-2.0.0.tgz#82c04f93367e2d3396e371a71be1167332148838"
+  integrity sha512-QPHXIcaPcijMbvizoM7PRL97Rm+aM8J2DmgTz2tt79b15PqbyeaCppYonvPLHQ/Q5ea92BUHDpv4bsqtiTy8kQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/ramda@0.25.46":
   version "0.25.46"
   resolved "https://registry.yarnpkg.com/@types/ramda/-/ramda-0.25.46.tgz#8399a35eb117f4a821deb9c4cfecc9b276fb7daf"

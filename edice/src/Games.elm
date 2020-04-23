@@ -227,9 +227,17 @@ foldGame event ( game, list ) =
                     ++ ")"
             )
 
-        EndTurn player ->
-            ( game, foldGameItem list <| player.name ++ " ended his turn" )
+        EndTurn id player ->
+            ( game
+            , foldGameItemSpecial list <|
+                div []
+                    [ text <| player.name ++ " ended his turn"
 
+                    -- , div [] [ img [ src <| "http://localhost/screenshots/screenshot_" ++ String.fromInt id ++ ".png" ] [] ]
+                    ]
+            )
+
+        -- ( game, foldGameItem list <| player.name ++ " ended his turn" )
         TickTurnOut ->
             ( game, foldGameItem list <| "Skipped out player" )
 
@@ -254,7 +262,8 @@ foldGame event ( game, list ) =
         ToggleReady player ready ->
             ( game
             , foldGameItem list <|
-                player.name ++ " toggled ready -> "
+                player.name
+                    ++ " toggled ready -> "
                     ++ (if ready then
                             "yes"
 
@@ -292,4 +301,12 @@ foldGameItem list str =
                 [ div []
                     [ text str ]
                 ]
+           ]
+
+
+foldGameItemSpecial : List (Html Msg) -> Html Msg -> List (Html Msg)
+foldGameItemSpecial list element =
+    list
+        ++ [ li []
+                [ element ]
            ]

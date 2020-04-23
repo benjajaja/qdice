@@ -26,16 +26,12 @@ services:
     depends_on:
       - postgres
       - emqx
-  telegram:
+  beancounter:
     restart: always
-    image: bgrosse/qdice:backend
+    image: bgrosse/qdice:beancounter
     env_file: .env
     volumes:
-      - ${AVATAR_PATH}:/avatars
-    depends_on:
-      - postgres
-      - emqx
-    command: "node telegram.js"
+      - ${SCREENSHOT_PATH}:/screenshots
   certbot:
     image: certbot/certbot
     volumes:
@@ -53,6 +49,7 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
       - ${AVATAR_PATH}:/var/www/qdice.wtf/pictures:ro
+      - ${SCREENSHOT_PATH}:/var/www/qdice.wtf/screenshots:ro
       - ./data/logs/nginx:/var/log/nginx
       - goaccess:/var/www/goaccess:ro
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
@@ -66,11 +63,6 @@ services:
     command: "--no-global-config --config-file=/srv/data/goaccess.conf"
     cap_drop:
       - all
-  renderer:
-    image: zenato/puppeteer-renderer
-    restart: always
-    ports:
-      - "3000:3000"
 
 networks:
   default:

@@ -440,6 +440,7 @@ gameEventDecoder =
 
                     "EndTurn" ->
                         succeed Games.Types.EndTurn
+                            |> required "id" int
                             |> required "player" shortPlayerDecoder
 
                     "TickTurnOut" ->

@@ -21,6 +21,7 @@
     "@types/jsonwebtoken": "^8.3.5",
     "@types/node": "10.12.18",
     "@types/pg": "7.4.11",
+    "@types/puppeteer": "2.0.0",
     "@types/ramda": "0.25.46",
     "@types/restify": "7.2.7",
     "@types/restify-errors": "^4.3.3",

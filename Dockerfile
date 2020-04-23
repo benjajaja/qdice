@@ -44,5 +44,5 @@ COPY --from=starting_positions /starting_positions/output /usr/src/nodice/starti
 
 WORKDIR /usr/src/nodice
 EXPOSE 5001
-CMD ["node", "server.js"]
+CMD ["yarn", "ts-node", "main.ts"]
 
