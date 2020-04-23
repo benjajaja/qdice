@@ -225,7 +225,7 @@ type CommandSkeleton<T, P = {}> = {
   readonly type: T;
 } & P;
 export type Command =
-  | CommandSkeleton<"Start">
+  | CommandSkeleton<"Start", { players: readonly Player[] }>
   | CommandSkeleton<"Enter", { user: User | null; clientId: string }>
   | CommandSkeleton<"Exit", { user: User | null; clientId: string }>
   | CommandSkeleton<"Chat", { user: { name: string } | null; message: string }>

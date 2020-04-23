@@ -37,10 +37,10 @@ webPush.setVapidDetails(
 
 const telegram = new Telegram(process.env.BOT_TOKEN);
 var twitter = new Twitter({
-  consumer_key: process.env.TWITTER_CONSUMER_KEY,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
-  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+  consumer_key: process.env.TWITTER_CONSUMER_KEY!,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET!,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY!,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
 });
 const uid = new ShortUniqueId();
 
@@ -190,10 +190,12 @@ client.on("message", async (topic, message) => {
       tableName,
       gameId,
       command,
-    }: { tableName: string; gameId: number; command: Command } = JSON.parse(
-      message.toString()
-    );
-    await addGameEvent(tableName, gameId, command);
+    }: {
+      tableName: string;
+      gameId: number;
+      command: Command;
+    } = JSON.parse(message.toString());
+    const eventId = await addGameEvent(tableName, gameId, command);
     switch (command.type) {
       case "Roll":
         const success = R.sum(command.fromRoll) > R.sum(command.toRoll);
@@ -205,8 +207,57 @@ client.on("message", async (topic, message) => {
         // );
         break;
     }
+    if (process.env.TWITTER_CONSUMER_KEY && eventId) {
+      try {
+        await postTwitterGame(tableName, gameId, command, eventId);
+      } catch (e) {
+        logger.error(e);
+      }
+    }
   }
 });
+
+const twitterGames: { [index: number]: string } = {};
+const postTwitterGame = async (
+  tableName: string,
+  gameId: number,
+  command: Command,
+  eventId: number
+) => {
+  if (command.type === "Start") {
+    const post = await twitter.post("statuses/update", {
+      status: `Game #${gameId} with ${command.players
+        .map(R.prop("name"))
+        .join(", ")} has started https://qdice.wtf/${tableName}!`,
+    });
+    logger.debug(post);
+    twitterGames[gameId] = post.id_str;
+  } else {
+    const post = twitterGames[gameId];
+    if (!post) {
+      logger.warn("Twitter post for game not found: " + gameId);
+      return;
+    }
+    let status: string | null = null;
+    switch (command.type) {
+      case "Roll":
+        status = `${command.attacker.name} attacked ${command.defender?.name ??
+          "Neutral"} from ${command.from} to ${command.to} and ${
+          R.sum(command.fromRoll) > R.sum(command.toRoll)
+            ? "succeeded"
+            : "failed"
+        }`;
+        break;
+    }
+    logger.debug("posting", status);
+    if (status !== null) {
+      await twitter.post("statuses/update", {
+        status: `(${eventId}) @qdicewtf ${status}`,
+        in_reply_to_status_id: post,
+      });
+    }
+  }
+};
 
 db.connect().then(db => {
   console.log("connected to postgres");

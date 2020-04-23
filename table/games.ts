@@ -25,10 +25,10 @@ export const addGameEvent = async (
     return null;
   }
 
-  setImmediate(() => db.addGameEvent(gameId!, command));
+  const event = await db.addGameEvent(gameId!, command);
 
   if (command.type === "EndGame") {
     return 0;
   }
-  return gameId;
+  return event.id;
 };

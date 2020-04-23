@@ -24,6 +24,7 @@
     "@types/restify": "7.2.7",
     "@types/restify-errors": "^4.3.3",
     "@types/seedrandom": "^2.4.28",
+    "@types/twitter": "^1.7.0",
     "@types/web-push": "^3.3.0",
     "async-lock": "^1.2.2",
     "camelize": "^1.0.0",

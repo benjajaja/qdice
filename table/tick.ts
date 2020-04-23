@@ -120,7 +120,7 @@ const tick = async (tableTag: string, lock) => {
       }
     } else if (table.status === STATUS_PAUSED) {
       if (shouldStart(table)) {
-        command = { type: "Start" };
+        command = { type: "Start", players: table.players };
       } else if (
         !table.params.botLess &&
         table.players.filter(R.complement(isBot)).length > 0 &&

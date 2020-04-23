@@ -507,7 +507,7 @@ export const toggleReady = (
     players.length >= table.params.readySlots &&
     players.every(p => p.ready)
   ) {
-    return [{ players }, { type: "Start" }];
+    return [{ players }, { type: "Start", players }];
   }
   return [{ players }, null];
 };

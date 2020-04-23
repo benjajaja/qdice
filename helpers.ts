@@ -221,7 +221,7 @@ export const downloadPicture = async (
   }
   const filename = `user_${id}.gif`;
   const stream = request(url);
-  return savePicture(filename, stream);
+  return savePicture(filename, stream as any);
 };
 
 export const assertNever = (x: never): never => {

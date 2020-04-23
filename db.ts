@@ -622,10 +622,7 @@ export const addGame = async (table: Table): Promise<{ id: number }> => {
   return game;
 };
 
-export const addGameEvent = async (
-  gameId: number,
-  command: Command
-): Promise<void> => {
+export const addGameEvent = async (gameId: number, command: Command) => {
   const slimCommand: any = {
     ...command,
   };
