@@ -1,12 +1,12 @@
-import * as pino from "pino";
-
-const logger = pino({
-  level: "debug",
-  timestamp: false,
-  prettyPrint: true,
-});
-logger.pipe = <T>(message: string, arg: T) => {
-  logger.info(message, arg);
-  return arg;
+const logger = {
+  log: console.log.bind(console),
+  debug: console.debug.bind(console),
+  warn: console.warn.bind(console),
+  error: console.error.bind(console),
+  info: console.info.bind(console),
+  pipe: <T>(message: string, arg: T) => {
+    console.log(message, arg);
+    return arg;
+  },
 };
 export default logger;

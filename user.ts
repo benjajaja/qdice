@@ -290,7 +290,12 @@ const hashPassword = async function(password: string) {
 };
 
 export const register = function(req: restify.Request, res, next) {
-  db.createUser(db.NETWORK_PASSWORD, null, req.body.name, null, null, null)
+  const profile =
+    req.header("Origin").indexOf(".ssl.hwcdn.net") !== -1
+      ? { itchio: true }
+      : null;
+  logger.debug(profile);
+  db.createUser(db.NETWORK_PASSWORD, null, req.body.name, null, null, profile)
     .then(profile => {
       const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
       res.sendRaw(200, token);
