@@ -243,10 +243,7 @@ const screenshot = async (tableName: string, id: number) => {
   await page.goto(`${process.env.SCREENSHOT_HOST}/${tableName}`, {
     waitUntil: "networkidle2",
   });
-  await page.waitForFunction(
-    `() => document.querySelector("[data-test-id=\"connection-status\"]").innerHTML === "Online"`
-  );
-  await page.waitFor(1000);
+  await page.waitFor(2000);
 
   // const filePath = `screenshot_${id}.png`;
   const data = await page.screenshot({

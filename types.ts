@@ -92,6 +92,7 @@ export type User = UserLike & {
   readonly levelPoints: number;
   readonly voted: string[];
   readonly awards: readonly Award[];
+  readonly ip: string | undefined;
 };
 
 export type Player = UserLike & {
@@ -109,6 +110,7 @@ export type Player = UserLike & {
   readonly joined: Timestamp;
   readonly ready: boolean;
   readonly bot: Persona | null;
+  readonly ip: string | null;
 };
 
 export type Preferences = {};

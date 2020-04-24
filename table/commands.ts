@@ -74,6 +74,7 @@ export const makePlayer = (
     joined: now(),
     ready: false,
     bot: null,
+    ip: user.ip ?? null,
   };
 };
 
@@ -116,6 +117,24 @@ export const join = (
       IllegalMoveCode.TableFull,
       !!bot
     );
+  }
+
+  if (user.ip !== undefined) {
+    if (table.players.some(R.propEq("ip", user.ip))) {
+      logger.error(
+        "User with same ip already in game",
+        user.id,
+        user.name,
+        user.ip
+      );
+      logger.debug(
+        table.players
+          .filter(R.propEq("ip", user.ip))
+          .map(p => [p.id, p.name, p.ip])
+      );
+    }
+  } else {
+    logger.warn("User has no ip:", user.id, user.name);
   }
 
   let result: [readonly Player[], Player];

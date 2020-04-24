@@ -62,7 +62,10 @@ export const NETWORK_PASSWORD: Network = "password";
 export const NETWORK_TELEGRAM: Network = "telegram";
 export const NETWORK_REDDIT: Network = "reddit";
 
-export const getUser = async (id: UserId): Promise<User> => {
+export const getUser = async (
+  id: UserId,
+  ip?: string | undefined
+): Promise<User> => {
   const rows = await getUserRows(id);
   return userProfile(rows);
 };
@@ -395,7 +398,8 @@ export const userProfile = (
     awards: any[];
     network: Network;
     network_id: string | null;
-  }[]
+  }[],
+  ip?: string | undefined
 ): User => {
   const {
     id,
@@ -425,6 +429,7 @@ export const userProfile = (
     networks: rows.map(row => row.network || "none"),
     voted,
     awards,
+    ip,
   };
 };
 

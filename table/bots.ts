@@ -91,6 +91,7 @@ export const addBots = (table: Table, persona?: Persona): Command => {
     claimed: true,
     voted: [],
     awards: [],
+    ip: undefined,
   };
 
   return {
