@@ -169,12 +169,14 @@ client.on("message", async (topic, message) => {
   }
 });
 
-var twitter = new Twitter({
-  consumer_key: process.env.TWITTER_CONSUMER_KEY!,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET!,
-  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY!,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
-});
+var twitter = process.env.TWITTER_ENABLED
+  ? new Twitter({
+      consumer_key: process.env.TWITTER_CONSUMER_KEY!,
+      consumer_secret: process.env.TWITTER_CONSUMER_SECRET!,
+      access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY!,
+      access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
+    })
+  : null;
 
 const postTwitterGame = async (
   tableName: string,
@@ -182,6 +184,9 @@ const postTwitterGame = async (
   command: Command,
   eventId: number
 ) => {
+  if (!twitter) {
+    return;
+  }
   if (command.type === "Start") {
     const screenshotUrl = screenshot(tableName, eventId);
     const post = await twitter.post("statuses/update", {
@@ -256,6 +261,9 @@ const screenshot = async (tableName: string, id: number) => {
 };
 
 const listen = async () => {
+  if (!twitter) {
+    return;
+  }
   const post = await redisGet("twitter_game");
   if (!post) {
     return logger.info("no ongoing twitter game");

@@ -115,9 +115,6 @@ export const save = async (
     console.trace();
     throw new Error("cannot save nothing to table");
   }
-  if (retired) {
-    logger.debug("retired:", retired);
-  }
   const lands_ = lands
     ? lands.map(land => ({
         emoji: land.emoji,

@@ -208,6 +208,7 @@ const parseMessage = (
     return { type, clientId, token, payload, user };
   } catch (e) {
     logger.error(e, "Could not parse message");
+    logger.error(e, message.toString().slice(0, 50));
     return null;
   }
 };
@@ -429,8 +430,6 @@ const processEliminations = async (
         score,
       });
 
-      logger.debug("ELIMINATION-------------");
-      logger.debug(position, player.name, player.score, score);
       if (player.bot === null) {
         try {
           const user = await db.addScore(player.id, score);
