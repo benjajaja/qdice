@@ -207,8 +207,7 @@ const parseMessage = (
     );
     return { type, clientId, token, payload, user };
   } catch (e) {
-    logger.error(e, "Could not parse message");
-    logger.error(e, message.toString().slice(0, 50));
+    logger.error("Could not parse message", message.toString().slice(0, 50));
     return null;
   }
 };

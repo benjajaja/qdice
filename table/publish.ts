@@ -247,7 +247,6 @@ export const eventFromCommand = (
 };
 
 export const clientError = (clientId: string, error: Error) => {
-  console.error("client error", clientId, error);
   client.publish(
     `clients/${clientId}`,
     JSON.stringify({
