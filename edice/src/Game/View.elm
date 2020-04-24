@@ -51,13 +51,18 @@ view model =
     div [ class "edMainScreen" ] <|
         [ div [ class "edGameBoardWrapper" ] <|
             if not model.game.params.twitter then
-                [ tableInfo model
-                , header model
-                , board
-                , sitInModal model
-                , boardFooter model
-                , tableDetails model
-                ]
+                (if not model.fullscreen then
+                    [ tableInfo model ]
+
+                 else
+                    []
+                )
+                    ++ [ header model
+                       , board
+                       , sitInModal model
+                       , boardFooter model
+                       , tableDetails model
+                       ]
 
             else
                 [ header model
