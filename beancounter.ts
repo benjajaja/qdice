@@ -242,4 +242,8 @@ const postTwitterGame = async (
   }
 };
 
-logger.info("Beancounter is counting beans");
+logger.info("Beancounter is connecting to postgres...");
+(async () => {
+  await db.retry();
+  logger.info("Beancounter is counting beans.");
+})();
