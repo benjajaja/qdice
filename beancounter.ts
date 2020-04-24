@@ -188,14 +188,15 @@ const postTwitterGame = async (
     return;
   }
   if (command.type === "Start") {
-    const screenshotUrl = screenshot(tableName, eventId);
-    const post = await twitter.post("statuses/update", {
+    const data = await screenshot(tableName, eventId);
+    const media = await twitter.post("media/upload", { media: data });
+    const params = {
       status: `Game #${gameId} with ${command.players
         .map(R.prop("name"))
-        .join(
-          ", "
-        )} has started! ${screenshotUrl} https://qdice.wtf/${tableName}!`,
-    });
+        .join(", ")} has started! https://qdice.wtf/${tableName}!`,
+      media_ids: media.media_id_string,
+    };
+    const post = await twitter.post("statuses/update", params);
     logger.debug(post);
     redisClient.set("twitter_game", post.id_str);
   } else if (command.type === "EndGame") {
@@ -248,7 +249,7 @@ const screenshot = async (tableName: string, id: number) => {
   await page.goto(`${process.env.SCREENSHOT_HOST}/${tableName}`, {
     waitUntil: "networkidle2",
   });
-  await page.waitFor(2000);
+  await page.waitFor(5000);
 
   // const filePath = `screenshot_${id}.png`;
   const data = await page.screenshot({
