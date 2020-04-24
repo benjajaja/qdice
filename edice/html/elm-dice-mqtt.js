@@ -14,16 +14,23 @@ function getMqttConfig(jwt) {
       username: "elm",
       password: jwt,
     };
-  } else if (
-    self.location.hostname === "nginx" ||
-    self.location.hostname === "localhost"
-  ) {
-    // e2e tests
+  } else if (self.location.hostname === "localhost") {
+    // e2e tests and screenshots
     return {
       protocol: "ws",
       path: "mqtt",
       username: "elm",
       password: jwt,
+    };
+  } else if (self.location.hostname === "nginx") {
+    // e2e tests and screenshots
+    return {
+      protocol: "ws",
+      path: "mqtt",
+      username: "elm",
+      password: jwt,
+      hostname: "emqx",
+      port: 8083,
     };
   } else {
     return {
