@@ -1,4 +1,4 @@
-module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), DiceAnimations, LandUpdate, Model, Msg(..), PathCache, getLayout)
+module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), BoardOptions, DiceAnimations, LandUpdate, Model, Msg(..), PathCache, getLayout)
 
 import Animation
 import Array exposing (Array)
@@ -14,12 +14,19 @@ type Msg
 
 type alias Model =
     { map : Map
-    , hovered : Maybe Land.Emoji
+
+    -- , hovered : Maybe Land.Emoji
     , move : BoardMove
     , pathCache : PathCache
     , layout : MapSize
     , viewBox : String
     , animations : BoardAnimations
+    }
+
+
+type alias BoardOptions =
+    { diceVisible : Bool
+    , showEmojis : Bool
     }
 
 

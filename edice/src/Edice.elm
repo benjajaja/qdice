@@ -610,22 +610,40 @@ update msg model =
             let
                 game =
                     model.game
-
-                ( board, newBoardMsg ) =
-                    Board.update boardMsg model.game.board
-
-                game_ =
-                    { game | board = board }
-
-                model_ =
-                    { model | game = game_ }
             in
             case boardMsg of
                 Board.Types.ClickLand emoji ->
-                    Game.State.clickLand model_ emoji
+                    Game.State.clickLand model emoji
 
-                _ ->
-                    ( model_, Cmd.map BoardMsg newBoardMsg )
+                Board.Types.HoverLand land ->
+                    let
+                        game_ =
+                            { game
+                                | hovered =
+                                    case game.hovered of
+                                        Just h ->
+                                            if h /= land then
+                                                Just land
+
+                                            else
+                                                game.hovered
+
+                                        Nothing ->
+                                            Just land
+                            }
+                    in
+                    ( { model | game = game_ }, Cmd.none )
+
+                Board.Types.UnHoverLand land ->
+                    if Just land == game.hovered then
+                        let
+                            game_ =
+                                { game | hovered = Nothing }
+                        in
+                        ( { model | game = game_ }, Cmd.none )
+
+                    else
+                        ( model, Cmd.none )
 
         InputChat text ->
             let

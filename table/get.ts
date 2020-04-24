@@ -155,7 +155,7 @@ export const getStatuses = () =>
       // R.descend(R.prop("watchCount")),
     ],
     Object.values(memoryTables)
-      .filter(table => !table.params.twitter)
+      // .filter(table => !table.params.twitter)
       .map(table => ({
         ...R.omit(["lands", "players", "watchers", "adjacency"], table),
         landCount: table.lands.length,

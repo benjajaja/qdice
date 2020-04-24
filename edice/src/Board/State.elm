@@ -1,4 +1,4 @@
-module Board.State exposing (init, removeColor, update, updateLands)
+module Board.State exposing (init, removeColor, updateLands)
 
 import Animation exposing (px)
 import Array exposing (Array)
@@ -19,51 +19,7 @@ init map =
             Board.PathCache.addToDict layout map.lands Dict.empty
                 |> Board.PathCache.addToDictLines layout map.lands map.waterConnections
     in
-    Model map Nothing Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty }
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        HoverLand land ->
-            -- ugly optimization for Html.lazy ref-equality check
-            case model.hovered of
-                Just hovered ->
-                    if hovered /= land then
-                        ( { model | hovered = Just land }
-                        , Cmd.none
-                        )
-
-                    else
-                        ( model, Cmd.none )
-
-                Nothing ->
-                    ( { model | hovered = Just land }
-                    , Cmd.none
-                    )
-
-        UnHoverLand land ->
-            case model.hovered of
-                Just l ->
-                    if l == land then
-                        ( { model | hovered = Nothing }
-                        , Cmd.none
-                        )
-
-                    else
-                        ( model
-                        , Cmd.none
-                        )
-
-                Nothing ->
-                    ( model
-                    , Cmd.none
-                    )
-
-        ClickLand _ ->
-            ( model
-            , Cmd.none
-            )
+    Model map Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty }
 
 
 updateLands : Model -> List LandUpdate -> Maybe BoardMove -> Model

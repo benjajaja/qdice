@@ -121,27 +121,35 @@ export const start = async (
   index: number,
   count: number
 ) => {
-  publish.tableStatus(await getTable(tableTag));
+  const table = await getTable(tableTag);
+  publish.tableStatus(table);
 
   client.subscribe(`tables/${tableTag}/server`);
 
   const onMessage = async (topic, message) => {
-    if (topic !== `tables/${tableTag}/server`) {
-      return;
-    }
-
     const parsedMessage = parseMessage(message.toString());
     if (!parsedMessage) {
       return;
     }
 
+    if (topic !== `tables/${tableTag}/server`) {
+      return;
+    }
+
+    const isTwitter = !!table.params.twitter;
     const { type, clientId, token, payload } = parsedMessage;
 
     lock.acquire(tableTag, async done => {
       try {
-        const user = (await (token
-          ? verifyJwt(token, process.env.JWT_SECRET!)
-          : null)) as User | null;
+        let user: User | null = null;
+        if (isTwitter) {
+          user = parsedMessage.user ?? null;
+        } else {
+          user = (await (token
+            ? verifyJwt(token, process.env.JWT_SECRET!)
+            : null)) as User | null;
+        }
+
         const table = await getTable(tableTag);
 
         const userCommand = toCommand(table, user, clientId, type, payload);
@@ -191,12 +199,13 @@ const parseMessage = (
   clientId: string;
   token: string;
   payload: any | undefined;
+  user: User | undefined;
 } | null => {
   try {
-    const { type, client: clientId, token, payload } = JSON.parse(
+    const { type, client: clientId, token, payload, user } = JSON.parse(
       message.toString()
     );
-    return { type, clientId, token, payload };
+    return { type, clientId, token, payload, user };
   } catch (e) {
     logger.error(e, "Could not parse message");
     return null;

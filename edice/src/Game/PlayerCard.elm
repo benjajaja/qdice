@@ -9,6 +9,7 @@ import Game.Types exposing (GameStatus(..), Player)
 import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (alt, class, href, src, style)
+import Html.Lazy
 import Ordinal exposing (ordinal)
 import Routing.String exposing (routeToString)
 import Svg
@@ -29,37 +30,7 @@ view model ( maybePlayer, index ) =
                 (index == model.game.turnIndex)
                 (model.game.player |> Maybe.map ((==) player) |> Maybe.withDefault False)
                 [ playerImageProgress model index player
-                , div [ class "edPlayerChip__info" ]
-                    [ a
-                        [ class "edPlayerChip__name"
-                        , href <| routeToString False <| ProfileRoute player.id player.name
-                        , dataTestId <| "player-name-" ++ String.fromInt index
-                        , style "background-color" <| Board.Colors.baseCssRgb player.color
-                        , style "color" <|
-                            (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
-                                [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
-                                |> Maybe.withDefault (Color.rgb255 0 0 0)
-                                |> Board.Colors.cssRgb
-                            )
-                        ]
-                        [ text player.name ]
-                    , div
-                        [ class "edPlayerChip__playerStats"
-                        , style "background-color" <| Board.Colors.baseCssRgb player.color
-                        , style "color" <|
-                            (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
-                                [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
-                                |> Maybe.withDefault (Color.rgb255 0 0 0)
-                                |> Board.Colors.cssRgb
-                            )
-                        ]
-                      <|
-                        playerStats player
-                    , div [ class "edPlayerChip__gameStats" ] <|
-                        gameStats
-                            model
-                            player
-                    ]
+                , Html.Lazy.lazy3 playerInfo player model.game.status index
                 , Html.div
                     [ class "edPlayerChip__picture__bar"
                     , style "width" <|
@@ -88,9 +59,44 @@ view model ( maybePlayer, index ) =
             div [ class "edPlayerChip edPlayerChip--empty" ] []
 
 
-gameStats : Model -> Player -> List (Html Msg)
-gameStats model player =
-    if model.game.status == Paused then
+playerInfo : Player -> GameStatus -> Int -> Html Msg
+playerInfo player status index =
+    div [ class "edPlayerChip__info" ]
+        [ a
+            [ class "edPlayerChip__name"
+            , href <| routeToString False <| ProfileRoute player.id player.name
+            , dataTestId <| "player-name-" ++ String.fromInt index
+            , style "background-color" <| Board.Colors.baseCssRgb player.color
+            , style "color" <|
+                (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
+                    [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
+                    |> Maybe.withDefault (Color.rgb255 0 0 0)
+                    |> Board.Colors.cssRgb
+                )
+            ]
+            [ text player.name ]
+        , div
+            [ class "edPlayerChip__playerStats"
+            , style "background-color" <| Board.Colors.baseCssRgb player.color
+            , style "color" <|
+                (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
+                    [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
+                    |> Maybe.withDefault (Color.rgb255 0 0 0)
+                    |> Board.Colors.cssRgb
+                )
+            ]
+          <|
+            playerStats player
+        , div [ class "edPlayerChip__gameStats" ] <|
+            gameStats
+                status
+                player
+        ]
+
+
+gameStats : GameStatus -> Player -> List (Html Msg)
+gameStats status player =
+    if status == Paused then
         [ Html.div [ class "edPlayerChip__gameStats__item--strong" ] <|
             if player.ready then
                 [ Html.text "✔ Ready" ]
@@ -193,13 +199,18 @@ playerImageProgress model index player =
 
             else
                 0.0
-        , Html.div
-            [ class "edPlayerChip__picture__image"
-            , style "background-image" ("url('" ++ player.picture ++ "')")
-            , style "background-size" "cover"
-            ]
-            []
+        , Html.Lazy.lazy playerPictureHtml player.picture
         ]
+
+
+playerPictureHtml : String -> Html msg
+playerPictureHtml url =
+    Html.div
+        [ class "edPlayerChip__picture__image"
+        , style "background-image" ("url('" ++ url ++ "')")
+        , style "background-size" "cover"
+        ]
+        []
 
 
 playerCircleProgress progress =

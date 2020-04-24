@@ -1,4 +1,4 @@
-module Board exposing (LandUpdate, Model, Msg, animations, canAttackFrom, canMove, init, update, updateAnimations, view)
+module Board exposing (BoardOptions, LandUpdate, Model, Msg, animations, canAttackFrom, canMove, init, updateAnimations, view)
 
 import Animation
 import Board.State
@@ -21,17 +21,16 @@ type alias LandUpdate =
     Board.Types.LandUpdate
 
 
+type alias BoardOptions =
+    Board.Types.BoardOptions
+
+
 init : Land.Map -> Model
 init =
     Board.State.init
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update =
-    Board.State.update
-
-
-view : Model -> Maybe Land.Emoji -> Bool -> List ( Land.Color, String ) -> Html.Html Msg
+view : Model -> Maybe Land.Emoji -> BoardOptions -> List ( Land.Color, String ) -> Html.Html Msg
 view =
     Html.Lazy.lazy4 Board.View.view
 

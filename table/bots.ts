@@ -17,7 +17,7 @@ import { shuffle, rand } from "../rand";
 import logger from "../logger";
 import { BOT_DEADLOCK_MAX, TURN_SECONDS } from "../constants";
 import { isBorder } from "../maps";
-import { findLand, groupedPlayerPositions } from "../helpers";
+import { findLand, groupedPlayerPositions, assertNever } from "../helpers";
 import { move, Source } from "./bot_strategies";
 
 const defaultPersona: Persona = {
@@ -102,18 +102,20 @@ export const addBots = (table: Table, persona?: Persona): Command => {
 };
 
 export const tickBotTurn = (table: Table): Command | undefined => {
-  const passTimeNeeded = table.params.twitter ? TURN_SECONDS - 1 : 0.5;
+  const player = table.players[table.turnIndex];
+  // if (table.params.twitter) {
+  // return { type: "SitOut", player };
+  // }
+  const passTimeNeeded = table.params.twitter
+    ? (table.params.turnSeconds ?? TURN_SECONDS) - 1
+    : 0.5;
   if (!havePassed(passTimeNeeded, table.turnStart)) {
     return;
   }
 
-  const player = table.players[table.turnIndex];
   if (!isBot(player)) {
     throw new Error("cannot tick non-bot");
   }
-  // if (table.params.twitter) {
-  // return { type: "SitOut", player };
-  // }
 
   const positions = groupedPlayerPositions(table);
   const position = positions(player);
@@ -217,6 +219,8 @@ const botSources = (table: Table, player: Player): Source[] => {
 export const tableThemed = (table: Table, player: Player): Player => {
   if (table.tag === "España") {
     return { ...player, ...spanishPersona(player.color) };
+  } else if (table.params.twitter) {
+    return { ...player, ...worldPersona(player.color) };
   }
   return player;
 };
@@ -255,6 +259,46 @@ const spanishName = (color: Color): string => {
       return "Marron";
     case Color.Neutral:
       return "Neutral";
+    default:
+      return assertNever(color);
+  }
+};
+
+const worldPersona = (
+  color: Color
+): { id: string; name: string; picture: string } => {
+  const name = worldName(color);
+  const id = `bot_${name.replace(" ", "_")}`;
+  return {
+    id,
+    name,
+    picture: `assets/bots/bot_${name}.png`,
+  };
+};
+const worldName = (color: Color): string => {
+  switch (color) {
+    case Color.Red:
+      return "Xi";
+    case Color.Blue:
+      return "Merkel";
+    case Color.Green:
+      return "Putin";
+    case Color.Yellow:
+      return "Macron";
+    case Color.Magenta:
+      return "Kim";
+    case Color.Cyan:
+      return "Abe Shinzō";
+    case Color.Orange:
+      return "Trump";
+    case Color.Black:
+      return "Boris";
+    case Color.Beige:
+      return "Marron";
+    case Color.Neutral:
+      return "Neutral";
+    default:
+      return assertNever(color);
   }
 };
 

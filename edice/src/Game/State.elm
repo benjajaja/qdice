@@ -52,6 +52,11 @@ init table tableMap_ =
     in
     ( { table = table
       , board = board
+      , boardOptions =
+            { diceVisible = True
+            , showEmojis = False
+            }
+      , hovered = Nothing
       , players = []
       , player = Nothing
       , status = Paused
@@ -83,9 +88,9 @@ init table tableMap_ =
             , startingCapitals = False
             , readySlots = Nothing
             , turnSeconds = Nothing
+            , twitter = False
             }
       , currentGame = Nothing
-      , diceVisible = True
       , expandChat = False
       }
     , case map of
@@ -560,11 +565,21 @@ updateGameInfo ( model, cmd ) tableList =
             in
             case currentTableInfo of
                 Just tableInfo ->
+                    let
+                        options =
+                            model.boardOptions
+                    in
                     ( { model
                         | playerSlots = tableInfo.playerSlots
                         , startSlots = tableInfo.startSlots
                         , points = tableInfo.points
                         , params = tableInfo.params
+                        , boardOptions =
+                            if tableInfo.params.twitter then
+                                { options | showEmojis = True }
+
+                            else
+                                options
                       }
                     , cmd
                     )
@@ -1023,8 +1038,12 @@ update model game msg =
             )
 
         ToggleDiceVisible visible ->
+            let
+                options =
+                    model.game.boardOptions
+            in
             ( { model
-                | game = { game | diceVisible = visible }
+                | game = { game | boardOptions = { options | diceVisible = visible } }
               }
             , Cmd.none
             )

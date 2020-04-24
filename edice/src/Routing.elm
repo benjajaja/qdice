@@ -117,7 +117,9 @@ goToBestTable model =
 
 
 hasSomePlayers table =
-    table.playerCount > 0
+    not table.params.twitter
+        && table.playerCount
+        > 0
 
 
 fragmentUrl : Url -> Url

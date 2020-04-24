@@ -4,12 +4,12 @@ if (process.env.NODE_ENV === "production") {
     dsn: process.env.SENTRY_DSN,
   });
 }
-import * as fs from "fs";
+import { promisify } from "util";
 import * as R from "ramda";
 import * as mqtt from "mqtt";
 import * as Twitter from "twitter";
-import { uploadFile } from "s3-bucket";
 import * as puppeteer from "puppeteer";
+import * as redis from "redis";
 
 import logger from "./logger";
 import * as db from "./db";
@@ -18,6 +18,7 @@ import { Command } from "./types";
 import * as webPush from "web-push";
 import { GAME_START_COUNTDOWN } from "./constants";
 import { now } from "./timestamp";
+import { getTable } from "./table/get";
 
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
   console.log(
@@ -32,6 +33,17 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
     process.env.VAPID_PRIVATE_KEY!
   );
 }
+
+const redisClient = redis.createClient({
+  host: process.env.REDIS_HOST,
+});
+const redisGet: (key: string) => Promise<string | undefined> = promisify(
+  redisClient.get
+).bind(redisClient);
+const redisSmembers: (key: string) => Promise<string[] | undefined> = promisify(
+  redisClient.smembers
+).bind(redisClient);
+
 let browser: puppeteer.Browser;
 // (async () =>
 // (browser = await puppeteer.launch({
@@ -174,17 +186,17 @@ client.on("message", async (topic, message) => {
         break;
     }
 
-    // if (
-    // process.env.TWITTER_CONSUMER_KEY &&
-    // eventId &&
-    // tableName === "Twitter"
-    // ) {
-    // try {
-    // await postTwitterGame(tableName, gameId, command, eventId);
-    // } catch (e) {
-    // logger.error(e);
-    // }
-    // }
+    if (
+      process.env.TWITTER_CONSUMER_KEY &&
+      eventId &&
+      tableName === "Twitter"
+    ) {
+      try {
+        await postTwitterGame(tableName, gameId, command, eventId);
+      } catch (e) {
+        logger.error(e);
+      }
+    }
   }
 });
 
@@ -194,7 +206,7 @@ var twitter = new Twitter({
   access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY!,
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
 });
-const twitterGames: { [index: number]: { id: string; table: string } } = {};
+
 const postTwitterGame = async (
   tableName: string,
   gameId: number,
@@ -208,9 +220,15 @@ const postTwitterGame = async (
         .join(", ")} has started https://qdice.wtf/${tableName}!`,
     });
     logger.debug(post);
-    twitterGames[gameId] = post.id_str;
+    redisClient.set("twitter_game", post.id_str);
+  } else if (command.type === "EndGame") {
+    const post = await redisGet("twitter_game");
+    if (!post) {
+      logger.debug(`no twitter id for game ${gameId}`);
+      return;
+    }
   } else {
-    const post = twitterGames[gameId];
+    const post = await redisGet("twitter_game");
     if (!post) {
       logger.debug(`no twitter id for game ${gameId}`);
       return;
@@ -218,12 +236,12 @@ const postTwitterGame = async (
     let status: string | null = null;
     switch (command.type) {
       case "Roll":
-        // status = `${command.attacker.name} attacked ${command.defender?.name ??
-        // "Neutral"} from ${command.from} to ${command.to} and ${
-        // R.sum(command.fromRoll) > R.sum(command.toRoll)
-        // ? "succeeded"
-        // : "failed"
-        // }`;
+        status = `${command.attacker.name} attacked ${command.defender?.name ??
+          "Neutral"} from ${command.from} to ${command.to} and ${
+          R.sum(command.fromRoll) > R.sum(command.toRoll)
+            ? "succeeded"
+            : "failed"
+        }`;
         break;
       case "SitOut":
       case "EndTurn":
@@ -234,13 +252,51 @@ const postTwitterGame = async (
     }
     logger.debug("posting", status);
     if (status !== null) {
-      // await twitter.post("statuses/update", {
-      // status: `(${eventId}) @qdicewtf ${status}`,
-      // in_reply_to_status_id: post,
-      // });
+      await twitter.post("statuses/update", {
+        status: `(${eventId}) @qdicewtf ${status}`,
+        in_reply_to_status_id: post,
+      });
     }
   }
 };
+
+const listen = async () => {
+  const post = await redisGet("twitter_game");
+  if (!post) {
+    return logger.info("no ongoing twitter game");
+  }
+  const stream = twitter.stream("statuses/filter", {
+    track: "qdicewtf",
+  });
+  stream.on("data", async event => {
+    const text: string = event.text;
+    if (/end turn/.test(text)) {
+      const table = await getTable("Twitter");
+      const player = table.players[table.turnIndex];
+      const command = { type: "EndTurn", user: player };
+      client.publish("tables/Twitter/server", JSON.stringify(command));
+    } else {
+      const matches = text.match(/\u3000|[\uD800-\uDBFF][\uDC00-\uDFFF]/g);
+      if (!matches || matches.length !== 2) {
+        logger.debug("no emojis", text);
+        return;
+      }
+      const [from, to] = matches.slice();
+      logger.debug("attack", from, to);
+
+      const table = await getTable("Twitter");
+      const player = table.players[table.turnIndex];
+      const command = { type: "Attack", payload: [from, to], user: player };
+      client.publish("tables/Twitter/server", JSON.stringify(command));
+    }
+  });
+  stream.on("error", error => {
+    logger.error("event", error);
+    (stream as any).destroy();
+    setTimeout(listen, 1000);
+  });
+};
+listen();
 
 logger.info("Beancounter is connecting to postgres...");
 (async () => {

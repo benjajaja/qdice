@@ -78,5 +78,6 @@ tableOfTables model =
                         -- , td [ align "right" ] [ text <| String.fromInt table.stackSize ]
                         ]
                 )
-                model.tableList
+            <|
+                List.filter (.params >> .twitter >> not) model.tableList
         ]

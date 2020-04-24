@@ -36,6 +36,8 @@ type Msg
 type alias Model =
     { table : Maybe Table
     , board : Board.Model
+    , boardOptions : Board.BoardOptions
+    , hovered : Maybe Land.Emoji
     , players : List Player
     , player : Maybe Player
     , status : GameStatus
@@ -57,7 +59,6 @@ type alias Model =
     , flag : Maybe Int
     , params : TableParams
     , currentGame : Maybe Int
-    , diceVisible : Bool
     , expandChat : Bool
     }
 
@@ -145,6 +146,7 @@ type alias TableParams =
     , startingCapitals : Bool
     , readySlots : Maybe Int
     , turnSeconds : Maybe Int
+    , twitter : Bool
     }
 
 

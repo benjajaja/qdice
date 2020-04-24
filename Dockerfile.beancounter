@@ -6,6 +6,10 @@ WORKDIR /usr/src/nodice
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production
 
+COPY edice/scripts/generate-maps.js ./scripts/generate-maps.js
+COPY edice/maps ./edice/maps
+RUN node ./scripts/generate-maps.js ./edice/maps/
+
 COPY tsconfig.json *.ts tables.config.js ./
 COPY table ./table
 

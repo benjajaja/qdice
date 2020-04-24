@@ -122,7 +122,7 @@ module.exports = {
         botLess: false,
         startingCapitals: false,
         readySlots: null,
-        turnSeconds: null,
+        turnSeconds: 86400,
         twitter: true,
       },
     },

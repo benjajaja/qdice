@@ -31,15 +31,15 @@ view model =
                 (Maybe.andThen
                     (\emoji ->
                         if canSelect model.game emoji then
-                            model.game.board.hovered
+                            model.game.hovered
                             -- for Html.lazy ref-check
 
                         else
                             Nothing
                     )
-                    model.game.board.hovered
+                    model.game.hovered
                 )
-                model.game.diceVisible
+                model.game.boardOptions
                 (List.map
                     (\p ->
                         ( p.color, p.picture )
@@ -409,10 +409,10 @@ tableInfo model =
             ++ [ div [ class "edGameStatus__buttons" ]
                     [ button
                         [ class "edGameStatus__button edButton--icon"
-                        , onClick <| GameMsg <| ToggleDiceVisible <| not model.game.diceVisible
+                        , onClick <| GameMsg <| ToggleDiceVisible <| not model.game.boardOptions.diceVisible
                         ]
                         [ Icon.icon <|
-                            if model.game.diceVisible then
+                            if model.game.boardOptions.diceVisible then
                                 "visibility"
 
                             else

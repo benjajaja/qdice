@@ -19,24 +19,20 @@ import Svg.Events exposing (..)
 import Svg.Lazy
 
 
-view : Model -> Maybe Land.Emoji -> Bool -> List ( Land.Color, String ) -> Html.Html Msg
-view model hovered diceVisible avatarUrls =
-    Html.Lazy.lazy8 board
-        model.map
-        model.viewBox
-        model.pathCache
-        model.animations
-        model.move
+view : Model -> Maybe Land.Emoji -> BoardOptions -> List ( Land.Color, String ) -> Html.Html Msg
+view model hovered options avatarUrls =
+    Html.Lazy.lazy4 board
+        model
         hovered
-        diceVisible
+        options
         avatarUrls
 
 
-board : Land.Map -> String -> PathCache -> BoardAnimations -> BoardMove -> Maybe Land.Emoji -> Bool -> List ( Land.Color, String ) -> Svg Msg
-board map mapViewBox pathCache animations move hovered diceVisible avatarUrls =
+board : Model -> Maybe Land.Emoji -> BoardOptions -> List ( Land.Color, String ) -> Svg Msg
+board { map, viewBox, pathCache, animations, move } hovered options avatarUrls =
     Html.div [ class "edBoard" ]
         [ Svg.svg
-            [ viewBox mapViewBox
+            [ Svg.Attributes.viewBox viewBox
 
             -- , preserveAspectRatio "xMidYMin meet"
             , class "edBoard--svg"
@@ -49,7 +45,7 @@ board map mapViewBox pathCache animations move hovered diceVisible avatarUrls =
                 move
                 hovered
                 map.lands
-            , Svg.Lazy.lazy4 allDies pathCache animations map.lands diceVisible
+            , Svg.Lazy.lazy4 allDies pathCache animations map.lands options
             ]
         ]
 
@@ -116,13 +112,13 @@ landElement pathCache isSelected isHovered emoji color =
         []
 
 
-allDies : PathCache -> BoardAnimations -> List Land.Land -> Bool -> Svg Msg
-allDies pathCache animations lands diceVisible =
-    g [] <| List.map (Svg.Lazy.lazy4 animatedStackDies pathCache animations diceVisible) lands
+allDies : PathCache -> BoardAnimations -> List Land.Land -> BoardOptions -> Svg Msg
+allDies pathCache animations lands options =
+    g [] <| List.map (Svg.Lazy.lazy4 animatedStackDies pathCache animations options) lands
 
 
-animatedStackDies : PathCache -> BoardAnimations -> Bool -> Land.Land -> Svg Msg
-animatedStackDies pathCache { stack, dice } diceVisible land =
+animatedStackDies : PathCache -> BoardAnimations -> BoardOptions -> Land.Land -> Svg Msg
+animatedStackDies pathCache { stack, dice } options land =
     let
         ( x_, y_ ) =
             Board.PathCache.center pathCache land.emoji
@@ -148,7 +144,7 @@ animatedStackDies pathCache { stack, dice } diceVisible land =
             (class "edBoard--stack"
                 :: animationAttrs
             )
-            [ Svg.Lazy.lazy4 landDies diceAnimation diceVisible land ( x_, y_ )
+            [ Svg.Lazy.lazy4 landDies diceAnimation options land ( x_, y_ )
             ]
         ]
             ++ (case land.capital of
@@ -160,9 +156,9 @@ animatedStackDies pathCache { stack, dice } diceVisible land =
                )
 
 
-landDies : Maybe (Array Bool) -> Bool -> Land.Land -> ( Float, Float ) -> Svg Msg
-landDies diceAnimations diceVisible land ( x_, y_ ) =
-    if diceVisible == True then
+landDies : Maybe (Array Bool) -> BoardOptions -> Land.Land -> ( Float, Float ) -> Svg Msg
+landDies diceAnimations options land ( x_, y_ ) =
+    if options.diceVisible == True then
         g
             [ class "edBoard--stack--inner" ]
         <|
@@ -173,6 +169,18 @@ landDies diceAnimations diceVisible land ( x_, y_ ) =
                         List.range
                             0
                             (land.points - 1)
+                   )
+                ++ (if options.showEmojis then
+                        [ Svg.text_
+                            [ x <| String.fromFloat (x_ - 3.0)
+                            , y <| String.fromFloat (y_ + 1.0)
+                            , fontSize "3"
+                            ]
+                            [ Svg.text land.emoji ]
+                        ]
+
+                    else
+                        []
                    )
 
     else

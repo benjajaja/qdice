@@ -7,7 +7,7 @@ import Games.Types exposing (..)
 import Helpers exposing (triple)
 import Iso8601
 import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, lazy, list, map, map2, map3, map4, maybe, nullable, string, succeed)
-import Json.Decode.Pipeline exposing (required)
+import Json.Decode.Pipeline exposing (optional, required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
 import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..), Replies(..), StaticPage(..))
@@ -354,6 +354,7 @@ tableParamsDecoder =
         |> required "startingCapitals" bool
         |> required "readySlots" (nullable int)
         |> required "turnSeconds" (nullable int)
+        |> optional "twitter" bool False
 
 
 profileDecoder : Decoder Profile

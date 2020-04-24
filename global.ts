@@ -1,5 +1,4 @@
 import * as R from "ramda";
-//import { get } from './table/get';
 import {
   TURN_SECONDS,
   GAME_START_COUNTDOWN,
