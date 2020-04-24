@@ -60,6 +60,28 @@ view model ( maybePlayer, index ) =
                             model
                             player
                     ]
+                , Html.div
+                    [ class "edPlayerChip__picture__bar"
+                    , style "width" <|
+                        (if index == model.game.turnIndex then
+                            (1.0 - turnProgress model)
+                                * 100
+                                |> round
+                                |> String.fromInt
+
+                         else
+                            "0"
+                        )
+                            ++ "%"
+                    , style "background-color" <|
+                        progressColor <|
+                            if index == model.game.turnIndex then
+                                1.0 - turnProgress model
+
+                            else
+                                0.0
+                    ]
+                    []
                 ]
 
         Nothing ->
@@ -96,9 +118,9 @@ gameStats model player =
 
                 Nothing ->
                     []
-            , [ Html.div [ class "edPlayerChip__gameStats__item" ]
+            , [ Html.div [ class "edPlayerChip__gameStats__item edPlayerChip__gameStats__item--lands" ]
                     [ Html.text <| "⬢ " ++ String.fromInt player.gameStats.totalLands ]
-              , Html.div [ class "edPlayerChip__gameStats__item" ]
+              , Html.div [ class "edPlayerChip__gameStats__item edPlayerChip__gameStats__item--dice" ]
                     [ Html.text <|
                         ("⚂ "
                             ++ String.fromInt player.gameStats.currentDice

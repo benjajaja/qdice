@@ -478,6 +478,9 @@ button .material-icons, .edButton .material-icons {
   border-top-left-radius: 50%;
   border-bottom-left-radius: 50%;
 }
+.edPlayerChip__picture__bar {
+  display: none;
+}
 .edPlayerChip__picture__image {
   position: absolute;
   top: 4px;
@@ -1022,6 +1025,29 @@ button .material-icons, .edButton .material-icons {
   }
   .edGameStatus__button--landscape {
     display: flex;
+  }
+}
+@media screen and (max-width: 500px) and (orientation: portrait) {
+  .edPlayerChip__playerStats {
+    display: none;
+  }
+  .edPlayerChip__name {
+    overflow: visible;
+  }
+  .edPlayerChip__gameStats {
+    margin-top: 0;
+    flex-wrap: wrap;
+  }
+  .edPlayerChip__picture {
+    display: none;
+  }
+  .edPlayerChip__picture__bar {
+    display: block;
+    height: 4px;
+    background: red;
+  }
+  .edPlayerChip {
+    flex-direction: column;
   }
 }
 
