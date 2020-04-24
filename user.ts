@@ -203,13 +203,19 @@ const getProfile = (network, code, referer): Promise<any> => {
   });
 };
 
-export const me = async function(req, res, next) {
+export const me = async function(
+  req: restify.Request & { user: { id: string } },
+  res,
+  next
+) {
   try {
     const profile = await db.getUser(req.user.id);
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
     const preferences = await db.getPreferences(req.user.id);
     res.send(200, [profile, token, preferences]);
     next();
+    logger.debug("/me Real-IP:", req.header("X-Real-IP"));
+    logger.debug("/me Forwarded-For:", req.header("X-Forwarded-For"));
   } catch (e) {
     logger.error("/me", req.user);
     logger.error(e);
