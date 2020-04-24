@@ -378,6 +378,7 @@ tableInfo model =
                                 routeToString False <|
                                     GamesRoute <|
                                         GameId table id
+                            , dataTestId "current-game-id"
                             ]
                             [ text <|
                                 "game #"

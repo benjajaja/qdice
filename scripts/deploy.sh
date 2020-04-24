@@ -7,7 +7,7 @@ rsync -az --force --delete --progress --exclude-from=rsync_exclude.txt -e "ssh -
 ssh gipsy@qdice.wtf <<'ENDSSH'
 set -e
 cd nodice
-docker-compose pull nodice nginx
+docker-compose pull nodice nginx beancounter
 ./scripts/restart.sh
 docker image prune -f &
 echo goodbye

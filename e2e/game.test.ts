@@ -1,4 +1,4 @@
-import puppeteer, { Page, ElementHandle } from "puppeteer";
+import puppeteer, { Page } from "puppeteer";
 import { launch } from "./jest-puppeteer.config.js";
 import { setInterval, clearInterval } from "timers";
 
@@ -50,6 +50,7 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
 };
 
 describe("A full game", () => {
+  let gameId: string | undefined;
   test("should play a full game", async () => {
     await expect(page).toClick(testId("go-to-table-Polo"));
 
@@ -92,6 +93,15 @@ describe("A full game", () => {
       text: "round 1",
     });
 
+    console.log("Game has started round 1");
+
+    await expect(page).toMatchElement(testId("current-game-id"));
+    const text = await (
+      await expect(page).toMatchElement(testId("current-game-id"))
+    ).evaluate(element => element.textContent);
+    gameId = text?.match(/game #(\d+)/)?.[1];
+    console.log("game:", gameId);
+
     await hisTurn(page, "A");
     await attack(page, "land-🥑", "land-🐵", "A");
     await attack(page, "land-🐵", "land-🍺", "A");
@@ -100,24 +110,6 @@ describe("A full game", () => {
     await hisTurn(page2, "B");
     await attack(page2, "land-🍺", "land-🐵", "B");
     await attack(page2, "land-🐵", "land-🥑", "B");
-    // await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
-
-    // await hisTurn(page, "A");
-    // await attack(page, "land-🍺", "land-🐸", "A");
-    // await expect(page).toClick(testId("button-seat"), { text: "End turn" });
-    //
-    // await hisTurn(page2, "B");
-    // await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
-    //
-    // await hisTurn(page, "A");
-    // await expect(page).toClick(testId("button-seat"), { text: "End turn" });
-    //
-    // await hisTurn(page2, "B");
-    // await attack(page2, "land-🐸", "land-🍺", "B");
-    // await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
-    //
-    // await hisTurn(page, "A");
-    // const lines = await attack(page, "land-🍺", "land-🐸", "A");
 
     await expect(page).toMatchElement(
       `${testId("logline-elimination")}:nth-last-child(2)`,
@@ -134,4 +126,14 @@ describe("A full game", () => {
 
     await browser2.close();
   }, 300000);
+
+  test("should show game ledger of previous test's game", async () => {
+    await expect(page).toClick(testId("go-to-table-Polo"));
+    await expect(page).toClick(testId("table-games-link"));
+    await expect(page).toClick(testId("game-entry-" + gameId));
+
+    await expect(page).toMatchElement(testId("game-event"));
+    const count = (await page.$$(testId("game-event"))).length;
+    expect(count).toBe(10);
+  });
 });

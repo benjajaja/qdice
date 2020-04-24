@@ -5,11 +5,11 @@ import Comments
 import DateFormat
 import Dict
 import Games.Types exposing (Game, GameEvent(..))
-import Helpers
+import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Routing.String exposing (routeToString)
-import Snackbar exposing (toastError, toastMessage)
+import Snackbar exposing (toastError)
 import Time exposing (Zone)
 import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg, Route(..))
 
@@ -147,6 +147,7 @@ gameHeader zone game =
     div []
         [ a
             [ href <| routeToString False <| GamesRoute <| GameId game.tag game.id
+            , dataTestId <| "game-entry-" ++ String.fromInt game.id
             ]
             [ text <| "#" ++ String.fromInt game.id ]
         , text " "
@@ -298,7 +299,7 @@ foldGameItem : List (Html Msg) -> String -> List (Html Msg)
 foldGameItem list str =
     list
         ++ [ li []
-                [ div []
+                [ div [ dataTestId "game-event" ]
                     [ text str ]
                 ]
            ]
