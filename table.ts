@@ -127,12 +127,12 @@ export const start = async (
   client.subscribe(`tables/${tableTag}/server`);
 
   const onMessage = async (topic, message) => {
-    const parsedMessage = parseMessage(message.toString());
-    if (!parsedMessage) {
+    if (topic !== `tables/${tableTag}/server`) {
       return;
     }
 
-    if (topic !== `tables/${tableTag}/server`) {
+    const parsedMessage = parseMessage(message.toString(), topic);
+    if (!parsedMessage) {
       return;
     }
 
@@ -193,7 +193,8 @@ export const start = async (
 };
 
 const parseMessage = (
-  message: string
+  message: string,
+  topic: string
 ): {
   type: CommandType;
   clientId: string;
@@ -207,7 +208,10 @@ const parseMessage = (
     );
     return { type, clientId, token, payload, user };
   } catch (e) {
-    logger.error("Could not parse message", message.toString().slice(0, 50));
+    logger.error(
+      `Could not parse message in ${topic}:`,
+      message.toString().slice(0, 50)
+    );
     return null;
   }
 };
