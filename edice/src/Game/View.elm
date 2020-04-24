@@ -49,16 +49,23 @@ view model =
                 |> Html.map BoardMsg
     in
     div [ class "edMainScreen" ] <|
-        [ div [ class "edGameBoardWrapper" ]
-            [ tableInfo model
-            , header model
-            , board
-            , sitInModal model
-            , boardFooter model
-            , tableDetails model
-            ]
+        [ div [ class "edGameBoardWrapper" ] <|
+            if not model.game.params.twitter then
+                [ tableInfo model
+                , header model
+                , board
+                , sitInModal model
+                , boardFooter model
+                , tableDetails model
+                ]
+
+            else
+                [ header model
+                , board
+                , boardFooter model
+                ]
         ]
-            ++ (if not model.fullscreen then
+            ++ (if not model.fullscreen && not model.game.params.twitter then
                     [ div
                         [ class <|
                             "edGame__meta cartonCard"
@@ -106,7 +113,7 @@ boardFooter : Model -> Html.Html Types.Msg
 boardFooter model =
     let
         toolbar =
-            if model.screenshot then
+            if model.screenshot || model.game.params.twitter then
                 []
 
             else

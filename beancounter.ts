@@ -45,14 +45,15 @@ const redisSmembers: (key: string) => Promise<string[] | undefined> = promisify(
 ).bind(redisClient);
 
 let browser: puppeteer.Browser;
-// (async () =>
-// (browser = await puppeteer.launch({
-// ignoreHTTPSErrors: true,
-// defaultViewport: {
-// width: 600,
-// height: 400,
-// },
-// })))();
+(async () =>
+  (browser = await puppeteer.launch({
+    ignoreHTTPSErrors: true,
+    defaultViewport: {
+      width: 600,
+      height: 400,
+    },
+    args: ["--disable-infobars", "--no-sandbox", "--disable-setuid-sandbox"],
+  })))();
 
 var client = mqtt.connect(process.env.MQTT_URL, {
   username: process.env.MQTT_USERNAME,
@@ -153,40 +154,8 @@ client.on("message", async (topic, message) => {
 
     const eventId = await addGameEvent(tableName, gameId, command);
 
-    switch (command.type) {
-      case "SitOut":
-      case "EndTurn":
-        if (browser) {
-          try {
-            const page = await browser.newPage();
-            await page.goto(`${process.env.SCREENSHOT_HOST}/${tableName}`, {
-              waitUntil: "networkidle2",
-            });
-            const filePath = `screenshot_${eventId}.png`;
-            await page.screenshot({
-              path: `${process.env.SCREENSHOT_PATH}/${filePath}`,
-            });
-            const url = `${process.env.SCREENSHOT_URL}/${filePath}`;
-            await page.close();
-            logger.info(url);
-          } catch (e) {
-            logger.error(e);
-          }
-        }
-        break;
-
-      case "Roll":
-        // const success = R.sum(command.fromRoll) > R.sum(command.toRoll);
-        // console.log(
-        // "attack",
-        // command.attacker.name,
-        // success ? "SUCCESS" : "FAILED",
-        // command.defender?.name ?? "Neutral"
-        // );
-        break;
-    }
-
     if (
+      !process.env.E2E &&
       process.env.TWITTER_CONSUMER_KEY &&
       eventId &&
       tableName === "Twitter"
@@ -214,10 +183,13 @@ const postTwitterGame = async (
   eventId: number
 ) => {
   if (command.type === "Start") {
+    const screenshotUrl = screenshot(tableName, eventId);
     const post = await twitter.post("statuses/update", {
       status: `Game #${gameId} with ${command.players
         .map(R.prop("name"))
-        .join(", ")} has started https://qdice.wtf/${tableName}!`,
+        .join(
+          ", "
+        )} has started! ${screenshotUrl} https://qdice.wtf/${tableName}!`,
     });
     logger.debug(post);
     redisClient.set("twitter_game", post.id_str);
@@ -245,10 +217,8 @@ const postTwitterGame = async (
         break;
       case "SitOut":
       case "EndTurn":
-        const filePath = `screenshot_${eventId}.png`;
-        const url = `${process.env.SCREENSHOT_URL}/${filePath}`;
-        logger.debug(url);
-        status = `${command.player.name}'s turn has finished. ${url}`;
+        const screenshotUrl = await screenshot(tableName, eventId);
+        status = `${command.player.name}'s turn has finished. ${screenshotUrl}`;
     }
     logger.debug("posting", status);
     if (status !== null) {
@@ -258,6 +228,24 @@ const postTwitterGame = async (
       });
     }
   }
+};
+
+const screenshot = async (tableName: string, id: number) => {
+  const page = await browser.newPage();
+  await page.goto(`${process.env.SCREENSHOT_HOST}/${tableName}`, {
+    waitUntil: "networkidle2",
+  });
+  await page.waitForFunction(
+    `() => document.querySelector("[data-test-id=\"connection-status\"]").innerHTML === "Online"`
+  );
+  await page.waitFor(1000);
+
+  const filePath = `screenshot_${id}.png`;
+  await page.screenshot({
+    path: `/screenshots/${filePath}`,
+  });
+  await page.close();
+  return `${process.env.SCREENSHOT_URL}/${filePath}`;
 };
 
 const listen = async () => {
