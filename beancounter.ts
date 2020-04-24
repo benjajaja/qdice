@@ -205,27 +205,35 @@ const postTwitterGame = async (
       logger.debug(`no twitter id for game ${gameId}`);
       return;
     }
-    let status: string | null = null;
+    let params: any;
     switch (command.type) {
       case "Roll":
-        status = `${command.attacker.name} attacked ${command.defender?.name ??
-          "Neutral"} from ${command.from} to ${command.to} and ${
-          R.sum(command.fromRoll) > R.sum(command.toRoll)
-            ? "succeeded"
-            : "failed"
-        }`;
+        params = {
+          status: `(${eventId}) @qdicewtf ${
+            command.attacker.name
+          } attacked ${command.defender?.name ?? "Neutral"} from ${
+            command.from
+          } to ${command.to} and ${
+            R.sum(command.fromRoll) > R.sum(command.toRoll)
+              ? "succeeded"
+              : "failed"
+          }`,
+          in_reply_to_status_id: post,
+        };
         break;
       case "SitOut":
       case "EndTurn":
-        const screenshotUrl = await screenshot(tableName, eventId);
-        status = `${command.player.name}'s turn has finished. ${screenshotUrl}`;
+        const data = await screenshot(tableName, eventId);
+        const media = await twitter.post("media/upload", { media: data });
+        params = {
+          status: `(${eventId}) @qdicewtf ${command.player.name}'s turn has finished.`,
+          in_reply_to_status_id: post,
+          media_ids: media.media_id_string,
+        };
     }
-    logger.debug("posting", status);
-    if (status !== null) {
-      await twitter.post("statuses/update", {
-        status: `(${eventId}) @qdicewtf ${status}`,
-        in_reply_to_status_id: post,
-      });
+    logger.debug("posting", params);
+    if (params !== null) {
+      await twitter.post("statuses/update", params);
     }
   }
 };
@@ -240,12 +248,14 @@ const screenshot = async (tableName: string, id: number) => {
   );
   await page.waitFor(1000);
 
-  const filePath = `screenshot_${id}.png`;
-  await page.screenshot({
-    path: `/screenshots/${filePath}`,
+  // const filePath = `screenshot_${id}.png`;
+  const data = await page.screenshot({
+    encoding: "binary",
+    // path: `/screenshots/${filePath}`,
   });
   await page.close();
-  return `${process.env.SCREENSHOT_URL}/${filePath}`;
+  // return `${process.env.SCREENSHOT_URL}/${filePath}`;
+  return data;
 };
 
 const listen = async () => {
