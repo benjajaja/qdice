@@ -488,7 +488,7 @@ shortPlayerDecoder =
 
 otherProfileDecoder : Decoder OtherProfile
 otherProfileDecoder =
-    map2 (\a b -> ( a, b ))
+    map2 Tuple.pair
         (field "profile" profileDecoder)
         (field "stats" profileStatsDecoder)
 
@@ -505,7 +505,10 @@ profileStatsDecoder =
 statsDecoder : Decoder ProfileStatsStatistics
 statsDecoder =
     succeed ProfileStatsStatistics
-        |> optional "rolls" (map (Array.fromList >> Just) (list int)) Nothing
+        |> optional "rolls" (map Array.fromList (list int)) (Array.fromList [ 0, 0, 0, 0, 0, 0 ])
+        |> optional "attacks"
+            (map2 Tuple.pair (index 0 int) (index 1 int))
+            ( 0, 0 )
 
 
 gameRefDecoder : Decoder GameRef

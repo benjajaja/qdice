@@ -11,7 +11,7 @@ import * as Twitter from "twitter";
 import * as puppeteer from "puppeteer";
 import * as redis from "redis";
 
-import { addStats, addRolls } from "./stats";
+import { addRoll } from "./stats";
 import logger from "./logger";
 import * as db from "./db";
 import { addGameEvent } from "./table/games";
@@ -158,12 +158,12 @@ client.on("message", async (topic, message) => {
     switch (command.type) {
       case "Roll":
         if (command.round > 1) {
-          if (!command.attacker.bot) {
-            await addRolls(command.attacker, command.fromRoll);
-          }
-          if (command.defender && !command.defender.bot) {
-            await addRolls(command.defender, command.toRoll);
-          }
+          await addRoll(
+            command.attacker,
+            command.fromRoll,
+            command.defender,
+            command.toRoll
+          );
         }
         break;
     }

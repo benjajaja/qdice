@@ -299,4 +299,5 @@ export type BotCommand = "Surrender";
 
 export type PlayerStats = {
   readonly rolls?: [number, number, number, number, number, number];
+  readonly attacks?: [number, number];
 };

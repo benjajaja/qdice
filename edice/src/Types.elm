@@ -271,7 +271,9 @@ type alias ProfileStats =
 
 
 type alias ProfileStatsStatistics =
-    { rolls : Maybe (Array Int) }
+    { rolls : Array Int
+    , attacks : ( Int, Int )
+    }
 
 
 type alias LeaderBoardModel =

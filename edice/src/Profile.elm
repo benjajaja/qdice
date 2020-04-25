@@ -42,7 +42,8 @@ view model id name =
                       , gamesWon = 0
                       , gamesPlayed = 0
                       , stats =
-                            { rolls = Nothing
+                            { rolls = Array.fromList [ 0, 0, 0, 0, 0, 0 ]
+                            , attacks = ( 0, 0 )
                             }
                       }
                     )
@@ -116,16 +117,38 @@ gameHeader zone game =
 
 
 statisticsView : Profile -> ProfileStats -> List (Html Msg)
-statisticsView profile stats =
-    [ rollsGraph stats
+statisticsView profile { stats } =
+    let
+        { rolls, attacks } =
+            stats
+
+        ( attacksSucceeded, attacksFailed ) =
+            attacks
+
+        attacksTotal =
+            attacksSucceeded + attacksFailed
+    in
+    [ div []
+        [ text <|
+            String.fromInt attacksTotal
+                ++ " attacks ("
+                ++ String.fromInt attacksSucceeded
+                ++ " successful / "
+                ++ String.fromInt attacksFailed
+                ++ " failed, ratio "
+                ++ (String.fromFloat <| toFloat attacksSucceeded / toFloat attacksFailed)
+                ++ ")"
+        ]
+    , p [] []
+    , rollsGraph rolls
     ]
 
 
-rollsGraph : ProfileStats -> Html Msg
-rollsGraph stats =
+rollsGraph : Array.Array Int -> Html Msg
+rollsGraph rolls =
     let
         list =
-            stats.stats.rolls |> rollsAsList
+            rolls |> rollsAsList
 
         max =
             List.maximum list |> Maybe.withDefault 100
@@ -186,10 +209,10 @@ rollsGraph stats =
         ]
 
 
-rollsAsList : Maybe (Array.Array Int) -> List Int
+rollsAsList : Array.Array Int -> List Int
 rollsAsList rolls =
     List.range 0 5
         |> List.map
-            (flip Array.get (Maybe.withDefault Array.empty rolls)
+            (flip Array.get rolls
                 >> Maybe.withDefault 0
             )
