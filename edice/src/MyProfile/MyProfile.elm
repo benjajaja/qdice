@@ -1,4 +1,4 @@
-module MyProfile.MyProfile exposing (update, view)
+module MyProfile.MyProfile exposing (addNetworks, update, view)
 
 import Backend.HttpCommands
 import File
@@ -57,11 +57,19 @@ view model user preferences sessionPreferences =
             ]
         , div [ class "edPageSection" ] <|
             [ h2 [] [ text "Danger zone" ]
-            , h5 [] [ text "Log out now:" ]
-            , p [] [ text "If you don't have any login method or network, then you can never recover this account!" ]
-            , button [ onClick Logout ] [ text "Logout" ]
-            , h5 [] [ text "Delete account:" ]
             ]
+                ++ (case user.networks of
+                        [] ->
+                            [ h5 [] [ text "Log out now:" ]
+                            , p [] [ text "If you don't have any login method or network, then you can never recover this account!" ]
+                            ]
+
+                        _ ->
+                            []
+                   )
+                ++ [ button [ onClick Logout ] [ text "Logout" ]
+                   , h5 [] [ text "Delete account:" ]
+                   ]
                 ++ deleteAccount model
         ]
 
@@ -129,15 +137,22 @@ addNetworks model user =
                 (\n ->
                     case n of
                         Password ->
-                            div []
-                                [ div []
-                                    [ text "Email:"
-                                    , input [ type_ "email", placeholder "email@address.com", onInput <| MyProfileMsg << ChangeEmail ] []
+                            div
+                                [ class "edLoginSocial edLoginSocial--password"
+                                ]
+                                [ div [ class "edLoginSocial--password__label" ]
+                                    [ text "Email:" ]
+                                , div [ class "edLoginSocial--password__input" ]
+                                    [ input [ type_ "email", placeholder "email@address.com", onInput <| MyProfileMsg << ChangeEmail ] []
                                     ]
-                                , div []
-                                    [ text "Password:"
-                                    , input [ type_ "password", placeholder "********", onInput <| MyProfileMsg << ChangePassword ] []
-                                    , button
+                                , div [ class "edLoginSocial--password__placeholder" ] []
+                                , div [ class "edLoginSocial--password__label" ]
+                                    [ text "Password:" ]
+                                , div [ class "edLoginSocial--password__input" ]
+                                    [ input [ type_ "password", placeholder "********", onInput <| MyProfileMsg << ChangePassword ] []
+                                    ]
+                                , div [ class "edLoginSocial--password__button" ]
+                                    [ button
                                         (case model.password of
                                             Nothing ->
                                                 [ disabled True ]
@@ -154,7 +169,7 @@ addNetworks model user =
                                                         -- Just c ->
                                                         [ onClick <| SetPassword ( e, p ) Nothing ]
                                         )
-                                        [ text "Add password" ]
+                                        [ text "Set login" ]
                                     ]
                                 ]
 
@@ -174,6 +189,23 @@ addNetworks model user =
                                 ]
                 )
                 available
+                |> List.foldl
+                    (\element list ->
+                        case list of
+                            [] ->
+                                [ element ]
+
+                            _ ->
+                                list
+                                    ++ [ div [ class "edLoginSocial__or" ]
+                                            [ span [ class "edLoginSocial__or__line" ] []
+                                            , span [] [ text " OR " ]
+                                            , span [ class "edLoginSocial__or__line" ] []
+                                            ]
+                                       , element
+                                       ]
+                    )
+                    []
 
 
 networkIdName : AuthNetwork -> String

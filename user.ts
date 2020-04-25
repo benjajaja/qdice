@@ -45,7 +45,7 @@ export const login = async (req, res, next) => {
         res.sendRaw(200, token);
         next();
       } catch (e) {
-        logger.error(e);
+        logger.error("could not login with password", e);
         next(e);
       } finally {
         return;

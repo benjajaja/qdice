@@ -867,6 +867,18 @@ button .material-icons, .edButton .material-icons {
   max-height: 300px;
   overflow: auto;
 }
+.edPlayerBox__addNetworks {
+  margin: 20px 0;
+  background: #FFaaaa;
+  display: flex;
+  flex-direction: column;
+}
+.edPlayerBox__addNetworks button.edLoginSocial {
+  text-align: center;
+}
+.edPlayerBox__addNetworks > h3, .edPlayerBox__addNetworks > p {
+  padding: 0 8px;
+}
 
 .edLeaderboard {
   width: 100%;
@@ -920,6 +932,44 @@ button .material-icons, .edButton .material-icons {
   margin-right: 5px;
   background: white;
 }
+.edLoginSocial--password {
+  padding: 8px 0px;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  column-gap: 10px;
+  row-gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+.edLoginSocial--password__label {
+  grid-area: "label";
+}
+.edLoginSocial--password__input {
+  grid-area: "input";
+}
+.edLoginSocial--password__button {
+  grid-area: "button";
+}
+.edLoginSocial--password input, .edLoginSocial--password button {
+  height: 28px;
+}
+.edLoginSocial--password input {
+  height: 22px;
+}
+
+.edLoginSocial__or {
+  text-align: center;
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+.edLoginSocial__or__line {
+  flex-grow: 2;
+  border-bottom: 2px solid #edfcff;
+}
+
+
 .edLoginDialog__buttons {
   display: flex;
   flex-direction: row;
@@ -1173,8 +1223,8 @@ button .material-icons, .edButton .material-icons {
 }
 
 .material-icon-spinner {
-  font-size: 1em;
   animation: spinner 0.5s infinite;
+  vertical-align: text-bottom;
 }
 @keyframes spinner {
   from {

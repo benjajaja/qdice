@@ -17,6 +17,7 @@ import Html.Attributes exposing (class, disabled, href, style)
 import Html.Events exposing (onClick)
 import Icon
 import LeaderBoard.View
+import MyProfile.MyProfile
 import Ordinal exposing (ordinal)
 import Routing.String exposing (routeToString)
 import Time exposing (posixToMillis)
@@ -529,10 +530,20 @@ playerBox model =
                     , div [ class "edPlayerBox__settings" ] <|
                         (case user.networks of
                             [] ->
-                                [ div []
-                                    [ h3 [ style "color" "red" ] [ text "Account has no login" ]
-                                    , p [] [ text "You should add a login to this account, or you could lose it anytime you clear some privacy settings." ]
+                                [ div [ class "edPlayerBox__addNetworks" ] <|
+                                    [ h3 [ style "color" "red" ]
+                                        [ Icon.spinning "warning"
+                                        , text " Account has no login!"
+                                        ]
+                                    , p []
+                                        [ text "Your player has no login. You could lose all your points, level and rank anytime you clear your browser's cache or something."
+                                        , br [] []
+                                        , text "To prevent this, you should add one of the following logins to your account:"
+                                        ]
                                     ]
+                                        ++ MyProfile.MyProfile.addNetworks
+                                            model.myProfile
+                                            user
                                 ]
 
                             _ ->
@@ -540,7 +551,7 @@ playerBox model =
                         )
                             ++ [ div []
                                     [ a [ href "/me" ]
-                                        [ text "Account & Settings"
+                                        [ text "Go to my Account & Settings"
                                         ]
                                     ]
                                ]
