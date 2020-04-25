@@ -247,6 +247,7 @@ export type Command =
         to: string;
         fromRoll: number[];
         toRoll: number[];
+        round: number;
       }
     >
   | CommandSkeleton<"EndTurn", { player: Player }>
@@ -295,3 +296,7 @@ export type BotStrategy =
   | "TargetCareful";
 
 export type BotCommand = "Surrender";
+
+export type PlayerStats = {
+  readonly rolls?: [number, number, number, number, number, number];
+};

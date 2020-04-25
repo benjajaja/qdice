@@ -1,6 +1,7 @@
 module Types exposing (..)
 
 import Animation
+import Array exposing (Array)
 import Backend.Types
 import Board
 import Browser
@@ -265,7 +266,12 @@ type alias ProfileStats =
     { games : List GameRef
     , gamesWon : Int
     , gamesPlayed : Int
+    , stats : ProfileStatsStatistics
     }
+
+
+type alias ProfileStatsStatistics =
+    { rolls : Maybe (Array Int) }
 
 
 type alias LeaderBoardModel =

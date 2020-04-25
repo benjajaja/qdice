@@ -1,5 +1,6 @@
 module Backend.Decoding exposing (authStateDecoder, commentDecoder, commentsDecoder, eliminationsDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, turnDecoder)
 
+import Array
 import Backend.Types exposing (TableMessage(..))
 import Board.Types
 import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus)
@@ -10,7 +11,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, la
 import Json.Decode.Pipeline exposing (optional, required)
 import Land exposing (Color, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, PushEvent(..), Replies(..), StaticPage(..))
+import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, ProfileStatsStatistics, PushEvent(..), Replies(..), StaticPage(..))
 
 
 stringDecoder : Decoder String
@@ -498,6 +499,13 @@ profileStatsDecoder =
         |> required "games" (list gameRefDecoder)
         |> required "gamesWon" int
         |> required "gamesPlayed" int
+        |> required "stats" statsDecoder
+
+
+statsDecoder : Decoder ProfileStatsStatistics
+statsDecoder =
+    succeed ProfileStatsStatistics
+        |> optional "rolls" (map (Array.fromList >> Just) (list int)) Nothing
 
 
 gameRefDecoder : Decoder GameRef

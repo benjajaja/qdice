@@ -1162,3 +1162,12 @@ button .material-icons, .edButton .material-icons {
   height: 100px;
   max-width: 300px;
 }
+
+.edStatistics__rolls {
+  width: 500px;
+  max-width: 100%;
+}
+.edStatistics__rolls rect {
+  transition-property: width;
+  transition-duration: 0.5s;
+}

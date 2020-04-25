@@ -16,6 +16,7 @@ import {
   PushNotificationEvents,
   CommandResult,
   Command,
+  PlayerStats,
 } from "./types";
 import { date, now, ts } from "./timestamp";
 import * as sleep from "sleep-promise";
@@ -236,16 +237,13 @@ export const updateUser = async (
   return await getUser(id);
 };
 
-// export const updateUserPreferences = async (
-// id: UserId,
-// preferences: Preferences
-// ) => {
-// const res = await client.query(
-// "UPDATE users SET preferences = $2 WHERE id = $1",
-// [id, preferences]
-// );
-// return await getUser(id);
-// };
+export const updateUserStats = async (id: UserId, stats: PlayerStats) => {
+  const res = await pool.query("UPDATE users SET stats = $2 WHERE id = $1", [
+    id,
+    stats,
+  ]);
+  return await getUser(id);
+};
 
 export const addPushSubscription = async (
   id: UserId,
@@ -734,10 +732,19 @@ export const isAvailable = async (email: string) => {
   return rows.length === 0;
 };
 
+export const userStats = async (id: string) => {
+  const { rows: rows } = await pool.query({
+    name: "user-stats-stats",
+    text: `SELECT stats FROM users WHERE id = $1`,
+    values: [id],
+  });
+  return rows[0].stats;
+};
+
 export const getUserStats = async (id: string) => {
   const { rows: games } = await pool.query({
     name: "user-stats-games",
-    text: `SELECT id, tag, game_start FROM games, LATERAL (SELECT json_array_elements(games.players) c) lat WHERE lat.c->>'id' = $1 ORDER BY game_start DESC LIMIT 100`,
+    text: `SELECT id, tag, game_start FROM games, LATERAL (SELECT json_array_elements(games.players) c) lat WHERE lat.c->>'id' = $1 ORDER BY game_start DESC LIMIT 10`,
     values: [id],
   });
   const { rows: gamesWonCount } = await pool.query({
@@ -754,6 +761,7 @@ export const getUserStats = async (id: string) => {
     games: games.map(camelize),
     gamesWon: parseInt(gamesWonCount[0].games_won, 10),
     gamesPlayed: parseInt(gamesPlayedCount[0].games_played, 10),
+    stats: await userStats(id),
   };
 };
 

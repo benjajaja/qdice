@@ -109,7 +109,8 @@ CREATE TABLE users (
     registration_time timestamp with time zone NOT NULL,
     preferences json,
     voted jsonb DEFAULT '[]'::jsonb,
-    awards jsonb DEFAULT '[]'::jsonb
+    awards jsonb DEFAULT '[]'::jsonb,
+    stats jsonb DEFAULT '{}'::jsonb
 );
 
 

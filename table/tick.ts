@@ -14,12 +14,10 @@ import { havePassed } from "../timestamp";
 import * as publish from "./publish";
 
 import {
-  STATUS_PAUSED,
   STATUS_PLAYING,
   TURN_SECONDS,
   ROLL_SECONDS,
   ROLL_SECONDS_BOT,
-  STATUS_FINISHED,
 } from "../constants";
 import { addBots, tickBotTurn, isBot, mkBot } from "./bots";
 import logger from "../logger";
@@ -107,6 +105,7 @@ const tick = async (tableTag: string, lock) => {
             to: table.attack.to,
             fromRoll,
             toRoll,
+            round: table.roundCount,
           };
         }
         // never process anything else during attack

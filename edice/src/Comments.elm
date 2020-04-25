@@ -4,7 +4,7 @@ import Backend.HttpCommands
 import DateFormat
 import Dict
 import Game.PlayerCard exposing (playerPicture)
-import Html exposing (Html, a, blockquote, button, div, form, span, text, textarea)
+import Html exposing (Html, a, blockquote, button, div, form, h3, span, text, textarea)
 import Html.Attributes exposing (class, disabled, href, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Routing.String exposing (routeToString)
@@ -299,7 +299,7 @@ view zone user comments kind =
             postState.kind |> Maybe.withDefault kind
     in
     div [ class "edComments" ] <|
-        [ div [ class "edComments__header" ] [ text <| "Comments of " ++ kindName kind ]
+        [ h3 [ class "edComments__header" ] [ text <| "Comments of " ++ kindName kind ]
         , div [] <|
             case list of
                 CommentListFetching ->
