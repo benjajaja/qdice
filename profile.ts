@@ -10,10 +10,11 @@ export const profile = async (req, res, next) => {
         new errs.InvalidArgumentError("This is a bot, it has no profile")
       );
     }
-    const profile = R.omit(
-      ["email", "networks", "claimed", "voted"],
-      await db.getUser(req.params.id)
-    );
+    const user = await db.getUser(req.params.id);
+    const profile = {
+      ...R.omit(["email", "networks", "claimed", "voted"], user),
+      registered: user.networks.length > 0,
+    };
     const stats = await db.getUserStats(req.params.id);
     res.send(200, { profile, stats });
     next();

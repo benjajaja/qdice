@@ -33,6 +33,7 @@ init =
             , levelPoints = 0
             , awards = []
             , picture = "assets/empty_profile_picture.svg"
+            , registered = True
             }
 
         stats : ProfileStats
@@ -102,7 +103,26 @@ playerBox zone placeholder =
                 [ text <| (String.fromInt <| pointsToNextLevel user.level user.levelPoints) ++ pointsSymbol
                 , text " points to next level"
                 ]
-            , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
+            , div [ class "edPlayerBox__stat" ]
+                [ text "Monthly rank: "
+                , text <|
+                    ordinal user.rank
+                ]
+            , div [ class "edPlayerBox__stat" ]
+                [ text <|
+                    "Registered: "
+                        ++ (case Placeholder.toMaybe placeholder of
+                                Just ( p, _ ) ->
+                                    if p.registered then
+                                        "Yes"
+
+                                    else
+                                        "No"
+
+                                Nothing ->
+                                    "..."
+                           )
+                ]
             , div [ class "edPlayerBox__stat" ] [ text " " ]
             , div [ class "edPlayerBox__stat" ]
                 [ h3 [] [ text "Statistics" ]

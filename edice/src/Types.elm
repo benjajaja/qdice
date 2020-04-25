@@ -256,6 +256,7 @@ type alias Profile =
     , level : Int
     , levelPoints : Int
     , awards : List Award
+    , registered : Bool
     }
 
 

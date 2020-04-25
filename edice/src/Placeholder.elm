@@ -1,4 +1,4 @@
-module Placeholder exposing (Placeheld(..), isFetched, toFetching, toResult, updateIfPlaceholder, value)
+module Placeholder exposing (Placeheld(..), isFetched, toFetching, toMaybe, toResult, updateIfPlaceholder, value)
 
 {-| Placeholder type
 -}
@@ -50,6 +50,18 @@ toResult placeheld =
 
         Error err a ->
             Err err
+
+
+{-| Maybe only if Fetched
+-}
+toMaybe : Placeheld a -> Maybe a
+toMaybe placeholder =
+    case placeholder of
+        Fetched a ->
+            Just a
+
+        _ ->
+            Nothing
 
 
 updateIfPlaceholder : (a -> a) -> Placeheld a -> Placeheld a

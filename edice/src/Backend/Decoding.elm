@@ -369,6 +369,7 @@ profileDecoder =
         |> required "level" int
         |> required "levelPoints" int
         |> required "awards" (list awardDecoder)
+        |> optional "registered" bool False
 
 
 leaderBoardTopDecoder : Decoder ( String, List Profile )
