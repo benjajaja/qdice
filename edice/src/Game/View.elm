@@ -528,7 +528,7 @@ playerBox model =
                     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
                     , div [ class "edPlayerBox__settings" ] <|
                         (case user.networks of
-                            [ None ] ->
+                            [] ->
                                 [ div []
                                     [ h3 [ style "color" "red" ] [ text "Account has no login" ]
                                     , p [] [ text "You should add a login to this account, or you could lose it anytime you clear some privacy settings." ]

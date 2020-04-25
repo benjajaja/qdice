@@ -424,7 +424,7 @@ export const userProfile = (
     ),
     points: parseInt(points, 10),
     rank: parseInt(rank, 10),
-    networks: rows.map(row => row.network || "none"),
+    networks: rows.map(row => row.network).filter(R.identity),
     voted,
     awards,
     ip,

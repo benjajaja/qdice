@@ -41,7 +41,7 @@ view model user preferences sessionPreferences =
                 List.map (\n -> div [] [ text <| networkDisplay n ]) user.networks
             , div [] <|
                 case user.networks of
-                    [ Types.None ] ->
+                    [] ->
                         [ h2 [ style "color" "red" ] [ text "Warning!" ]
                         , p [] [ text "You will not be able to access this account on another device, ever, until you add a login network." ]
                         , p [] [ text "The same way, if you clear this browser's history/cookies/data, you won't be able to recover this user." ]
@@ -179,9 +179,6 @@ addNetworks model user =
 networkIdName : AuthNetwork -> String
 networkIdName network =
     case network of
-        Types.None ->
-            "none"
-
         Google ->
             "google"
 
@@ -281,9 +278,6 @@ avatarUpload model user =
 networkDisplay : AuthNetwork -> String
 networkDisplay nw =
     case nw of
-        Types.None ->
-            "None"
-
         Password ->
             "Password"
 

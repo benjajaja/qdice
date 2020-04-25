@@ -31,30 +31,40 @@ userDecoder =
         |> required "level" int
         |> required "levelPoints" int
         |> required "claimed" bool
-        |> required "networks" (list authNetworkDecoder)
+        |> required "networks" authNetworksDecoder
         |> required "voted" (list string)
         |> required "awards" (list awardDecoder)
 
 
-authNetworkDecoder : Decoder AuthNetwork
+authNetworksDecoder : Decoder (List AuthNetwork)
+authNetworksDecoder =
+    map
+        (List.filter ((/=) Nothing)
+            >> Helpers.combine
+            >> Maybe.withDefault []
+        )
+        (list authNetworkDecoder)
+
+
+authNetworkDecoder : Decoder (Maybe AuthNetwork)
 authNetworkDecoder =
     map
         (\s ->
             case s of
                 "google" ->
-                    Google
+                    Just Google
 
                 "telegram" ->
-                    Telegram
+                    Just Telegram
 
                 "reddit" ->
-                    Reddit
+                    Just Reddit
 
                 "password" ->
-                    Password
+                    Just Password
 
                 _ ->
-                    None
+                    Nothing
         )
         string
 
@@ -62,7 +72,18 @@ authNetworkDecoder =
 authStateDecoder : Decoder AuthState
 authStateDecoder =
     succeed AuthState
-        |> required "network" authNetworkDecoder
+        |> required "network"
+            (andThen
+                (\m ->
+                    case m of
+                        Just network ->
+                            succeed network
+
+                        Nothing ->
+                            fail "Unknown network"
+                )
+                authNetworkDecoder
+            )
         |> required "table" (nullable string)
         |> required "addTo" (nullable string)
 

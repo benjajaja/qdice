@@ -193,8 +193,7 @@ type alias UserPreferences =
 
 
 type AuthNetwork
-    = None
-    | Password
+    = Password
     | Google
     | Reddit
     | Telegram
