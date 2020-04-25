@@ -1171,3 +1171,16 @@ button .material-icons, .edButton .material-icons {
   transition-property: width;
   transition-duration: 0.5s;
 }
+
+.material-icon-spinner {
+  font-size: 1em;
+  animation: spinner 0.5s infinite;
+}
+@keyframes spinner {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(-180deg);
+  }
+}

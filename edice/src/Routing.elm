@@ -4,6 +4,7 @@ import Backend.HttpCommands exposing (profile)
 import Browser.Navigation exposing (Key)
 import Comments
 import LeaderBoard.State exposing (fetchLeaderboard)
+import Profile
 import Routing.String exposing (routeToString)
 import Types exposing (GamesSubRoute(..), Model, Msg, Route(..), StaticPage(..))
 import Url exposing (Url, percentDecode)
@@ -78,9 +79,7 @@ routeEnterCmd model route =
                     fetchLeaderboard model model.leaderBoard.page
 
                 ProfileRoute id _ ->
-                    ( model
-                    , profile model.backend id
-                    )
+                    profile model Profile.init id
 
                 HomeRoute ->
                     ( model

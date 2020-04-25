@@ -1,6 +1,7 @@
 port module Edice exposing (init, pushSubscribe, started, subscriptions, updateWrapper, view)
 
 import Animation
+import Array
 import Backend
 import Backend.HttpCommands exposing (getPushKey, loadGlobalSettings, loadMe, login, register, registerPush, registerPushEvent)
 import Backend.MqttCommands exposing (sendGameCommand)
@@ -29,6 +30,7 @@ import LoginDialog exposing (loginDialog)
 import MyOauth
 import MyProfile.MyProfile
 import MyProfile.Types
+import Placeholder
 import Profile
 import Routing exposing (navigateTo, parseLocation)
 import Snackbar exposing (toastError, toastMessage)
@@ -122,7 +124,8 @@ init flags location key =
                 , board = []
                 , page = 1
                 }
-            , otherProfile = Nothing
+            , otherProfile =
+                Profile.init
             , games =
                 { tables = Dict.empty
                 , all = []
@@ -378,7 +381,7 @@ update msg model =
                             )
 
                 Ok profile ->
-                    ( { model | otherProfile = Just profile }
+                    ( { model | otherProfile = Placeholder.Fetched profile }
                     , Cmd.none
                     )
 

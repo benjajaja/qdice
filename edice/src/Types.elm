@@ -12,6 +12,7 @@ import Games.Types exposing (Game, GameRef)
 import Http exposing (Error)
 import MyProfile.Types
 import OAuth
+import Placeholder exposing (Placeheld)
 import Tables exposing (Table)
 import Time
 import Url exposing (Url)
@@ -142,7 +143,7 @@ type alias Model =
     , showLoginDialog : LoginDialogStatus
     , settings : GlobalSettings
     , leaderBoard : LeaderBoardModel
-    , otherProfile : Maybe OtherProfile
+    , otherProfile : Placeheld OtherProfile
     , preferences : Preferences
     , sessionPreferences : SessionPreferences
     , games :

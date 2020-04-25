@@ -9,9 +9,10 @@ import Helpers exposing (httpErrorToString)
 import Http exposing (Error, emptyBody, expectJson, expectString, expectStringResponse, expectWhatever, header, jsonBody, stringBody)
 import Land exposing (Color(..))
 import MyProfile.Types exposing (MyProfileUpdate)
+import Placeholder
 import Snackbar exposing (toastError)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, CommentKind(..), GamesMsg(..), GamesSubRoute(..), LeaderboardMsg(..), LoginDialogStatus(..), Msg(..), PushEvent(..), PushSubscription, User(..), UserId)
+import Types exposing (AuthNetwork(..), AuthState, CommentKind(..), GamesMsg(..), GamesSubRoute(..), LeaderboardMsg(..), LoginDialogStatus(..), Msg(..), OtherProfile, PushEvent(..), PushSubscription, User(..), UserId)
 import Url.Builder exposing (int)
 
 
@@ -84,12 +85,14 @@ leaderBoard model page =
         }
 
 
-profile : Model -> UserId -> Cmd Msg
-profile model id =
-    Http.get
-        { url = model.baseUrl ++ "/profile/" ++ id
+profile : Types.Model -> Placeholder.Placeheld OtherProfile -> UserId -> ( Types.Model, Cmd Msg )
+profile model other id =
+    ( { model | otherProfile = Placeholder.toFetching other }
+    , Http.get
+        { url = model.backend.baseUrl ++ "/profile/" ++ id
         , expect = expectJson GetOtherProfile otherProfileDecoder
         }
+    )
 
 
 register : Types.Model -> String -> Maybe Table -> ( Types.Model, Cmd Msg )
