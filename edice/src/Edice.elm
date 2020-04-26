@@ -1023,30 +1023,50 @@ viewWrapper =
 
 mainViewSubscriptions : Model -> Sub Msg
 mainViewSubscriptions model =
-    Animation.subscription Animate <|
-        (case model.route of
-            GameRoute _ ->
-                Board.animations model.game.board
+    Sub.batch <|
+        [ Animation.subscription Animate <|
+            (case model.route of
+                GameRoute _ ->
+                    Board.animations model.game.board
 
-            GamesRoute sub ->
-                case sub of
-                    GameId _ _ ->
-                        case model.replayer of
-                            Just replayer ->
-                                Board.animations replayer.board
+                GamesRoute sub ->
+                    case sub of
+                        GameId _ _ ->
+                            case model.replayer of
+                                Just replayer ->
+                                    Board.animations replayer.board
 
-                            Nothing ->
+                                -- ++ [ Games.Replayer.subscriptions model.replayer ]
+                                Nothing ->
+                                    []
+
+                        _ ->
+                            []
+
+                _ ->
+                    []
+            )
+                ++ [ Tuple.first model.loginPassword.animations
+                   , Tuple.second model.loginPassword.animations
+                   ]
+        ]
+            ++ (case model.route of
+                    GamesRoute sub ->
+                        case sub of
+                            GameId _ _ ->
+                                case model.replayer of
+                                    Just replayer ->
+                                        [ Games.Replayer.subscriptions replayer ]
+
+                                    Nothing ->
+                                        []
+
+                            _ ->
                                 []
 
                     _ ->
                         []
-
-            _ ->
-                []
-        )
-            ++ [ Tuple.first model.loginPassword.animations
-               , Tuple.second model.loginPassword.animations
-               ]
+               )
 
 
 onLocationChange : Model -> Url -> ( Model, Cmd Msg )

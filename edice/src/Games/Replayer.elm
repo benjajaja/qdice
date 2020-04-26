@@ -1,4 +1,4 @@
-module Games.Replayer exposing (gameReplayer, init, update)
+module Games.Replayer exposing (gameReplayer, init, subscriptions, update)
 
 import Board
 import Board.State
@@ -14,7 +14,8 @@ import Icon
 import Land exposing (LandUpdate)
 import Maps
 import Tables exposing (Table)
-import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg(..))
+import Time
+import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg)
 
 
 init : Game -> ReplayerModel
@@ -75,22 +76,48 @@ update model cmd =
                     in
                     ( { model | replayer = Just replayer }, Cmd.none )
 
+                Tick posix ->
+                    ( { model
+                        | replayer =
+                            Maybe.map
+                                (\replayer ->
+                                    applyEvent
+                                        { replayer | step = replayer.step + 1 }
+                                        (replayer.step
+                                            + 1
+                                        )
+                                )
+                                model.replayer
+                      }
+                    , Cmd.none
+                    )
+
+
+subscriptions : ReplayerModel -> Sub Msg
+subscriptions model =
+    if model.playing then
+        Time.every 500 (Types.ReplayerCmd << Tick)
+
+    else
+        Sub.none
+
 
 gameReplayer : Maybe ReplayerModel -> Game -> Html Msg
 gameReplayer model game =
     div [ class "edGameReplayer" ] <|
         case model of
             Just m ->
-                [ Board.view m.board Nothing m.boardOptions [] |> Html.map BoardMsg
+                [ Board.view m.board Nothing m.boardOptions [] |> Html.map Types.BoardMsg
                 , div [] [ text <| "Turn " ++ String.fromInt (m.step + 1) ]
                 , div []
-                    -- [ button [ onClick <| ReplayerCmd <| TogglePlay ]
-                    -- [ if not m.playing then
-                    -- Icon.icon "play_arrow"
-                    --
-                    -- else
-                    -- Icon.icon "pause"
-                    -- ]
+                    [ button [ onClick <| Types.ReplayerCmd <| TogglePlay ]
+                        [ if not m.playing then
+                            Icon.icon "play_arrow"
+
+                          else
+                            Icon.icon "pause"
+                        ]
+
                     -- , button [ onClick <| ReplayerCmd <| Step 0 ] [ Icon.icon "first_page" ]
                     -- , button
                     -- (if m.step > 0 then
@@ -100,9 +127,9 @@ gameReplayer model game =
                     -- [ disabled True ]
                     -- )
                     -- [ Icon.icon "chevron_left" ]
-                    [ button
+                    , button
                         (if m.step < List.length game.events then
-                            [ onClick <| ReplayerCmd <| StepOne ]
+                            [ onClick <| Types.ReplayerCmd <| StepOne ]
 
                          else
                             [ disabled True ]

@@ -3,6 +3,7 @@ module Games.Replayer.Types exposing (..)
 import Board
 import Game.Types exposing (Player)
 import Games.Types exposing (Game)
+import Time exposing (Posix)
 
 
 type alias ReplayerModel =
@@ -18,3 +19,4 @@ type alias ReplayerModel =
 type ReplayerCmd
     = StepOne
     | TogglePlay
+    | Tick Posix
