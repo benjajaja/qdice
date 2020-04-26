@@ -125,16 +125,16 @@ animatedStackDies pathCache { stack, dice } options land =
                 |> Maybe.withDefault ( 0, 0 )
 
         animationAttrs =
-            case stack of
-                Just ( emoji, animation ) ->
-                    if emoji == land.emoji then
-                        Animation.render animation
+            stack
+                |> Maybe.andThen
+                    (\( emoji, animation ) ->
+                        if emoji == land.emoji then
+                            Just <| Animation.render animation
 
-                    else
-                        []
-
-                Nothing ->
-                    []
+                        else
+                            Nothing
+                    )
+                |> Maybe.withDefault Helpers.emptyList
 
         diceAnimation =
             Dict.get land.emoji dice
@@ -144,20 +144,14 @@ animatedStackDies pathCache { stack, dice } options land =
             (class "edBoard--stack"
                 :: animationAttrs
             )
-            [ Svg.Lazy.lazy4 landDies diceAnimation options land ( x_, y_ )
+            [ Svg.Lazy.lazy5 landDies diceAnimation options land x_ y_
+            , Svg.Lazy.lazy4 capitalText land.capital x_ y_ land.color
             ]
         ]
-            ++ (case land.capital of
-                    Just capital ->
-                        [ Svg.Lazy.lazy4 capitalText x_ y_ capital land.color ]
-
-                    Nothing ->
-                        []
-               )
 
 
-landDies : Maybe (Array Bool) -> BoardOptions -> Land.Land -> ( Float, Float ) -> Svg Msg
-landDies diceAnimations options land ( x_, y_ ) =
+landDies : Maybe (Array Bool) -> BoardOptions -> Land.Land -> Float -> Float -> Svg Msg
+landDies diceAnimations options land x_ y_ =
     if options.diceVisible == True then
         g
             [ class "edBoard--stack--inner" ]
@@ -280,52 +274,57 @@ landColor selected hovered color =
         |> Board.Colors.cssRgb
 
 
-capitalText : Float -> Float -> Capital -> Land.Color -> Svg.Svg msg
-capitalText x_ y_ { count } color =
-    let
-        ( oppositeColor, mainColor ) =
-            contrastColors color ( 0, 255 )
-    in
-    g
-        [ class "edBoard--stack__capital" ]
-    <|
-        [ Svg.circle
-            [ cx <| String.fromFloat (x_ - 1.5)
-            , cy <| String.fromFloat (y_ + 1.0)
-            , r <| String.fromInt <| round (toFloat capitalAvatarSize / 2)
-            , color
-                |> Board.Colors.base
-                |> Board.Colors.downlight 0.1
-                |> Board.Colors.cssRgb
-                |> stroke
+capitalText : Maybe Capital -> Float -> Float -> Land.Color -> Svg.Svg msg
+capitalText capital x_ y_ color =
+    case capital of
+        Nothing ->
+            text ""
 
-            -- , color
-            -- |> Board.Colors.base
-            -- |> Board.Colors.cssRgb
-            -- |> fill
-            , fill <| "url(#player_" ++ (color |> Board.Colors.colorIndex |> String.fromInt) ++ ")"
-            ]
-            []
-        ]
-            ++ (if count > 0 then
-                    [ Svg.text_
-                        [ class "edBoard--stack__reserveDice"
-                        , x <| String.fromFloat (x_ - 0.1)
-                        , y <| String.fromFloat (y_ + 2.7)
-                        , oppositeColor
-                            |> Board.Colors.cssRgb
-                            |> stroke
-                        , mainColor
-                            |> Board.Colors.cssRgb
-                            |> fill
-                        , textAnchor "middle"
-                        ]
-                        [ Svg.text <| "+" ++ String.fromInt count ]
+        Just { count } ->
+            let
+                ( oppositeColor, mainColor ) =
+                    contrastColors color ( 0, 255 )
+            in
+            g
+                [ class "edBoard--stack__capital" ]
+            <|
+                [ Svg.circle
+                    [ cx <| String.fromFloat (x_ - 1.5)
+                    , cy <| String.fromFloat (y_ + 1.0)
+                    , r <| String.fromInt <| round (toFloat capitalAvatarSize / 2)
+                    , color
+                        |> Board.Colors.base
+                        |> Board.Colors.downlight 0.1
+                        |> Board.Colors.cssRgb
+                        |> stroke
+
+                    -- , color
+                    -- |> Board.Colors.base
+                    -- |> Board.Colors.cssRgb
+                    -- |> fill
+                    , fill <| "url(#player_" ++ (color |> Board.Colors.colorIndex |> String.fromInt) ++ ")"
                     ]
-
-                else
                     []
-               )
+                ]
+                    ++ (if count > 0 then
+                            [ Svg.text_
+                                [ class "edBoard--stack__reserveDice"
+                                , x <| String.fromFloat (x_ - 0.1)
+                                , y <| String.fromFloat (y_ + 2.7)
+                                , oppositeColor
+                                    |> Board.Colors.cssRgb
+                                    |> stroke
+                                , mainColor
+                                    |> Board.Colors.cssRgb
+                                    |> fill
+                                , textAnchor "middle"
+                                ]
+                                [ Svg.text <| "+" ++ String.fromInt count ]
+                            ]
+
+                        else
+                            []
+                       )
 
 
 avatarDefs : List ( Land.Color, String ) -> Html.Html Msg

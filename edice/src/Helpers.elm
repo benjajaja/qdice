@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, find, findIndex, findIndex_, flip, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, timeUnits, triple, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, timeUnits, triple, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -157,3 +157,8 @@ timeUnits seconds =
 flip : (a -> b -> c) -> (b -> a -> c)
 flip fn =
     \b a -> fn a b
+
+
+emptyList : List a
+emptyList =
+    []
