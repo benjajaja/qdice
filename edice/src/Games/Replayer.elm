@@ -178,6 +178,28 @@ applyEvent model step =
                             in
                             Board.State.updateLands model.board updates <| Just Idle
 
+                        EndTurn id landDice reserveDice capitals player ->
+                            let
+                                updates =
+                                    landDice
+                                        |> List.map
+                                            (\( emoji, dice ) ->
+                                                case Land.findLand emoji model.board.map.lands of
+                                                    Just land ->
+                                                        Just <| LandUpdate emoji land.color (land.points + dice) land.capital
+
+                                                    Nothing ->
+                                                        Nothing
+                                            )
+                                        |> Helpers.combine
+                            in
+                            case updates of
+                                Just u ->
+                                    Board.State.updateLands model.board u Nothing
+
+                                Nothing ->
+                                    model.board
+
                         _ ->
                             model.board
             in

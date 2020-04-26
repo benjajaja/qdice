@@ -284,32 +284,22 @@ foldGame event ( game, list ) =
                     ++ ")"
             )
 
-        EndTurn id player ->
+        EndTurn id landDice reserveDice _ player ->
             ( game
             , foldGameItemSpecial list <|
                 div []
-                    [ text <| player.name ++ " ended his turn"
+                    [ text <|
+                        player.name
+                            ++ " ended his turn, receiving "
+                            ++ String.fromInt
+                                (List.length landDice + reserveDice)
+                            ++ " dice"
 
                     -- , div [] [ img [ src <| "http://localhost/screenshots/screenshot_" ++ String.fromInt id ++ ".png" ] [] ]
                     ]
             )
 
         -- ( game, foldGameItem list <| player.name ++ " ended his turn" )
-        TickTurnOut ->
-            ( game, foldGameItem list <| "Skipped out player" )
-
-        TickTurnOver sitPlayerOut ->
-            ( game
-            , foldGameItem list <|
-                "Turn time ran out"
-                    ++ (if sitPlayerOut then
-                            ", player is out"
-
-                        else
-                            ""
-                       )
-            )
-
         SitOut player ->
             ( game, foldGameItem list <| player.name ++ " sat out" )
 

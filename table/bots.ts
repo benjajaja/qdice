@@ -17,7 +17,12 @@ import { shuffle, rand } from "../rand";
 import logger from "../logger";
 import { BOT_DEADLOCK_MAX, TURN_SECONDS } from "../constants";
 import { isBorder } from "../maps";
-import { findLand, groupedPlayerPositions, assertNever } from "../helpers";
+import {
+  findLand,
+  groupedPlayerPositions,
+  assertNever,
+  giveDice,
+} from "../helpers";
 import { move, Source } from "./bot_strategies";
 
 const defaultPersona: Persona = {
@@ -129,10 +134,20 @@ export const tickBotTurn = (table: Table): Command | undefined => {
       if (player.flag === null || player.flag < position) {
         return { type: "Flag", player, position };
       } else {
-        return { type: "EndTurn", player };
+        return {
+          type: "EndTurn",
+          player,
+          dice: giveDice(table),
+          sitPlayerOut: false,
+        };
       }
     } else {
-      return { type: "EndTurn", player };
+      return {
+        type: "EndTurn",
+        player,
+        dice: giveDice(table),
+        sitPlayerOut: false,
+      };
     }
   }
   if (table.roundCount >= 10 && table.players.length === 2 && position === 2) {
@@ -156,13 +171,23 @@ export const tickBotTurn = (table: Table): Command | undefined => {
   const sources = botSources(table, player);
 
   if (sources.length === 0) {
-    return { type: "EndTurn", player };
+    return {
+      type: "EndTurn",
+      player,
+      dice: giveDice(table),
+      sitPlayerOut: false,
+    };
   }
 
   const attack = move(player.bot.strategy)(sources, player, table);
 
   if (attack === null) {
-    return { type: "EndTurn", player };
+    return {
+      type: "EndTurn",
+      player,
+      dice: giveDice(table),
+      sitPlayerOut: false,
+    };
   }
 
   const emojiFrom = attack.from.emoji;

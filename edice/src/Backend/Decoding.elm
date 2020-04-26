@@ -460,16 +460,25 @@ gameEventDecoder =
                             |> required "toRoll" (list int)
 
                     "EndTurn" ->
-                        succeed Games.Types.EndTurn
-                            |> required "id" int
-                            |> required "player" shortPlayerDecoder
-
-                    "TickTurnOut" ->
-                        succeed Games.Types.TickTurnOut
-
-                    "TickTurnOver" ->
-                        succeed Games.Types.TickTurnOver
-                            |> required "sitPlayerOut" bool
+                        map3
+                            (\id ( lands, reserve, capitals ) player ->
+                                Games.Types.EndTurn id lands reserve capitals player
+                            )
+                            (field "id" int)
+                            (field "dice"
+                                (succeed (\a b c -> ( a, b, c ))
+                                    |> required "lands"
+                                        (list
+                                            (map2 Tuple.pair
+                                                (index 0 string)
+                                                (index 1 int)
+                                            )
+                                        )
+                                    |> required "reserve" int
+                                    |> required "capitals" (list string)
+                                )
+                            )
+                            (field "player" shortPlayerDecoder)
 
                     "SitOut" ->
                         succeed Games.Types.SitOut

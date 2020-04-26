@@ -216,8 +216,6 @@ export type CommandType =
   | "Flag"
   | "Heartbeat"
   | "Roll"
-  | "TickTurnOver"
-  | "TickTurnOut"
   | "TickStart"
   | "CleanWatchers"
   | "CleanPlayers"
@@ -250,13 +248,22 @@ export type Command =
         round: number;
       }
     >
-  | CommandSkeleton<"EndTurn", { player: Player }>
+  | CommandSkeleton<
+      "EndTurn",
+      {
+        player: Player;
+        dice: {
+          lands: readonly [Emoji, number][];
+          reserve: number;
+          capitals: readonly Emoji[];
+        };
+        sitPlayerOut: boolean;
+      }
+    >
   | CommandSkeleton<"SitOut", { player: Player }>
   | CommandSkeleton<"SitIn", { player: Player }>
   | CommandSkeleton<"ToggleReady", { player: Player; ready: boolean }>
   | CommandSkeleton<"Flag", { player: Player; position: number }>
-  | CommandSkeleton<"TickTurnOver", { sitPlayerOut: boolean }>
-  | CommandSkeleton<"TickTurnOut">
   | CommandSkeleton<"EndGame", { winner: Player | null; turnCount: number }>
   | CommandSkeleton<"Clear">
   | CommandSkeleton<"Heartbeat", { user: User | null; clientId: string }>

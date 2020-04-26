@@ -27,9 +27,7 @@ type GameEvent
     | Chat ShortGamePlayer String
     | Attack ShortGamePlayer Emoji Emoji
     | Roll (List Int) (List Int)
-    | EndTurn Int ShortGamePlayer
-    | TickTurnOut
-    | TickTurnOver Bool
+    | EndTurn Int (List ( Emoji, Int )) Int (List Emoji) ShortGamePlayer
     | SitOut ShortGamePlayer
     | SitIn ShortGamePlayer
     | ToggleReady ShortGamePlayer Bool

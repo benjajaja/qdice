@@ -7,9 +7,19 @@ import * as pics from "pics";
 import * as resize from "resizer-stream";
 
 import * as R from "ramda";
-import { Table, Land, UserId, Player, Elimination, Color } from "./types";
+import {
+  Table,
+  Land,
+  UserId,
+  Player,
+  Elimination,
+  Color,
+  Emoji,
+} from "./types";
+import * as maps from "./maps";
 import logger from "./logger";
 import { ELIMINATION_REASON_SURRENDER } from "./constants";
+import { rand, shuffle } from "./rand";
 
 pics.use(require("gif-stream"));
 pics.use(require("jpg-stream"));
@@ -242,4 +252,71 @@ export const hasChanged = (lands: readonly Land[]) => (land: Land): boolean => {
     return true;
   }
   return false;
+};
+
+export const giveDice = (
+  table: Table
+): {
+  lands: readonly [Emoji, number][];
+  reserve: number;
+  capitals: readonly Emoji[];
+} => {
+  const player = table.players[table.turnIndex];
+  const connectLandCount = maps.countConnectedLands({
+    lands: table.lands,
+    adjacency: table.adjacency,
+  })(player.color);
+  const newDies = connectLandCount + player.reserveDice;
+
+  let reserve = 0;
+
+  let lands: readonly Land[] = table.lands.slice();
+  let result: [Emoji, number][] = [];
+  R.range(0, newDies).forEach(i => {
+    const targets = lands.filter(
+      land => land.color === player.color && land.points < table.stackSize
+    );
+    if (targets.length === 0) {
+      reserve += 1;
+    } else {
+      let target: Land;
+      if (i >= connectLandCount) {
+        target =
+          targets.find(R.propEq("capital", true)) ??
+          targets[rand(0, targets.length - 1)];
+      } else {
+        target = targets[rand(0, targets.length - 1)];
+      }
+      lands = updateLand(lands, target, { points: target.points + 1 });
+      if (lands.some(land => land.points > 8)) {
+        logger.error("giveDice gave too much dice!");
+      }
+      result = result.find(([emoji, _]) => emoji === target.emoji)
+        ? result.map(([emoji, count]) =>
+            emoji === target.emoji ? [emoji, count + 1] : [emoji, count]
+          )
+        : [...result, [target.emoji, 1]];
+    }
+  });
+
+  let capitals: readonly Emoji[] = [];
+  if (table.params.startingCapitals) {
+    capitals = table.players.reduce((result: Emoji[], { color }) => {
+      const playerLands = table.lands.filter(R.propEq("color", color));
+      if (playerLands.every(R.propEq("capital", false))) {
+        logger.debug(`giving new capital to #${color}`);
+        const match = R.sortWith(
+          [R.ascend(R.prop("points"))],
+          shuffle(playerLands)
+        ).pop();
+        if (match) {
+          return [...result, match.emoji];
+        } else {
+          logger.error(`#${color} has no capital but I can't find it again!`);
+        }
+      }
+      return result;
+    }, []);
+  }
+  return { lands: result, reserve, capitals };
 };

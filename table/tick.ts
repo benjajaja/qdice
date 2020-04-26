@@ -22,7 +22,7 @@ import {
 import { addBots, tickBotTurn, isBot, mkBot } from "./bots";
 import logger from "../logger";
 import { setTimeout } from "timers";
-import { findLand } from "../helpers";
+import { findLand, giveDice } from "../helpers";
 import { diceRoll } from "../rand";
 
 const intervalIds: { [tableTag: string]: any } = {};
@@ -57,12 +57,12 @@ export const stop = (tableTag: string) => {
   delete intervalIds[tableTag];
 };
 
-const tick = async (tableTag: string, lock) => {
+const tick = async (tableTag: string, lock: any) => {
   if (lock.isBusy(tableTag)) {
     return;
   }
 
-  lock.acquire(tableTag, async done => {
+  lock.acquire(tableTag, async (done: any) => {
     const table = await getTable(tableTag);
     let command: Command | void = undefined;
     if (table.status === STATUS_PLAYING) {
@@ -70,7 +70,6 @@ const tick = async (tableTag: string, lock) => {
         logger.error("STATUS_PLAYING but no players!");
         Sentry.captureException(new Error("STATUS_PLAYING but no players!"));
         command = { type: "EndGame", winner: null, turnCount: table.turnCount };
-        // result = endGame(table, { type: "TickTurnOver" });
       } else if (!table.players[table.turnIndex]) {
         logger.error(
           "turnIndex out of bounds!",
@@ -84,7 +83,16 @@ const tick = async (tableTag: string, lock) => {
             }, ${table.players.map(p => p.name).join()}`
           )
         );
-        command = { type: "TickTurnOver", sitPlayerOut: false };
+        command = {
+          type: "EndTurn",
+          player: table.players[table.turnIndex + 1] ?? table.players[0],
+          dice: {
+            lands: [],
+            reserve: 0,
+            capitals: [],
+          },
+          sitPlayerOut: false,
+        };
       } else if (table.attack) {
         if (
           havePassed(
@@ -110,11 +118,21 @@ const tick = async (tableTag: string, lock) => {
         }
         // never process anything else during attack
       } else if (table.players[table.turnIndex].out) {
-        command = { type: "TickTurnOut" };
+        command = {
+          type: "EndTurn",
+          player: table.players[table.turnIndex],
+          sitPlayerOut: false,
+          dice: giveDice(table),
+        };
       } else if (
         havePassed(table.params.turnSeconds ?? TURN_SECONDS, table.turnStart)
       ) {
-        command = { type: "TickTurnOver", sitPlayerOut: !table.turnActivity };
+        command = {
+          type: "EndTurn",
+          player: table.players[table.turnIndex],
+          sitPlayerOut: !table.turnActivity,
+          dice: giveDice(table),
+        };
       } else if (table.players[table.turnIndex].bot !== null) {
         command = tickBotTurn(table);
       }

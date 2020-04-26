@@ -24,7 +24,6 @@ import * as publish from "./table/publish";
 import * as tick from "./table/tick";
 import { getTable } from "./table/get";
 import { startGameEvent } from "./table/games";
-import nextTurn from "./table/turn";
 import { startGame, preloadStartingPositions } from "./table/start";
 import {
   cleanWatchers,
@@ -33,7 +32,7 @@ import {
   enter,
   exit,
 } from "./table/watchers";
-import { positionScore, tablePoints, assertNever } from "./helpers";
+import { positionScore, tablePoints, assertNever, giveDice } from "./helpers";
 import logger from "./logger";
 import * as config from "./tables.config";
 
@@ -246,7 +245,12 @@ const toCommand = (
         to,
       };
     case "EndTurn":
-      return { type: "EndTurn", player: findPlayer(type, table, user) };
+      return {
+        type: "EndTurn",
+        player: findPlayer(type, table, user),
+        dice: giveDice(table),
+        sitPlayerOut: false,
+      };
     case "SitOut":
       return { type: "SitOut", player: findPlayer(type, table, user) };
     case "SitIn":
@@ -313,7 +317,7 @@ const commandResult = async (
     case "Attack":
       return [attack(command.player, table, command.from, command.to), null];
     case "EndTurn":
-      return endTurn(command.player, table);
+      return endTurn(command.player, table, command.sitPlayerOut, command.dice);
     case "SitOut":
       return [sitOut(command.player, table), null];
     case "SitIn":
@@ -326,10 +330,6 @@ const commandResult = async (
       return flag(command.player, command.position, table);
     case "Heartbeat":
       return [heartbeat(command.user, table, command.clientId), null];
-    case "TickTurnOver":
-      return nextTurn(table, command.sitPlayerOut);
-    case "TickTurnOut":
-      return nextTurn(table);
     case "EndGame":
       return [endGame(table, command.winner, command.turnCount), null];
     case "Roll":

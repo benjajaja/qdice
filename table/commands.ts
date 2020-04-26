@@ -12,6 +12,7 @@ import {
   Persona,
   Command,
   IllegalMoveCode,
+  Emoji,
 } from "../types";
 import * as publish from "./publish";
 import { addSeconds, now } from "../timestamp";
@@ -409,17 +410,23 @@ export const attack = (
 };
 
 export const endTurn = (
-  player: Player,
-  table: Table
+  player: Player | null,
+  table: Table,
+  sitPlayerOut: boolean,
+  dice: {
+    lands: readonly [Emoji, number][];
+    reserve: number;
+    capitals: readonly Emoji[];
+  }
 ): [CommandResult, Command | null] => {
   if (table.status !== STATUS_PLAYING) {
     throw new IllegalMoveError(
       "endTurn while not STATUS_PLAYING",
       IllegalMoveCode.EndTurnWhileStopped,
-      player
+      player ?? undefined
     );
   }
-  if (!hasTurn(table)(player)) {
+  if (player && !hasTurn(table)(player)) {
     throw new IllegalMoveError(
       "endTurn while not having turn",
       IllegalMoveCode.EndTurnOutOfTurn,
@@ -430,20 +437,22 @@ export const endTurn = (
     throw new IllegalMoveError(
       "endTurn while ongoing attack",
       IllegalMoveCode.EndTurnDuringAttack,
-      player
+      player ?? undefined
     );
   }
 
-  const existing = table.players.filter(p => p.id === player.id).pop();
-  if (!existing) {
-    throw new IllegalMoveError(
-      "endTurn but did not exist in game",
-      IllegalMoveCode.EndTurnNoPlayer,
-      player
-    );
+  if (player) {
+    const existing = table.players.filter(p => p.id === player.id).pop();
+    if (!existing) {
+      throw new IllegalMoveError(
+        "endTurn but did not exist in game",
+        IllegalMoveCode.EndTurnNoPlayer,
+        player
+      );
+    }
   }
 
-  return nextTurn(table);
+  return nextTurn(table, sitPlayerOut, dice);
 };
 
 export const sitOut = (player: Player, table: Table): CommandResult => {

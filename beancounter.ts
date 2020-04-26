@@ -246,7 +246,8 @@ const postTwitterGame = async (
         const data = await screenshot(tableName, eventId);
         const media = await twitter.post("media/upload", { media: data });
         params = {
-          status: `(${eventId}) @qdicewtf ${command.player.name}'s turn has finished.`,
+          status: `(${eventId}) @qdicewtf ${command.player?.name ??
+            "Unknown"}'s turn has finished.`,
           in_reply_to_status_id: post,
           media_ids: media.media_id_string,
         };

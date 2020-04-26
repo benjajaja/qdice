@@ -9,6 +9,7 @@ import {
   CommandResult,
   Command,
   Elimination,
+  Emoji,
 } from "../types";
 import {
   updateLand,
@@ -27,7 +28,12 @@ import { now } from "../timestamp";
 
 const turn = (
   table: Table,
-  sitPlayerOut = false
+  sitPlayerOut = false,
+  dice: {
+    lands: readonly [Emoji, number][];
+    reserve: number;
+    capitals: readonly Emoji[];
+  }
 ): [CommandResult, Command | null] => {
   const inPlayers = sitPlayerOut
     ? R.adjust(
@@ -47,11 +53,12 @@ const turn = (
         ")"
     );
   }
-  const [receivedDice, lands, players, hasReserveDice] = giveDice(
+  const [receivedDice, lands, players] = applyDice(
     table,
-    table.lands,
-    inPlayers
-  )(currentPlayer); // not just removed
+    inPlayers,
+    currentPlayer,
+    dice
+  );
 
   const nextIndex =
     table.turnIndex + 1 < players.length ? table.turnIndex + 1 : 0;
@@ -102,7 +109,7 @@ const turn = (
 
     const result = {
       table: props,
-      lands: giveCapitals(table, players_, lands_),
+      lands: lands_,
       players: players_,
       eliminations,
     };
@@ -128,7 +135,6 @@ const turn = (
 
   if (!newPlayer.out) {
     // normal turn over
-    const lands_ = giveCapitals(table, players, lands);
     publish.turn(
       table,
       props.turnIndex,
@@ -136,9 +142,9 @@ const turn = (
       props.roundCount,
       [currentPlayer, receivedDice],
       players,
-      lands_
+      lands
     );
-    return [{ table: props, lands: lands_, players }, null];
+    return [{ table: props, lands: lands, players }, null];
   }
 
   if (newPlayer.outTurns > OUT_TURN_COUNT_ELIMINATION) {
@@ -162,7 +168,7 @@ const turn = (
 
     const result = {
       table: props,
-      lands: giveCapitals(table, players_, lands_),
+      lands: lands_,
       players: players_,
       eliminations,
     };
@@ -196,7 +202,7 @@ const turn = (
 
   const result = {
     table: props,
-    lands: giveCapitals(table, players_, lands),
+    lands,
     players: players_,
   };
   publish.turn(
@@ -206,79 +212,47 @@ const turn = (
     props.roundCount,
     [currentPlayer, receivedDice],
     players_,
-    result.lands
+    lands
   );
   return [result, null];
 };
 
-const giveDice = (
-  table: Table,
-  lands: ReadonlyArray<Land>,
-  players: ReadonlyArray<Player>
-) => (
-  player: Player
-): [number, ReadonlyArray<Land>, ReadonlyArray<Player>, boolean] => {
-  const connectLandCount = maps.countConnectedLands({
-    lands,
-    adjacency: table.adjacency,
-  })(player.color);
-  const newDies = connectLandCount + player.reserveDice;
-
-  let reserveDice = 0;
-
-  R.range(0, newDies).forEach(i => {
-    const targets = lands.filter(
-      land => land.color === player.color && land.points < table.stackSize
-    );
-    if (targets.length === 0) {
-      reserveDice += 1;
-    } else {
-      let target: Land;
-      if (i >= connectLandCount) {
-        target =
-          targets.find(R.propEq("capital", true)) ??
-          targets[rand(0, targets.length - 1)];
-      } else {
-        target = targets[rand(0, targets.length - 1)];
-      }
-      lands = updateLand(lands, target, { points: target.points + 1 });
-    }
-  });
-  return [
-    connectLandCount,
-    lands,
-    players.map(p => (p === player ? { ...player, reserveDice } : p)),
-    reserveDice > 0,
-  ];
-};
-
-const giveCapitals = (
+const applyDice = (
   table: Table,
   players: readonly Player[],
-  lands: readonly Land[]
-): readonly Land[] => {
-  if (table.params.startingCapitals) {
-    return players.reduce((result: Land[], { color }) => {
-      const playerLands = result.filter(R.propEq("color", color));
-      if (playerLands.every(R.propEq("capital", false))) {
-        logger.debug(`giving new capital to #${color}`);
-        const match = R.sortWith(
-          [R.ascend(R.prop("points"))],
-          shuffle(playerLands)
-        ).pop();
-        if (match) {
-          const newCapital = { ...match, capital: true };
-          return result.map(l =>
-            l.emoji === newCapital.emoji ? newCapital : l
-          );
-        } else {
-          logger.error(`#${color} has no capital but I can't find it again!`);
-        }
-      }
-      return result;
-    }, lands);
+  player: Player,
+  dice: {
+    lands: readonly [Emoji, number][];
+    reserve: number;
+    capitals: readonly Emoji[];
   }
-  return lands;
+): [number, readonly Land[], readonly Player[]] => {
+  const count = R.sum(dice.lands.map(([_, count]) => count)) + dice.reserve;
+
+  const players_ = players.map(p =>
+    p.id === player.id ? { ...p, reserveDice: p.reserveDice + dice.reserve } : p
+  );
+  const lands = table.lands
+    .map(land =>
+      dice.lands.reduce((land, [emoji, count]) => {
+        if (land.emoji === emoji) {
+          return { ...land, points: land.points + count };
+        }
+        return land;
+      }, land)
+    )
+    .map(land => {
+      if (dice.capitals.indexOf(land.emoji) !== -1) {
+        return { ...land, capital: true };
+      }
+      return land;
+    });
+
+  if (lands.some(land => land.points > 8)) {
+    throw new Error("applyDice applied too much dice!");
+  }
+
+  return [count, lands, players_];
 };
 
 export default turn;
