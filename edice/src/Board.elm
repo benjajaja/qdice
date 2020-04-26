@@ -1,4 +1,4 @@
-module Board exposing (BoardOptions, LandUpdate, Model, Msg, animations, canAttackFrom, canMove, init, updateAnimations, view)
+module Board exposing (BoardOptions, Model, Msg, animations, canAttackFrom, canMove, init, updateAnimations, view)
 
 import Animation
 import Board.State
@@ -6,7 +6,7 @@ import Board.Types exposing (BoardMove, Model)
 import Board.View
 import Html
 import Html.Lazy
-import Land exposing (Color, Emoji, Land, Map, findLand)
+import Land exposing (Color, Emoji, Land, LandUpdate, Map, findLand)
 
 
 type alias Msg =
@@ -15,10 +15,6 @@ type alias Msg =
 
 type alias Model =
     Board.Types.Model
-
-
-type alias LandUpdate =
-    Board.Types.LandUpdate
 
 
 type alias BoardOptions =

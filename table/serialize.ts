@@ -203,5 +203,10 @@ export const serializeGame = game => ({
   events: (game.events ?? [])
     .map(event => ({ ...event.params, id: event.id }))
     .filter(params => Object.keys(params).length > 0),
-  lands: (game.lands ?? []).map(land => [land.emoji, land.color, land.points]),
+  lands: (game.lands ?? []).map(land => [
+    land.emoji,
+    land.color,
+    land.points,
+    land.capital ? 0 : -1,
+  ]),
 });

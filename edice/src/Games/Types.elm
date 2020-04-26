@@ -11,7 +11,7 @@ type alias Game =
     , gameStart : Posix
     , players : List GamePlayer
     , events : List GameEvent
-    , lands : List ( Emoji, Color, Int )
+    , lands : List Land.LandUpdate
     }
 
 

@@ -1,4 +1,4 @@
-module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), BoardOptions, DiceAnimations, LandUpdate, Model, Msg(..), PathCache, getLayout)
+module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), BoardOptions, DiceAnimations, Model, Msg(..), PathCache, getLayout)
 
 import Animation
 import Array exposing (Array)
@@ -52,14 +52,6 @@ type BoardMove
     = Idle
     | From Land
     | FromTo Land Land
-
-
-type alias LandUpdate =
-    { emoji : Land.Emoji
-    , color : Land.Color
-    , points : Int
-    , capital : Maybe Land.Capital
-    }
 
 
 getLayout : Map -> ( MapSize, String )

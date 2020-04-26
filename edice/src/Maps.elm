@@ -1,4 +1,4 @@
-module Maps exposing (consoleLogMap, emptyMap, load, symbols, toCharList)
+module Maps exposing (consoleLogMap, emptyMap, load, mapFromTable, symbols, toCharList)
 
 import Array
 import Dict
@@ -8,7 +8,7 @@ import Land exposing (Cells, Emoji)
 import Maps.Sources exposing (mapAdjacency, mapSourceString)
 import Regex
 import String
-import Tables exposing (Map(..), encodeMap)
+import Tables exposing (Map(..), Table, encodeMap)
 
 
 type alias EmojiLand =
@@ -335,3 +335,31 @@ symbols =
 emptyMap : Land.Map
 emptyMap =
     Land.Map "empty" [] 40 40 Dict.empty Array.empty []
+
+
+mapFromTable : Table -> Result String Map
+mapFromTable table =
+    case table of
+        "Planeta" ->
+            Ok Planeta
+
+        "España" ->
+            Ok Serrano
+
+        "Lagos" ->
+            Ok DeLucía
+
+        "Polo" ->
+            Ok Melchor
+
+        "Arabia" ->
+            Ok Sabicas
+
+        "Europa" ->
+            Ok Montoya
+
+        "Twitter" ->
+            Ok Planeta
+
+        _ ->
+            Tables.decodeMap table

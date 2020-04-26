@@ -1,8 +1,8 @@
-module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, TurnInfo, User, actionToString, isBot, makePlayer, statusToIcon, statusToString, userColor)
+module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), MapLoadError(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, TurnInfo, User, actionToString, isBot, makePlayer, statusToIcon, statusToString, userColor)
 
-import Board exposing (LandUpdate)
+import Board
 import Browser.Dom as Dom
-import Land exposing (Color, Emoji)
+import Land exposing (Color, Emoji, LandUpdate)
 import Tables exposing (Table)
 import Time exposing (Posix)
 
@@ -220,6 +220,12 @@ type alias TurnInfo =
     , players : List Player
     , lands : List LandUpdate
     }
+
+
+type MapLoadError
+    = NoTableNoMapError
+    | BadTableError
+    | MapLoadError String
 
 
 makePlayer : String -> Player

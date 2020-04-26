@@ -3,10 +3,11 @@ module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, 
 import Backend.HttpCommands exposing (profile)
 import Browser.Navigation exposing (Key)
 import Comments
+import Games
 import LeaderBoard.State exposing (fetchLeaderboard)
 import Profile
 import Routing.String exposing (routeToString)
-import Types exposing (GamesSubRoute(..), Model, Msg, Route(..), StaticPage(..))
+import Types exposing (GamesSubRoute(..), Model, Msg(..), Route(..), StaticPage(..))
 import Url exposing (Url, percentDecode)
 import Url.Parser exposing (..)
 
@@ -91,11 +92,7 @@ routeEnterCmd model route =
                     )
 
                 GamesRoute sub ->
-                    let
-                        games =
-                            model.games
-                    in
-                    ( { model | games = { games | fetching = Just sub } }, Backend.HttpCommands.games model.backend sub )
+                    Games.enter model sub
 
                 _ ->
                     ( model

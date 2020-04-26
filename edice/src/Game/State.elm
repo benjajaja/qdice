@@ -10,19 +10,13 @@ import Board.Types exposing (BoardMove(..), Msg(..))
 import Browser.Dom as Dom
 import Game.Types exposing (..)
 import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
-import Land
+import Land exposing (LandUpdate)
 import Maps exposing (load)
 import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (Map(..), Table)
 import Task
 import Time
 import Types exposing (Msg(..), SessionPreferences, User(..))
-
-
-type MapLoadError
-    = NoTableNoMapError
-    | BadTableError
-    | MapLoadError String
 
 
 init : Maybe Table -> Maybe Map -> ( Game.Types.Model, Cmd Msg )
@@ -37,7 +31,7 @@ init table tableMap_ =
                 Err err ->
                     case table of
                         Just t ->
-                            case mapFromTable t of
+                            case Maps.mapFromTable t of
                                 Ok m ->
                                     Maps.load m |> Result.mapError MapLoadError
 
@@ -179,34 +173,6 @@ tableMap table tableList =
         (List.filter (\t -> t.table == table) tableList
             |> List.head
         )
-
-
-mapFromTable : Table -> Result String Map
-mapFromTable table =
-    case table of
-        "Planeta" ->
-            Ok Planeta
-
-        "España" ->
-            Ok Serrano
-
-        "Lagos" ->
-            Ok DeLucía
-
-        "Polo" ->
-            Ok Melchor
-
-        "Arabia" ->
-            Ok Sabicas
-
-        "Europa" ->
-            Ok Montoya
-
-        "Twitter" ->
-            Ok Planeta
-
-        _ ->
-            Tables.decodeMap table
 
 
 findUserPlayer : Types.User -> List Player -> Maybe Player
@@ -607,7 +573,7 @@ showRoll model roll =
         player =
             findUserPlayer model.user players
 
-        updates : List Board.Types.LandUpdate
+        updates : List LandUpdate
         updates =
             case tuple of
                 Just ( from, to ) ->

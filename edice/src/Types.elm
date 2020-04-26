@@ -8,6 +8,7 @@ import Browser
 import Browser.Navigation exposing (Key)
 import Dict exposing (Dict)
 import Game.Types exposing (Award, PlayerAction, TableInfo)
+import Games.Replayer.Types exposing (ReplayerCmd, ReplayerModel)
 import Games.Types exposing (Game, GameRef)
 import Http exposing (Error)
 import MyProfile.Types
@@ -69,6 +70,8 @@ type Msg
     | GameMsg Game.Types.Msg
     | EnterGame Table
     | ExpandChats
+      -- replayer
+    | ReplayerCmd ReplayerCmd
       -- backend
     | Connected Backend.Types.ClientId
     | StatusConnect String
@@ -153,6 +156,7 @@ type alias Model =
         }
     , fullscreen : Bool
     , comments : CommentsModel
+    , replayer : Maybe ReplayerModel
     }
 
 

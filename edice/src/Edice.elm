@@ -20,6 +20,7 @@ import Game.State exposing (gameCommand)
 import Game.Types exposing (PlayerAction(..))
 import Game.View
 import Games
+import Games.Replayer
 import Helpers exposing (httpErrorToString, is502, pipeUpdates)
 import Html
 import Html.Attributes
@@ -133,6 +134,7 @@ init flags location key =
                 }
             , fullscreen = False
             , comments = Comments.init
+            , replayer = Nothing
             }
 
         ( model_, routeCmd ) =
@@ -605,6 +607,22 @@ update msg model =
                             , Animation.update animateMsg <| Tuple.second loginPassword.animations
                             )
                     }
+                , replayer =
+                    case model.route of
+                        GamesRoute sub ->
+                            case sub of
+                                GameId _ _ ->
+                                    Maybe.map
+                                        (\replayer ->
+                                            { replayer | board = Board.updateAnimations replayer.board animateMsg }
+                                        )
+                                        model.replayer
+
+                                _ ->
+                                    model.replayer
+
+                        _ ->
+                            model.replayer
               }
             , Cmd.none
             )
@@ -920,6 +938,9 @@ update msg model =
             in
             ( { model | game = game_ }, Cmd.none )
 
+        ReplayerCmd cmd ->
+            Games.Replayer.update model cmd
+
 
 tableFromRoute : Route -> Maybe Table
 tableFromRoute route =
@@ -1006,6 +1027,19 @@ mainViewSubscriptions model =
         (case model.route of
             GameRoute _ ->
                 Board.animations model.game.board
+
+            GamesRoute sub ->
+                case sub of
+                    GameId _ _ ->
+                        case model.replayer of
+                            Just replayer ->
+                                Board.animations replayer.board
+
+                            Nothing ->
+                                []
+
+                    _ ->
+                        []
 
             _ ->
                 []

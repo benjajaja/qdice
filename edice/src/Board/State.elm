@@ -5,7 +5,7 @@ import Array exposing (Array)
 import Board.PathCache
 import Board.Types exposing (..)
 import Dict
-import Land exposing (Color(..))
+import Land exposing (Color(..), LandUpdate)
 
 
 init : Land.Map -> Model

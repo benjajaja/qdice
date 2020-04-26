@@ -1,4 +1,4 @@
-module Land exposing (Capital, Cells, Color(..), Emoji, Land, Map, MapSize, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasAttackableNeighbours, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, nextBorders, nextBorders_, oppositeSide, playerColor, randomPlayerColor, rightSide)
+module Land exposing (Capital, Cells, Color(..), Emoji, Land, LandUpdate, Map, MapSize, Point, allSides, append, areNeighbours, at, cellBorder, cellCenter, cellCubicCoords, cellOnBorder, cellToKey, centerPoint, concat, defaultSide, emptyEmoji, findLand, firstFreeBorder, firstFreeBorder_, hasAttackableNeighbours, hasCell, hasFreeBorder, indexAt, isBordering, isCellOnLandBorder, isNothing, landBorders, landCenter, landPath, leftSide, nextBorders, nextBorders_, oppositeSide, playerColor, randomPlayerColor, rightSide)
 
 import Array exposing (Array)
 import Bitwise
@@ -26,6 +26,14 @@ type alias Land =
     { cells : Cells
     , color : Color
     , emoji : Emoji
+    , points : Int
+    , capital : Maybe Capital
+    }
+
+
+type alias LandUpdate =
+    { emoji : Emoji
+    , color : Color
     , points : Int
     , capital : Maybe Capital
     }

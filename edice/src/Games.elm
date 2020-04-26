@@ -1,14 +1,18 @@
 module Games exposing (..)
 
 import Backend.HttpCommands
+import Board.Colors exposing (baseCssRgb, colorName)
 import Comments
 import DateFormat
 import Dict
-import Games.Types exposing (Game, GameEvent(..))
+import Game.Chat
+import Games.Replayer exposing (gameReplayer)
+import Games.Replayer.Types exposing (ReplayerModel)
+import Games.Types exposing (Game, GameEvent(..), GamePlayer)
 import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Routing.String exposing (routeToString)
+import Routing.String exposing (link, routeToString)
 import Snackbar exposing (toastError)
 import Time exposing (Zone)
 import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg, Route(..))
@@ -53,11 +57,44 @@ update model msg =
                                                 |> List.append list
                                     in
                                     { games | tables = Dict.insert table tableGames games.tables }
+
+                        model_ =
+                            { model | games = newGames }
                     in
-                    ( { model | games = newGames }, Cmd.none )
+                    case sub of
+                        GameId table id ->
+                            case list of
+                                [ game ] ->
+                                    ( { model_ | replayer = Just <| Games.Replayer.init game }, Cmd.none )
+
+                                _ ->
+                                    ( model_, toastError "Game not found" "game list was not a singleton" )
+
+                        _ ->
+                            ( model_, Cmd.none )
 
                 Err err ->
                     ( { model | games = games }, toastError "Could not fetch game!" <| Helpers.httpErrorToString err )
+
+
+enter : Model -> GamesSubRoute -> ( Model, Cmd Msg )
+enter model sub =
+    let
+        games =
+            model.games
+
+        model_ =
+            { model | games = { games | fetching = Just sub } }
+
+        cmd =
+            Backend.HttpCommands.games model.backend sub
+    in
+    -- case sub of
+    -- GameId table id ->
+    -- ( { model_ | replayer = Just <| Games.Replayer.init table }, cmd )
+    --
+    -- _ ->
+    ( model_, cmd )
 
 
 view : Model -> GamesSubRoute -> Html Msg
@@ -92,7 +129,7 @@ view model sub =
                             Dict.values model.games.tables
                                 |> List.concat
                                 |> Helpers.find (.id >> (==) id)
-                                |> Maybe.map (gameView model.zone)
+                                |> Maybe.map (gameView model.zone model.replayer)
                                 |> Maybe.map List.singleton
                                 |> Maybe.withDefault []
             in
@@ -123,18 +160,18 @@ view model sub =
 crumbs : GamesSubRoute -> List (Html Msg)
 crumbs sub =
     List.concat
-        [ [ a [ href <| routeToString False <| GamesRoute AllGames ] [ text "Games" ] ]
+        [ [ link "Games" <| GamesRoute AllGames ]
         , case sub of
             GamesOfTable table ->
                 [ text " > "
-                , a [ href <| routeToString False <| GamesRoute sub ] [ text table ]
+                , link table <| GamesRoute sub
                 ]
 
             GameId table id ->
                 [ text " > "
-                , a [ href <| routeToString False <| GamesRoute <| GamesOfTable table ] [ text table ]
+                , link table <| GamesRoute <| GamesOfTable table
                 , text " > "
-                , a [ href <| routeToString False <| GamesRoute sub ] [ text <| String.fromInt id ]
+                , link ("#" ++ String.fromInt id) <| GamesRoute <| sub
                 ]
 
             _ ->
@@ -150,7 +187,7 @@ gameHeader zone game =
             , dataTestId <| "game-entry-" ++ String.fromInt game.id
             ]
             [ text <| "#" ++ String.fromInt game.id ]
-        , text " "
+        , text <| " on table " ++ game.tag ++ " "
         , span [] [ text <| DateFormat.format "dddd, dd MMMM yyyy HH:mm:ss" zone game.gameStart ]
         ]
 
@@ -159,43 +196,62 @@ gameRow : Zone -> Game -> Html Msg
 gameRow zone game =
     div []
         [ gameHeader zone game
-        , blockquote []
+        , blockquote [] <|
             [ span [] [ text "Players: " ]
-            , span [] [ text <| String.join ", " <| List.map .name game.players ]
             ]
+                ++ playersList game.players
         ]
 
 
-gameView : Zone -> Game -> Html Msg
-gameView zone game =
-    div []
-        [ gameHeader zone game
-        , blockquote []
-            [ div [] [ text "Players: " ]
-            , ul [] <|
-                List.map
-                    (\p ->
-                        li []
-                            [ div [] <|
-                                if p.isBot == False then
-                                    [ a [ href <| routeToString False <| ProfileRoute p.id p.name ]
-                                        [ text p.name
-                                        ]
-                                    ]
+playersList : List GamePlayer -> List (Html Msg)
+playersList players =
+    List.foldl
+        (\p l ->
+            let
+                el =
+                    (if p.isBot then
+                        em
+
+                     else
+                        a
+                    )
+                        ([ style "color" (baseCssRgb p.color)
+                         ]
+                            ++ (if not p.isBot then
+                                    Routing.String.linkAttrs <| ProfileRoute p.id p.name
 
                                 else
-                                    [ text p.name ]
-                            ]
-                    )
-                    game.players
-            , div [] [ text "Ledger: " ]
-            , ul [] <|
-                Tuple.second <|
-                    List.foldl
-                        foldGame
-                        ( game, [] )
-                        game.events
-            ]
+                                    []
+                               )
+                        )
+                        [ text <| p.name ]
+            in
+            case l of
+                [] ->
+                    [ el ]
+
+                _ ->
+                    l ++ [ text ", ", el ]
+        )
+        []
+        players
+
+
+gameView : Zone -> Maybe ReplayerModel -> Game -> Html Msg
+gameView zone replayer game =
+    div []
+        [ gameHeader zone game
+        , div [] <|
+            [ span [] [ text "Players: " ] ]
+                ++ playersList game.players
+        , gameReplayer replayer game
+        , div [] [ text "Ledger: " ]
+        , ul [] <|
+            Tuple.second <|
+                List.foldl
+                    foldGame
+                    ( game, [] )
+                    game.events
         ]
 
 

@@ -9,7 +9,7 @@ import Helpers exposing (triple)
 import Iso8601
 import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, lazy, list, map, map2, map3, map4, maybe, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
-import Land exposing (Color, playerColor)
+import Land exposing (Color, LandUpdate, playerColor)
 import Tables exposing (Table)
 import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, ProfileStatsStatistics, PushEvent(..), Replies(..), StaticPage(..))
 
@@ -184,9 +184,9 @@ playerGameStatsDecoder =
         |> required "score" int
 
 
-landsUpdateDecoder : Decoder Board.Types.LandUpdate
+landsUpdateDecoder : Decoder LandUpdate
 landsUpdateDecoder =
-    map4 Board.Types.LandUpdate
+    map4 LandUpdate
         (index 0 string)
         (index 1 colorDecoder)
         (index 2 int)
@@ -421,10 +421,7 @@ gameDecoder =
         |> required "gameStart" Iso8601.decoder
         |> required "players" (list gamePlayerDecoder)
         |> required "events" (list gameEventDecoder)
-        |> required "lands"
-            (list <|
-                map3 triple (index 0 string) (index 1 colorDecoder) (index 2 int)
-            )
+        |> required "lands" (list landsUpdateDecoder)
 
 
 gamePlayerDecoder : Decoder GamePlayer
