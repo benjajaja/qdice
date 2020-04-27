@@ -1052,7 +1052,7 @@ updatePlayers model newPlayers removedColor =
                 }
 
             else
-                model
+                { model | players = newPlayers }
     in
     case model.player of
         Just p ->
