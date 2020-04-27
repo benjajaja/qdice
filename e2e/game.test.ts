@@ -133,6 +133,12 @@ describe("A full game", () => {
     await expect(page).toClick(testId("game-entry-" + gameId));
 
     await expect(page).toMatchElement(testId("game-event"));
+
+    await expect(page).toClick(testId("replayer-goto-end"));
+
+    await expect(page).toMatchElement(testId("game-event"), {
+      text: /B won the game after 2 rounds/,
+    });
     const count = (await page.$$(testId("game-event"))).length;
     expect(count).toBe(10);
   });

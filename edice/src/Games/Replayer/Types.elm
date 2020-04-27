@@ -12,6 +12,7 @@ type alias ReplayerModel =
     , turnIndex : Int
     , game : Game
     , step : Int
+    , round : Int
     , playing : Bool
     }
 

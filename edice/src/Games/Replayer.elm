@@ -7,7 +7,7 @@ import Board.Types exposing (BoardMove(..))
 import Game.Types exposing (MapLoadError(..))
 import Games.Replayer.Types exposing (..)
 import Games.Types exposing (Game, GameEvent(..), GamePlayer)
-import Helpers exposing (consoleDebug)
+import Helpers exposing (consoleDebug, dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -48,6 +48,7 @@ init game =
     , game = game
     , playing = False
     , step = 0
+    , round = 1
     }
 
 
@@ -104,7 +105,7 @@ update model cmd =
                             Maybe.map
                                 (\replayer ->
                                     if replayer.playing then
-                                        if replayer.step < List.length replayer.game.events - 2 then
+                                        if replayer.step < List.length replayer.game.events - 1 then
                                             let
                                                 step =
                                                     replayer.step + 1
@@ -140,6 +141,7 @@ gameReplayer model game =
         case model of
             Just m ->
                 [ Board.view m.board Nothing m.boardOptions [] |> Html.map Types.BoardMsg
+                , div [] [ text <| "Round " ++ String.fromInt m.round ]
                 , div [] <|
                     Helpers.join (text ", ") <|
                         List.indexedMap
@@ -163,7 +165,7 @@ gameReplayer model game =
                             )
                             m.players
                 , div [] [ text <| "Turn " ++ String.fromInt (m.step + 1) ]
-                , div []
+                , div [ class "edGameReplayer__controls" ]
                     [ button [ onClick <| Types.ReplayerCmd <| TogglePlay ]
                         [ if not m.playing then
                             Icon.icon "play_arrow"
@@ -197,7 +199,9 @@ gameReplayer model game =
                         [ Icon.icon "chevron_right" ]
                     , button
                         (if m.step < List.length game.events - 1 then
-                            [ onClick <| Types.ReplayerCmd <| StepN <| Just <| List.length m.game.events - 1 ]
+                            [ onClick <| Types.ReplayerCmd <| StepN <| Just <| List.length m.game.events - 1
+                            , dataTestId "replayer-goto-end"
+                            ]
 
                          else
                             [ disabled True ]
@@ -205,6 +209,7 @@ gameReplayer model game =
                         [ Icon.icon "last_page" ]
                     , input
                         [ type_ "range"
+                        , class "edButton"
                         , Html.Attributes.min "0"
                         , Html.Attributes.max <| String.fromInt <| List.length m.game.events - 1
                         , value <|
@@ -301,6 +306,13 @@ applyEvent model step =
 
                             else
                                 0
+
+                        round =
+                            if turnIndex == 0 then
+                                model.round + 1
+
+                            else
+                                model.round
                     in
                     { model
                         | board =
@@ -311,6 +323,7 @@ applyEvent model step =
                                 Nothing ->
                                     model.board
                         , turnIndex = turnIndex
+                        , round = round
                     }
 
                 _ ->

@@ -153,7 +153,9 @@ view model sub =
                         []
 
                     GameId table id ->
-                        [ Comments.view model.zone model.user model.comments <| Comments.gameComments table id ]
+                        [ div [] [ text "Unfair play? Bugs? Write something on this game!" ]
+                        , Comments.view model.zone model.user model.comments <| Comments.gameComments table id
+                        ]
                )
 
 
@@ -232,7 +234,7 @@ gameView zone replayer game =
     div []
         [ gameHeader zone game
         , div [] <|
-            [ span [] [ text "Players: " ] ]
+            [ span [] [ text "Starting players: " ] ]
                 ++ playersList game.players
         , gameReplayer replayer game
         , div [] [ text "Ledger: " ]
