@@ -1,15 +1,15 @@
 module Games.Replayer.Types exposing (..)
 
 import Board
-import Game.Types exposing (Player)
-import Games.Types exposing (Game)
+import Games.Types exposing (Game, GamePlayer)
 import Time exposing (Posix)
 
 
 type alias ReplayerModel =
     { board : Board.Model
     , boardOptions : Board.BoardOptions
-    , players : List Player
+    , players : List GamePlayer
+    , turnIndex : Int
     , game : Game
     , step : Int
     , playing : Bool

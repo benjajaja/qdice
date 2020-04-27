@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, httpErrorToString, indexOf, is502, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, timeUnits, triple, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, httpErrorToString, indexOf, is502, join, notification, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, timeUnits, triple, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -162,3 +162,18 @@ flip fn =
 emptyList : List a
 emptyList =
     []
+
+
+join : a -> List a -> List a
+join separator list =
+    List.foldl
+        (\a list_ ->
+            case list_ of
+                [] ->
+                    [ a ]
+
+                _ ->
+                    list_ ++ [ separator, a ]
+        )
+        []
+        list

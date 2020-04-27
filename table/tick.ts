@@ -24,6 +24,7 @@ import logger from "../logger";
 import { setTimeout } from "timers";
 import { findLand, giveDice } from "../helpers";
 import { diceRoll } from "../rand";
+import AsyncLock = require("async-lock");
 
 const intervalIds: { [tableTag: string]: any } = {};
 
@@ -31,7 +32,7 @@ const TICK_PERIOD_MS = 250;
 
 export const start = (
   tableTag: string,
-  lock: any,
+  lock: AsyncLock,
   index: number,
   count: number
 ) => {
@@ -57,7 +58,7 @@ export const stop = (tableTag: string) => {
   delete intervalIds[tableTag];
 };
 
-const tick = async (tableTag: string, lock: any) => {
+const tick = async (tableTag: string, lock: AsyncLock) => {
   if (lock.isBusy(tableTag)) {
     return;
   }

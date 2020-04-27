@@ -205,36 +205,26 @@ gameRow zone game =
 
 playersList : List GamePlayer -> List (Html Msg)
 playersList players =
-    List.foldl
-        (\p l ->
-            let
-                el =
-                    (if p.isBot then
-                        em
+    Helpers.join (text ", ") <|
+        List.map
+            (\p ->
+                (if p.isBot then
+                    em
 
-                     else
-                        a
+                 else
+                    a
+                )
+                    (style "color" (baseCssRgb p.color)
+                        :: (if not p.isBot then
+                                Routing.String.linkAttrs <| ProfileRoute p.id p.name
+
+                            else
+                                []
+                           )
                     )
-                        ([ style "color" (baseCssRgb p.color)
-                         ]
-                            ++ (if not p.isBot then
-                                    Routing.String.linkAttrs <| ProfileRoute p.id p.name
-
-                                else
-                                    []
-                               )
-                        )
-                        [ text <| p.name ]
-            in
-            case l of
-                [] ->
-                    [ el ]
-
-                _ ->
-                    l ++ [ text ", ", el ]
-        )
-        []
-        players
+                    [ text <| p.name ]
+            )
+            players
 
 
 gameView : Zone -> Maybe ReplayerModel -> Game -> Html Msg
@@ -251,7 +241,14 @@ gameView zone replayer game =
                 List.foldl
                     foldGame
                     ( game, [] )
-                    game.events
+                <|
+                    case replayer of
+                        Just { step } ->
+                            List.take (step + 1) game.events
+                                |> List.reverse
+
+                        Nothing ->
+                            game.events
         ]
 
 
@@ -292,7 +289,7 @@ foldGame event ( game, list ) =
                         player.name
                             ++ " ended his turn, receiving "
                             ++ String.fromInt
-                                (List.length landDice + reserveDice)
+                                (List.sum (List.map Tuple.second landDice) + reserveDice)
                             ++ " dice"
 
                     -- , div [] [ img [ src <| "http://localhost/screenshots/screenshot_" ++ String.fromInt id ++ ".png" ] [] ]

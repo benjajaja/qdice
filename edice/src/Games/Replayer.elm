@@ -1,6 +1,7 @@
 module Games.Replayer exposing (gameReplayer, init, subscriptions, update)
 
 import Board
+import Board.Colors exposing (baseCssRgb, colorName)
 import Board.State
 import Board.Types exposing (BoardMove(..))
 import Game.Types exposing (MapLoadError(..))
@@ -28,7 +29,7 @@ init game =
                 Ok m ->
                     Maps.load m |> Result.mapError MapLoadError
 
-                Err err2 ->
+                Err _ ->
                     Err BadTableError
 
         board =
@@ -42,7 +43,8 @@ init game =
         { diceVisible = True
         , showEmojis = False
         }
-    , players = []
+    , players = game.players
+    , turnIndex = 0
     , game = game
     , playing = False
     , step = 0
@@ -138,6 +140,28 @@ gameReplayer model game =
         case model of
             Just m ->
                 [ Board.view m.board Nothing m.boardOptions [] |> Html.map Types.BoardMsg
+                , div [] <|
+                    Helpers.join (text ", ") <|
+                        List.indexedMap
+                            (\i p ->
+                                (if p.isBot then
+                                    em
+
+                                 else
+                                    a
+                                )
+                                    [ style "color" (baseCssRgb p.color) ]
+                                    [ text <|
+                                        p.name
+                                            ++ (if i == m.turnIndex then
+                                                    "*"
+
+                                                else
+                                                    ""
+                                               )
+                                    ]
+                            )
+                            m.players
                 , div [] [ text <| "Turn " ++ String.fromInt (m.step + 1) ]
                 , div []
                     [ button [ onClick <| Types.ReplayerCmd <| TogglePlay ]
@@ -164,7 +188,7 @@ gameReplayer model game =
                         )
                         [ Icon.icon "chevron_left" ]
                     , button
-                        (if m.step < List.length game.events then
+                        (if m.step < List.length game.events - 1 then
                             [ onClick <| Types.ReplayerCmd <| StepOne ]
 
                          else
@@ -172,8 +196,8 @@ gameReplayer model game =
                         )
                         [ Icon.icon "chevron_right" ]
                     , button
-                        (if m.step < List.length game.events then
-                            [ onClick <| Types.ReplayerCmd <| StepN <| Just <| List.length m.game.events ]
+                        (if m.step < List.length game.events - 1 then
+                            [ onClick <| Types.ReplayerCmd <| StepN <| Just <| List.length m.game.events - 1 ]
 
                          else
                             [ disabled True ]
@@ -199,62 +223,98 @@ applyEvent : ReplayerModel -> Int -> ReplayerModel
 applyEvent model step =
     case List.drop step model.game.events |> List.head of
         Just event ->
-            let
-                board =
-                    case event of
-                        Attack player from to ->
-                            case Helpers.tupleCombine ( Land.findLand from model.board.map.lands, Land.findLand to model.board.map.lands ) of
-                                Just ( fromLand, toLand ) ->
+            case event of
+                Attack player from to ->
+                    case Helpers.tupleCombine ( Land.findLand from model.board.map.lands, Land.findLand to model.board.map.lands ) of
+                        Just ( fromLand, toLand ) ->
+                            { model
+                                | board =
                                     Board.State.updateLands model.board [] <| Just <| FromTo fromLand toLand
+                            }
 
-                                Nothing ->
-                                    model.board
+                        Nothing ->
+                            model
 
-                        Roll fromRoll toRoll ->
-                            let
-                                updates =
-                                    case model.board.move of
-                                        FromTo from to ->
-                                            if List.sum fromRoll > List.sum toRoll then
-                                                [ LandUpdate from.emoji from.color 1 from.capital
-                                                , LandUpdate to.emoji from.color (from.points - 1) to.capital
-                                                ]
+                Roll fromRoll toRoll ->
+                    let
+                        updates =
+                            case model.board.move of
+                                FromTo from to ->
+                                    if List.sum fromRoll > List.sum toRoll then
+                                        [ LandUpdate from.emoji from.color 1 from.capital
+                                        , LandUpdate to.emoji from.color (from.points - 1) to.capital
+                                        ]
 
-                                            else
-                                                [ LandUpdate from.emoji from.color 1 from.capital
-                                                ]
+                                    else
+                                        [ LandUpdate from.emoji from.color 1 from.capital
+                                        ]
 
-                                        _ ->
-                                            []
-                            in
+                                _ ->
+                                    []
+
+                        board =
                             Board.State.updateLands model.board updates <| Just Idle
 
-                        EndTurn id landDice reserveDice capitals player ->
-                            let
-                                updates =
-                                    landDice
-                                        |> List.map
-                                            (\( emoji, dice ) ->
-                                                case Land.findLand emoji model.board.map.lands of
-                                                    Just land ->
-                                                        Just <| LandUpdate emoji land.color (land.points + dice) land.capital
+                        players =
+                            List.filter
+                                (\p ->
+                                    List.filter (.color >> (==) p.color) board.map.lands
+                                        |> List.length
+                                        |> Helpers.flip (>) 0
+                                )
+                                model.players
 
-                                                    Nothing ->
-                                                        Nothing
-                                            )
-                                        |> Helpers.combine
-                            in
+                        turnIndex =
+                            if
+                                (List.drop model.turnIndex model.players |> List.head)
+                                    /= (List.drop model.turnIndex players |> List.head)
+                            then
+                                model.turnIndex - 1
+
+                            else
+                                model.turnIndex
+                    in
+                    { model
+                        | board = board
+                        , players = players
+                        , turnIndex = turnIndex
+                    }
+
+                EndTurn id landDice reserveDice capitals player ->
+                    let
+                        updates =
+                            landDice
+                                |> List.map
+                                    (\( emoji, dice ) ->
+                                        case Land.findLand emoji model.board.map.lands of
+                                            Just land ->
+                                                Just <| LandUpdate emoji land.color (land.points + dice) land.capital
+
+                                            Nothing ->
+                                                Nothing
+                                    )
+                                |> Helpers.combine
+
+                        turnIndex =
+                            if model.turnIndex < List.length model.players - 1 then
+                                model.turnIndex + 1
+
+                            else
+                                0
+                    in
+                    { model
+                        | board =
                             case updates of
                                 Just u ->
                                     Board.State.updateLands model.board u Nothing
 
                                 Nothing ->
                                     model.board
+                        , turnIndex = turnIndex
+                    }
 
-                        _ ->
-                            model.board
-            in
-            { model | board = board }
+                _ ->
+                    model
 
         Nothing ->
             model
