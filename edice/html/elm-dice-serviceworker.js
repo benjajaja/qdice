@@ -266,6 +266,10 @@ self.onnotificationclick = function(event) {
             if (url) {
               client.navigate(url);
             }
+            client.postMessage({
+              msg: "notification-click",
+              tag: event.notification.tag,
+            });
             return;
           }
         }

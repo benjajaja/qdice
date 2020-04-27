@@ -941,6 +941,11 @@ update msg model =
         ReplayerCmd cmd ->
             Games.Replayer.update model cmd
 
+        NotificationClick tag ->
+            case tag of
+                _ ->
+                    ( model, Helpers.consoleDebug <| "click notification: " ++ tag )
+
 
 tableFromRoute : Route -> Maybe Table
 tableFromRoute route =
@@ -1111,6 +1116,7 @@ subscriptions model =
         , notificationsChange NotificationsChange
         , pushGetKey (\_ -> PushGetKey)
         , pushRegister PushRegister
+        , Helpers.notificationClick NotificationClick
         ]
 
 

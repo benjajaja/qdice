@@ -132,11 +132,11 @@ app.ports.notification.subscribe(function(event) {
   switch (event) {
     case "game-start":
       favicon("alert");
-      notification("The game started", []);
+      notification("The game started", [], event);
       break;
     case "game-turn":
       favicon("alert");
-      notification("It's your turn!", []);
+      notification("It's your turn!", [], event);
     case null:
     default:
       favicon("");
@@ -321,32 +321,59 @@ function enablePush() {
   }
 }
 
-function notification(title, actions) {
+function notification(title, actions, tag) {
   try {
     if (
-      localStorage.getItem("notifications") === "1" &&
+      localStorage.getItem("notifications") === "2" &&
       "Notification" in window &&
       Notification.permission === "granted" &&
       serviceWorkerRegistration !== null &&
       typeof document.visibilityState !== "undefined" &&
       document.visibilityState === "hidden"
     ) {
-      var notification = serviceWorkerRegistration.showNotification(title, {
-        icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
-        badge: "https://qdice.wtf/assets/monochrome.png",
-        actions: actions,
-        vibrate: [50, 100, 50],
-      });
-      notification.onclick = function(event) {
-        event.preventDefault();
-        notification.close();
-      };
+      serviceWorkerRegistration
+        .getNotifications()
+        .then(function(notifications) {
+          notifications.forEach(function(notification) {
+            notification.close();
+          });
+
+          return serviceWorkerRegistration.showNotification(title, {
+            icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
+            badge: "https://qdice.wtf/assets/monochrome.png",
+            actions: actions,
+            vibrate: [50, 100, 50],
+            tag: tag,
+          });
+        })
+        .then(function() {
+          return serviceWorkerRegistration
+            .getNotifications()
+            .then(function(notifications) {
+              return new Promise(function(resolve) {
+                setTimeout(function() {
+                  notifications.forEach(function(notification) {
+                    notification.close();
+                  });
+                  resolve();
+                }, 10000);
+              });
+            });
+        });
     }
   } catch (e) {
-    Sentry.captureException(e);
+    console.error(e);
+    if (Sentry) {
+      Sentry.captureException(e);
+    }
   }
 }
 
+navigator.serviceWorker.addEventListener("message", function(event) {
+  if (event.data.msg === "notification-click") {
+    app.ports.notificationClick.send(event.data.tag);
+  }
+});
 function urlBase64ToUint8Array(base64String) {
   var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   var base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
