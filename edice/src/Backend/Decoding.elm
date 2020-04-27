@@ -3,7 +3,7 @@ module Backend.Decoding exposing (authStateDecoder, commentDecoder, commentsDeco
 import Array
 import Backend.Types exposing (TableMessage(..))
 import Board.Types
-import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus)
+import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus, TournamentConfig)
 import Games.Types exposing (..)
 import Helpers exposing (triple)
 import Iso8601
@@ -377,6 +377,14 @@ tableParamsDecoder =
         |> required "readySlots" (nullable int)
         |> required "turnSeconds" (nullable int)
         |> optional "twitter" bool False
+        |> optional "tournament" (map Just tournamentDecoder) Nothing
+
+
+tournamentDecoder : Decoder TournamentConfig
+tournamentDecoder =
+    succeed TournamentConfig
+        |> required "frequency" string
+        |> required "prize" int
 
 
 profileDecoder : Decoder Profile

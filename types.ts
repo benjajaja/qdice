@@ -54,7 +54,19 @@ export type TableParams = {
   readySlots: number | null;
   turnSeconds: number | null;
   twitter: boolean | undefined;
+  tournament: undefined | TournamentParam;
 };
+
+export type TournamentParam = {
+  frequency: TournamentFrequency;
+  prize: number;
+};
+export type TournamentFrequency =
+  | "minutely"
+  | "hourly"
+  | "daily"
+  | "weekly"
+  | "monthly";
 
 export type Land = {
   readonly emoji: Emoji;
@@ -267,7 +279,8 @@ export type Command =
   | CommandSkeleton<"EndGame", { winner: Player | null; turnCount: number }>
   | CommandSkeleton<"Clear">
   | CommandSkeleton<"Heartbeat", { user: User | null; clientId: string }>
-  | CommandSkeleton<"BotState", { player: Player; botCommand: BotCommand }>;
+  | CommandSkeleton<"BotState", { player: Player; botCommand: BotCommand }>
+  | CommandSkeleton<"SetGameStart", { gameStart: number }>;
 
 export type CommandResult = {
   readonly table?: Partial<TableProps>;

@@ -205,28 +205,35 @@ onlineButtons model =
     if model.game.status /= Game.Types.Playing then
         case model.game.player of
             Just player ->
-                [ label
-                    [ class <|
-                        "edCheckbox edGameHeader__checkbox"
-                            ++ (if Maybe.withDefault player.ready model.game.isReady then
-                                    " edGameHeader__checkbox--checked"
+                (case model.game.params.tournament of
+                    Just _ ->
+                        []
+
+                    Nothing ->
+                        [ label
+                            [ class <|
+                                "edCheckbox edGameHeader__checkbox"
+                                    ++ (if Maybe.withDefault player.ready model.game.isReady then
+                                            " edGameHeader__checkbox--checked"
+
+                                        else
+                                            ""
+                                       )
+                            , onClick <| GameCmd <| ToggleReady <| not <| Maybe.withDefault player.ready model.game.isReady
+                            , dataTestId "check-ready"
+                            ]
+                            [ Icon.icon <|
+                                if Maybe.withDefault player.ready model.game.isReady then
+                                    "check_box"
 
                                 else
-                                    ""
-                               )
-                    , onClick <| GameCmd <| ToggleReady <| not <| Maybe.withDefault player.ready model.game.isReady
-                    , dataTestId "check-ready"
-                    ]
-                    [ Icon.icon <|
-                        if Maybe.withDefault player.ready model.game.isReady then
-                            "check_box"
-
-                        else
-                            "check_box_outline_blank"
-                    , text "Ready"
-                    ]
-                , joinButton "Leave" <| GameCmd Leave
-                ]
+                                    "check_box_outline_blank"
+                            , text "Ready"
+                            ]
+                        ]
+                )
+                    ++ [ joinButton "Leave" <| GameCmd Leave
+                       ]
 
             Nothing ->
                 [ case model.user of
@@ -456,39 +463,51 @@ tableDetails model =
 
                     _ ->
                         [ div [ class "edGameStatus__chip" ] <|
-                            [ text <|
-                                if model.game.playerSlots == 0 then
-                                    "∅"
+                            case model.game.params.tournament of
+                                Nothing ->
+                                    [ text <|
+                                        if model.game.playerSlots == 0 then
+                                            "∅"
 
-                                else
-                                    String.fromInt model.game.playerSlots
-                            , text " players"
-                            , if model.game.params.botLess then
-                                text ", no bots"
+                                        else
+                                            String.fromInt model.game.playerSlots
+                                    , text " players"
+                                    , if model.game.params.botLess then
+                                        text ", no bots"
 
-                              else
-                                text ", bots will join"
-                            ]
-                                ++ (case model.game.gameStart of
+                                      else
+                                        text ", bots will join"
+                                    ]
+                                        ++ (case model.game.gameStart of
+                                                Nothing ->
+                                                    [ text <|
+                                                        ", starts with "
+                                                            ++ String.fromInt model.game.startSlots
+                                                            ++ " players"
+                                                            ++ (case model.game.params.readySlots of
+                                                                    Just n ->
+                                                                        " or when " ++ String.fromInt n ++ " are ready"
+
+                                                                    Nothing ->
+                                                                        ""
+                                                               )
+                                                    ]
+
+                                                Just timestamp ->
+                                                    [ text ", starting in"
+                                                    , span [ class "edGameStatus__chip--strong" ] [ text <| "\u{00A0}" ++ String.fromInt ((round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) + 1) ++ "s" ]
+                                                    ]
+                                           )
+
+                                Just tournament ->
+                                    case model.game.gameStart of
                                         Nothing ->
-                                            [ text <|
-                                                ", starts with "
-                                                    ++ String.fromInt model.game.startSlots
-                                                    ++ " players"
-                                                    ++ (case model.game.params.readySlots of
-                                                            Just n ->
-                                                                " or when " ++ String.fromInt n ++ " are ready"
-
-                                                            Nothing ->
-                                                                ""
-                                                       )
-                                            ]
+                                            [ text <| "Game scheduled " ++ tournament.frequency ]
 
                                         Just timestamp ->
-                                            [ text ", starting in"
+                                            [ text <| "Next game scheduled in"
                                             , span [ class "edGameStatus__chip--strong" ] [ text <| "\u{00A0}" ++ String.fromInt ((round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) + 1) ++ "s" ]
                                             ]
-                                   )
                         , div [ class "edGameStatus__chip" ] <|
                             case model.game.params.turnSeconds of
                                 Just n ->
@@ -497,6 +516,15 @@ tableDetails model =
                                 Nothing ->
                                     [ text "\u{00A0}" ]
                         ]
+                            ++ (case model.game.params.tournament of
+                                    Nothing ->
+                                        []
+
+                                    Just tournament ->
+                                        [ div [ class "edGameStatus__chip" ] <|
+                                            [ text <| "Tournament prize is " ++ Helpers.formatPoints tournament.prize ]
+                                        ]
+                               )
 
             Nothing ->
                 []

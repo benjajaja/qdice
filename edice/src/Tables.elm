@@ -1,4 +1,4 @@
-module Tables exposing (Map(..), Table, decodeMap, encodeMap)
+module Tables exposing (Map(..), Table, decodeMap, encodeMap, isTournament)
 
 
 type alias Table =
@@ -76,3 +76,13 @@ encodeMap map =
 
         Montoya ->
             "Montoya"
+
+
+isTournament : Table -> Bool
+isTournament table =
+    case table of
+        "500 every minute" ->
+            True
+
+        _ ->
+            False

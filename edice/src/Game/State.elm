@@ -13,7 +13,7 @@ import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
 import Land exposing (LandUpdate)
 import Maps exposing (load)
 import Snackbar exposing (toastError, toastMessage)
-import Tables exposing (Map(..), Table)
+import Tables exposing (Map(..), Table, isTournament)
 import Task
 import Time
 import Types exposing (Msg(..), SessionPreferences, User(..))
@@ -36,7 +36,11 @@ init table tableMap_ =
                                     Maps.load m |> Result.mapError MapLoadError
 
                                 Err err2 ->
-                                    Err BadTableError
+                                    if isTournament t then
+                                        Err NoTableNoMapError
+
+                                    else
+                                        Err BadTableError
 
                         Nothing ->
                             Err NoTableNoMapError
@@ -83,6 +87,7 @@ init table tableMap_ =
             , readySlots = Nothing
             , turnSeconds = Nothing
             , twitter = False
+            , tournament = Nothing
             }
       , currentGame = Nothing
       , expandChat = False

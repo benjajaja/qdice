@@ -9,14 +9,12 @@ import * as maps from "./maps";
 import {
   Table,
   CommandResult,
-  Elimination,
   IllegalMoveError,
   Command,
   User,
   CommandType,
   Player,
   BotPlayer,
-  ScoredElimination,
   IllegalMoveCode,
 } from "./types";
 import * as db from "./db";
@@ -24,7 +22,11 @@ import * as publish from "./table/publish";
 import * as tick from "./table/tick";
 import { getTable } from "./table/get";
 import { startGameEvent } from "./table/games";
-import { startGame, preloadStartingPositions } from "./table/start";
+import {
+  startGame,
+  preloadStartingPositions,
+  setGameStart,
+} from "./table/start";
 import {
   cleanWatchers,
   cleanPlayers,
@@ -32,7 +34,7 @@ import {
   enter,
   exit,
 } from "./table/watchers";
-import { positionScore, tablePoints, assertNever, giveDice } from "./helpers";
+import { assertNever, giveDice } from "./helpers";
 import logger from "./logger";
 import * as config from "./tables.config";
 
@@ -51,6 +53,7 @@ import { save } from "./table/get";
 import endGame from "./table/endGame";
 import { rollResult } from "./table/attack";
 import { botState } from "./table/bots";
+import { processEliminations } from "./table/eliminations";
 
 const verifyJwt = promisify(jwt.verify);
 
@@ -113,7 +116,7 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
   );
 };
 
-export const start = async (
+const start = async (
   tableTag: string,
   lock: AsyncLock,
   client: mqtt.MqttClient,
@@ -125,7 +128,7 @@ export const start = async (
 
   client.subscribe(`tables/${tableTag}/server`);
 
-  const onMessage = async (topic, message) => {
+  const onMessage = async (topic: string, message: string) => {
     if (topic !== `tables/${tableTag}/server`) {
       return;
     }
@@ -340,6 +343,8 @@ const commandResult = async (
       return [cleanPlayers(table) || cleanWatchers(table), null];
     case "BotState":
       return botState(table, command.player as BotPlayer, command.botCommand);
+    case "SetGameStart":
+      return [setGameStart(table, command.gameStart), null];
     default:
       return assertNever(command);
   }
@@ -386,9 +391,14 @@ export const processCommand = async (table: Table, command: Command) => {
       );
     }
     if (
-      ["Join", "Leave", "Start", "EndGame", "ToggleReady"].indexOf(
-        command.type
-      ) !== -1
+      [
+        "Join",
+        "Leave",
+        "Start",
+        "EndGame",
+        "ToggleReady",
+        "SetGameStart",
+      ].indexOf(command.type) !== -1
     ) {
       logger.debug(`tableStatus: ${command.type}`);
       publish.tableStatus(newTable);
@@ -410,50 +420,4 @@ export const processCommand = async (table: Table, command: Command) => {
     newTable = await processCommand(newTable, next);
   }
   return newTable;
-};
-
-const processEliminations = async (
-  table: Table,
-  eliminations: readonly Elimination[],
-  players: readonly Player[]
-): Promise<void> => {
-  const scoredEliminations: readonly ScoredElimination[] = await Promise.all(
-    eliminations.map(async elimination => {
-      const { player, position } = elimination;
-
-      const score =
-        player.score +
-        positionScore(tablePoints(table))(table.playerStartCount)(position);
-
-      publish.event({
-        type: "elimination",
-        table: table.name,
-        player,
-        position,
-        score,
-      });
-
-      if (player.bot === null) {
-        try {
-          const user = await db.addScore(player.id, score);
-          const preferences = await db.getPreferences(player.id);
-          publish.userUpdate(player.clientId)(user, preferences);
-        } catch (e) {
-          // send a message to this specific player
-          publish.clientError(
-            player.clientId,
-            new Error(
-              `You earned ${score} points, but I failed to add them to your profile.`
-            )
-          );
-          throw e;
-        }
-      }
-      return { ...elimination, score };
-    })
-  );
-  if (scoredEliminations.length > 0) {
-    publish.eliminations(table, scoredEliminations, players);
-  }
-  return;
 };

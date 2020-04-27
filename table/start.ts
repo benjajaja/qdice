@@ -145,3 +145,12 @@ export const preloadStartingPositions = async (
   }
   preloadedStartingPositions[mapName] = sizesList;
 };
+
+export const setGameStart = (
+  table: Table,
+  gameStart: number
+): CommandResult => {
+  return {
+    table: { gameStart },
+  };
+};

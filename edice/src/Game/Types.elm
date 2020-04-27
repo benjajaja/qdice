@@ -1,4 +1,4 @@
-module Game.Types exposing (Award, ChatLogEntry(..), Elimination, EliminationReason(..), GameStatus(..), MapLoadError(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, TableInfo, TableParams, TableStatus, TurnInfo, User, actionToString, isBot, makePlayer, statusToIcon, statusToString, userColor)
+module Game.Types exposing (..)
 
 import Board
 import Browser.Dom as Dom
@@ -147,6 +147,13 @@ type alias TableParams =
     , readySlots : Maybe Int
     , turnSeconds : Maybe Int
     , twitter : Bool
+    , tournament : Maybe TournamentConfig
+    }
+
+
+type alias TournamentConfig =
+    { frequency : String
+    , prize : Int
     }
 
 

@@ -3,6 +3,7 @@ module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, 
 import Backend.HttpCommands exposing (profile)
 import Browser.Navigation exposing (Key)
 import Comments
+import Game.Types exposing (TableInfo)
 import Games
 import LeaderBoard.State exposing (fetchLeaderboard)
 import Profile
@@ -112,8 +113,10 @@ goToBestTable model =
             replaceNavigateTo model.zip model.key <| GameRoute "Planeta"
 
 
+hasSomePlayers : TableInfo -> Bool
 hasSomePlayers table =
     not table.params.twitter
+        && (table.params.tournament == Nothing)
         && table.playerCount
         > 0
 

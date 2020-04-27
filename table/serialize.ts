@@ -9,6 +9,7 @@ import {
   EliminationSource,
   Color,
   Land,
+  TournamentFrequency,
 } from "../types";
 import logger from "../logger";
 
@@ -32,7 +33,12 @@ export const serializeTable = (table: Table) => {
     players: players,
     lands: lands,
     watchCount: table.watching.length,
-    params: table.params,
+    params: {
+      ...table.params,
+      tournament: table.params.tournament
+        ? mapParamsTournament(table.params.tournament)
+        : undefined,
+    },
     currentGame: table.currentGame,
   };
 };
@@ -210,3 +216,9 @@ export const serializeGame = game => ({
     land.capital ? 0 : -1,
   ]),
 });
+
+const mapParamsTournament = (tournament: {
+  frequency: TournamentFrequency;
+}) => {
+  return { ...tournament };
+};

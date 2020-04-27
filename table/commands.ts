@@ -187,7 +187,7 @@ export const join = (
 
   publish.join(table, player);
 
-  if (players.length >= table.startSlots) {
+  if (!table.params.tournament && players.length >= table.startSlots) {
     gameStart = addSeconds(
       players.length >= table.playerSlots
         ? GAME_START_COUNTDOWN_FULL
@@ -307,8 +307,11 @@ export const leave = (
 
   const players = table.players.filter(p => p !== existing);
 
-  const gameStart =
-    players.length >= table.startSlots ? addSeconds(GAME_START_COUNTDOWN) : 0;
+  const gameStart = table.params.tournament
+    ? players.length >= table.startSlots
+      ? addSeconds(GAME_START_COUNTDOWN)
+      : 0
+    : table.gameStart;
 
   const status =
     table.players.length === 0 && table.status === STATUS_PAUSED

@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, timeUnits, triple, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, timeUnits, triple, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -26,6 +26,11 @@ type alias Synched a =
 pointsSymbol : String
 pointsSymbol =
     "✪"
+
+
+formatPoints : Int -> String
+formatPoints int =
+    String.fromInt int ++ pointsSymbol
 
 
 findIndex : (a -> Bool) -> List a -> Int

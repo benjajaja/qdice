@@ -79,5 +79,11 @@ tableOfTables model =
                         ]
                 )
             <|
-                List.filter (.params >> .twitter >> not) model.tableList
+                List.filter
+                    (\tableInfo ->
+                        not tableInfo.params.twitter
+                            && tableInfo.params.tournament
+                            == Nothing
+                    )
+                    model.tableList
         ]

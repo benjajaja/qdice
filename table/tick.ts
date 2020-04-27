@@ -20,6 +20,7 @@ import {
   ROLL_SECONDS_BOT,
 } from "../constants";
 import { addBots, tickBotTurn, isBot, mkBot } from "./bots";
+import { tickTournament } from "./tournament";
 import logger from "../logger";
 import { setTimeout } from "timers";
 import { findLand, giveDice } from "../helpers";
@@ -159,6 +160,11 @@ const tick = async (tableTag: string, lock: AsyncLock) => {
             ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
             : undefined;
         command = addBots(table, persona);
+      } else if (table.params.tournament) {
+        command = tickTournament(table, table.params.tournament);
+        if (command) {
+          logger.debug("tick tournament", command);
+        }
       }
     }
 
@@ -200,13 +206,13 @@ const shouldStart = (table: Table) => {
   ) {
     return true;
   }
-  if (countdownFinished(table.gameStart)) {
+  if (countdownFinished(table.gameStart) && table.players.length > 1) {
     return true;
   }
   return false;
 };
 
-const countdownFinished = (gameStart: number) =>
+export const countdownFinished = (gameStart: number) =>
   gameStart !== 0 && havePassed(0, gameStart);
 
 const lastJoined = (players: ReadonlyArray<Player>): Timestamp => {
