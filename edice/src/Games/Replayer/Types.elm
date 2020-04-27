@@ -18,5 +18,6 @@ type alias ReplayerModel =
 
 type ReplayerCmd
     = StepOne
+    | StepN (Maybe Int)
     | TogglePlay
     | Tick Posix

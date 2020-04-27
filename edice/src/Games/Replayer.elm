@@ -13,6 +13,7 @@ import Html.Events exposing (..)
 import Icon
 import Land exposing (LandUpdate)
 import Maps
+import Snackbar
 import Tables exposing (Table)
 import Time
 import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg)
@@ -69,6 +70,25 @@ update model cmd =
                     in
                     ( { model | replayer = Just replayer }, Cmd.none )
 
+                StepN mstep ->
+                    case mstep of
+                        Just step ->
+                            let
+                                replayer_ =
+                                    List.foldl
+                                        (\i r ->
+                                            applyEvent r i
+                                        )
+                                        (init m.game)
+                                        (List.range 0 step)
+                            in
+                            ( { model | replayer = Just { replayer_ | step = step } }
+                            , Cmd.none
+                            )
+
+                        Nothing ->
+                            ( model, Snackbar.toastError "Cannot find turn" "" )
+
                 TogglePlay ->
                     let
                         replayer =
@@ -76,16 +96,26 @@ update model cmd =
                     in
                     ( { model | replayer = Just replayer }, Cmd.none )
 
-                Tick posix ->
+                Tick _ ->
                     ( { model
                         | replayer =
                             Maybe.map
                                 (\replayer ->
-                                    applyEvent
-                                        { replayer | step = replayer.step + 1 }
-                                        (replayer.step
-                                            + 1
-                                        )
+                                    if replayer.playing then
+                                        if replayer.step < List.length replayer.game.events - 2 then
+                                            let
+                                                step =
+                                                    replayer.step + 1
+                                            in
+                                            applyEvent
+                                                { replayer | step = step }
+                                                step
+
+                                        else
+                                            { replayer | playing = False }
+
+                                    else
+                                        replayer
                                 )
                                 model.replayer
                       }
@@ -96,7 +126,7 @@ update model cmd =
 subscriptions : ReplayerModel -> Sub Msg
 subscriptions model =
     if model.playing then
-        Time.every 500 (Types.ReplayerCmd << Tick)
+        Time.every 100 (Types.ReplayerCmd << Tick)
 
     else
         Sub.none
@@ -117,16 +147,22 @@ gameReplayer model game =
                           else
                             Icon.icon "pause"
                         ]
+                    , button
+                        (if m.step > 0 then
+                            [ onClick <| Types.ReplayerCmd <| StepN <| Just 0 ]
 
-                    -- , button [ onClick <| ReplayerCmd <| Step 0 ] [ Icon.icon "first_page" ]
-                    -- , button
-                    -- (if m.step > 0 then
-                    -- [ onClick <| ReplayerCmd <| Step <| m.step - 1 ]
-                    --
-                    -- else
-                    -- [ disabled True ]
-                    -- )
-                    -- [ Icon.icon "chevron_left" ]
+                         else
+                            [ disabled True ]
+                        )
+                        [ Icon.icon "first_page" ]
+                    , button
+                        (if m.step > 0 then
+                            [ onClick <| Types.ReplayerCmd <| StepN <| Just <| m.step - 1 ]
+
+                         else
+                            [ disabled True ]
+                        )
+                        [ Icon.icon "chevron_left" ]
                     , button
                         (if m.step < List.length game.events then
                             [ onClick <| Types.ReplayerCmd <| StepOne ]
@@ -135,8 +171,23 @@ gameReplayer model game =
                             [ disabled True ]
                         )
                         [ Icon.icon "chevron_right" ]
+                    , button
+                        (if m.step < List.length game.events then
+                            [ onClick <| Types.ReplayerCmd <| StepN <| Just <| List.length m.game.events ]
 
-                    -- , button [ onClick <| ReplayerCmd <| Step <| List.length game.events - 1 ] [ Icon.icon "last_page" ]
+                         else
+                            [ disabled True ]
+                        )
+                        [ Icon.icon "last_page" ]
+                    , input
+                        [ type_ "range"
+                        , Html.Attributes.min "0"
+                        , Html.Attributes.max <| String.fromInt <| List.length m.game.events - 1
+                        , value <|
+                            String.fromInt m.step
+                        , onInput <| (Types.ReplayerCmd << (StepN << String.toInt))
+                        ]
+                        []
                     ]
                 ]
 
