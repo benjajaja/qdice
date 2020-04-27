@@ -230,7 +230,7 @@ const applyDice = (
   const count = R.sum(dice.lands.map(([_, count]) => count)) + dice.reserve;
 
   const players_ = players.map(p =>
-    p.id === player.id ? { ...p, reserveDice: p.reserveDice + dice.reserve } : p
+    p.id === player.id ? { ...p, reserveDice: dice.reserve } : p
   );
   const lands = table.lands
     .map(land =>
