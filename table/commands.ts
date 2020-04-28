@@ -343,8 +343,8 @@ export const leave = (
 
   const players = table.players.filter(p => p !== existing);
 
-  const gameStart = table.params.tournament
-    ? players.length >= table.startSlots
+  const gameStart = !table.params.tournament
+    ? players.length >= table.startSlots && !players.every(isBot)
       ? addSeconds(GAME_START_COUNTDOWN)
       : 0
     : table.gameStart;
