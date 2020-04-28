@@ -1278,3 +1278,8 @@ input[type="range"]::-webkit-slider-runnable-track {
 .edDialog__text {
   white-space: pre-line;
 }
+.edGameFullscreenButton {
+  position: absolute;
+  right: 0;
+  z-index: 100;
+}

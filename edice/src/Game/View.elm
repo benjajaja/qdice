@@ -57,7 +57,8 @@ view model =
                     [ tableInfo model ]
 
                  else
-                    []
+                    [ button [ class "edGameStatus__button edGameFullscreenButton edGameStatus__button--landscape edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ]
+                    ]
                 )
                     ++ [ header model
                        , board
@@ -508,7 +509,6 @@ tableInfo model =
                             else
                                 "volume_up"
                         ]
-                    , button [ class "edGameStatus__button edGameStatus__button--landscape edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ]
                     ]
                ]
 
