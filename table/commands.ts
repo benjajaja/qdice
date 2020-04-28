@@ -104,6 +104,20 @@ export const join = (
     );
   }
 
+  if (table.params.tournament) {
+    logger.debug("ips", table.players.map(R.pick(["name", "ip"])));
+    const existingIP = table.players
+      .filter(p => p.ip && p.ip === user.ip)
+      .pop();
+    if (existingIP) {
+      throw new IllegalMoveError(
+        "A player with that IP is already in the game.",
+        IllegalMoveCode.DuplicateIP,
+        !!bot
+      );
+    }
+  }
+
   if (bot === null && user.points < table.points) {
     throw new IllegalMoveError(
       "not enough points to join",

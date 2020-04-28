@@ -214,18 +214,6 @@ export const me = async function(
     const preferences = await db.getPreferences(req.user.id);
     res.send(200, [R.omit(["ip"], profile), token, preferences]);
     next();
-    logger.debug(
-      "/me Real-IP:",
-      req.header("X-Real-IP"),
-      profile.id,
-      profile.name
-    );
-    logger.debug(
-      "/me Forwarded-For:",
-      req.header("X-Forwarded-For"),
-      profile.id,
-      profile.name
-    );
   } catch (e) {
     logger.error("/me", req.user);
     logger.error(e);

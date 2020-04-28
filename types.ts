@@ -190,6 +190,7 @@ export enum IllegalMoveCode {
   FlagFirst,
   FlagMismatch,
   FlagUp,
+  DuplicateIP,
 }
 
 export class IllegalMoveError extends Error {
