@@ -314,6 +314,14 @@ export const leave = (
       false
     );
   }
+
+  if (table.params.tournament) {
+    throw new IllegalMoveError(
+      "cannot leave tournament",
+      IllegalMoveCode.LeaveTournament,
+      false
+    );
+  }
   const existing = table.players.filter(p => p.id === user.id).pop();
   if (!existing) {
     throw new IllegalMoveError("not joined", IllegalMoveCode.NotJoined, false);

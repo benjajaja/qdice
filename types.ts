@@ -191,6 +191,7 @@ export enum IllegalMoveCode {
   FlagMismatch,
   FlagUp,
   DuplicateIP,
+  LeaveTournament,
 }
 
 export class IllegalMoveError extends Error {

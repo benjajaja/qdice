@@ -206,7 +206,7 @@ onlineButtons model =
     if model.game.status /= Game.Types.Playing then
         case model.game.player of
             Just player ->
-                (case model.game.params.tournament of
+                case model.game.params.tournament of
                     Just _ ->
                         []
 
@@ -231,10 +231,8 @@ onlineButtons model =
                                     "check_box_outline_blank"
                             , text "Ready"
                             ]
+                        , joinButton "Leave" <| GameCmd Leave
                         ]
-                )
-                    ++ [ joinButton "Leave" <| GameCmd Leave
-                       ]
 
             Nothing ->
                 [ case model.user of
@@ -524,7 +522,7 @@ tableDetails model =
 
                                     Just tournament ->
                                         [ div [ class "edGameStatus__chip" ] <|
-                                            [ text <| "Tournament prize is " ++ Helpers.formatPoints tournament.prize ]
+                                            [ text <| "Special game prize is " ++ Helpers.formatPoints tournament.prize ]
                                         ]
                                )
 
