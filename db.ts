@@ -316,6 +316,9 @@ export const deleteUser = async (id: UserId) => {
 
 export const addScore = async (id: UserId, score: number) => {
   logger.debug("addScore", id, score);
+  if (typeof score !== "number" || isNaN(score)) {
+    throw new Error("addScore did not get a number: " + score);
+  }
   const client = await pool.connect();
   try {
     await client.query("BEGIN");

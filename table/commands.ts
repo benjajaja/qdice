@@ -85,7 +85,7 @@ export const join = (
   clientId: string | null,
   bot: Persona | null
 ): CommandResult => {
-  if (table.status === STATUS_PLAYING) {
+  if (!table.params.tournament && table.status === STATUS_PLAYING) {
     if (clientId !== null && table.players.some(isBot)) {
       return takeover(user, table, clientId);
     }
@@ -102,20 +102,6 @@ export const join = (
       IllegalMoveCode.AlreadyJoined,
       !!bot
     );
-  }
-
-  if (table.params.tournament) {
-    logger.debug("ips", table.players.map(R.pick(["name", "ip"])));
-    const existingIP = table.players
-      .filter(p => p.ip && p.ip === user.ip)
-      .pop();
-    if (existingIP) {
-      throw new IllegalMoveError(
-        "A player with that IP is already in the game.",
-        IllegalMoveCode.DuplicateIP,
-        !!bot
-      );
-    }
   }
 
   if (bot === null && user.points < table.points) {
@@ -152,6 +138,34 @@ export const join = (
     logger.warn("User has no ip:", user.id, user.name);
   }
 
+  let payScore: [User, string | null, number] | undefined = undefined;
+  if (table.params.tournament) {
+    logger.debug("ips", table.players.map(R.pick(["name", "ip"])));
+    const existingIP = table.players
+      .filter(p => p.ip && p.ip === user.ip)
+      .pop();
+    if (existingIP) {
+      throw new IllegalMoveError(
+        "A player with that IP is already in the game.",
+        IllegalMoveCode.DuplicateIP,
+        !!bot
+      );
+    }
+    if (
+      table.params.tournament.fee > 0 &&
+      user.points < table.params.tournament.fee
+    ) {
+      throw new IllegalMoveError(
+        "not enough points for game fee",
+        IllegalMoveCode.InsufficientFee,
+        !!bot
+      );
+    } else {
+      payScore = [user, clientId, 0 - table.params.tournament.fee];
+      logger.debug("join fee", 0 - table.params.tournament.fee);
+    }
+  }
+
   let result: [readonly Player[], Player];
   if (bot !== null) {
     const player = {
@@ -162,7 +176,6 @@ export const join = (
     const players = R.sortBy(R.prop("color"), table.players.concat([player]));
     result = [players, player];
   } else {
-    logger.debug("join", typeof user.id);
     const [players, player, removed] = insertPlayer(
       table.players,
       user,
@@ -213,6 +226,7 @@ export const join = (
     table: { status, turnCount, gameStart },
     players,
     lands,
+    payScore,
   };
 };
 
@@ -275,7 +289,7 @@ const takeover = (
       R.descend(
         bot => table.lands.filter(land => land.color === bot.color).length
       ),
-      R.descend(bot =>
+      R.descend(_ =>
         R.sum(table.lands.filter(land => land.color).map(l => l.points))
       ),
     ],
@@ -511,7 +525,7 @@ export const sitOut = (player: Player, table: Table): CommandResult => {
   };
 };
 
-export const sitIn = (user, table: Table): CommandResult => {
+export const sitIn = (user: Player, table: Table): CommandResult => {
   if (table.status !== STATUS_PLAYING) {
     throw new IllegalMoveError(
       "sitIn while not STATUS_PLAYING",
@@ -534,22 +548,34 @@ export const sitIn = (user, table: Table): CommandResult => {
   return { players };
 };
 
-export const chat = (user: { name: string } | null, table, payload): null => {
+export const chat = (
+  user: { name: string } | null,
+  table: Table,
+  payload: string
+): null => {
   publish.chat(table, user ? user.name : null, payload);
   return null;
 };
 
 export const toggleReady = (
-  user,
+  user: Player,
   table: Table,
   payload: boolean
 ): [CommandResult, Command | null] => {
   if (table.status === STATUS_PLAYING) {
-    throw new IllegalMoveError("toggleReady while STATUS_PLAYING", user.id);
+    throw new IllegalMoveError(
+      "toggleReady while STATUS_PLAYING",
+      IllegalMoveCode.IllegalReady,
+      false
+    );
   }
   const player = table.players.filter(p => p.id === user.id).pop();
   if (!player) {
-    throw new IllegalMoveError("toggleReady while not in game", user.id);
+    throw new IllegalMoveError(
+      "toggleReady while not in game",
+      IllegalMoveCode.ReadyWhilePlaying,
+      false
+    );
   }
 
   const players = table.players.map(p =>

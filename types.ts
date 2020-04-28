@@ -60,6 +60,7 @@ export type TableParams = {
 export type TournamentParam = {
   frequency: TournamentFrequency;
   prize: number;
+  fee: number;
 };
 export type TournamentFrequency =
   | "minutely"
@@ -192,6 +193,9 @@ export enum IllegalMoveCode {
   FlagUp,
   DuplicateIP,
   LeaveTournament,
+  IllegalReady,
+  ReadyWhilePlaying,
+  InsufficientFee,
 }
 
 export class IllegalMoveError extends Error {
@@ -291,6 +295,7 @@ export type CommandResult = {
   readonly watchers?: ReadonlyArray<Watcher>;
   readonly eliminations?: ReadonlyArray<Elimination>;
   readonly retired?: ReadonlyArray<Player>;
+  readonly payScore?: [User, string | null, number];
 };
 
 export type BotPlayer = Player & {

@@ -367,6 +367,7 @@ export const processCommand = async (table: Table, command: Command) => {
       watchers,
       eliminations,
       retired, // only from endGame
+      payScore,
     } = result;
 
     newTable = await save(
@@ -389,6 +390,9 @@ export const processCommand = async (table: Table, command: Command) => {
         eliminations,
         players ?? newTable.players
       );
+    }
+    if (payScore) {
+      await processPayScore(payScore);
     }
     if (
       [
@@ -420,4 +424,36 @@ export const processCommand = async (table: Table, command: Command) => {
     newTable = await processCommand(newTable, next);
   }
   return newTable;
+};
+
+const processPayScore = async ([user, clientId, score]: [
+  User,
+  string | null,
+  number
+]): Promise<void> => {
+  logger.debug("processPayScore", user, clientId, score);
+  try {
+    const user_ = await db.addScore(user.id, score);
+    const preferences = await db.getPreferences(user.id);
+    if (clientId) {
+      publish.userUpdate(clientId)(user_, preferences);
+    } else {
+      logger.error("Cannot publish userUpdate (no clientId)");
+    }
+  } catch (e) {
+    // send a message to this specific player
+    if (clientId) {
+      publish.clientError(
+        clientId,
+        new Error(
+          `You ${score >= 0 ? "earned" : "lost"} ${Math.abs(
+            score
+          )} points, but I failed to set them on your profile.`
+        )
+      );
+    } else {
+      logger.error("Cannot publish clientError (no clientId)");
+    }
+    throw e;
+  }
 };

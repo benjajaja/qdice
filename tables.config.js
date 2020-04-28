@@ -115,7 +115,7 @@ module.exports = {
       mapName: "Planeta",
       playerSlots: 8,
       startSlots: 2,
-      points: 100,
+      points: 200,
       stackSize: 8,
       params: {
         noFlagRounds: 5,
@@ -126,6 +126,7 @@ module.exports = {
         tournament: {
           frequency: "hourly",
           prize: 2000,
+          fee: 100,
         },
       },
     },
