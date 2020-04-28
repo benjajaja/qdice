@@ -366,6 +366,18 @@ tableInfoDecoder =
         |> required "stackSize" int
         |> required "points" int
         |> required "params" tableParamsDecoder
+        |> required "gameStart"
+            (map
+                (\i ->
+                    case i of
+                        0 ->
+                            Nothing
+
+                        n ->
+                            Just <| round <| toFloat n / 1000
+                )
+                int
+            )
 
 
 tableParamsDecoder : Decoder TableParams

@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes exposing (align, class, style)
 import Html.Events exposing (onClick)
 import Icon
+import Tournaments exposing (tournamentTime)
 import Types exposing (Model, Msg(..))
 
 
@@ -113,17 +114,12 @@ tableOfTournaments model tableList =
     table [ class "edGameTable", style "-webkit-user-select" "none" ]
         [ thead []
             [ tr []
-                [ th [ align "left" ] [ text "Prize games" ]
+                [ th [ align "left" ] [ text "Bonus games" ]
+                , th [ align "left" ] [ text "Sched." ]
                 , th [ align "right" ] [ text "Prize" ]
-                , th [ align "right" ] [ text "Fee" ]
-                , th [ align "right" ] [ text "Points" ]
                 , th [ align "right" ] [ text "Players" ]
-                , th [ align "right" ] [ text "Minimum" ]
                 , th [ align "right" ] [ text "Watching" ]
                 , th [ align "right" ] [ text "Capitals" ]
-                , th [ align "right" ] [ text "Size" ]
-
-                -- , th [ align "right" ] [ text "Stacks" ]
                 ]
             ]
         , tbody [] <|
@@ -138,8 +134,16 @@ tableOfTournaments model tableList =
                         ]
                             ++ (case table.params.tournament of
                                     Just tournament ->
-                                        [ td [ align "right" ] [ text <| formatPoints tournament.prize ]
-                                        , td [ align "right" ] [ text <| formatPoints tournament.fee ]
+                                        [ td [ align "left" ]
+                                            [ text <|
+                                                case table.gameStart of
+                                                    Nothing ->
+                                                        tournament.frequency
+
+                                                    Just timestamp ->
+                                                        tournamentTime model.zone model.time timestamp
+                                            ]
+                                        , td [ align "right" ] [ text <| formatPoints tournament.prize ]
                                         ]
 
                                     Nothing ->
@@ -147,18 +151,13 @@ tableOfTournaments model tableList =
                                         , td [ align "right" ] [ text "..." ]
                                         ]
                                )
-                            ++ [ td [ align "right" ] [ text <| formatPoints table.points ]
-                               , td [ align "right" ]
+                            ++ [ td [ align "right" ]
                                     [ text <|
                                         String.concat
                                             [ String.fromInt table.playerCount
                                             , " / "
-                                            , String.fromInt table.playerSlots
+                                            , String.fromInt table.startSlots
                                             ]
-                                    ]
-                               , td [ align "right" ]
-                                    [ text <|
-                                        String.fromInt table.startSlots
                                     ]
                                , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
                                , td [ align "right" ]
@@ -169,9 +168,6 @@ tableOfTournaments model tableList =
                                         else
                                             "No"
                                     ]
-                               , td [ align "right" ] [ text <| String.fromInt table.landCount ]
-
-                               -- , td [ align "right" ] [ text <| String.fromInt table.stackSize ]
                                ]
                 )
             <|

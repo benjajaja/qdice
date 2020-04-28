@@ -137,6 +137,7 @@ type alias TableInfo =
     , stackSize : Int
     , points : Int
     , params : TableParams
+    , gameStart : Maybe Int
     }
 
 

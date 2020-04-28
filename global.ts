@@ -48,6 +48,7 @@ export const onMessage = (lock: AsyncLock) => async (topic, message) => {
         case "clear":
         case "elimination":
         case "watching":
+        case "countdown":
           publish.tables(tables);
           return;
       }

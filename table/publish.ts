@@ -242,6 +242,12 @@ export const eventFromCommand = (
         type: "watching",
         table: table.name,
       });
+    case "SetGameStart":
+      event({
+        type: "countdown",
+        table: table.name,
+        gameStart: table.gameStart,
+      });
       return;
   }
 };
