@@ -293,7 +293,7 @@ updateTableStatus model status =
         [ if hasStarted then
             Cmd.batch <|
                 playSound model.sessionPreferences "start"
-                    :: (if hasTurn then
+                    :: (if not hasTurn then
                             [ Helpers.notification <| Just "game-start" ]
 
                         else
