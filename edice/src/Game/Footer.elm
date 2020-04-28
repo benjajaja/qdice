@@ -118,6 +118,7 @@ tableOfTournaments model tableList =
                 , th [ align "left" ] [ text "Sched." ]
                 , th [ align "right" ] [ text "Prize" ]
                 , th [ align "right" ] [ text "Players" ]
+                , th [ align "right" ] [ text "Minimum" ]
                 , th [ align "right" ] [ text "Watching" ]
                 , th [ align "right" ] [ text "Capitals" ]
                 ]
@@ -156,8 +157,12 @@ tableOfTournaments model tableList =
                                         String.concat
                                             [ String.fromInt table.playerCount
                                             , " / "
-                                            , String.fromInt table.startSlots
+                                            , String.fromInt table.playerSlots
                                             ]
+                                    ]
+                               , td [ align "right" ]
+                                    [ text <|
+                                        String.fromInt table.startSlots
                                     ]
                                , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
                                , td [ align "right" ]
