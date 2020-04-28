@@ -206,8 +206,17 @@ const shouldStart = (table: Table) => {
   ) {
     return true;
   }
-  if (countdownFinished(table.gameStart) && table.players.length > 1) {
-    return true;
+  if (table.params.tournament) {
+    if (
+      countdownFinished(table.gameStart) &&
+      table.players.length >= table.startSlots
+    ) {
+      return true;
+    }
+  } else {
+    if (countdownFinished(table.gameStart) && table.players.length > 1) {
+      return true;
+    }
   }
   return false;
 };
