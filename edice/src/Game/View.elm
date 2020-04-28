@@ -21,6 +21,7 @@ import MyProfile.MyProfile
 import Ordinal exposing (ordinal)
 import Routing.String exposing (routeToString)
 import Time exposing (posixToMillis)
+import Tournaments exposing (tournamentTime)
 import Types exposing (AuthNetwork(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
 
 
@@ -505,8 +506,9 @@ tableDetails model =
                                             [ text <| "Game scheduled " ++ tournament.frequency ]
 
                                         Just timestamp ->
-                                            [ text <| "Next game scheduled in"
-                                            , span [ class "edGameStatus__chip--strong" ] [ text <| "\u{00A0}" ++ String.fromInt ((round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) + 1) ++ "s" ]
+                                            [ text <| "Next game scheduled at "
+                                            , span [ class "edGameStatus__chip--strong" ]
+                                                [ text <| tournamentTime model.zone model.time timestamp ]
                                             ]
                         , div [ class "edGameStatus__chip" ] <|
                             case model.game.params.turnSeconds of

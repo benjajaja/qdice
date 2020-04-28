@@ -110,8 +110,8 @@ module.exports = {
       },
     },
     {
-      tag: "500 every minute",
-      name: "500 every minute",
+      tag: "Hourly 2000",
+      name: "Hourly 2000",
       mapName: "Planeta",
       playerSlots: 8,
       startSlots: 2,

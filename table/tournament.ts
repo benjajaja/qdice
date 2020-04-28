@@ -11,6 +11,9 @@ export const tickTournament = (
     if (table.gameStart === 0 || countdownFinished(table.gameStart)) {
       const gameStart = nextFrequency(tournament.frequency, now());
       return { type: "SetGameStart", gameStart };
+    } else if (table.gameStart > nextFrequency(tournament.frequency, now())) {
+      const gameStart = nextFrequency(tournament.frequency, now());
+      return { type: "SetGameStart", gameStart };
     }
   }
   return undefined;

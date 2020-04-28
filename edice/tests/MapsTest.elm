@@ -2,7 +2,7 @@ module MapsTest exposing (..)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
-import Helpers exposing (combine)
+import Helpers exposing (combine, resultCombine)
 import Land
 import Maps
 import Tables exposing (Map(..))
@@ -40,6 +40,10 @@ suite =
                                                 (Land.findLand b map.lands)
                                 )
                             |> combine
+                            |> Maybe.andThen
+                                (resultCombine
+                                    >> Result.toMaybe
+                                )
                             |> Maybe.map (List.all identity)
                         )
                         (Just True)

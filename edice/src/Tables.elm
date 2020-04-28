@@ -81,7 +81,7 @@ encodeMap map =
 isTournament : Table -> Bool
 isTournament table =
     case table of
-        "500 every minute" ->
+        "Hourly 2000" ->
             True
 
         _ ->
