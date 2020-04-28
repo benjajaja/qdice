@@ -91,18 +91,19 @@ view model =
                             ]
                             [ Icon.iconSized 10 "more_horiz" ]
                         ]
-                    , Game.Footer.footer model
-                    , div [ class "edBoxes cartonCard" ] <|
-                        playerBox model
-                            ++ leaderboardBox model
-                    , div [ class "cartonCard cartonCard--padded" ] <|
-                        case model.game.table of
-                            Just table ->
-                                [ Comments.view model.zone model.user model.comments <| Comments.tableComments table ]
-
-                            Nothing ->
-                                []
                     ]
+                        ++ Game.Footer.footer model
+                        ++ [ div [ class "edBoxes cartonCard" ] <|
+                                playerBox model
+                                    ++ leaderboardBox model
+                           , div [ class "cartonCard cartonCard--padded" ] <|
+                                case model.game.table of
+                                    Just table ->
+                                        [ Comments.view model.zone model.user model.comments <| Comments.tableComments table ]
+
+                                    Nothing ->
+                                        []
+                           ]
 
                 else
                     []
