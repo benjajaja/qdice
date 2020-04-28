@@ -317,30 +317,30 @@ export const del = function(req, res, next) {
     .catch(e => next(e));
 };
 
-export const addPushSubscription = (add: boolean) => (req, res, next) => {
+export const addPushSubscription = (add: boolean) => async (req, res, next) => {
   const subscription = req.body;
   const user: User = (req as any).user;
-  logger.debug("register push endpoint", subscription, user.id);
-  db.addPushSubscription(user.id, subscription, add)
-    .then(profile => {
-      const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
-      res.sendRaw(200, token);
-    })
-    .catch(e => {
-      console.error(e);
-      return Promise.reject(e);
-    })
-    .catch(e => next(e));
+  try {
+    await db.addPushSubscription(user.id, subscription, add);
+    const profile = await db.addPushEvent(user.id, "turn", add);
+    const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
+    const preferences = await db.getPreferences(user.id);
+    res.send(200, [R.omit(["ip"], profile), token, preferences]);
+  } catch (e) {
+    console.error(e);
+    next(e);
+  }
 };
 
-export const addPushEvent = (add: boolean) => (req, res, next) => {
+export const addPushEvent = (add: boolean) => async (req, res, next) => {
   const event = req.body;
   const user: User = (req as any).user;
   logger.debug("register push event", event, user.id);
   db.addPushEvent(user.id, event, add)
-    .then(profile => {
+    .then(async profile => {
       const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
-      res.sendRaw(200, token);
+      const preferences = await db.getPreferences(user.id);
+      res.send(200, [R.omit(["ip"], profile), token, preferences]);
     })
     .catch(e => {
       console.error(e);

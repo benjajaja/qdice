@@ -34,22 +34,66 @@ function pushQueue(json) {
     queue.push(json);
     setTimeout(resolve, 1000);
   }).then(function() {
-    var json = queue.pop();
-    if (json) {
-      self.registration.showNotification(json.text, {
-        icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
-        badge: "https://qdice.wtf/assets/monochrome.png",
-        vibrate: [50, 100, 50],
-        data: json,
+    return self.registration.getNotifications().then(function(notifications) {
+      notifications.forEach(function(notification) {
+        notification.close();
       });
-      queue = [];
-    }
+      var json = queue.pop();
+      if (json) {
+        console.log("show pn", json);
+        self.registration.showNotification(json.text, {
+          icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
+          badge: "https://qdice.wtf/assets/monochrome.png",
+          vibrate: [50, 100, 50],
+          data: json,
+        });
+        queue = [];
+      }
+    });
   });
 }
 
 self.addEventListener("push", function(event) {
-  var json = JSON.parse(event.data.text());
-  event.waitUntil(pushQueue(json));
+  event.waitUntil(
+    clients
+      .matchAll({
+        type: "window",
+      })
+      .then(function(clientList) {
+        if (clientList.length === 0) {
+          console.log("SW push no clients");
+          return null;
+        }
+        for (var i = 0; i < clientList.length; i++) {
+          var client = clientList[i];
+          if ("visibilityState" in client) {
+            if (client.visibilityState === "visible") {
+              console.log("got a visible client", client);
+              return client;
+            }
+          }
+        }
+        console.log("SW push no visible client");
+        return null;
+      })
+      .then(function(client) {
+        if (client) {
+          client.postMessage({
+            msg: "notification",
+            json: event.data.text(),
+          });
+        } else {
+          var json = JSON.parse(event.data.text());
+          pushQueue(json);
+          // return self.registration.showNotification(json.text, {
+          // icon: "https://qdice.wtf/favicons-2/android-chrome-512x512.png",
+          // badge: "https://qdice.wtf/assets/monochrome.png",
+          // vibrate: [50, 100, 50],
+          // data: json,
+          // });
+        }
+      })
+  );
 });
 
 // CACHE

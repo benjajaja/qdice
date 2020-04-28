@@ -37,6 +37,7 @@ type Msg
     | SetSessionPreference SessionPreference
     | NotificationsChange ( String, Maybe PushSubscription, Maybe String ) -- 3rd item is JWT, because this might come right after logout
     | NotificationClick String
+    | PushNotification String
     | PushGetKey
     | PushKey (Result Error String)
     | PushRegister PushSubscription
@@ -334,6 +335,7 @@ type alias PushSubscription =
 type PushEvent
     = GameStart
     | PlayerJoin
+    | Turn
 
 
 type LeaderboardMsg

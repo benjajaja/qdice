@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, resultCombine, timeUnits, triple, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeUnits, triple, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -15,6 +15,9 @@ port notification : Maybe String -> Cmd msg
 
 
 port notificationClick : (String -> msg) -> Sub msg
+
+
+port pushNotification : (String -> msg) -> Sub msg
 
 
 type alias Synched a =

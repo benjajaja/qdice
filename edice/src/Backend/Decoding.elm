@@ -113,6 +113,9 @@ pushEventDecoder =
                 "player-join" ->
                     PlayerJoin
 
+                "turn" ->
+                    Types.Turn
+
                 _ ->
                     GameStart
         )

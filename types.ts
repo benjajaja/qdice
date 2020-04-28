@@ -128,7 +128,7 @@ export type Player = UserLike & {
 
 export type Preferences = {};
 
-export type PushNotificationEvents = "game-start";
+export type PushNotificationEvents = "game-start" | "turn";
 
 export type Award = {
   type: "monthly_rank" | "early_adopter";

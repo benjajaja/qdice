@@ -85,24 +85,39 @@ notifications model user preferences sessionPreferences =
         [ div [] [ text "You have notifications enabled on this device/browser." ]
         , div [] [ text "You will get a notification when the tab is in background and it's your turn." ]
         , div [] [ button [ onClick RenounceNotifications ] [ text "Disable notifications" ] ]
-        , div [] [ text "You can also receive a push notification even if you're not in any hame and don't even have the website opened." ]
-        , div [] [ em [] [ text "This is an experimental feature, if in doubt leave all unchecked." ] ]
+        , div [] [ text "You can also receive a push notification even if you're not in any game and don't even have the website opened." ]
         , div [] [ text "Get a notification when:" ]
         , div []
             [ label
                 [ class "edCheckbox--checkbox"
                 , onClick <|
-                    PushRegisterEvent ( GameStart, not <| List.member GameStart preferences.pushEvents )
+                    PushRegisterEvent ( Turn, not <| List.member Turn preferences.pushEvents )
                 ]
                 [ Icon.icon <|
-                    if List.member GameStart preferences.pushEvents then
+                    if List.member Turn <| preferences.pushEvents then
                         "check_box"
 
                     else
                         "check_box_outline_blank"
-                , text "a game countdown starts"
+                , text "it's my turn"
                 ]
             ]
+
+        -- , div []
+        -- [ label
+        -- [ class "edCheckbox--checkbox"
+        -- , onClick <|
+        -- PushRegisterEvent ( GameStart, not <| List.member GameStart preferences.pushEvents )
+        -- ]
+        -- [ Icon.icon <|
+        -- if List.member GameStart preferences.pushEvents then
+        -- "check_box"
+        --
+        -- else
+        -- "check_box_outline_blank"
+        -- , text "a game countdown starts"
+        -- ]
+        -- ]
         , div []
             [ label
                 [ class "edCheckbox--checkbox"

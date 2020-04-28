@@ -17,7 +17,7 @@ import * as db from "./db";
 import { addGameEvent } from "./table/games";
 import { Command } from "./types";
 import * as webPush from "web-push";
-import { GAME_START_COUNTDOWN } from "./constants";
+import { GAME_START_COUNTDOWN, TURN_SECONDS } from "./constants";
 import { now } from "./timestamp";
 import { getTable } from "./table/get";
 
@@ -93,7 +93,7 @@ client.on("message", async (topic, message) => {
               }
             );
           } catch (e) {
-            console.error("push subscription expired, removing", row.id);
+            console.error("push subscription expired, removing", row.id, e);
             try {
               await db.removePushSubscription(row.id, row.subscription);
             } catch (e) {
@@ -103,6 +103,55 @@ client.on("message", async (topic, message) => {
                 e
               );
             }
+          }
+        }
+      });
+    } else if (event.type === "turn") {
+      // push notifications
+      if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+        return;
+      }
+      const subscriptions = await db.getPushSubscription(
+        "turn",
+        event.player.id
+      );
+      const text = `It's your turn on "${event.table}!"`;
+      console.log("PN turn", event.player.id, subscriptions);
+      subscriptions.forEach(async row => {
+        if (!row.subscription) {
+          return;
+        }
+        try {
+          await webPush.sendNotification(
+            row.subscription,
+            JSON.stringify({
+              type: event.type,
+              timestamp: now(),
+              table: event.table,
+              text,
+              link: `https://qdice.wtf/${event.table}`,
+            }),
+            {
+              TTL: TURN_SECONDS,
+            }
+          );
+        } catch (e) {
+          console.error(
+            "push subscription expired, removing",
+            event.player.id,
+            e
+          );
+          try {
+            await db.removePushSubscription(event.player.id, row.subscription);
+          } catch (e) {
+            console.error(
+              "could not remove push subscription",
+              JSON.stringify({
+                id: event.player.id,
+                subscription: row.subscription,
+              }),
+              e
+            );
           }
         }
       });

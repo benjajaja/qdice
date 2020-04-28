@@ -372,6 +372,8 @@ function notification(title, actions, tag) {
 navigator.serviceWorker.addEventListener("message", function(event) {
   if (event.data.msg === "notification-click") {
     app.ports.notificationClick.send(event.data.tag);
+  } else if (event.data.msg === "notification") {
+    app.ports.pushNotification.send(event.data.json);
   }
 });
 function urlBase64ToUint8Array(base64String) {

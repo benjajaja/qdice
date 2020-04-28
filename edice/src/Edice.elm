@@ -967,6 +967,9 @@ update msg model =
                 _ ->
                     ( model, Helpers.consoleDebug <| "click notification: " ++ tag )
 
+        PushNotification json ->
+            ( model, Helpers.consoleDebug <| "push notification: " ++ json )
+
 
 tableFromRoute : Route -> Maybe Table
 tableFromRoute route =
@@ -1138,6 +1141,7 @@ subscriptions model =
         , pushGetKey (\_ -> PushGetKey)
         , pushRegister PushRegister
         , Helpers.notificationClick NotificationClick
+        , Helpers.pushNotification PushNotification
         ]
 
 

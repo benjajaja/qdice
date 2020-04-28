@@ -585,6 +585,19 @@ export const getPushSubscriptions = async (event: string) => {
   return res.rows;
 };
 
+export const getPushSubscription = async (event: string, userId: string) => {
+  const res = await pool.query({
+    name: "push-subscription-single",
+    text: `SELECT push_subscriptions.subscription
+    FROM push_subscribed_events
+    LEFT JOIN push_subscriptions
+      ON push_subscriptions.user_id = $2
+    WHERE push_subscribed_events."event" = $1`,
+    values: [event, userId],
+  });
+  return res.rows;
+};
+
 export const removePushSubscription = async (
   id: string,
   subscription: string

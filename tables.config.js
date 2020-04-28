@@ -114,7 +114,7 @@ module.exports = {
       name: "Hourly 2000",
       mapName: "Planeta",
       playerSlots: 8,
-      startSlots: 4,
+      startSlots: 2,
       points: 200,
       stackSize: 8,
       params: {

@@ -242,12 +242,23 @@ export const eventFromCommand = (
         type: "watching",
         table: table.name,
       });
+      return;
     case "SetGameStart":
       event({
         type: "countdown",
         table: table.name,
         gameStart: table.gameStart,
       });
+      return;
+    case "EndTurn":
+      const player = table.players[table.turnIndex];
+      if (player && !player.bot && !player.out) {
+        event({
+          type: "turn",
+          table: table.name,
+          player: table.players[table.turnIndex],
+        });
+      }
       return;
   }
 };

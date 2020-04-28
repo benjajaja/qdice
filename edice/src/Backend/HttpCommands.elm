@@ -251,7 +251,9 @@ registerPush model ( subscription, enable ) jwt =
                             []
         , body =
             stringBody "application/json" subscription
-        , expect = expectWhatever <| always Nop
+        , expect =
+            --expectWhatever <| always Nop
+            expectJson GetProfile meDecoder
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -282,8 +284,11 @@ registerPushEvent model ( event, enable ) =
 
                     PlayerJoin ->
                         "player-join"
+
+                    Types.Turn ->
+                        "turn"
         , expect =
-            expectStringWithError GetUpdateProfile
+            expectJson GetProfile meDecoder
         , timeout = Nothing
         , tracker = Nothing
         }
