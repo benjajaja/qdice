@@ -10,6 +10,7 @@ import Dict exposing (Dict)
 import Game.Types exposing (Award, PlayerAction, TableInfo)
 import Games.Replayer.Types exposing (ReplayerCmd, ReplayerModel)
 import Games.Types exposing (Game, GameRef)
+import Html
 import Http exposing (Error)
 import MyProfile.Types
 import OAuth
@@ -53,6 +54,8 @@ type Msg
     | GetOtherProfile (Result Error OtherProfile)
     | Logout
     | ShowLogin LoginDialogStatus
+    | ShowDialog DialogType
+    | HideDialog
     | Register String (Maybe Table)
     | SetLoginName String
     | SetLoginPassword LoginPasswordStep
@@ -144,7 +147,7 @@ type alias Model =
         , password : String
         , animations : ( Animation.State, Animation.State )
         }
-    , showLoginDialog : LoginDialogStatus
+    , dialog : DialogStatus
     , settings : GlobalSettings
     , leaderBoard : LeaderBoardModel
     , otherProfile : Placeheld OtherProfile
@@ -243,6 +246,17 @@ type alias GlobalSettings =
     , maxNameLength : Int
     , turnSeconds : Int
     }
+
+
+type DialogStatus
+    = Show DialogType
+    | Hide
+
+
+type DialogType
+    = Login
+    | LoginJoin
+    | Confirm (Model -> ( String, List (Html.Html Msg) )) Msg
 
 
 type LoginDialogStatus

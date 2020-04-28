@@ -16,7 +16,7 @@ import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (Map(..), Table, isTournament)
 import Task
 import Time
-import Types exposing (Msg(..), SessionPreferences, User(..))
+import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
 
 
 init : Maybe Table -> Maybe Map -> ( Game.Types.Model, Cmd Msg )
@@ -120,7 +120,7 @@ gameCommand model playerAction =
                 newGame =
                     { game | isReady = Nothing }
             in
-            { model | game = newGame }
+            { model | game = newGame, dialog = Hide }
 
         ToggleReady ready ->
             let

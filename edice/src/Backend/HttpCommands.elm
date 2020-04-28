@@ -12,7 +12,7 @@ import MyProfile.Types exposing (MyProfileUpdate)
 import Placeholder
 import Snackbar exposing (toastError)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, CommentKind(..), GamesMsg(..), GamesSubRoute(..), LeaderboardMsg(..), LoginDialogStatus(..), Msg(..), OtherProfile, PushEvent(..), PushSubscription, User(..), UserId)
+import Types exposing (AuthNetwork(..), AuthState, CommentKind(..), DialogStatus(..), GamesMsg(..), GamesSubRoute(..), LeaderboardMsg(..), Msg(..), OtherProfile, PushEvent(..), PushSubscription, User(..), UserId)
 import Url.Builder exposing (int)
 
 
@@ -113,7 +113,7 @@ register model name joinTable =
             , awards = []
             }
     in
-    ( { model | showLoginDialog = LoginHide }
+    ( { model | dialog = Hide }
     , Http.post
         { url = model.backend.baseUrl ++ "/register"
         , body =

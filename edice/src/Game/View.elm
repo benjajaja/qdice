@@ -22,7 +22,7 @@ import Ordinal exposing (ordinal)
 import Routing.String exposing (routeToString)
 import Time exposing (posixToMillis)
 import Tournaments exposing (tournamentTime)
-import Types exposing (AuthNetwork(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
+import Types exposing (AuthNetwork(..), DialogType(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
 
 
 view : Model -> Html Types.Msg
@@ -254,7 +254,46 @@ onlineButtons model =
                             Just tournament ->
                                 if user.points >= model.game.points then
                                     if user.points >= tournament.fee then
-                                        [ joinButton ("Join game for " ++ Helpers.formatPoints tournament.fee) <| GameCmd Join ]
+                                        [ joinButton ("Join game for " ++ Helpers.formatPoints tournament.fee) <|
+                                            ShowDialog <|
+                                                Confirm
+                                                    (\model_ ->
+                                                        ( "Enter game for " ++ Helpers.formatPoints tournament.fee ++ "?"
+                                                        , [ text <|
+                                                                "The prize for 1st is "
+                                                                    ++ Helpers.formatPoints tournament.prize
+                                                                    ++ "."
+                                                                    ++ """
+You will be sat and cannot leave the game until it starts.
+
+You can meanwhile play on other tables.
+
+If minimum player requirements is not met, you will be carried over to next starting time.
+
+"""
+                                                                    ++ (case model_.game.gameStart of
+                                                                            Nothing ->
+                                                                                "Remember to come back at the game start time."
+
+                                                                            Just timestamp ->
+                                                                                "Remember to come back at "
+                                                                                    ++ tournamentTime model_.zone model_.time timestamp
+                                                                                    ++ """.
+"""
+                                                                       )
+
+                                                          -- , a [ href "#" ] [ text "Enable notifications" ]
+                                                          , button [ onClick RequestNotifications ]
+                                                                [ text "Enable notifications"
+                                                                , Icon.icon "sms"
+                                                                ]
+                                                          , text " ...to get an alert at game start!"
+                                                          ]
+                                                        )
+                                                    )
+                                                <|
+                                                    GameCmd Join
+                                        ]
 
                                     else
                                         [ text <| "Game entry fee is " ++ Helpers.formatPoints tournament.fee ]

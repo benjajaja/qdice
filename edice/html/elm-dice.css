@@ -1268,3 +1268,13 @@ input[type="range"]::-webkit-slider-runnable-track {
 .edGameReplayer__controls input[type="range"] {
   flex-grow: 2;
 }
+
+
+.edDialog__confirm__buttons {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+.edDialog__text {
+  white-space: pre-line;
+}

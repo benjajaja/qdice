@@ -13,6 +13,7 @@ import Browser.Dom
 import Browser.Events
 import Browser.Navigation exposing (Key)
 import Comments
+import Dialog exposing (dialog)
 import Dict
 import Footer exposing (footer)
 import GA exposing (ga)
@@ -27,7 +28,6 @@ import Html.Attributes
 import Http exposing (Error(..))
 import LeaderBoard.State
 import LeaderBoard.View
-import LoginDialog exposing (loginDialog)
 import MyOauth
 import MyProfile.MyProfile
 import MyProfile.Types
@@ -105,7 +105,7 @@ init flags location key =
                     , Animation.style [ Animation.left <| Animation.percent 100 ]
                     )
                 }
-            , showLoginDialog = LoginHide
+            , dialog = Hide
             , settings =
                 { gameCountdownSeconds = 30
                 , maxNameLength = 20
@@ -487,7 +487,7 @@ update msg model =
 
                     else if step == 1 then
                         ( { model
-                            | showLoginDialog = LoginHide
+                            | dialog = Hide
                             , loginPassword =
                                 { step = 0
                                 , email = ""
@@ -520,7 +520,28 @@ update msg model =
             )
 
         ShowLogin show ->
-            ( { model | showLoginDialog = show }
+            ( { model
+                | dialog =
+                    case show of
+                        LoginShow ->
+                            Show Login
+
+                        LoginShowJoin ->
+                            Show LoginJoin
+
+                        LoginHide ->
+                            Hide
+              }
+            , Cmd.none
+            )
+
+        ShowDialog type_ ->
+            ( { model | dialog = Show type_ }
+            , Cmd.none
+            )
+
+        HideDialog ->
+            ( { model | dialog = Hide }
             , Cmd.none
             )
 
@@ -966,7 +987,7 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "Qdice.wtf"
     , body =
-        [ loginDialog model
+        [ dialog model
         , Html.main_ [ Html.Attributes.class "Main" ]
             [ mainView model
             ]

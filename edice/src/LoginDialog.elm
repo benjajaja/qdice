@@ -1,4 +1,4 @@
-module LoginDialog exposing (loginDialog)
+module LoginDialog exposing (body)
 
 import Animation
 import Helpers exposing (dataTestId)
@@ -10,32 +10,9 @@ import Tables exposing (Table)
 import Types exposing (AuthNetwork(..), LoginDialogStatus(..), LoginPasswordStep(..), Model, Msg(..))
 
 
-loginDialog : Model -> Html Msg
-loginDialog model =
-    case model.showLoginDialog of
-        LoginHide ->
-            text ""
-
-        LoginShow ->
-            backdrop model Nothing
-
-        LoginShowJoin ->
-            backdrop model <| model.game.table
-
-
-backdrop : Model -> Maybe Table -> Html Msg
-backdrop model joinTable =
-    div
-        [ class "edLoginBackdrop" ]
-        [ div
-            [ class "edLoginDialog", dataTestId "login-dialog" ]
-            [ body model joinTable ]
-        ]
-
-
 body : Model -> Maybe Table -> Html Msg
 body model joinTable =
-    div []
+    div [ dataTestId "login-dialog" ]
         [ div
             [ class "edLoginDialog__social" ]
             [ div []
@@ -44,13 +21,7 @@ body model joinTable =
                 [ onClick <|
                     Authorize
                         { network = Google
-                        , table =
-                            case model.showLoginDialog of
-                                LoginShowJoin ->
-                                    model.game.table
-
-                                _ ->
-                                    Nothing
+                        , table = joinTable
                         , addTo = Nothing
                         }
                 , class "edLoginSocial edLoginSocial--google"
@@ -62,13 +33,7 @@ body model joinTable =
                 [ onClick <|
                     Authorize
                         { network = Reddit
-                        , table =
-                            case model.showLoginDialog of
-                                LoginShowJoin ->
-                                    model.game.table
-
-                                _ ->
-                                    Nothing
+                        , table = joinTable
                         , addTo = Nothing
                         }
                 , class "edLoginSocial edLoginSocial--reddit"
