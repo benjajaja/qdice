@@ -154,6 +154,7 @@ type alias TableParams =
 type alias TournamentConfig =
     { frequency : String
     , prize : Int
+    , fee : Int
     }
 
 

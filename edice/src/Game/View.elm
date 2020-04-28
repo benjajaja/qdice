@@ -235,17 +235,39 @@ onlineButtons model =
                         ]
 
             Nothing ->
-                [ case model.user of
+                case model.user of
                     Types.Anonymous ->
-                        joinButton "Join" <| ShowLogin Types.LoginShowJoin
+                        case model.game.params.tournament of
+                            Just _ ->
+                                [ button
+                                    [ class "edButton edGameHeader__button"
+                                    , onClick <| ShowLogin Types.LoginShow
+                                    ]
+                                    [ text "Log in to check your eligibility" ]
+                                ]
+
+                            Nothing ->
+                                [ joinButton "Join" <| ShowLogin Types.LoginShowJoin ]
 
                     Types.Logged user ->
-                        if user.points >= model.game.points then
-                            joinButton "Join" <| GameCmd Join
+                        case model.game.params.tournament of
+                            Just tournament ->
+                                if user.points >= model.game.points then
+                                    if user.points >= tournament.fee then
+                                        [ joinButton ("Join game for " ++ Helpers.formatPoints tournament.fee) <| GameCmd Join ]
 
-                        else
-                            text <| "Table has minimum points of " ++ String.fromInt model.game.points
-                ]
+                                    else
+                                        [ text <| "Game entry fee is " ++ Helpers.formatPoints tournament.fee ]
+
+                                else
+                                    [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]
+
+                            Nothing ->
+                                if user.points >= model.game.points then
+                                    [ joinButton "Join" <| GameCmd Join ]
+
+                                else
+                                    [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]
 
     else
         case model.game.player of
@@ -504,7 +526,7 @@ tableDetails model =
                                             [ text <| "Game scheduled " ++ tournament.frequency ]
 
                                         Just timestamp ->
-                                            [ text <| "Next game scheduled at "
+                                            [ text <| "Game scheduled at "
                                             , span [ class "edGameStatus__chip--strong" ]
                                                 [ text <| tournamentTime model.zone model.time timestamp ]
                                             ]
@@ -522,7 +544,7 @@ tableDetails model =
 
                                     Just tournament ->
                                         [ div [ class "edGameStatus__chip" ] <|
-                                            [ text <| "Special game prize is " ++ Helpers.formatPoints tournament.prize ]
+                                            [ text <| "Game prize is " ++ Helpers.formatPoints tournament.prize ]
                                         ]
                                )
 

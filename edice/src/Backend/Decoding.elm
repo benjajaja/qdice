@@ -385,6 +385,7 @@ tournamentDecoder =
     succeed TournamentConfig
         |> required "frequency" string
         |> required "prize" int
+        |> required "fee" int
 
 
 profileDecoder : Decoder Profile
