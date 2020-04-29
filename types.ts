@@ -287,7 +287,10 @@ export type Command =
   | CommandSkeleton<"Clear">
   | CommandSkeleton<"Heartbeat", { user: User | null; clientId: string }>
   | CommandSkeleton<"BotState", { player: Player; botCommand: BotCommand }>
-  | CommandSkeleton<"SetGameStart", { gameStart: number }>;
+  | CommandSkeleton<
+      "SetGameStart",
+      { gameStart: number; returnFee: number | null }
+    >;
 
 export type CommandResult = {
   readonly table?: Partial<TableProps>;
@@ -296,7 +299,7 @@ export type CommandResult = {
   readonly watchers?: ReadonlyArray<Watcher>;
   readonly eliminations?: ReadonlyArray<Elimination>;
   readonly retired?: ReadonlyArray<Player>;
-  readonly payScore?: [User, string | null, number];
+  readonly payScores?: readonly [UserId, string | null, number][];
 };
 
 export type BotPlayer = Player & {

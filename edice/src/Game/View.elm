@@ -270,7 +270,7 @@ You will be sat and cannot leave the game until it starts.
 
 You can meanwhile play on other tables.
 
-If minimum player requirements is not met, you will be carried over to next starting time.
+If minimum player requirements is not met, the fee will be returned.
 
 """
                                                                     ++ (case model_.game.gameStart of

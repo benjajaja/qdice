@@ -1,6 +1,6 @@
 import * as R from "ramda";
 import * as publish from "./publish";
-import { Table, Land, CommandResult, Color } from "../types";
+import { Table, Land, CommandResult, Color, User, UserId } from "../types";
 import { now } from "../timestamp";
 import { rand, shuffle } from "../rand";
 import logger from "../logger";
@@ -148,9 +148,23 @@ export const preloadStartingPositions = async (
 
 export const setGameStart = (
   table: Table,
-  gameStart: number
+  gameStart: number,
+  returnFee: number | null
 ): CommandResult => {
+  if (returnFee === null) {
+    return {
+      table: { gameStart },
+    };
+  }
+
+  const payScores: [UserId, string | null, number][] = table.players.map(
+    player => {
+      return [player.id, player.clientId, returnFee];
+    }
+  );
   return {
     table: { gameStart },
+    players: [],
+    payScores: payScores,
   };
 };

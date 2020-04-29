@@ -16,6 +16,7 @@ import {
   Player,
   BotPlayer,
   IllegalMoveCode,
+  UserId,
 } from "./types";
 import * as db from "./db";
 import * as publish from "./table/publish";
@@ -344,7 +345,7 @@ const commandResult = async (
     case "BotState":
       return botState(table, command.player as BotPlayer, command.botCommand);
     case "SetGameStart":
-      return [setGameStart(table, command.gameStart), null];
+      return [setGameStart(table, command.gameStart, command.returnFee), null];
     default:
       return assertNever(command);
   }
@@ -367,7 +368,7 @@ export const processCommand = async (table: Table, command: Command) => {
       watchers,
       eliminations,
       retired, // only from endGame
-      payScore,
+      payScores,
     } = result;
 
     newTable = await save(
@@ -391,8 +392,8 @@ export const processCommand = async (table: Table, command: Command) => {
         players ?? newTable.players
       );
     }
-    if (payScore) {
-      await processPayScore(payScore);
+    if (payScores) {
+      await processPayScores(newTable, payScores);
     }
     if (
       [
@@ -426,34 +427,41 @@ export const processCommand = async (table: Table, command: Command) => {
   return newTable;
 };
 
-const processPayScore = async ([user, clientId, score]: [
-  User,
-  string | null,
-  number
-]): Promise<void> => {
-  logger.debug("processPayScore", user, clientId, score);
-  try {
-    const user_ = await db.addScore(user.id, score);
-    const preferences = await db.getPreferences(user.id);
-    if (clientId) {
-      publish.userUpdate(clientId)(user_, preferences);
-    } else {
-      logger.error("Cannot publish userUpdate (no clientId)");
-    }
-  } catch (e) {
-    // send a message to this specific player
-    if (clientId) {
-      publish.clientError(
-        clientId,
-        new Error(
-          `You ${score >= 0 ? "earned" : "lost"} ${Math.abs(
+const processPayScores = async (
+  table: Table,
+  scores: readonly [UserId, string | null, number][]
+): Promise<void> => {
+  for (const payScore of scores) {
+    const [userId, clientId, score] = payScore;
+    logger.debug("processPayScore", userId, clientId, score);
+    try {
+      const user_ = await db.addScore(userId, score);
+      const preferences = await db.getPreferences(userId);
+      if (clientId) {
+        publish.userUpdate(clientId)(user_, preferences);
+        publish.userMessage(
+          clientId,
+          `You have ${score < 0 ? "payed" : "received back"} ${Math.abs(
             score
-          )} points, but I failed to set them on your profile.`
-        )
-      );
-    } else {
-      logger.error("Cannot publish clientError (no clientId)");
+          )} points for a game in table ${table.name}.`
+        );
+      } else {
+        logger.error("Cannot publish userUpdate (no clientId)");
+      }
+    } catch (e) {
+      // send a message to this specific player
+      if (clientId) {
+        publish.clientError(
+          clientId,
+          new Error(
+            `You ${score >= 0 ? "earned" : "lost"} ${Math.abs(
+              score
+            )} points, but I failed to set them on your profile.`
+          )
+        );
+      } else {
+        logger.error("Cannot publish clientError (no clientId)");
+      }
     }
-    throw e;
   }
 };

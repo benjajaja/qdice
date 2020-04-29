@@ -138,7 +138,7 @@ export const join = (
     logger.warn("User has no ip:", user.id, user.name);
   }
 
-  let payScore: [User, string | null, number] | undefined = undefined;
+  let payScores: [UserId, string | null, number][] | undefined = undefined;
   if (table.params.tournament) {
     logger.debug("ips", table.players.map(R.pick(["name", "ip"])));
     const existingIP = table.players
@@ -161,7 +161,7 @@ export const join = (
         !!bot
       );
     } else {
-      payScore = [user, clientId, 0 - table.params.tournament.fee];
+      payScores = [[user.id, clientId, 0 - table.params.tournament.fee]];
       logger.debug("join fee", 0 - table.params.tournament.fee);
     }
   }
@@ -226,7 +226,7 @@ export const join = (
     table: { status, turnCount, gameStart },
     players,
     lands,
-    payScore,
+    payScores,
   };
 };
 

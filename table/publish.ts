@@ -383,10 +383,10 @@ export const sigint = async () =>
     );
   });
 
-export const toast = async (message: string) =>
+export const toast = async (message: string, clientId?: string) =>
   new Promise(resolve => {
     client.publish(
-      "clients",
+      clientId ? `clients/${clientId}` : "clients",
       JSON.stringify({
         type: "toast",
         payload: message,
