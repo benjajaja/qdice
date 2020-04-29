@@ -933,7 +933,13 @@ updateChatLog model entry =
                     _ ->
                         game
         in
-        ( { model | game = game_ }, Cmd.none )
+        ( if isChat entry then
+            { model | game = { game_ | chatLog = List.append game.chatLog [ entry ] } }
+
+          else
+            { model | game = { game_ | gameLog = List.append game.gameLog [ entry ] } }
+        , Cmd.none
+        )
 
     else
         case model.game.table of

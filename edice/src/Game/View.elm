@@ -15,6 +15,7 @@ import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, href, style)
 import Html.Events exposing (onClick)
+import Html.Lazy
 import Icon
 import LeaderBoard.View
 import MyProfile.MyProfile
@@ -132,25 +133,24 @@ boardFooter model =
     div [ class "edGameBoardFooter" ] <|
         playerBar 0 model
             :: toolbar
-            ++ chatOverlay model
+            ++ [ Html.Lazy.lazy2 chatOverlay model.fullscreen model.game.chatOverlay ]
 
 
-chatOverlay : Model -> List (Html Msg)
-chatOverlay model =
-    if not model.fullscreen then
-        []
+chatOverlay : Bool -> Maybe ( Time.Posix, ChatLogEntry ) -> Html Msg
+chatOverlay fullscreen overlay =
+    if not fullscreen then
+        text ""
 
     else
-        case model.game.chatOverlay of
+        case overlay of
             Just ( _, entry ) ->
-                [ div
+                div
                     [ class "edChatOverlay" ]
                     [ Game.Chat.chatLine entry
                     ]
-                ]
 
             Nothing ->
-                []
+                text ""
 
 
 playerBar : Int -> Model -> Html Msg

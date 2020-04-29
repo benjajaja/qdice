@@ -983,7 +983,7 @@ tableFromRoute route =
 
 setPortrait : Model -> Int -> Int -> Model
 setPortrait model w h =
-    { model | fullscreen = w <= 820 && (toFloat w / toFloat h) > 13 / 9 }
+    { model | fullscreen = w <= 840 && (toFloat w / toFloat h) > 13 / 9 }
 
 
 view : Model -> Browser.Document Msg
