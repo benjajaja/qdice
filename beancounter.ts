@@ -76,7 +76,10 @@ client.on("message", async (topic, message) => {
       const subscriptions = await db.getPushSubscriptions("player-join");
       const text = `${event.user.name} joined table "${event.table}"`;
       subscriptions.forEach(async row => {
-        if (row.subscription && event.user.id !== row.id) {
+        if (
+          row.subscription &&
+          event.user.id.toString() !== row.id.toString()
+        ) {
           console.log("PN", row.id, event.user.id);
           try {
             await webPush.sendNotification(
