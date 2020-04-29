@@ -38,6 +38,9 @@ export const nextFrequency = (
     case "minutely":
       const seconds = 60 - d.getSeconds();
       return ts + 1000 * seconds;
+    case "5minutely":
+      const minutes5 = 5 - (d.getMinutes() % 5);
+      return ts + 1000 * 60 * minutes5;
     case "hourly":
       const minutes = 60 - d.getMinutes();
       return ts + 1000 * 60 * minutes;

@@ -64,6 +64,7 @@ export type TournamentParam = {
 };
 export type TournamentFrequency =
   | "minutely"
+  | "5minutely"
   | "hourly"
   | "daily"
   | "weekly"
