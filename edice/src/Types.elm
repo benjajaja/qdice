@@ -294,6 +294,8 @@ type alias ProfileStats =
 type alias ProfileStatsStatistics =
     { rolls : Array Int
     , attacks : ( Int, Int )
+    , kills : Int
+    , eliminations : Array Int
     }
 
 

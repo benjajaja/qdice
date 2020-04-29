@@ -561,6 +561,8 @@ statsDecoder =
         |> optional "attacks"
             (map2 Tuple.pair (index 0 int) (index 1 int))
             ( 0, 0 )
+        |> optional "kills" int 0
+        |> optional "eliminations" (map Array.fromList (list int)) (Array.fromList [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ])
 
 
 gameRefDecoder : Decoder GameRef

@@ -44,6 +44,8 @@ init =
             , stats =
                 { rolls = Array.fromList [ 0, 0, 0, 0, 0, 0 ]
                 , attacks = ( 0, 0 )
+                , kills = 0
+                , eliminations = Array.fromList [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
                 }
             }
     in
@@ -175,7 +177,7 @@ gameHeader zone game =
 statisticsView : Bool -> Profile -> ProfileStats -> List (Html Msg)
 statisticsView isFetched profile { stats } =
     let
-        { rolls, attacks } =
+        { rolls, attacks, eliminations, kills } =
             stats
 
         ( attacksSucceeded, attacksFailed ) =
@@ -195,24 +197,33 @@ statisticsView isFetched profile { stats } =
                 ++ (String.fromFloat <| toFloat attacksSucceeded / toFloat attacksFailed)
                 ++ ")"
         ]
+    , div []
+        [ div [] [ text <| "Kills: " ++ String.fromInt kills ]
+        ]
     , p [] []
-    , rollsGraph isFetched rolls
-    ]
-
-
-rollsGraph : Bool -> Array.Array Int -> Html Msg
-rollsGraph isFetched rolls =
-    let
-        list =
-            rolls |> rollsAsList
-
-        max =
-            List.maximum list |> Maybe.withDefault 100
-    in
-    div []
+    , div []
+        [ div [] [ text "Positions:" ]
+        , chart
+            isFetched
+            8
+            (\i ->
+                Svg.text_
+                    [ Svg.Attributes.x "0"
+                    , Svg.Attributes.y <| String.fromFloat (toFloat i * 10 + 7.5)
+                    , Svg.Attributes.fontSize "8"
+                    ]
+                    [ Svg.text <| ordinal <| i + 1 ]
+            )
+            16
+            eliminations
+        ]
+    , p [] []
+    , div []
         [ div [] [ text "Dice rolls:" ]
-        , List.indexedMap
-            (\i _ ->
+        , chart
+            isFetched
+            6
+            (\i ->
                 Svg.text_
                     [ Svg.Attributes.x "0"
                     , Svg.Attributes.y <| String.fromFloat (toFloat i * 10 + 7.5)
@@ -220,69 +231,85 @@ rollsGraph isFetched rolls =
                     ]
                     [ Svg.text <| toDie <| i + 1 ]
             )
-            list
-            |> List.append
-                (List.indexedMap
-                    (\i dice ->
-                        Svg.text_
-                            [ Svg.Attributes.x "11"
-                            , Svg.Attributes.y <| String.fromFloat (toFloat i * 10 + 6.5)
-                            , Svg.Attributes.fontSize "8"
-                            , Svg.Attributes.fill "#ffffff"
-                            ]
-                            [ Svg.text <| String.fromInt dice ]
-                    )
-                    list
-                )
-            |> List.append
-                (List.indexedMap
-                    (\i dice ->
-                        Svg.rect
-                            [ Svg.Attributes.x "10"
-                            , Svg.Attributes.y <| String.fromFloat (toFloat i * 10 + 0.25)
-                            , Svg.Attributes.height <| String.fromFloat 7.5
-                            , Svg.Attributes.width <|
-                                if isFetched then
-                                    String.fromInt <|
-                                        round <|
-                                            (\w ->
-                                                if isNaN w then
-                                                    0
-
-                                                else
-                                                    w
-                                            )
-                                            <|
-                                                toFloat dice
-                                                    / toFloat max
-                                                    * 190
-
-                                else
-                                    "190"
-                            , Svg.Attributes.fill <|
-                                if isFetched then
-                                    "#519ab1"
-
-                                else
-                                    "#888888"
-                            , Svg.Attributes.opacity <|
-                                if isFetched then
-                                    "1"
-
-                                else
-                                    "0.5"
-                            ]
-                            []
-                    )
-                    list
-                )
-            |> Svg.svg [ Svg.Attributes.viewBox "0 0 200 60", Svg.Attributes.class "edStatistics__rolls" ]
+            10
+            rolls
         ]
+    ]
 
 
-rollsAsList : Array.Array Int -> List Int
-rollsAsList rolls =
-    List.range 0 5
+chart : Bool -> Int -> (Int -> Html msg) -> Int -> Array.Array Int -> Html msg
+chart isFetched size legends offset values =
+    let
+        list =
+            arrayAsList values size
+
+        max =
+            List.maximum list |> Maybe.withDefault 100
+    in
+    List.map
+        legends
+        (List.range 0 size)
+        |> List.append
+            (List.indexedMap
+                (\i value ->
+                    Svg.text_
+                        [ Svg.Attributes.x <| String.fromInt offset
+                        , Svg.Attributes.y <| String.fromFloat (toFloat i * 10 + 6.5)
+                        , Svg.Attributes.fontSize "8"
+                        , Svg.Attributes.fill "#ffffff"
+                        ]
+                        [ Svg.text <| String.fromInt value ]
+                )
+                list
+            )
+        |> List.append
+            (List.indexedMap
+                (\i dice ->
+                    Svg.rect
+                        [ Svg.Attributes.x <| String.fromInt offset
+                        , Svg.Attributes.y <| String.fromFloat (toFloat i * 10 + 0.25)
+                        , Svg.Attributes.height <| String.fromFloat 7.5
+                        , Svg.Attributes.width <|
+                            if isFetched then
+                                String.fromInt <|
+                                    round <|
+                                        (\w ->
+                                            if isNaN w then
+                                                0
+
+                                            else
+                                                w
+                                        )
+                                        <|
+                                            toFloat dice
+                                                / toFloat max
+                                                * 190
+
+                            else
+                                "190"
+                        , Svg.Attributes.fill <|
+                            if isFetched then
+                                "#519ab1"
+
+                            else
+                                "#888888"
+                        , Svg.Attributes.opacity <|
+                            if isFetched then
+                                "1"
+
+                            else
+                                "0.5"
+                        ]
+                        []
+                )
+                list
+            )
+        |> Svg.svg [ Svg.Attributes.viewBox "0 0 200 60", Svg.Attributes.class "edStatistics__rolls" ]
+
+
+arrayAsList : Array.Array Int -> Int -> List Int
+arrayAsList rolls size =
+    List.range 0 (size - 1)
         |> List.map
             (flip Array.get rolls
                 >> Maybe.withDefault 0
