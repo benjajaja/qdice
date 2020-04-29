@@ -45,8 +45,13 @@ export const nextFrequency = (
       const minutes = 60 - d.getMinutes();
       return ts + 1000 * 60 * minutes;
     case "daily":
-      const hours = 24 - d.getHours();
-      return ts + 1000 * 60 * 60 * hours; // TODO next fixed time of the day
+      const hours = 18 - d.getHours();
+      return (
+        ts +
+        1000 * 60 * 60 * (hours > 0 ? hours : hours + 18) -
+        1000 * 60 * d.getMinutes() -
+        1000 * d.getSeconds()
+      );
     case "weekly":
       return ts + 1000 * 60 * 60 * 24 * 7;
     case "monthly":
