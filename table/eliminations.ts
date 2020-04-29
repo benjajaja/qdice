@@ -18,12 +18,18 @@ export const processEliminations = async (
         positionScore(tablePoints(table))(table.playerStartCount)(position) +
         tournamentScore(table, position);
 
+      const killer =
+        elimination.reason === "☠"
+          ? ((elimination.source as any).player as Player)
+          : null;
       publish.event({
         type: "elimination",
         table: table.name,
         player,
         position,
         score,
+        killer,
+        flag: elimination.reason === "🏳",
       });
 
       if (player.bot === null) {

@@ -11,7 +11,7 @@ import * as Twitter from "twitter";
 import * as puppeteer from "puppeteer";
 import * as redis from "redis";
 
-import { addRoll } from "./stats";
+import { addRoll, addElimination, addKill } from "./stats";
 import logger from "./logger";
 import * as db from "./db";
 import { addGameEvent } from "./table/games";
@@ -20,6 +20,12 @@ import * as webPush from "web-push";
 import { GAME_START_COUNTDOWN, TURN_SECONDS } from "./constants";
 import { now } from "./timestamp";
 import { getTable } from "./table/get";
+
+process.on("unhandledRejection", (reason, p) => {
+  logger.error("Unhandled Rejection at: Promise", p, "reason:", reason);
+  // application specific logging, throwing an error, or other logic here
+  throw reason;
+});
 
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
   console.log(
@@ -193,6 +199,13 @@ client.on("message", async (topic, message) => {
           }
         }
       });
+    } else if (event.type === "elimination") {
+      if (!event.player.bot) {
+        await addElimination(event.player, event.position);
+      }
+      if (event.killer && !event.killer.bot) {
+        await addKill(event.killer);
+      }
     }
   } else if (topic === "game_events") {
     const {

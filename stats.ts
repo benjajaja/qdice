@@ -35,6 +35,21 @@ export const addRoll = async (
   }
 };
 
+export const addElimination = async (player: Player, position) => {
+  await addStats(player, stats => {
+    const eliminations = stats.eliminations ?? [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    eliminations[position - 1] = eliminations[position - 1] + 1;
+    return { ...stats, eliminations };
+  });
+};
+
+export const addKill = async (player: Player) => {
+  await addStats(player, stats => {
+    const kills = (stats.kills ?? 0) + 1;
+    return { ...stats, kills };
+  });
+};
+
 const addRolls = (
   rolls: [number, number, number, number, number, number] | undefined = [
     0,
