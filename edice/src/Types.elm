@@ -73,7 +73,6 @@ type Msg
     | SendChat String
     | GameCmd PlayerAction
     | GameMsg Game.Types.Msg
-    | EnterGame Table
     | ExpandChats
     | FindGame (Maybe Table)
       -- replayer

@@ -147,7 +147,7 @@ goToBestTable model current replace =
             findBestTable model current
 
         cmd =
-            if not replace && elegible == current then
+            if not replace && (elegible == Nothing || elegible == current) then
                 Cmd.none
 
             else

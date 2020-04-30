@@ -143,7 +143,7 @@ updateSubscribed model topic =
                 case model_.game.table of
                     Just table ->
                         if not <| hasSubscribedTable subscribed table then
-                            subscribeGameTable model_ table
+                            subscribeGameTable model_ ( table, Nothing )
 
                         else
                             ( model_, Cmd.none )
@@ -174,8 +174,7 @@ updateSubscribed model topic =
 
                                 else if hasSubscribedTable subscribed table then
                                     ( setStatus model_ Online
-                                    , Task.succeed (EnterGame table)
-                                        |> Task.perform identity
+                                    , Backend.MqttCommands.enter model.backend table
                                     )
 
                                 else
@@ -184,15 +183,21 @@ updateSubscribed model topic =
                                     )
 
 
-subscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
-subscribeGameTable model table =
+subscribeGameTable : Types.Model -> ( Table, Maybe Table ) -> ( Types.Model, Cmd Msg )
+subscribeGameTable model ( table, oldTable ) =
     if hasSubscribedTable model.backend.subscribed table then
         ( model, consoleDebug "ignoring already subbed" )
 
     else
-        ( setStatus model SubscribingTable
+        let
+            ( model_, unsub ) =
+                Maybe.map (\old -> unsubscribeGameTable model old) oldTable
+                    |> Maybe.withDefault ( model, Cmd.none )
+        in
+        ( setStatus model_ SubscribingTable
         , Cmd.batch <|
-            [ subscribe <| Tables table ClientDirection
+            [ unsub
+            , subscribe <| Tables table ClientDirection
             ]
         )
 
@@ -217,8 +222,7 @@ unsubscribeGameTable model table =
     in
     ( { model | backend = { backend | subscribed = subscribed } }
     , Cmd.batch
-        [ --publish <| TableMsg table <| Backend.Types.Leave <| Types.getUsername model
-          exit model.backend table
+        [ exit model.backend table
         , unsubscribe <| Tables table ClientDirection
         ]
     )

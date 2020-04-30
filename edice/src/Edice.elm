@@ -747,20 +747,6 @@ update msg model =
         GameCmd playerAction ->
             gameCommand model playerAction
 
-        EnterGame table ->
-            -- now the player is really in a game/table
-            let
-                enter =
-                    Backend.MqttCommands.enter model.backend table
-
-                cmds =
-                    Cmd.batch <|
-                        [ enter, Cmd.none ]
-            in
-            ( model
-            , cmds
-            )
-
         FindGame current ->
             ( model
             , case Routing.findBestTable model current of
@@ -1142,9 +1128,6 @@ onLocationChange model location =
     let
         newRoute =
             parseLocation location
-
-        ( model_, cmd ) =
-            Routing.routeEnterCmd { model | route = newRoute } newRoute
     in
     if newRoute == model.route then
         ( model
@@ -1152,17 +1135,10 @@ onLocationChange model location =
         )
 
     else
-        ( model_, cmd )
+        Routing.routeEnterCmd { model | route = newRoute } newRoute
             |> (case newRoute of
                     GameRoute table ->
                         pipeUpdates Game.State.changeTable table
-
-                    _ ->
-                        identity
-               )
-            |> (case model.route of
-                    GameRoute table ->
-                        pipeUpdates Backend.unsubscribeGameTable table
 
                     _ ->
                         identity

@@ -52,6 +52,9 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
 describe("A full game", () => {
   let gameId: string | undefined;
   test("should play a full game", async () => {
+    await expect(page).toMatchElement(testId("table-games-link"), {
+      text: "Planeta",
+    });
     await expect(page).toClick(testId("go-to-table-Polo"));
 
     await expect(page).toClick(testId("button-seat"));
@@ -65,17 +68,28 @@ describe("A full game", () => {
     await expect(page).toMatchElement(testId("player-name-0"), { text: "A" });
 
     await expect(page).toClick(testId("check-ready"));
+    console.log("Player A ready");
 
-    const browser2 = await puppeteer.launch({ ...launch /*, headless: true*/ });
+    const browser2 = await puppeteer.launch({
+      ...launch /*, headless: false*/,
+    });
     const page2 = await browser2.newPage();
     await page2.evaluateOnNewDocument(() => localStorage.clear());
     await page2.goto(TEST_URL);
     await expect(page2).toMatchElement(testId("connection-status"), {
       text: "Online",
     });
+    await expect(page2).toMatchElement(testId("table-games-link"), {
+      text: "Planeta",
+    });
 
     await expect(page2).toClick(testId("go-to-table-Polo"));
-    await expect(page2).toClick(testId("button-seat"), { text: "Join" });
+    await expect(page2).toMatchElement(testId("table-games-link"), {
+      text: "Polo",
+    });
+
+    await page2.waitFor(500);
+    await expect(page2).toClick(testId("button-seat"));
     await expect(page2).toMatchElement(testId("login-dialog"));
 
     await expect(page2).toFill(testId("login-input"), "B");
@@ -84,6 +98,7 @@ describe("A full game", () => {
     await expect(page2).not.toMatchElement(testId("login-dialog"));
 
     await expect(page2).toMatchElement(testId("player-name-1"), { text: "B" });
+    console.log("Player B is in game");
 
     await expect(page2).not.toMatchElement(testId("game-round"));
 
@@ -100,7 +115,7 @@ describe("A full game", () => {
       await expect(page).toMatchElement(testId("current-game-id"))
     ).evaluate(element => element.textContent);
     gameId = text?.match(/game #(\d+)/)?.[1];
-    console.log("game:", gameId);
+    expect(gameId).not.toBeUndefined();
 
     await hisTurn(page, "A");
     await attack(page, "land-🥑", "land-🐵", "A");
@@ -128,6 +143,7 @@ describe("A full game", () => {
   }, 300000);
 
   test("should show game ledger of previous test's game", async () => {
+    expect(gameId).not.toBeUndefined();
     await expect(page).toClick(testId("go-to-table-Polo"));
     await expect(page).toClick(testId("table-games-link"));
     await expect(page).toClick(testId("game-entry-" + gameId));

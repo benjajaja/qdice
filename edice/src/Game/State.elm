@@ -168,8 +168,8 @@ changeTable model table =
         model_ =
             { model | game = game }
     in
-    ( model_, Cmd.none )
-        |> pipeUpdates Backend.subscribeGameTable table
+    ( model_, cmd )
+        |> pipeUpdates Backend.subscribeGameTable ( table, model.game.table )
 
 
 tableMap : Table -> List Game.Types.TableInfo -> Maybe Map

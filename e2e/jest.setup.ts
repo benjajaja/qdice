@@ -40,4 +40,7 @@ beforeEach(async () => {
   await expect(page).toMatchElement(testId("connection-status"), {
     text: "Online",
   });
+  await expect(page).toMatchElement(testId("table-games-link"), {
+    text: "Planeta",
+  });
 }, 60000);

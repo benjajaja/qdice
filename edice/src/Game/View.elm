@@ -186,8 +186,9 @@ sortedPlayers players =
 seatButtons : Model -> List (Html.Html Types.Msg)
 seatButtons model =
     if model.backend.status /= Online then
-        [ button [ class "edButton edGameHeader__button", disabled True ] [ Icon.icon "signal_wifi_off" ]
-        ]
+        findTableButton model
+            ++ [ button [ class "edButton edGameHeader__button", disabled True ] [ Icon.icon "signal_wifi_off" ]
+               ]
 
     else
         onlineButtons model
@@ -309,7 +310,7 @@ If minimum player requirements is not met, the fee will be returned.
 
                             Nothing ->
                                 findTableButton model
-                                    ++ (if user.points >= model.game.points then
+                                    ++ (if model.game.points == 0 || user.points >= model.game.points then
                                             [ joinButton "Join" <| GameCmd Join ]
 
                                         else
