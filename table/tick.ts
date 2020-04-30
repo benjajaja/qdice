@@ -162,9 +162,6 @@ const tick = async (tableTag: string, lock: AsyncLock) => {
         command = addBots(table, persona);
       } else if (table.params.tournament) {
         command = tickTournament(table, table.params.tournament);
-        if (command) {
-          logger.debug("tick tournament", command);
-        }
       }
     }
 

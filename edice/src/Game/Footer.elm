@@ -118,9 +118,8 @@ tableOfTournaments model tableList =
                 , th [ align "left" ] [ text "Sched." ]
                 , th [ align "right" ] [ text "Prize" ]
                 , th [ align "right" ] [ text "Players" ]
-                , th [ align "right" ] [ text "Minimum" ]
-                , th [ align "right" ] [ text "Watching" ]
-                , th [ align "right" ] [ text "Capitals" ]
+                , th [ align "right" ] [ text "Min" ]
+                , th [ align "right" ] [ text "Watch" ]
                 ]
             ]
         , tbody [] <|
@@ -165,14 +164,6 @@ tableOfTournaments model tableList =
                                         String.fromInt table.startSlots
                                     ]
                                , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
-                               , td [ align "right" ]
-                                    [ text <|
-                                        if table.params.startingCapitals then
-                                            "Yes"
-
-                                        else
-                                            "No"
-                                    ]
                                ]
                 )
             <|

@@ -37,13 +37,13 @@ links1 user =
 
 links2 : User -> List (Html Msg)
 links2 user =
-    [ link (StaticPageRoute Help) "Gameplay & Rules" "help"
+    [ link (StaticPageRoute Help) "How to play" "help"
     ]
 
 
 links3 : User -> List (Html Msg)
 links3 user =
-    [ link (StaticPageRoute About) "About qdice" "info"
+    [ link (StaticPageRoute About) "What's Qdice.wtf?" "info"
     ]
 
 
