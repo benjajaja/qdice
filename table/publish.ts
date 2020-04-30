@@ -250,6 +250,7 @@ export const eventFromCommand = (
         gameStart: table.gameStart,
       });
       return;
+    case "Start":
     case "EndTurn":
       const player = table.players[table.turnIndex];
       if (player && !player.bot && !player.out) {

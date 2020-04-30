@@ -431,7 +431,16 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
     in
     ( model_
     , Cmd.batch <|
-        [ if hasGainedTurn then
+        [ if
+            hasGainedTurn
+                && (case player of
+                        Just p ->
+                            not p.out
+
+                        Nothing ->
+                            False
+                   )
+          then
             Cmd.batch
                 [ playSound model.sessionPreferences "turn"
                 , Helpers.notification <| Just "game-turn"
