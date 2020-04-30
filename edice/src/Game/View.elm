@@ -547,7 +547,7 @@ tableDetails model =
                                         text ", bots will join"
 
                                       else
-                                        text ", bots will join if another game ends"
+                                        text ", bots will join"
                                     ]
                                         ++ (case model.game.gameStart of
                                                 Nothing ->
