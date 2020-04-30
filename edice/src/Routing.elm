@@ -1,14 +1,15 @@
-module Routing exposing (fragmentUrl, goToBestTable, navigateTo, parseLocation, replaceNavigateTo, routeEnterCmd)
+module Routing exposing (findBestTable, fragmentUrl, goToBestTable, navigateTo, parseLocation, replaceNavigateTo, routeEnterCmd)
 
 import Backend.HttpCommands exposing (profile)
 import Browser.Navigation exposing (Key)
 import Comments
-import Game.Types exposing (TableInfo)
+import Game.Types exposing (GameStatus(..), TableInfo)
 import Games
 import LeaderBoard.State exposing (fetchLeaderboard)
 import Profile
 import Routing.String exposing (routeToString)
-import Types exposing (GamesSubRoute(..), Model, Msg(..), Route(..), StaticPage(..))
+import Tables exposing (Table)
+import Types exposing (GamesSubRoute(..), Model, Msg(..), Route(..), StaticPage(..), User(..))
 import Url exposing (Url, percentDecode)
 import Url.Parser exposing (..)
 
@@ -86,7 +87,7 @@ routeEnterCmd model route =
                 HomeRoute ->
                     ( model
                     , if List.length model.tableList > 0 then
-                        goToBestTable model
+                        goToBestTable model Nothing True
 
                       else
                         Cmd.none
@@ -103,22 +104,65 @@ routeEnterCmd model route =
     Comments.routeEnter route model_ cmd
 
 
-goToBestTable : Model -> Cmd Msg
-goToBestTable model =
-    case List.head <| List.filter hasSomePlayers model.tableList of
-        Just bestTable ->
-            replaceNavigateTo model.zip model.key <| GameRoute bestTable.table
+findBestTable : Model -> Maybe Table -> Maybe Table
+findBestTable model current =
+    List.filter
+        (\i ->
+            if i.status == Playing then
+                i.botCount > 0
 
-        Nothing ->
-            replaceNavigateTo model.zip model.key <| GameRoute "Planeta"
+            else
+                i.playerCount > 0
+        )
+        model.tableList
+        |> List.filter
+            (case model.user of
+                Logged user ->
+                    \i -> i.points <= user.points
+
+                Anonymous ->
+                    \i -> i.points == 0
+            )
+        |> List.head
+        |> Maybe.map .table
+        |> Maybe.andThen
+            (\best ->
+                case current of
+                    Nothing ->
+                        Just best
+
+                    Just c ->
+                        if best == c then
+                            Nothing
+
+                        else
+                            Just best
+            )
 
 
-hasSomePlayers : TableInfo -> Bool
-hasSomePlayers table =
-    not table.params.twitter
-        && (table.params.tournament == Nothing)
-        && table.playerCount
-        > 0
+goToBestTable : Model -> Maybe Table -> Bool -> Cmd Msg
+goToBestTable model current replace =
+    let
+        elegible =
+            findBestTable model current
+
+        cmd =
+            if not replace && elegible == current then
+                Cmd.none
+
+            else
+                Maybe.withDefault "Planeta" elegible
+                    |> GameRoute
+                    |> (if replace then
+                            replaceNavigateTo
+
+                        else
+                            navigateTo
+                       )
+                        False
+                        model.key
+    in
+    cmd
 
 
 fragmentUrl : Url -> Url

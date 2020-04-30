@@ -364,6 +364,7 @@ tableInfoDecoder =
         |> required "startSlots" int
         |> required "playerCount" int
         |> required "watchCount" int
+        |> required "botCount" int
         |> required "status" gameStatusDecoder
         |> required "landCount" int
         |> required "stackSize" int

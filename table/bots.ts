@@ -11,6 +11,7 @@ import {
   Command,
   BotCommand,
   CommandResult,
+  TableInfo,
 } from "../types";
 import { havePassed } from "../timestamp";
 import { shuffle, rand } from "../rand";
@@ -24,6 +25,7 @@ import {
   giveDice,
 } from "../helpers";
 import { move, Source } from "./bot_strategies";
+import { getStatuses } from "./get";
 
 const defaultPersona: Persona = {
   name: "Personality",
@@ -70,7 +72,14 @@ const personas: Persona[] = [
 export const isBot = (player: Player): player is BotPlayer =>
   player.bot !== null;
 
-export const addBots = (table: Table, persona?: Persona): Command => {
+export const addBots = (
+  table: Table,
+  persona: Persona | null,
+  otherTables: readonly TableInfo[]
+): Command | undefined => {
+  if (otherTables.some(info => info.botCount > 0)) {
+    return undefined;
+  }
   const unusedPersonas = personas.filter(
     p =>
       !R.contains(
@@ -79,7 +88,7 @@ export const addBots = (table: Table, persona?: Persona): Command => {
       )
   );
 
-  if (typeof persona === "undefined") {
+  if (persona === null) {
     persona = unusedPersonas[rand(0, unusedPersonas.length - 1)];
   }
 

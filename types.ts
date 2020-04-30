@@ -90,6 +90,16 @@ export type Adjacency = {
   indexes: Readonly<{ [index: string]: number }>;
 };
 
+export type TableInfo = Omit<
+  Table,
+  "lands" | "players" | "watchers" | "adjacency"
+> & {
+  landCount: number;
+  playerCount: number;
+  watchCount: number;
+  botCount: number;
+};
+
 export type UserLike = {
   readonly id: UserId;
   readonly name: string;

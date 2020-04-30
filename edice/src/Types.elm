@@ -75,6 +75,7 @@ type Msg
     | GameMsg Game.Types.Msg
     | EnterGame Table
     | ExpandChats
+    | FindGame (Maybe Table)
       -- replayer
     | ReplayerCmd ReplayerCmd
       -- backend

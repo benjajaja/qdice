@@ -1,6 +1,6 @@
 import * as R from "ramda";
 import * as Sentry from "@sentry/node";
-import { getTable } from "./get";
+import { getTable, getStatuses } from "./get";
 import {
   Table,
   Player,
@@ -66,6 +66,7 @@ const tick = async (tableTag: string, lock: AsyncLock) => {
 
   lock.acquire(tableTag, async (done: any) => {
     const table = await getTable(tableTag);
+    const otherTables = getStatuses().filter(info => info.tag !== table.tag);
     let command: Command | void = undefined;
     if (table.status === STATUS_PLAYING) {
       if (table.players.length === 0) {
@@ -151,15 +152,15 @@ const tick = async (tableTag: string, lock: AsyncLock) => {
           table.name === "Planeta" &&
           table.players.length === table.playerSlots - 1
             ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
-            : undefined;
-        command = addBots(table, persona);
+            : null;
+        command = addBots(table, persona, otherTables);
       } else if (!process.env.E2E && table.params.twitter) {
         const persona =
           table.name === "Twitter" &&
           table.players.length === table.playerSlots - 1
             ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
-            : undefined;
-        command = addBots(table, persona);
+            : null;
+        command = addBots(table, persona, otherTables);
       } else if (table.params.tournament) {
         command = tickTournament(table, table.params.tournament);
       }

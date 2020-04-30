@@ -241,31 +241,34 @@ onlineButtons model =
                     Types.Anonymous ->
                         case model.game.params.tournament of
                             Just _ ->
-                                [ button
-                                    [ class "edButton edGameHeader__button"
-                                    , onClick <| ShowLogin Types.LoginShow
-                                    ]
-                                    [ text "Log in to check your eligibility" ]
-                                ]
+                                findTableButton model
+                                    ++ [ button
+                                            [ class "edButton edGameHeader__button"
+                                            , onClick <| ShowLogin Types.LoginShow
+                                            ]
+                                            [ text "Log in to check your eligibility" ]
+                                       ]
 
                             Nothing ->
-                                [ joinButton "Join" <| ShowLogin Types.LoginShowJoin ]
+                                findTableButton model
+                                    ++ [ joinButton "Join" <| ShowLogin Types.LoginShowJoin ]
 
                     Types.Logged user ->
                         case model.game.params.tournament of
                             Just tournament ->
-                                if user.points >= model.game.points then
-                                    if user.points >= tournament.fee then
-                                        [ joinButton ("Join game for " ++ Helpers.formatPoints tournament.fee) <|
-                                            ShowDialog <|
-                                                Confirm
-                                                    (\model_ ->
-                                                        ( "Enter game for " ++ Helpers.formatPoints tournament.fee ++ "?"
-                                                        , [ text <|
-                                                                "The prize for 1st is "
-                                                                    ++ Helpers.formatPoints tournament.prize
-                                                                    ++ "."
-                                                                    ++ """
+                                findTableButton model
+                                    ++ (if user.points >= model.game.points then
+                                            if user.points >= tournament.fee then
+                                                [ joinButton ("Join game for " ++ Helpers.formatPoints tournament.fee) <|
+                                                    ShowDialog <|
+                                                        Confirm
+                                                            (\model_ ->
+                                                                ( "Enter game for " ++ Helpers.formatPoints tournament.fee ++ "?"
+                                                                , [ text <|
+                                                                        "The prize for 1st is "
+                                                                            ++ Helpers.formatPoints tournament.prize
+                                                                            ++ "."
+                                                                            ++ """
 You will be sat and cannot leave the game until it starts.
 
 You can meanwhile play on other tables.
@@ -273,42 +276,45 @@ You can meanwhile play on other tables.
 If minimum player requirements is not met, the fee will be returned.
 
 """
-                                                                    ++ (case model_.game.gameStart of
-                                                                            Nothing ->
-                                                                                "Remember to come back at the game start time."
+                                                                            ++ (case model_.game.gameStart of
+                                                                                    Nothing ->
+                                                                                        "Remember to come back at the game start time."
 
-                                                                            Just timestamp ->
-                                                                                "Remember to come back at "
-                                                                                    ++ tournamentTime model_.zone model_.time timestamp
-                                                                                    ++ """.
+                                                                                    Just timestamp ->
+                                                                                        "Remember to come back at "
+                                                                                            ++ tournamentTime model_.zone model_.time timestamp
+                                                                                            ++ """.
 """
-                                                                       )
+                                                                               )
 
-                                                          -- , a [ href "#" ] [ text "Enable notifications" ]
-                                                          , button [ onClick RequestNotifications ]
-                                                                [ text "Enable notifications"
-                                                                , Icon.icon "sms"
-                                                                ]
-                                                          , text " ...to get an alert at game start!"
-                                                          ]
-                                                        )
-                                                    )
-                                                <|
-                                                    GameCmd Join
-                                        ]
+                                                                  -- , a [ href "#" ] [ text "Enable notifications" ]
+                                                                  , button [ onClick RequestNotifications ]
+                                                                        [ text "Enable notifications"
+                                                                        , Icon.icon "sms"
+                                                                        ]
+                                                                  , text " ...to get an alert at game start!"
+                                                                  ]
+                                                                )
+                                                            )
+                                                        <|
+                                                            GameCmd Join
+                                                ]
 
-                                    else
-                                        [ text <| "Game entry fee is " ++ Helpers.formatPoints tournament.fee ]
+                                            else
+                                                [ text <| "Game entry fee is " ++ Helpers.formatPoints tournament.fee ]
 
-                                else
-                                    [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]
+                                        else
+                                            [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]
+                                       )
 
                             Nothing ->
-                                if user.points >= model.game.points then
-                                    [ joinButton "Join" <| GameCmd Join ]
+                                findTableButton model
+                                    ++ (if user.points >= model.game.points then
+                                            [ joinButton "Join" <| GameCmd Join ]
 
-                                else
-                                    [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]
+                                        else
+                                            [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]
+                                       )
 
     else
         case model.game.player of
@@ -536,8 +542,11 @@ tableDetails model =
                                     , if model.game.params.botLess then
                                         text ", no bots"
 
-                                      else
+                                      else if not <| List.any (.botCount >> (/=) 0) model.tableList then
                                         text ", bots will join"
+
+                                      else
+                                        text ", bots will join if another game ends"
                                     ]
                                         ++ (case model.game.gameStart of
                                                 Nothing ->
@@ -716,3 +725,30 @@ canPlayerFlag roundCount noFlagRounds uiFlagged player =
                 Nothing ->
                     uiFlagged == Nothing
            )
+
+
+findTableButton : Model -> List (Html Msg)
+findTableButton model =
+    if
+        (List.length model.game.players
+            == 0
+            && List.any (.playerCount >> (/=) 0) model.tableList
+        )
+            || (Maybe.map .points model.game.player |> Maybe.withDefault 1000000)
+            < model.game.points
+    then
+        [ button
+            [ class <|
+                "edButton edGameHeader__button edGameHeader__button--left"
+            , onClick <| FindGame model.game.table
+            , dataTestId "button-find"
+            ]
+            [ text "Find players" ]
+        ]
+
+    else
+        []
+
+
+
+-- if not <| List.any (.botCount >> (/=) 0) model.tableList then

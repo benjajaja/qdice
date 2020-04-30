@@ -132,6 +132,7 @@ type alias TableInfo =
     , startSlots : Int
     , playerCount : Int
     , watchCount : Int
+    , botCount : Int
     , status : GameStatus
     , landCount : Int
     , stackSize : Int

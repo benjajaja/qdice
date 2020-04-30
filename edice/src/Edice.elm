@@ -222,7 +222,12 @@ update msg model =
                                             Game.State.changeTable model_ table
 
                                 HomeRoute ->
-                                    ( model_, Routing.goToBestTable model_ )
+                                    case model_.backend.jwt of
+                                        Nothing ->
+                                            ( model_, Routing.goToBestTable model_ Nothing True )
+
+                                        Just _ ->
+                                            ( model_, Cmd.none )
 
                                 _ ->
                                     ( model_, Cmd.none )
@@ -340,10 +345,26 @@ update msg model =
                     in
                     ( { model | user = Anonymous, backend = { backend | jwt = Nothing } }
                     , if is502 err then
-                        toastError "Server down, please retry" <| httpErrorToString err
+                        Cmd.batch
+                            [ toastError "Server down, please retry" <| httpErrorToString err
+                            , case model.route of
+                                HomeRoute ->
+                                    Routing.goToBestTable model model.game.table True
+
+                                _ ->
+                                    Cmd.none
+                            ]
 
                       else
-                        toastError "Could not sign in, please retry" <| httpErrorToString err
+                        Cmd.batch
+                            [ toastError "Could not sign in, please retry" <| httpErrorToString err
+                            , case model.route of
+                                HomeRoute ->
+                                    Routing.goToBestTable model model.game.table True
+
+                                _ ->
+                                    Cmd.none
+                            ]
                     )
 
                 Ok ( profile, token, preferences ) ->
@@ -356,9 +377,17 @@ update msg model =
 
                         game =
                             Game.State.setUser model.game profile
+
+                        model_ =
+                            { model | user = Logged profile, preferences = preferences, backend = backend_, game = game }
                     in
-                    ( { model | user = Logged profile, preferences = preferences, backend = backend_, game = game }
-                    , ga [ "send", "event", "auth", "GetProfile" ]
+                    ( model_
+                    , case model.route of
+                        HomeRoute ->
+                            Routing.goToBestTable model_ model_.game.table True
+
+                        _ ->
+                            Cmd.none
                     )
 
         GetOtherProfile res ->
@@ -730,6 +759,16 @@ update msg model =
             in
             ( model
             , cmds
+            )
+
+        FindGame current ->
+            ( model
+            , case Routing.findBestTable model current of
+                Nothing ->
+                    toastError "Could't find a better table for you" "FindGame: no best table"
+
+                Just table ->
+                    Routing.navigateTo model.zip model.key <| GameRoute table
             )
 
         UnknownTopicMessage error topic message clientId ->

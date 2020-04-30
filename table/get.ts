@@ -1,11 +1,12 @@
 import * as R from "ramda";
-import { Table, Player, Land, Watcher } from "../types";
+import { Table, Player, Land, Watcher, TableInfo } from "../types";
 import * as maps from "../maps";
 import * as db from "../db";
 import * as Sentry from "@sentry/node";
 import { STATUS_FINISHED } from "../constants";
 import * as config from "../tables.config";
 import logger from "../logger";
+import { isBot } from "./bots";
 
 let memoryTables: { [tag: string]: Table } = {};
 
@@ -144,7 +145,7 @@ export const save = async (
   return result;
 };
 
-export const getStatuses = () =>
+export const getStatuses = (): readonly TableInfo[] =>
   R.sortWith(
     [
       R.ascend(R.prop("name")),
@@ -158,5 +159,6 @@ export const getStatuses = () =>
         landCount: table.lands.length,
         playerCount: table.players.length,
         watchCount: table.watching.length,
+        botCount: table.players.filter(isBot).length,
       }))
   );
