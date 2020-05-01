@@ -185,13 +185,14 @@ sortedPlayers players =
 
 seatButtons : Model -> List (Html.Html Types.Msg)
 seatButtons model =
-    if model.backend.status /= Online then
-        findTableButton model
-            ++ [ button [ class "edButton edGameHeader__button", disabled True ] [ Icon.icon "signal_wifi_off" ]
-               ]
+    case model.backend.status of
+        Online _ _ ->
+            onlineButtons model
 
-    else
-        onlineButtons model
+        _ ->
+            findTableButton model
+                ++ [ button [ class "edButton edGameHeader__button", disabled True ] [ Icon.icon "signal_wifi_off" ]
+                   ]
 
 
 joinButton : String -> Types.Msg -> Html.Html Types.Msg

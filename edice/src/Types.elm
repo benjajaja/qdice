@@ -87,7 +87,7 @@ type Msg
     | ClientMsg Backend.Types.ClientMessage
     | AllClientsMsg Backend.Types.AllClientsMessage
     | TableMsg Table Backend.Types.TableMessage
-    | UnknownTopicMessage String String String String
+    | UnknownTopicMessage String String String Backend.Types.ConnectionStatus
     | SetLastHeartbeat Time.Posix
 
 

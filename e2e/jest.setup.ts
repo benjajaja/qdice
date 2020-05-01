@@ -29,18 +29,14 @@ beforeEach(async () => {
     }
   }
   console.log("API reset ok.");
-  await page.evaluateOnNewDocument(() => localStorage.clear());
+  await page.evaluateOnNewDocument(() => {
+    try {
+      localStorage.clear();
+    } catch (e) {}
+  });
   page.on("console", consoleObj => console.log("page:", consoleObj.text()));
   await page.goto(TEST_URL, { waitUntil: "networkidle2" });
-  // const base64 = await page.screenshot({
-  // fullPage: true,
-  // encoding: 'base64',
-  // });
-  // console.log(`screenshot: data:image/png;base64,${base64}`);
   await expect(page).toMatchElement(testId("connection-status"), {
-    text: "Online",
-  });
-  await expect(page).toMatchElement(testId("table-games-link"), {
-    text: "Planeta",
+    text: "Online on Planeta",
   });
 }, 60000);

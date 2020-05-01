@@ -1,7 +1,6 @@
 port module Edice exposing (init, pushSubscribe, started, subscriptions, updateWrapper, view)
 
 import Animation
-import Array
 import Backend
 import Backend.HttpCommands exposing (getPushKey, loadGlobalSettings, loadMe, login, register, registerPush, registerPushEvent)
 import Backend.MqttCommands exposing (sendGameCommand)
@@ -56,7 +55,7 @@ init flags location key =
             Game.State.init table Nothing
 
         ( backend, backendCmd ) =
-            Backend.init flags.version location flags.token flags.isTelegram
+            Backend.init flags.version location flags.token
 
         ( backend_, routeCmds ) =
             case route of
@@ -214,12 +213,7 @@ update msg model =
                         ( modelWithTable, cmd ) =
                             case model.route of
                                 GameRoute table ->
-                                    case model.backend.status of
-                                        Online ->
-                                            Game.State.changeTable model_ table
-
-                                        _ ->
-                                            Game.State.changeTable model_ table
+                                    Game.State.changeTable model_ table
 
                                 HomeRoute ->
                                     case model_.backend.jwt of
@@ -757,13 +751,28 @@ update msg model =
                     Routing.navigateTo model.zip model.key <| GameRoute table
             )
 
-        UnknownTopicMessage error topic message clientId ->
+        UnknownTopicMessage error topic message status ->
             ( model
-            , toastError "I/O Error" <| "UnknownTopicMessage \"" ++ error ++ "\" in topic " ++ topic ++ " with clientId " ++ clientId
+            , toastError "I/O Error" <|
+                "UnknownTopicMessage \""
+                    ++ error
+                    ++ "\" in topic "
+                    ++ topic
+                    ++ " with clientId "
+                    ++ (case status of
+                            Online id _ ->
+                                id
+
+                            Subscribing id _ ->
+                                id
+
+                            _ ->
+                                "(none)"
+                       )
             )
 
         StatusConnect _ ->
-            ( Backend.setStatus model Connecting
+            ( Backend.setStatus model <| Connecting <| Backend.desiredTable model.backend
             , Cmd.none
             )
 
@@ -783,10 +792,10 @@ update msg model =
             )
 
         Connected clientId ->
-            Backend.updateConnected model clientId
+            Backend.setConnected model clientId
 
         Subscribed topic ->
-            Backend.updateSubscribed model topic
+            Backend.addSubscribed model topic
 
         ClientMsg _ ->
             ( model
@@ -839,15 +848,15 @@ update msg model =
                 cmd =
                     case model.route of
                         GameRoute table ->
-                            case model.backend.clientId of
-                                Just c ->
+                            case model.backend.status of
+                                Online _ _ ->
                                     if Time.posixToMillis newTime - Time.posixToMillis model.backend.lastHeartbeat > 5000 then
                                         sendGameCommand model.backend model.game.table Heartbeat
 
                                     else
                                         Cmd.none
 
-                                Nothing ->
+                                _ ->
                                     Cmd.none
 
                         _ ->
@@ -1141,7 +1150,12 @@ onLocationChange model location =
                         pipeUpdates Game.State.changeTable table
 
                     _ ->
-                        identity
+                        case model.game.table of
+                            Just table ->
+                                pipeUpdates Backend.unsubscribeGameTable table
+
+                            Nothing ->
+                                identity
                )
 
 

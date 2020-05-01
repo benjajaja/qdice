@@ -2,7 +2,7 @@ port module Backend.MqttCommands exposing (attack, enter, exit, leave, sendGameC
 
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
-import Backend.Types exposing (ClientId, Model, Topic(..), TopicDirection(..))
+import Backend.Types exposing (ConnectionStatus(..), Model, Topic(..), TopicDirection(..))
 import Game.Types exposing (PlayerAction(..), actionToString)
 import Helpers exposing (consoleDebug)
 import Land exposing (Color(..))
@@ -16,13 +16,13 @@ import Types exposing (Msg(..))
 port mqttPublish : ( String, String ) -> Cmd msg
 
 
-publish : Maybe String -> Maybe ClientId -> Table -> PlayerAction -> Cmd Msg
-publish jwt clientId table action =
-    case clientId of
-        Just clientId_ ->
-            case encodePlayerAction jwt clientId_ action of
+publish : Maybe String -> ConnectionStatus -> Table -> PlayerAction -> Cmd Msg
+publish jwt status table action =
+    case status of
+        Online clientId t ->
+            case encodePlayerAction jwt clientId action of
                 Ok playerAction ->
-                    Cmd.batch
+                    Cmd.batch <|
                         [ ( encodeTopic <|
                                 Tables table ServerDirection
                           , playerAction
@@ -30,19 +30,25 @@ publish jwt clientId table action =
                             |> mqttPublish
                         , Task.perform SetLastHeartbeat Time.now
                         ]
+                            ++ (if t /= table then
+                                    [ consoleDebug <| "Warning: not subscribed but publish to table " ++ t ++ " (" ++ actionToString action ++ ")" ]
+
+                                else
+                                    []
+                               )
 
                 Err err ->
                     toastError ("Command error: " ++ err) err
 
-        Nothing ->
-            consoleDebug <| "attempted publish without clientId: " ++ actionToString action
+        _ ->
+            consoleDebug <| "publish but not online: " ++ actionToString action
 
 
 sendGameCommand : Model -> Maybe Table -> PlayerAction -> Cmd Msg
 sendGameCommand model table playerAction =
     case table of
         Just t ->
-            publish model.jwt model.clientId t playerAction
+            publish model.jwt model.status t playerAction
 
         Nothing ->
             consoleDebug "sendGameCommand without table"
@@ -50,19 +56,19 @@ sendGameCommand model table playerAction =
 
 enter : Model -> Table -> Cmd Msg
 enter model table =
-    publish model.jwt model.clientId table Enter
+    publish model.jwt model.status table Enter
 
 
 exit : Model -> Table -> Cmd Msg
 exit model table =
-    publish model.jwt model.clientId table Exit
+    publish model.jwt model.status table Exit
 
 
 leave : Model -> Table -> Cmd Msg
 leave model table =
-    publish model.jwt model.clientId table Leave
+    publish model.jwt model.status table Leave
 
 
 attack : Model -> Table -> Land.Emoji -> Land.Emoji -> Cmd Msg
 attack model table from to =
-    publish model.jwt model.clientId table <| Attack from to
+    publish model.jwt model.status table <| Attack from to

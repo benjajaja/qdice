@@ -77,10 +77,7 @@ describe("A full game", () => {
     await page2.evaluateOnNewDocument(() => localStorage.clear());
     await page2.goto(TEST_URL);
     await expect(page2).toMatchElement(testId("connection-status"), {
-      text: "Online",
-    });
-    await expect(page2).toMatchElement(testId("table-games-link"), {
-      text: "Planeta",
+      text: "Online on Planeta",
     });
 
     await expect(page2).toClick(testId("go-to-table-Polo"));
@@ -88,7 +85,6 @@ describe("A full game", () => {
       text: "Polo",
     });
 
-    await page2.waitFor(500);
     await expect(page2).toClick(testId("button-seat"));
     await expect(page2).toMatchElement(testId("login-dialog"));
 

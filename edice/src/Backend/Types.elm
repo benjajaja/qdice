@@ -9,10 +9,7 @@ type alias Model =
     { version : String
     , baseUrl : String
     , jwt : Maybe String
-    , clientId : Maybe ClientId
-    , subscribed : List Topic
     , status : ConnectionStatus
-    , findTableTimeout : Float
     , lastHeartbeat : Time.Posix
     }
 
@@ -33,12 +30,15 @@ type TopicDirection
 
 
 type ConnectionStatus
-    = Offline
-    | Connecting
-    | Reconnecting Int
-    | SubscribingGeneral
-    | SubscribingTable
-    | Online
+    = Offline (Maybe Table)
+    | Connecting (Maybe Table)
+    | Reconnecting Int (Maybe Table)
+    | Subscribing String SubscriptionStatus
+    | Online String Table
+
+
+type alias SubscriptionStatus =
+    ( ( Bool, Bool ), Maybe Table )
 
 
 type ClientMessage

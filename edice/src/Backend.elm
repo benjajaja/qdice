@@ -1,4 +1,4 @@
-port module Backend exposing (addSubscribed, baseUrl, connect, decodeMessage, decodeSubscribed, decodeTopic, hasDuplexSubscribed, hasSubscribedTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, reset, setStatus, subscribe, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribe, unsubscribeGameTable, updateConnected, updateSubscribed)
+port module Backend exposing (addSubscribed, connect, desiredTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, reset, setConnected, setStatus, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribeGameTable)
 
 import Backend.HttpCommands exposing (loadMe)
 import Backend.MessageCodification exposing (..)
@@ -9,7 +9,6 @@ import Helpers exposing (consoleDebug, find)
 import Land exposing (Color(..))
 import String
 import Tables exposing (Table)
-import Task
 import Time exposing (millisToPosix)
 import Types exposing (Msg(..))
 import Url exposing (Protocol(..), Url)
@@ -72,22 +71,15 @@ baseUrl location =
                     "https://qdice.wtf/api"
 
 
-init : String -> Url -> Maybe String -> Bool -> ( Model, Cmd Msg )
-init version location token isTelegram =
+init : String -> Url -> Maybe String -> ( Model, Cmd Msg )
+init version location token =
     let
+        model : Backend.Types.Model
         model =
             { version = version
             , baseUrl = baseUrl location
             , jwt = token
-            , clientId = Nothing
-            , subscribed = []
-            , status = Offline
-            , findTableTimeout =
-                if isTelegram then
-                    2000
-
-                else
-                    1000
+            , status = Offline Nothing
             , lastHeartbeat = millisToPosix 0
             }
     in
@@ -101,105 +93,165 @@ init version location token isTelegram =
     )
 
 
-updateConnected : Types.Model -> String -> ( Types.Model, Cmd Msg )
-updateConnected model clientId =
+setConnected : Types.Model -> String -> ( Types.Model, Cmd Msg )
+setConnected model clientId =
     let
         backend =
             model.backend
     in
-    ( setStatus { model | backend = { backend | clientId = Just clientId } } SubscribingGeneral
-    , Cmd.batch
+    ( { model | backend = { backend | status = Subscribing clientId ( ( False, False ), Nothing ) } }
+    , Cmd.batch <|
         [ subscribe <| Client clientId
         , subscribe AllClients
         ]
+            ++ (case desiredTable backend of
+                    Just desired ->
+                        [ subscribe <| Tables desired ClientDirection ]
+
+                    Nothing ->
+                        []
+               )
     )
 
 
-updateSubscribed : Types.Model -> Topic -> ( Types.Model, Cmd Msg )
-updateSubscribed model topic =
-    case model.backend.clientId of
-        Nothing ->
-            ( model
-            , Cmd.none
-            )
+addSubscribed : Types.Model -> Topic -> ( Types.Model, Cmd Msg )
+addSubscribed model topic =
+    let
+        backend =
+            model.backend
+    in
+    case backend.status of
+        Subscribing clientId ( ( client, all ), mTable ) ->
+            case topic of
+                AllClients ->
+                    ( { model
+                        | backend =
+                            { backend
+                                | status =
+                                    if client then
+                                        case mTable of
+                                            Just table ->
+                                                Online clientId table
 
-        Just clientId ->
-            let
-                model_ =
-                    addSubscribed model topic
+                                            Nothing ->
+                                                Subscribing clientId ( ( client, True ), mTable )
 
-                subscribed =
-                    model_.backend.subscribed
+                                    else
+                                        Subscribing clientId ( ( client, True ), mTable )
+                            }
+                      }
+                    , Cmd.none
+                    )
 
-                hasSubscribedGeneral =
-                    hasDuplexSubscribed
-                        [ Client clientId
-                        , AllClients
-                        ]
-                        subscribed
-                        topic
-            in
-            if hasSubscribedGeneral then
-                case model_.game.table of
-                    Just table ->
-                        if not <| hasSubscribedTable subscribed table then
-                            subscribeGameTable model_ ( table, Nothing )
+                Client _ ->
+                    ( { model
+                        | backend =
+                            { backend
+                                | status =
+                                    if all then
+                                        case mTable of
+                                            Just table ->
+                                                Online clientId table
 
-                        else
-                            ( model_, Cmd.none )
+                                            Nothing ->
+                                                Subscribing clientId ( ( True, all ), mTable )
 
-                    Nothing ->
-                        ( model_, Cmd.none )
+                                    else
+                                        Subscribing clientId ( ( client, True ), mTable )
+                            }
+                      }
+                    , Cmd.none
+                    )
 
-            else
-                case topic of
-                    AllClients ->
-                        ( model_, Cmd.none )
+                Tables table _ ->
+                    ( { model
+                        | backend =
+                            { backend
+                                | status =
+                                    if client && all then
+                                        Online clientId table
 
-                    Client _ ->
-                        ( model_, Cmd.none )
+                                    else
+                                        Subscribing clientId ( ( client, all ), Just table )
+                            }
+                      }
+                    , case model.game.table of
+                        Nothing ->
+                            consoleDebug <| "subscribed to table but game not in table: " ++ table
 
-                    Tables table _ ->
-                        case model_.game.table of
-                            Nothing ->
-                                ( model_
-                                , consoleDebug "subscribed to table but not in table"
-                                )
+                        Just gameTable ->
+                            if table /= gameTable then
+                                consoleDebug <| "subscribed to table " ++ table ++ " but game is in another table: " ++ gameTable
 
-                            Just gameTable ->
-                                if table /= gameTable then
-                                    ( model_
-                                    , consoleDebug "subscribed to another table"
-                                    )
+                            else
+                                Cmd.none
+                    )
 
-                                else if hasSubscribedTable subscribed table then
-                                    ( setStatus model_ Online
-                                    , Backend.MqttCommands.enter model.backend table
-                                    )
+        Online _ _ ->
+            ( model, consoleDebug <| "subscribed to " ++ encodeTopic topic ++ " but already Online" )
 
-                                else
-                                    ( model_
-                                    , Cmd.none
-                                    )
+        _ ->
+            ( model, consoleDebug <| "subscribed to " ++ encodeTopic topic ++ " while not subscribing" )
 
 
 subscribeGameTable : Types.Model -> ( Table, Maybe Table ) -> ( Types.Model, Cmd Msg )
 subscribeGameTable model ( table, oldTable ) =
-    if hasSubscribedTable model.backend.subscribed table then
-        ( model, consoleDebug "ignoring already subbed" )
+    let
+        backend =
+            model.backend
+    in
+    case model.backend.status of
+        Online clientId subscribedTable ->
+            if subscribedTable == table then
+                ( model, consoleDebug <| "already subscribed: " ++ table )
 
-    else
-        let
-            ( model_, unsub ) =
-                Maybe.map (\old -> unsubscribeGameTable model old) oldTable
-                    |> Maybe.withDefault ( model, Cmd.none )
-        in
-        ( setStatus model_ SubscribingTable
-        , Cmd.batch <|
-            [ unsub
-            , subscribe <| Tables table ClientDirection
-            ]
-        )
+            else
+                ( { model | backend = { backend | status = Subscribing clientId <| ( ( True, True ), Nothing ) } }
+                , Cmd.batch
+                    [ subscribe <| Tables table ClientDirection
+                    , Maybe.map
+                        (\old ->
+                            Cmd.batch
+                                [ exit model.backend old
+                                , unsubscribe <| Tables old ClientDirection
+                                ]
+                        )
+                        oldTable
+                        |> Maybe.withDefault Cmd.none
+                    ]
+                )
+
+        Subscribing clientId ( ( client, all ), subscribedTable ) ->
+            ( { model | backend = { backend | status = Subscribing clientId <| ( ( client, all ), Nothing ) } }
+            , Cmd.batch
+                [ subscribe <| Tables table ClientDirection
+                , Maybe.map
+                    (\old ->
+                        Cmd.batch
+                            [ exit model.backend
+                                table
+                            , unsubscribe <| Tables old ClientDirection
+                            ]
+                    )
+                    oldTable
+                    |> Maybe.withDefault Cmd.none
+                ]
+            )
+
+        Connecting _ ->
+            ( { model | backend = { backend | status = Connecting <| Just table } }
+            , consoleDebug "Subscribe to table: still connecting, setting desired table."
+            )
+
+        Reconnecting count _ ->
+            ( { model | backend = { backend | status = Reconnecting count <| Just table } }
+            , consoleDebug "Subscribe to table: offline, setting desired table."
+            )
+
+        Offline _ ->
+            ( { model | backend = { backend | status = Offline <| Just table } }
+            , consoleDebug "Subscribe to table: offline, setting desired table."
+            )
 
 
 unsubscribeGameTable : Types.Model -> Table -> ( Types.Model, Cmd Msg )
@@ -207,37 +259,69 @@ unsubscribeGameTable model table =
     let
         backend =
             model.backend
-
-        subscribed =
-            List.filter
-                (\topic ->
-                    case topic of
-                        Tables t _ ->
-                            t /= table
-
-                        _ ->
-                            True
+    in
+    case model.backend.status of
+        Online clientId subscribedTable ->
+            if subscribedTable == table then
+                ( { model | backend = { backend | status = Subscribing clientId <| ( ( True, True ), Nothing ) } }
+                , Cmd.batch
+                    [ exit model.backend table
+                    , unsubscribe <| Tables table ClientDirection
+                    ]
                 )
-                backend.subscribed
-    in
-    ( { model | backend = { backend | subscribed = subscribed } }
-    , Cmd.batch
-        [ exit model.backend table
-        , unsubscribe <| Tables table ClientDirection
-        ]
-    )
 
+            else
+                ( model, consoleDebug <| "not subscribed: " ++ table )
 
-addSubscribed : Types.Model -> Topic -> Types.Model
-addSubscribed model topic =
-    let
-        backend =
-            model.backend
+        Subscribing clientId ( ( client, all ), subscribedTable ) ->
+            ( { model | backend = { backend | status = Subscribing clientId <| ( ( client, all ), Nothing ) } }
+            , Cmd.batch
+                [ exit model.backend table
+                , unsubscribe <| Tables table ClientDirection
+                ]
+            )
 
-        subscribed =
-            topic :: backend.subscribed
-    in
-    { model | backend = { backend | subscribed = subscribed } }
+        Connecting mTable ->
+            case mTable of
+                Just t ->
+                    if t == table then
+                        ( { model | backend = { backend | status = Connecting Nothing } }
+                        , consoleDebug "Unubscribe from table: still connecting, unsetting desired table."
+                        )
+
+                    else
+                        ( model, consoleDebug <| "unsubscribeGameTable mismatching table: " ++ table )
+
+                Nothing ->
+                    ( model, consoleDebug <| "unsubscribeGameTable mismatching table: " ++ table )
+
+        Reconnecting _ mTable ->
+            case mTable of
+                Just t ->
+                    if t == table then
+                        ( { model | backend = { backend | status = Connecting Nothing } }
+                        , consoleDebug "Unubscribe from table: still connecting, unsetting desired table."
+                        )
+
+                    else
+                        ( model, consoleDebug <| "unsubscribeGameTable mismatching table: " ++ table )
+
+                Nothing ->
+                    ( model, consoleDebug <| "unsubscribeGameTable mismatching table: " ++ table )
+
+        Offline mTable ->
+            case mTable of
+                Just t ->
+                    if t == table then
+                        ( { model | backend = { backend | status = Connecting Nothing } }
+                        , consoleDebug "Unubscribe from table: still connecting, unsetting desired table."
+                        )
+
+                    else
+                        ( model, consoleDebug <| "unsubscribeGameTable mismatching table: " ++ table )
+
+                Nothing ->
+                    ( model, consoleDebug <| "unsubscribeGameTable mismatching table: " ++ table )
 
 
 subscriptions : Types.Model -> Sub Types.Msg
@@ -245,56 +329,43 @@ subscriptions model =
     Sub.batch
         [ mqttOnConnect StatusConnect
         , mqttOnReconnect StatusReconnect
-        , mqttOnConnected Connected
-        , mqttOnSubscribed <| decodeSubscribed model.backend.clientId
-        , mqttOnUnSubscribed <| decodeSubscribed model.backend.clientId
-        , mqttOnMessage <| decodeMessage model.backend.clientId <| model.game.table
+        , mqttOnConnected Types.Connected
+        , mqttOnSubscribed <| decodeSubscribed model.backend.status
+        , mqttOnUnSubscribed <| decodeSubscribed model.backend.status
+        , mqttOnMessage <| decodeMessage model.backend.status
         , mqttOnOffline StatusOffline
         , mqttOnError StatusError
         ]
 
 
-decodeSubscribed : Maybe ClientId -> String -> Msg
-decodeSubscribed clientId stringTopic =
-    case clientId of
-        Nothing ->
-            UnknownTopicMessage "no client id yet" stringTopic "-" "null"
+decodeSubscribed : ConnectionStatus -> String -> Msg
+decodeSubscribed status stringTopic =
+    case decodeTopic status stringTopic of
+        Ok topic ->
+            Subscribed topic
 
-        Just clientId_ ->
-            case decodeTopic clientId_ stringTopic of
-                Just topic ->
-                    Subscribed topic
-
-                Nothing ->
-                    UnknownTopicMessage "unknown topic" stringTopic "*subscribed" clientId_
+        Err err ->
+            UnknownTopicMessage "unknown topic" stringTopic err status
 
 
-decodeMessage : Maybe ClientId -> Maybe Table -> ( String, String ) -> Msg
-decodeMessage clientId table ( stringTopic, message ) =
-    case clientId of
-        Nothing ->
-            UnknownTopicMessage "no client id yet" stringTopic "-" "null"
+decodeMessage : ConnectionStatus -> ( String, String ) -> Msg
+decodeMessage status ( stringTopic, message ) =
+    case decodeTopic status stringTopic of
+        Ok topic ->
+            case decodeTopicMessage Nothing topic message of
+                Ok msg ->
+                    msg
 
-        Just clientId_ ->
-            case decodeTopic clientId_ stringTopic of
-                Just topic ->
-                    case decodeTopicMessage table topic message of
-                        Ok msg ->
-                            msg
+                Err err ->
+                    RuntimeError "Failed to parse an update" <| err ++ "/" ++ stringTopic ++ "/" ++ message
 
-                        Err err ->
-                            RuntimeError "Failed to parse an update" <| err ++ "/" ++ stringTopic ++ "/" ++ message
-
-                Nothing ->
-                    UnknownTopicMessage "unrecognized topic" stringTopic message clientId_
+        Err err ->
+            UnknownTopicMessage "unrecognized topic" stringTopic err status
 
 
-decodeTopic : ClientId -> String -> Maybe Topic
-decodeTopic clientId string =
-    if string == "clients/" ++ clientId then
-        Just <| Client clientId
-
-    else if String.startsWith "tables/" string then
+decodeTopic : ConnectionStatus -> String -> Result String Topic
+decodeTopic status string =
+    if String.startsWith "tables/" string then
         let
             parts =
                 String.split "/" string |> List.drop 1
@@ -305,20 +376,43 @@ decodeTopic clientId string =
             direction =
                 parts |> List.drop 1 |> List.head
         in
-        Maybe.andThen
-            (\table ->
-                Maybe.andThen decodeDirection direction
-                    |> Maybe.andThen (Just << Tables table)
-            )
-            tableName
+        Result.fromMaybe "no table part in topic" tableName
+            |> Result.andThen
+                (\table ->
+                    Result.fromMaybe "no direction part in topic" direction
+                        |> Result.andThen decodeDirection
+                        |> Result.andThen (Ok << Tables table)
+                )
 
     else
-        case string of
-            "clients" ->
-                Just AllClients
+        case statusToClientId status of
+            Just clientId ->
+                if string == "clients/" ++ clientId then
+                    Ok <| Client clientId
 
-            _ ->
-                Nothing
+                else
+                    case string of
+                        "clients" ->
+                            Ok AllClients
+
+                        _ ->
+                            Err <| "cannot match topic " ++ string
+
+            Nothing ->
+                Err <| "no client id yet"
+
+
+statusToClientId : ConnectionStatus -> Maybe String
+statusToClientId status =
+    case status of
+        Subscribing clientId _ ->
+            Just clientId
+
+        Online clientId _ ->
+            Just clientId
+
+        _ ->
+            Nothing
 
 
 setStatus : Types.Model -> ConnectionStatus -> Types.Model
@@ -330,8 +424,8 @@ setStatus model status =
     { model | backend = { backend | status = status } }
 
 
-reset : Types.Model -> ConnectionStatus -> Types.Model
-reset model status =
+reset : Types.Model -> (Maybe Table -> ConnectionStatus) -> Types.Model
+reset model toStatus =
     let
         backend =
             model.backend
@@ -339,32 +433,20 @@ reset model status =
     { model
         | backend =
             { backend
-                | status = status
-                , subscribed = []
+                | status = toStatus <| desiredTable backend
                 , lastHeartbeat = millisToPosix 0
             }
     }
 
 
-hasDuplexSubscribed : List Topic -> List Topic -> Topic -> Bool
-hasDuplexSubscribed topics subscribed topic =
-    List.member topic topics
-        && List.all ((\b a -> List.member a b) <| subscribed) topics
-
-
-hasSubscribedTable : List Topic -> Table -> Bool
-hasSubscribedTable subscribed table =
-    List.member (Tables table ClientDirection) subscribed
-
-
 subscribe : Topic -> Cmd msg
-subscribe topic =
-    mqttSubscribe <| encodeTopic topic
+subscribe =
+    mqttSubscribe << encodeTopic
 
 
 unsubscribe : Topic -> Cmd msg
-unsubscribe topic =
-    mqttUnsubscribe <| encodeTopic topic
+unsubscribe =
+    mqttUnsubscribe << encodeTopic
 
 
 toRollLog : Types.Model -> Game.Types.Roll -> RollLog
@@ -477,3 +559,22 @@ toDie face =
 
         _ ->
             "🎲"
+
+
+desiredTable : Model -> Maybe Table
+desiredTable model =
+    case model.status of
+        Connecting table ->
+            table
+
+        Subscribing _ ( _, table ) ->
+            table
+
+        Online _ table ->
+            Just table
+
+        Offline table ->
+            table
+
+        Reconnecting _ table ->
+            table

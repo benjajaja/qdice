@@ -23,7 +23,7 @@ footer model =
                     links3 model.user
                 ]
             , div [ class "edFooter--row" ]
-                [ statusMessage model.backend.version model.backend.status
+                [ statusMessage model.route model.backend.version model.backend.status
                 ]
             ]
         ]
@@ -55,52 +55,78 @@ link route label iconName =
         ]
 
 
-statusMessage : String -> ConnectionStatus -> Html Types.Msg
-statusMessage version status =
+statusMessage : Route -> String -> ConnectionStatus -> Html Types.Msg
+statusMessage route version status =
     let
         message =
             case status of
-                Reconnecting attempts ->
+                Reconnecting attempts _ ->
                     case attempts of
                         1 ->
                             "Reconnecting..."
 
                         count ->
-                            "Reconnecting... (" ++ String.fromInt attempts ++ " retries)"
+                            "Reconnecting... (" ++ String.fromInt count ++ " retries)"
 
-                Connecting ->
-                    "Connecting..."
+                Connecting table ->
+                    case table of
+                        Just t ->
+                            "Connecting to " ++ t ++ "..."
 
-                SubscribingGeneral ->
-                    "Linking..."
+                        Nothing ->
+                            "Connecting ..."
 
-                SubscribingTable ->
-                    "Linking table..."
+                Subscribing _ ( ( client, all ), table ) ->
+                    case route of
+                        GameRoute _ ->
+                            "Linking "
+                                ++ (if client then
+                                        "1"
 
-                Offline ->
+                                    else
+                                        "0"
+                                   )
+                                ++ (if all then
+                                        "1"
+
+                                    else
+                                        "0"
+                                   )
+                                ++ Maybe.withDefault "---" table
+
+                        _ ->
+                            if client && all then
+                                "Online off table"
+
+                            else
+                                "Linking..."
+
+                Offline _ ->
                     "Offline"
 
-                Online ->
-                    "Online"
+                Online _ table ->
+                    "Online on " ++ table
 
         icon =
             case status of
-                Offline ->
+                Offline _ ->
                     "signal_wifi_off"
 
-                Connecting ->
+                Connecting _ ->
                     "signal_wifi_off"
 
-                Reconnecting _ ->
+                Reconnecting _ _ ->
                     "signal_wifi_off"
 
-                SubscribingGeneral ->
-                    "wifi"
+                Subscribing _ ( _, table ) ->
+                    case table of
+                        Just _ ->
+                            "perm_scan_wifi"
 
-                SubscribingTable ->
-                    "perm_scan_wifi"
+                        _ ->
+                            "wifi"
 
-                Online ->
+                Online _ _ ->
                     "network_wifi"
     in
     div []

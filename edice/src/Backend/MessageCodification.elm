@@ -265,17 +265,17 @@ encodeDirection direction =
             "server"
 
 
-decodeDirection : String -> Maybe TopicDirection
+decodeDirection : String -> Result String TopicDirection
 decodeDirection string =
     case string of
         "clients" ->
-            Just ClientDirection
+            Ok ClientDirection
 
         "server" ->
-            Just ServerDirection
+            Ok ServerDirection
 
         _ ->
-            Nothing
+            Err <| "bad direction: " ++ string
 
 
 decodeErrorToString : String -> String -> Error -> String
