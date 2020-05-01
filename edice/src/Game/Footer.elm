@@ -1,11 +1,12 @@
 module Game.Footer exposing (footer)
 
-import Game.Types exposing (TableInfo, statusToIcon)
+import Game.Types exposing (TableInfo)
 import Helpers exposing (dataTestId, formatPoints)
 import Html exposing (..)
 import Html.Attributes exposing (align, class, style)
 import Html.Events exposing (onClick)
-import Icon
+import Html.Lazy
+import Time exposing (Posix, Zone)
 import Tournaments exposing (tournamentTime)
 import Types exposing (Model, Msg(..))
 
@@ -16,22 +17,15 @@ import Types exposing (Model, Msg(..))
 
 footer : Model -> List (Html.Html Types.Msg)
 footer model =
-    [ div [ class "edTables cartonCard" ] [ tableOfTables model ]
+    [ div [ class "edTables cartonCard" ] [ Html.Lazy.lazy tableOfTables model.tableList ]
+    , div [ class "edTables cartonCard" ] <|
+        [ Html.Lazy.lazy3 tableOfTournaments model.zone model.time model.tableList
+        ]
     ]
-        ++ (case List.filter (.params >> .tournament >> (/=) Nothing) model.tableList of
-                [] ->
-                    []
-
-                tournamentTables ->
-                    [ div [ class "edTables cartonCard" ] <|
-                        [ tableOfTournaments model tournamentTables
-                        ]
-                    ]
-           )
 
 
-tableOfTables : Model -> Html.Html Types.Msg
-tableOfTables model =
+tableOfTables : List TableInfo -> Html.Html Types.Msg
+tableOfTables tableList =
     table [ class "edGameTable", style "-webkit-user-select" "none" ]
         [ thead []
             [ tr []
@@ -105,71 +99,76 @@ tableOfTables model =
                             && tableInfo.params.tournament
                             == Nothing
                     )
-                    model.tableList
-        ]
-
-
-tableOfTournaments : Model -> List TableInfo -> Html.Html Types.Msg
-tableOfTournaments model tableList =
-    table [ class "edGameTable", style "-webkit-user-select" "none" ]
-        [ thead []
-            [ tr []
-                [ th [ align "left" ] [ text "Bonus games" ]
-                , th [ align "left" ] [ text "Sched." ]
-                , th [ align "right" ] [ text "Prize" ]
-                , th [ align "right" ] [ text "Players" ]
-                , th [ align "right" ] [ text "Min" ]
-                , th [ align "right" ] [ text "Watch" ]
-                ]
-            ]
-        , tbody [] <|
-            List.map
-                (\table ->
-                    tr
-                        [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
-                        , dataTestId <| "go-to-table-" ++ table.table
-                        ]
-                    <|
-                        [ td [ align "left" ] [ text <| table.table ]
-                        ]
-                            ++ (case table.params.tournament of
-                                    Just tournament ->
-                                        [ td [ align "left" ]
-                                            [ text <|
-                                                case table.gameStart of
-                                                    Nothing ->
-                                                        tournament.frequency
-
-                                                    Just timestamp ->
-                                                        tournamentTime model.zone model.time timestamp
-                                            ]
-                                        , td [ align "right" ] [ text <| formatPoints tournament.prize ]
-                                        ]
-
-                                    Nothing ->
-                                        [ td [ align "right" ] [ text "..." ]
-                                        , td [ align "right" ] [ text "..." ]
-                                        ]
-                               )
-                            ++ [ td [ align "right" ]
-                                    [ text <|
-                                        String.concat
-                                            [ String.fromInt table.playerCount
-                                            , " / "
-                                            , String.fromInt table.playerSlots
-                                            ]
-                                    ]
-                               , td [ align "right" ]
-                                    [ text <|
-                                        String.fromInt table.startSlots
-                                    ]
-                               , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
-                               ]
-                )
-            <|
-                List.filter
-                    (\tableInfo ->
-                        not tableInfo.params.twitter
-                    )
                     tableList
         ]
+
+
+tableOfTournaments : Zone -> Posix -> List TableInfo -> Html.Html Types.Msg
+tableOfTournaments zone time tableList =
+    case List.filter (.params >> .tournament >> (/=) Nothing) tableList of
+        [] ->
+            text ""
+
+        tournaments ->
+            table [ class "edGameTable", style "-webkit-user-select" "none" ]
+                [ thead []
+                    [ tr []
+                        [ th [ align "left" ] [ text "Bonus games" ]
+                        , th [ align "left" ] [ text "Sched." ]
+                        , th [ align "right" ] [ text "Prize" ]
+                        , th [ align "right" ] [ text "Players" ]
+                        , th [ align "right" ] [ text "Min" ]
+                        , th [ align "right" ] [ text "Watch" ]
+                        ]
+                    ]
+                , tbody [] <|
+                    List.map
+                        (\table ->
+                            tr
+                                [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
+                                , dataTestId <| "go-to-table-" ++ table.table
+                                ]
+                            <|
+                                [ td [ align "left" ] [ text <| table.table ]
+                                ]
+                                    ++ (case table.params.tournament of
+                                            Just tournament ->
+                                                [ td [ align "left" ]
+                                                    [ text <|
+                                                        case table.gameStart of
+                                                            Nothing ->
+                                                                tournament.frequency
+
+                                                            Just timestamp ->
+                                                                tournamentTime zone time timestamp
+                                                    ]
+                                                , td [ align "right" ] [ text <| formatPoints tournament.prize ]
+                                                ]
+
+                                            Nothing ->
+                                                [ td [ align "right" ] [ text "..." ]
+                                                , td [ align "right" ] [ text "..." ]
+                                                ]
+                                       )
+                                    ++ [ td [ align "right" ]
+                                            [ text <|
+                                                String.concat
+                                                    [ String.fromInt table.playerCount
+                                                    , " / "
+                                                    , String.fromInt table.playerSlots
+                                                    ]
+                                            ]
+                                       , td [ align "right" ]
+                                            [ text <|
+                                                String.fromInt table.startSlots
+                                            ]
+                                       , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
+                                       ]
+                        )
+                    <|
+                        List.filter
+                            (\tableInfo ->
+                                not tableInfo.params.twitter
+                            )
+                            tournaments
+                ]

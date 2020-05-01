@@ -1028,7 +1028,7 @@ view model =
         , Html.main_ [ Html.Attributes.class "Main" ]
             [ mainView model
             ]
-        , footer model
+        , footer model.route model.backend.version model.backend.status
         ]
     }
 

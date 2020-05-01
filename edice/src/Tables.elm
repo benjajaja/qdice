@@ -16,12 +16,6 @@ type Map
     | Montoya
 
 
-
---tableList : List Table
---tableList =
---    [ Melchor, Miño, DeLucía, Serrano, Avocado ]
-
-
 decodeMap : String -> Result String Map
 decodeMap name =
     case name of

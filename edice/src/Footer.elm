@@ -4,45 +4,44 @@ import Backend.Types exposing (ConnectionStatus(..))
 import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (class, href)
-import Html.Events exposing (onClick)
 import Icon
 import Routing.String exposing (routeToString)
 import Types exposing (LoginDialogStatus(..), Model, Msg(..), Route(..), StaticPage(..), User(..))
 
 
-footer : Model -> Html.Html Msg
-footer model =
+footer : Route -> String -> ConnectionStatus -> Html.Html Msg
+footer route version status =
     div [ class "edFooter" ]
         [ div [ class "edFooter--struts" ]
             [ div [ class "edFooter--boxes" ]
                 [ div [ class "edFooter--box edFooter--box__links" ] <|
-                    links1 model.user
+                    links1
                 , div [ class "edFooter--box edFooter--box__links" ] <|
-                    links2 model.user
+                    links2
                 , div [ class "edFooter--box edFooter--box__links" ] <|
-                    links3 model.user
+                    links3
                 ]
             , div [ class "edFooter--row" ]
-                [ statusMessage model.route model.backend.version model.backend.status
+                [ statusMessage route version status
                 ]
             ]
         ]
 
 
-links1 : User -> List (Html Msg)
-links1 user =
+links1 : List (Html Msg)
+links1 =
     [ link HomeRoute "Play!" "casino"
     ]
 
 
-links2 : User -> List (Html Msg)
-links2 user =
+links2 : List (Html Msg)
+links2 =
     [ link (StaticPageRoute Help) "How to play" "help"
     ]
 
 
-links3 : User -> List (Html Msg)
-links3 user =
+links3 : List (Html Msg)
+links3 =
     [ link (StaticPageRoute About) "What's Qdice.wtf?" "info"
     ]
 

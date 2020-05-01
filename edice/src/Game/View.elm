@@ -19,6 +19,7 @@ import Html.Lazy
 import Icon
 import LeaderBoard.View
 import MyProfile.MyProfile
+import MyProfile.Types
 import Ordinal exposing (ordinal)
 import Routing.String exposing (routeToString)
 import Time exposing (posixToMillis)
@@ -75,7 +76,7 @@ view model =
                 ]
         ]
             ++ (if not model.fullscreen && not model.game.params.twitter then
-                    [ div
+                    div
                         [ class <|
                             "edGame__meta cartonCard"
                                 ++ (if model.game.expandChat then
@@ -93,15 +94,15 @@ view model =
                             ]
                             [ Icon.iconSized 10 "more_horiz" ]
                         ]
-                    ]
-                        ++ Game.Footer.footer model
+                        :: Game.Footer.footer model
                         ++ [ div [ class "edBoxes cartonCard" ] <|
-                                playerBox model
-                                    ++ leaderboardBox model
+                                [ Html.Lazy.lazy3 playerBox model.user model.myProfile model.sessionPreferences
+                                , Html.Lazy.lazy leaderboardBox model.leaderBoard
+                                ]
                            , div [ class "cartonCard cartonCard--padded" ] <|
                                 case model.game.table of
                                     Just table ->
-                                        [ Comments.view model.zone model.user model.comments <| Comments.tableComments table ]
+                                        [ Html.Lazy.lazy4 Comments.view model.zone model.user model.comments <| Comments.tableComments table ]
 
                                     Nothing ->
                                         []
@@ -326,7 +327,6 @@ If minimum player requirements is not met, the fee will be returned.
                         Types.Anonymous ->
                             [ joinButton "Join & Take over a bot" <| ShowLogin Types.LoginShowJoin ]
 
-                        -- TODO: check if newly registered users will be able to play by points
                         Types.Logged user ->
                             if user.points >= model.game.points then
                                 [ joinButton "Join & Take over a bot" <| GameCmd Join ]
@@ -525,7 +525,7 @@ tableDetails : Model -> Html Types.Msg
 tableDetails model =
     div [ class "edGameDetails" ] <|
         case model.game.table of
-            Just table ->
+            Just _ ->
                 case model.game.status of
                     Playing ->
                         []
@@ -603,35 +603,35 @@ tableDetails model =
                 []
 
 
-playerBox : Model -> List (Html Msg)
-playerBox model =
-    [ div [ class "edBox edPlayerBox" ]
+playerBox : User -> MyProfile.Types.MyProfileModel -> Types.SessionPreferences -> Html Msg
+playerBox user myProfile sessionPreferences =
+    div [ class "edBox edPlayerBox" ]
         [ div [ class "edBox__header" ] [ text "Profile " ]
         , div [ class "edBox__inner" ] <|
-            case model.user of
-                Logged user ->
-                    [ div [ class "edPlayerBox__Picture" ] [ playerPicture "medium" user.picture user.name ]
+            case user of
+                Logged logged ->
+                    [ div [ class "edPlayerBox__Picture" ] [ playerPicture "medium" logged.picture logged.name ]
                     , div [ class "edPlayerBox__Name" ]
-                        [ a [ href <| routeToString False <| ProfileRoute user.id user.name ]
-                            [ text user.name
+                        [ a [ href <| routeToString False <| ProfileRoute logged.id logged.name ]
+                            [ text logged.name
                             ]
                         ]
-                    , div [ class "edPlayerBox__stat" ] [ text "Level: ", text <| String.fromInt user.level ++ "▲" ]
-                    , if List.length user.awards > 0 then
-                        div [ class "edPlayerBox__awards" ] <| Awards.awardsShortList 20 user.awards
+                    , div [ class "edPlayerBox__stat" ] [ text "Level: ", text <| String.fromInt logged.level ++ "▲" ]
+                    , if List.length logged.awards > 0 then
+                        div [ class "edPlayerBox__awards" ] <| Awards.awardsShortList 20 logged.awards
 
                       else
                         text ""
-                    , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt user.points ++ pointsSymbol ]
+                    , div [ class "edPlayerBox__stat" ] [ text "Points: ", text <| String.fromInt logged.points ++ pointsSymbol ]
                     , div [ class "edPlayerBox__stat" ]
-                        [ text <| (String.fromInt <| pointsToNextLevel user.level user.levelPoints) ++ pointsSymbol
+                        [ text <| (String.fromInt <| pointsToNextLevel logged.level logged.levelPoints) ++ pointsSymbol
                         , text " points to next level"
                         ]
-                    , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal user.rank ]
+                    , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal logged.rank ]
                     , div [ class "edPlayerBox__settings" ] <|
-                        (case user.networks of
+                        [ case logged.networks of
                             [] ->
-                                [ div [ class "edPlayerBox__addNetworks" ] <|
+                                div [ class "edPlayerBox__addNetworks" ] <|
                                     [ h3 [ style "color" "red" ]
                                         [ Icon.spinning "warning"
                                         , text " Account has no login!"
@@ -643,32 +643,32 @@ playerBox model =
                                         ]
                                     ]
                                         ++ MyProfile.MyProfile.addNetworks
-                                            model.myProfile
-                                            user
-                                ]
+                                            myProfile
+                                            logged
 
                             _ ->
-                                []
-                        )
-                            ++ [ div []
-                                    [ a [ href "/me" ]
-                                        [ text "Go to my Account & Settings"
-                                        ]
-                                    ]
-                               ]
-                            ++ (if not model.sessionPreferences.notificationsEnabled then
-                                    [ p [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
-                                    , div []
-                                        [ button [ onClick RequestNotifications ]
-                                            [ text "Enable notifications"
-                                            , Icon.icon "sms"
-                                            ]
-                                        ]
-                                    ]
+                                text ""
+                        , div []
+                            [ a [ href "/me" ]
+                                [ text "Go to my Account & Settings"
+                                ]
+                            ]
+                        , if not sessionPreferences.notificationsEnabled then
+                            p [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
 
-                                else
-                                    []
-                               )
+                          else
+                            text ""
+                        , if not sessionPreferences.notificationsEnabled then
+                            div []
+                                [ button [ onClick RequestNotifications ]
+                                    [ text "Enable notifications"
+                                    , Icon.icon "sms"
+                                    ]
+                                ]
+
+                          else
+                            text ""
+                        ]
                     ]
 
                 Anonymous ->
@@ -679,23 +679,21 @@ playerBox model =
                         [ text "Pick a username" ]
                     ]
         ]
-    ]
 
 
-leaderboardBox : Model -> List (Html Msg)
-leaderboardBox model =
-    [ div [ class "edBox edLeaderboardBox" ]
+leaderboardBox : Types.LeaderBoardModel -> Html Msg
+leaderboardBox leaderBoard =
+    div [ class "edBox edLeaderboardBox" ]
         [ div [ class "edBox__header" ]
             [ a
                 [ href "/leaderboard"
                 ]
                 [ text "Leaderboard" ]
-            , text <| " for " ++ model.leaderBoard.month
+            , text <| " for " ++ leaderBoard.month
             ]
         , div [ class "edBox__inner" ]
-            [ LeaderBoard.View.table 10 model.leaderBoard.top ]
+            [ LeaderBoard.View.table 10 leaderBoard.top ]
         ]
-    ]
 
 
 turnTimeDisplay : Int -> String

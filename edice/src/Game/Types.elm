@@ -274,19 +274,6 @@ statusToString status =
             "finished"
 
 
-statusToIcon : GameStatus -> String
-statusToIcon status =
-    case status of
-        Paused ->
-            "schedule"
-
-        Playing ->
-            "play_arrow"
-
-        Finished ->
-            "snooze"
-
-
 actionToString : PlayerAction -> String
 actionToString action =
     case action of
