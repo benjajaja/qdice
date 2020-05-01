@@ -153,16 +153,14 @@ export const join = (
         !!bot
       );
     }
-    if (
-      table.params.tournament.fee > 0 &&
-      user.points < table.params.tournament.fee
-    ) {
-      throw new IllegalMoveError(
-        "not enough points for game fee",
-        IllegalMoveCode.InsufficientFee,
-        !!bot
-      );
-    } else {
+    if (table.params.tournament.fee > 0) {
+      if (user.points < table.params.tournament.fee) {
+        throw new IllegalMoveError(
+          "not enough points for game fee",
+          IllegalMoveCode.InsufficientFee,
+          !!bot
+        );
+      }
       payScores = [[user.id, clientId, 0 - table.params.tournament.fee]];
       logger.debug("join fee", 0 - table.params.tournament.fee);
     }
@@ -181,7 +179,8 @@ export const join = (
     const [players, player, removed] = insertPlayer(
       table.players,
       user,
-      clientId
+      clientId,
+      table.params.tournament?.fee ?? 0
     );
     if (!R.equals(players, R.sortBy(R.prop("color"), players))) {
       logger.error(
@@ -235,10 +234,14 @@ export const join = (
 const insertPlayer = (
   players: readonly Player[],
   user: User,
-  clientId: any
+  clientId: any,
+  fee: number
 ): [readonly Player[], Player, Player?] => {
   const [heads, tail] = R.splitWhen(isBot, players);
-  const newPlayer = makePlayer(user, clientId, heads);
+  const newPlayer = {
+    ...makePlayer(user, clientId, heads),
+    points: user.points - fee,
+  };
   return [heads.concat([newPlayer]).concat(tail.slice(1)), newPlayer, tail[0]];
 };
 

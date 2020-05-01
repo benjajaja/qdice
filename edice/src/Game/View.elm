@@ -262,11 +262,27 @@ onlineButtons model =
                                 findTableButton model
                                     ++ (if user.points >= model.game.points then
                                             if user.points >= tournament.fee then
-                                                [ joinButton ("Join game for " ++ Helpers.formatPoints tournament.fee) <|
+                                                [ joinButton
+                                                    ("Join game for "
+                                                        ++ (if tournament.fee > 0 then
+                                                                Helpers.formatPoints tournament.fee
+
+                                                            else
+                                                                "free"
+                                                           )
+                                                    )
+                                                  <|
                                                     ShowDialog <|
                                                         Confirm
                                                             (\model_ ->
-                                                                ( "Enter game for " ++ Helpers.formatPoints tournament.fee ++ "?"
+                                                                ( "Enter game for "
+                                                                    ++ (if tournament.fee > 0 then
+                                                                            Helpers.formatPoints tournament.fee
+
+                                                                        else
+                                                                            "free"
+                                                                       )
+                                                                    ++ "?"
                                                                 , [ text <|
                                                                         "The prize for 1st is "
                                                                             ++ Helpers.formatPoints tournament.prize
@@ -304,7 +320,15 @@ If minimum player requirements is not met, the fee will be returned.
                                                 ]
 
                                             else
-                                                [ text <| "Game entry fee is " ++ Helpers.formatPoints tournament.fee ]
+                                                [ text <|
+                                                    "Game entry fee is "
+                                                        ++ (if tournament.fee > 0 then
+                                                                Helpers.formatPoints tournament.fee
+
+                                                            else
+                                                                "free"
+                                                           )
+                                                ]
 
                                         else
                                             [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]

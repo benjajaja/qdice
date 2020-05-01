@@ -151,9 +151,10 @@ export const setGameStart = (
   gameStart: number,
   returnFee: number | null
 ): CommandResult => {
-  if (returnFee === null) {
+  if (returnFee === null || returnFee === 0) {
     return {
       table: { gameStart },
+      players: [],
     };
   }
 
