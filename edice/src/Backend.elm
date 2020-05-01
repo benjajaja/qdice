@@ -229,10 +229,15 @@ subscribeGameTable model ( table, oldTable ) =
                     [ subscribe <| Tables table ClientDirection
                     , Maybe.map
                         (\old ->
-                            Cmd.batch
-                                [ exit model.backend old
-                                , unsubscribe <| Tables old ClientDirection
-                                ]
+                            if old /= table then
+                                Cmd.batch
+                                    [ exit model.backend old
+                                    , unsubscribe <| Tables old ClientDirection
+                                    , consoleDebug <| "exit " ++ table
+                                    ]
+
+                            else
+                                consoleDebug <| "old same as new: " ++ table
                         )
                         oldTable
                         |> Maybe.withDefault Cmd.none
@@ -245,11 +250,15 @@ subscribeGameTable model ( table, oldTable ) =
                 [ subscribe <| Tables table ClientDirection
                 , Maybe.map
                     (\old ->
-                        Cmd.batch
-                            [ exit model.backend
-                                table
-                            , unsubscribe <| Tables old ClientDirection
-                            ]
+                        if old /= table then
+                            Cmd.batch
+                                [ exit model.backend old
+                                , unsubscribe <| Tables old ClientDirection
+                                , consoleDebug <| "exit " ++ table
+                                ]
+
+                        else
+                            consoleDebug <| "old same as new: " ++ table
                     )
                     oldTable
                     |> Maybe.withDefault Cmd.none
