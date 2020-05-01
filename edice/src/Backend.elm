@@ -135,7 +135,7 @@ addSubscribed model topic =
                                                         Online clientId table
 
                                                     Nothing ->
-                                                        Subscribing clientId ( ( client, True ), mTable )
+                                                        Subscribing clientId ( ( True, True ), mTable )
 
                                             else
                                                 Subscribing clientId ( ( client, True ), mTable )
@@ -155,10 +155,10 @@ addSubscribed model topic =
                                                         Online clientId table
 
                                                     Nothing ->
-                                                        Subscribing clientId ( ( True, all ), mTable )
+                                                        Subscribing clientId ( ( True, True ), mTable )
 
                                             else
-                                                Subscribing clientId ( ( client, True ), mTable )
+                                                Subscribing clientId ( ( True, all ), mTable )
                                     }
                               }
                             , Cmd.none
@@ -267,7 +267,7 @@ subscribeGameTable model ( table, oldTable ) =
 
         Connecting _ ->
             ( { model | backend = { backend | status = Connecting <| Just table } }
-            , consoleDebug "Subscribe to table: still connecting, setting desired table."
+            , Cmd.none
             )
 
         Reconnecting count _ ->
