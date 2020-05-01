@@ -119,79 +119,97 @@ addSubscribed model topic =
     let
         backend =
             model.backend
-    in
-    case backend.status of
-        Subscribing clientId ( ( client, all ), mTable ) ->
-            case topic of
-                AllClients ->
-                    ( { model
-                        | backend =
-                            { backend
-                                | status =
-                                    if client then
-                                        case mTable of
-                                            Just table ->
-                                                Online clientId table
 
-                                            Nothing ->
+        ( model_, cmd ) =
+            case backend.status of
+                Subscribing clientId ( ( client, all ), mTable ) ->
+                    case topic of
+                        AllClients ->
+                            ( { model
+                                | backend =
+                                    { backend
+                                        | status =
+                                            if client then
+                                                case mTable of
+                                                    Just table ->
+                                                        Online clientId table
+
+                                                    Nothing ->
+                                                        Subscribing clientId ( ( client, True ), mTable )
+
+                                            else
                                                 Subscribing clientId ( ( client, True ), mTable )
+                                    }
+                              }
+                            , Cmd.none
+                            )
 
-                                    else
-                                        Subscribing clientId ( ( client, True ), mTable )
-                            }
-                      }
-                    , Cmd.none
-                    )
+                        Client _ ->
+                            ( { model
+                                | backend =
+                                    { backend
+                                        | status =
+                                            if all then
+                                                case mTable of
+                                                    Just table ->
+                                                        Online clientId table
 
-                Client _ ->
-                    ( { model
-                        | backend =
-                            { backend
-                                | status =
-                                    if all then
-                                        case mTable of
-                                            Just table ->
+                                                    Nothing ->
+                                                        Subscribing clientId ( ( True, all ), mTable )
+
+                                            else
+                                                Subscribing clientId ( ( client, True ), mTable )
+                                    }
+                              }
+                            , Cmd.none
+                            )
+
+                        Tables table _ ->
+                            ( { model
+                                | backend =
+                                    { backend
+                                        | status =
+                                            if client && all then
                                                 Online clientId table
 
-                                            Nothing ->
-                                                Subscribing clientId ( ( True, all ), mTable )
+                                            else
+                                                Subscribing clientId ( ( client, all ), Just table )
+                                    }
+                              }
+                            , case model.game.table of
+                                Nothing ->
+                                    consoleDebug <| "subscribed to table but game not in table: " ++ table
+
+                                Just gameTable ->
+                                    if table /= gameTable then
+                                        consoleDebug <| "subscribed to table " ++ table ++ " but game is in another table: " ++ gameTable
 
                                     else
-                                        Subscribing clientId ( ( client, True ), mTable )
-                            }
-                      }
-                    , Cmd.none
-                    )
+                                        Cmd.none
+                            )
 
-                Tables table _ ->
-                    ( { model
-                        | backend =
-                            { backend
-                                | status =
-                                    if client && all then
-                                        Online clientId table
+                Online _ _ ->
+                    ( model, consoleDebug <| "subscribed to " ++ encodeTopic topic ++ " but already Online" )
 
-                                    else
-                                        Subscribing clientId ( ( client, all ), Just table )
-                            }
-                      }
-                    , case model.game.table of
-                        Nothing ->
-                            consoleDebug <| "subscribed to table but game not in table: " ++ table
+                _ ->
+                    ( model, consoleDebug <| "subscribed to " ++ encodeTopic topic ++ " while not subscribing" )
+    in
+    ( model_
+    , case model_.backend.status of
+        Online _ table ->
+            case backend.status of
+                Online _ _ ->
+                    cmd
 
-                        Just gameTable ->
-                            if table /= gameTable then
-                                consoleDebug <| "subscribed to table " ++ table ++ " but game is in another table: " ++ gameTable
-
-                            else
-                                Cmd.none
-                    )
-
-        Online _ _ ->
-            ( model, consoleDebug <| "subscribed to " ++ encodeTopic topic ++ " but already Online" )
+                _ ->
+                    Cmd.batch
+                        [ Backend.MqttCommands.enter model_.backend table
+                        , cmd
+                        ]
 
         _ ->
-            ( model, consoleDebug <| "subscribed to " ++ encodeTopic topic ++ " while not subscribing" )
+            cmd
+    )
 
 
 subscribeGameTable : Types.Model -> ( Table, Maybe Table ) -> ( Types.Model, Cmd Msg )
@@ -352,7 +370,7 @@ decodeMessage : ConnectionStatus -> ( String, String ) -> Msg
 decodeMessage status ( stringTopic, message ) =
     case decodeTopic status stringTopic of
         Ok topic ->
-            case decodeTopicMessage Nothing topic message of
+            case decodeTopicMessage topic message of
                 Ok msg ->
                     msg
 

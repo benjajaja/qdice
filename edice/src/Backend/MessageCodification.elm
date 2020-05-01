@@ -15,8 +15,8 @@ type alias ChatMessage =
 
 {-| Maybe Table because it might be a table message for this client only
 -}
-decodeTopicMessage : Maybe Table -> Topic -> String -> Result String Msg
-decodeTopicMessage userTable topic message =
+decodeTopicMessage : Topic -> String -> Result String Msg
+decodeTopicMessage topic message =
     case topic of
         Client _ ->
             case decodeString (field "table" string) message of
@@ -24,16 +24,7 @@ decodeTopicMessage userTable topic message =
                     decodeClientMessage message
 
                 Ok tableName ->
-                    case userTable of
-                        Just table ->
-                            if tableName == table then
-                                decodeTableMessage table message
-
-                            else
-                                Err <| "message for wrong table: " ++ tableName
-
-                        Nothing ->
-                            Err "not implemented"
+                    decodeTableMessage tableName message
 
         AllClients ->
             case decodeString (field "type" Dec.string) message of
