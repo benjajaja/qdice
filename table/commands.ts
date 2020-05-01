@@ -13,6 +13,7 @@ import {
   Command,
   IllegalMoveCode,
   Emoji,
+  Chatter,
 } from "../types";
 import * as publish from "./publish";
 import { addSeconds, now } from "../timestamp";
@@ -36,6 +37,7 @@ import {
 } from "../constants";
 import logger from "../logger";
 import { isBot, tableThemed } from "./bots";
+import { addChat } from "./get";
 
 export const makePlayer = (
   user: User,
@@ -548,12 +550,9 @@ export const sitIn = (user: Player, table: Table): CommandResult => {
   return { players };
 };
 
-export const chat = (
-  user: { name: string } | null,
-  table: Table,
-  payload: string
-): null => {
-  publish.chat(table, user ? user.name : null, payload);
+export const chat = (user: Chatter, table: Table, payload: string): null => {
+  publish.chat(table, user, payload);
+  addChat(table, user, payload);
   return null;
 };
 

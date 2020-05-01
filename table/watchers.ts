@@ -8,7 +8,7 @@ import { STATUS_PLAYING } from "../constants";
 import logger from "../logger";
 
 import * as config from "../tables.config";
-import { getTable, save } from "./get";
+import { getTable, save, getChat } from "./get";
 import AsyncLock = require("async-lock");
 
 export const death = (lock: AsyncLock) => async (clientId: string) => {
@@ -72,6 +72,12 @@ export const enter = (
   clientId: string
 ): CommandResult | null => {
   publish.tableStatus(table, clientId);
+  const chatlines = getChat(table);
+  if (chatlines.length > 0) {
+    chatlines.forEach(([player, message]) => {
+      publish.chat(table, player, message, clientId);
+    });
+  }
   const existing = R.find(R.propEq("clientId", clientId), table.watching);
   if (!existing) {
     publish.enter(table, user ? user.name : null);

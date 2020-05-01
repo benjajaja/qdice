@@ -1,5 +1,5 @@
 import * as R from "ramda";
-import { Table, Player, Land, Watcher, TableInfo } from "../types";
+import { Table, Player, Land, Watcher, TableInfo, Chatter } from "../types";
 import * as maps from "../maps";
 import * as db from "../db";
 import * as Sentry from "@sentry/node";
@@ -9,6 +9,7 @@ import logger from "../logger";
 import { isBot } from "./bots";
 
 let memoryTables: { [tag: string]: Table } = {};
+let memoryChats: { [tag: string]: readonly [Chatter, string][] } = {};
 
 export const clearMemoryTables = () => {
   memoryTables = {};
@@ -162,3 +163,15 @@ export const getStatuses = (): readonly TableInfo[] =>
         botCount: table.players.filter(isBot).length,
       }))
   );
+
+export const addChat = (table: Table, player: Chatter, message: string) => {
+  const existing = memoryChats[table.tag] ?? [];
+  const chatlines: readonly [Chatter, string][] = [
+    ...existing.slice(-99),
+    [player, message],
+  ];
+  return (memoryChats[table.tag] = chatlines);
+};
+export const getChat = (table: Table) => {
+  return memoryChats[table.tag] ?? [];
+};

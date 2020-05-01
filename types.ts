@@ -137,6 +137,11 @@ export type Player = UserLike & {
   readonly ip: string | null;
 };
 
+export type Chatter = {
+  name: string;
+  color?: number;
+} | null;
+
 export type Preferences = {};
 
 export type PushNotificationEvents = "game-start" | "turn";

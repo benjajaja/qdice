@@ -9,6 +9,7 @@ import {
   CommandResult,
   Color,
   ScoredElimination,
+  Chatter,
 } from "../types";
 import {
   serializeTable,
@@ -20,6 +21,7 @@ import logger from "../logger";
 import * as jwt from "jsonwebtoken";
 import { MqttClient } from "mqtt";
 import { hasChanged } from "../helpers";
+import { addChat } from "./get";
 
 let client: MqttClient;
 export const setMqtt = (client_: MqttClient) => {
@@ -283,12 +285,18 @@ export const clientError = (clientId: string, error: Error) => {
   }
 };
 
-export const chat = (table: Table, user: string | null, message: string) => {
+export const chat = (
+  table: Table,
+  user: Chatter,
+  message: string,
+  clientId?: string
+) => {
   client.publish(
-    "tables/" + table.name + "/clients",
+    clientId ? "clients/" + clientId : "tables/" + table.name + "/clients",
     JSON.stringify({
       type: "chat",
-      payload: { user, message },
+      table: clientId ? table.tag : undefined,
+      payload: { user: user ? user.name : null, message },
     }),
     undefined!,
     err => {
