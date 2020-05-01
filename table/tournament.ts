@@ -9,14 +9,14 @@ export const tickTournament = (
 ): Command | void => {
   if (table.status !== STATUS_PLAYING) {
     if (table.gameStart === 0) {
-      const gameStart = nextFrequency(tournament.frequency, now());
-      return { type: "SetGameStart", gameStart, returnFee: null };
+      const [gameStart, map] = nextFrequency(tournament.frequency, now(), table.mapName);
+      return { type: "SetGameStart", gameStart, map, returnFee: null };
     } else if (countdownFinished(table.gameStart)) {
-      const gameStart = nextFrequency(tournament.frequency, now());
-      return { type: "SetGameStart", gameStart, returnFee: tournament.fee };
-    } else if (table.gameStart > nextFrequency(tournament.frequency, now())) {
-      const gameStart = nextFrequency(tournament.frequency, now());
-      return { type: "SetGameStart", gameStart, returnFee: null };
+      const [gameStart, map] = nextFrequency(tournament.frequency, now(), table.mapName);
+      return { type: "SetGameStart", gameStart, map, returnFee: tournament.fee };
+    } else if (table.gameStart > nextFrequency(tournament.frequency, now(), table.mapName)[0]) {
+      const [gameStart, map] = nextFrequency(tournament.frequency, now(), table.mapName);
+      return { type: "SetGameStart", gameStart, map, returnFee: null };
     }
   }
   return undefined;

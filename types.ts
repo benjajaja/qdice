@@ -27,12 +27,12 @@ export type TableProps = {
   readonly roundCount: number;
   readonly attack: Attack | null;
   readonly currentGame: number | null;
+  readonly mapName: string;
 };
 
 export type Table = TableProps & {
   readonly name: string;
   readonly tag: string;
-  readonly mapName: string;
   readonly adjacency: Adjacency;
   readonly stackSize: number;
   readonly playerSlots: number;
@@ -304,7 +304,7 @@ export type Command =
   | CommandSkeleton<"BotState", { player: Player; botCommand: BotCommand }>
   | CommandSkeleton<
       "SetGameStart",
-      { gameStart: number; returnFee: number | null }
+      { gameStart: number; map: string | null; returnFee: number | null }
     >;
 
 export type CommandResult = {

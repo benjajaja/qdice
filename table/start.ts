@@ -149,7 +149,8 @@ export const preloadStartingPositions = async (
 export const setGameStart = (
   table: Table,
   gameStart: number,
-  returnFee: number | null
+  returnFee: number | null,
+  mapName: string | null,
 ): CommandResult => {
   if (returnFee === null) {
     return {
@@ -158,7 +159,7 @@ export const setGameStart = (
   }
   if (returnFee === 0) {
     return {
-      table: { gameStart },
+      table: { gameStart, mapName: mapName ?? undefined },
       players: [],
     };
   }
@@ -169,7 +170,7 @@ export const setGameStart = (
     }
   );
   return {
-    table: { gameStart },
+    table: { gameStart, mapName: mapName ?? undefined },
     players: [],
     payScores: payScores,
   };

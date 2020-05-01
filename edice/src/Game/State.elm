@@ -232,8 +232,23 @@ updateTableStatus model status =
         oldBoard =
             model.game.board
 
+        board_ : Board.Types.Model
         board_ =
-            Board.State.updateLands oldBoard status.lands Nothing
+            model.game.table
+                |> Maybe.andThen (\t -> tableMap t model.tableList)
+                |> Maybe.andThen
+                    (\map ->
+                        if map /= status.mapName then
+                            Just status.mapName
+
+                        else
+                            Nothing
+                    )
+                |> Result.fromMaybe ""
+                |> Result.andThen Maps.load
+                |> Result.toMaybe
+                |> Maybe.map Board.State.init
+                |> Maybe.withDefault (Board.State.updateLands oldBoard status.lands Nothing)
 
         hasStarted =
             game.status /= Playing && status.status == Playing
