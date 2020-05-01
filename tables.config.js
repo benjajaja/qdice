@@ -159,5 +159,21 @@ module.exports = {
         },
       },
     },
+    {
+      tag: "Seguirilla",
+      name: "Seguirilla",
+      mapName: "Cepero",
+      playerSlots: 8,
+      startSlots: 8,
+      points: 200,
+      stackSize: 8,
+      params: {
+        noFlagRounds: 10,
+        botLess: false,
+        startingCapitals: true,
+        readySlots: null,
+        turnSeconds: null,
+      },
+    },
   ],
 };

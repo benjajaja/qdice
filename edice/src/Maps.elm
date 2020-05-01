@@ -361,5 +361,8 @@ mapFromTable table =
         "Twitter" ->
             Ok Planeta
 
+        "Seguirilla" ->
+            Ok Cepero
+
         _ ->
             Tables.decodeMap table

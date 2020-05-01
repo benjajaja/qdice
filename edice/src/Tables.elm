@@ -14,6 +14,7 @@ type Map
     | Sabicas
     | Planeta
     | Montoya
+    | Cepero
 
 
 decodeMap : String -> Result String Map
@@ -39,6 +40,9 @@ decodeMap name =
 
         "Montoya" ->
             Ok Montoya
+
+        "Cepero" ->
+            Ok Cepero
 
         _ ->
             Err <| "Table (map) not found: " ++ name
@@ -70,6 +74,9 @@ encodeMap map =
 
         Montoya ->
             "Montoya"
+
+        Cepero ->
+            "Cepero"
 
 
 isTournament : Table -> Bool
