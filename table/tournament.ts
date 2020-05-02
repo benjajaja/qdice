@@ -3,6 +3,7 @@ import { STATUS_PLAYING } from "../constants";
 import { nextFrequency, now } from "../timestamp";
 import { countdownFinished } from "./tick";
 import { nextMap } from "../maps";
+import logger from "../logger";
 
 export const tickTournament = (
   table: Table,
@@ -26,8 +27,10 @@ export const tickTournament = (
         returnFee: tournament.fee,
       };
     } else if (
-      table.gameStart > nextFrequency(tournament.frequency, now())[0]
+      table.gameStart >
+      nextFrequency(tournament.frequency, now()) + 10000
     ) {
+      logger.debug("tournament is future");
       const gameStart = nextFrequency(tournament.frequency, now());
       return { type: "SetGameStart", gameStart, map: null, returnFee: null };
     }
