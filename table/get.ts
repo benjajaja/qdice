@@ -80,8 +80,16 @@ export const getTable = async (tableTag: string): Promise<Table> => {
   if (memoryTables[tableTag]) {
     if (!R.equals(memoryTables[tableTag], table)) {
       logger.error("cache diff error");
-      logger.debug("memory: " + JSON.stringify(memoryTables[tableTag]));
-      logger.debug("db: " + JSON.stringify(table));
+      const memTable = memoryTables[tableTag];
+      if (Object.keys(memTable).length !== Object.keys(table).length) {
+        logger.debug(`${Object.keys(memTable)} vs ${Object.keys(table)}`);
+      } else {
+        for (const key in memTable) {
+          if (!R.equals(memTable[key], table[key])) {
+            logger.debug(`diff key ${key}`);
+          }
+        }
+      }
       Sentry.captureException(new Error("DB/Memory inconsistent"));
       Sentry.captureEvent({
         message: "CacheError",

@@ -194,9 +194,9 @@ if (!fs.existsSync(`${writeMaps}/src/Maps`)) {
 }
 const write = fs.createWriteStream(`${writeMaps}/src/Maps/Sources.elm`);
 write.write("module Maps.Sources exposing (mapSourceString, mapAdjacency)\n");
-write.write("import Tables exposing (Map(..))\n");
+write.write("import Tables exposing (MapName(..))\n");
 write.write("\n");
-write.write("mapSourceString : Map -> String\n");
+write.write("mapSourceString : MapName -> String\n");
 write.write("mapSourceString table =\n");
 write.write("    case table of\n");
 
@@ -221,7 +221,7 @@ clientMaps.forEach(([str, adjacency]) => {
 });
 
 write.write("\n");
-write.write("mapAdjacency : Map -> (List (String, Int), List (List Int))\n");
+write.write("mapAdjacency : MapName -> (List (String, Int), List (List Int))\n");
 write.write("mapAdjacency table =\n");
 write.write("    case table of\n");
 clientMaps.forEach(([str, adjacency]) => {

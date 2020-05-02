@@ -1,10 +1,11 @@
 import * as R from "ramda";
 import * as publish from "./publish";
-import { Table, Land, CommandResult, Color, User, UserId } from "../types";
+import { Table, Land, CommandResult, Color, UserId } from "../types";
 import { now } from "../timestamp";
 import { rand, shuffle } from "../rand";
 import logger from "../logger";
 import { STATUS_PLAYING } from "../constants";
+import * as maps from "../maps";
 
 const randomPoints = (stackSize: number) => {
   const r = rand(0, 999) / 1000;
@@ -150,18 +151,18 @@ export const setGameStart = (
   table: Table,
   gameStart: number,
   returnFee: number | null,
-  mapName: string | null,
+  mapName: string | null
 ): CommandResult => {
   if (returnFee === null) {
-    return {
+    return changeMap(mapName, table.lands, {
       table: { gameStart },
-    };
+    });
   }
   if (returnFee === 0) {
-    return {
-      table: { gameStart, mapName: mapName ?? undefined },
+    return changeMap(mapName, table.lands, {
+      table: { gameStart },
       players: [],
-    };
+    });
   }
 
   const payScores: [UserId, string | null, number][] = table.players.map(
@@ -169,9 +170,27 @@ export const setGameStart = (
       return [player.id, player.clientId, returnFee];
     }
   );
-  return {
-    table: { gameStart, mapName: mapName ?? undefined },
+  return changeMap(mapName, table.lands, {
+    table: { gameStart },
     players: [],
     payScores: payScores,
+  });
+};
+
+const changeMap = (
+  mapName: string | null,
+  lands: readonly Land[],
+  result: CommandResult
+): CommandResult => {
+  if (mapName === null) {
+    return result;
+  }
+  const newLands = maps
+    .hasChanged(mapName, lands)
+    .map(land => ({ ...land, points: 0, color: Color.Neutral }));
+  return {
+    ...result,
+    table: { ...result.table, mapName },
+    lands: newLands,
   };
 };

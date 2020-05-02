@@ -1,11 +1,11 @@
-module Tables exposing (Map(..), Table, decodeMap, encodeMap, isTournament)
+module Tables exposing (MapName(..), Table, decodeMap, encodeMap, isTournament)
 
 
 type alias Table =
     String
 
 
-type Map
+type MapName
     = Null
     | Melchor
     | Miño
@@ -17,7 +17,7 @@ type Map
     | Cepero
 
 
-decodeMap : String -> Result String Map
+decodeMap : String -> Result String MapName
 decodeMap name =
     case name of
         "Melchor" ->
@@ -48,7 +48,7 @@ decodeMap name =
             Err <| "Table (map) not found: " ++ name
 
 
-encodeMap : Map -> String
+encodeMap : MapName -> String
 encodeMap map =
     case map of
         Null ->

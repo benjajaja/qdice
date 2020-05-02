@@ -345,8 +345,10 @@ const commandResult = async (
     case "BotState":
       return botState(table, command.player as BotPlayer, command.botCommand);
     case "SetGameStart":
-      logger.debug("command", command);
-      return [logger.pipe("set", setGameStart(table, command.gameStart, command.returnFee, command.map)), null];
+      return [
+        setGameStart(table, command.gameStart, command.returnFee, command.map),
+        null,
+      ];
     default:
       return assertNever(command);
   }

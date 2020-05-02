@@ -8,7 +8,7 @@ import Land exposing (Cells, Emoji)
 import Maps.Sources exposing (mapAdjacency, mapSourceString)
 import Regex
 import String
-import Tables exposing (Map(..), Table, encodeMap)
+import Tables exposing (MapName(..), Table)
 
 
 type alias EmojiLand =
@@ -18,7 +18,7 @@ type alias EmojiLand =
 
 
 type alias EmojiMap =
-    { name : String
+    { name : MapName
     , lands : List Land.Land
     , width : Int
     , height : Int
@@ -45,11 +45,11 @@ consoleLogMap map =
     consoleDebug <| toEmojiString <| toCharList map
 
 
-load : Map -> Result String Land.Map
+load : MapName -> Result String Land.Map
 load map =
     let
         emojiMap =
-            emojisToMap (encodeMap map) <| mapSourceString map
+            emojisToMap map <| mapSourceString map
 
         ( indices, matrix ) =
             mapAdjacency map
@@ -81,7 +81,7 @@ load map =
         emojiMap
 
 
-emojisToMap : String -> String -> Result String EmojiMap
+emojisToMap : MapName -> String -> Result String EmojiMap
 emojisToMap name raw =
     let
         rawLines : List String
@@ -334,10 +334,10 @@ symbols =
 
 emptyMap : Land.Map
 emptyMap =
-    Land.Map "empty" [] 40 40 Dict.empty Array.empty []
+    Land.Map Null [] 40 40 Dict.empty Array.empty []
 
 
-mapFromTable : Table -> Result String Map
+mapFromTable : Table -> Result String MapName
 mapFromTable table =
     case table of
         "Planeta" ->

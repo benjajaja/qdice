@@ -1,7 +1,8 @@
-import { Table, Command, TableParams, TournamentParam } from "../types";
+import { Table, Command, TournamentParam } from "../types";
 import { STATUS_PLAYING } from "../constants";
 import { nextFrequency, now } from "../timestamp";
 import { countdownFinished } from "./tick";
+import { nextMap } from "../maps";
 
 export const tickTournament = (
   table: Table,
@@ -9,14 +10,26 @@ export const tickTournament = (
 ): Command | void => {
   if (table.status !== STATUS_PLAYING) {
     if (table.gameStart === 0) {
-      const [gameStart, map] = nextFrequency(tournament.frequency, now(), table.mapName);
-      return { type: "SetGameStart", gameStart, map, returnFee: null };
+      const gameStart = nextFrequency(tournament.frequency, now());
+      return {
+        type: "SetGameStart",
+        gameStart,
+        map: nextMap(table.mapName),
+        returnFee: null,
+      };
     } else if (countdownFinished(table.gameStart)) {
-      const [gameStart, map] = nextFrequency(tournament.frequency, now(), table.mapName);
-      return { type: "SetGameStart", gameStart, map, returnFee: tournament.fee };
-    } else if (table.gameStart > nextFrequency(tournament.frequency, now(), table.mapName)[0]) {
-      const [gameStart, map] = nextFrequency(tournament.frequency, now(), table.mapName);
-      return { type: "SetGameStart", gameStart, map, returnFee: null };
+      const gameStart = nextFrequency(tournament.frequency, now());
+      return {
+        type: "SetGameStart",
+        gameStart,
+        map: nextMap(table.mapName),
+        returnFee: tournament.fee,
+      };
+    } else if (
+      table.gameStart > nextFrequency(tournament.frequency, now())[0]
+    ) {
+      const gameStart = nextFrequency(tournament.frequency, now());
+      return { type: "SetGameStart", gameStart, map: null, returnFee: null };
     }
   }
   return undefined;

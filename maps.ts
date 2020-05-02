@@ -3,6 +3,7 @@ import logger from "./logger";
 import { Adjacency, Land, Emoji, Color } from "./types";
 
 import * as mapJson from "./map-sources.json";
+import { shuffle } from "./rand";
 
 type LimitedTable = {
   lands: ReadonlyArray<Land>;
@@ -100,7 +101,7 @@ export const hasChanged = (
       if (match) {
         return match;
       } else {
-        return land;
+        return { emoji: land.emoji, points: 0, color: Color.Neutral };
       }
     });
   }
@@ -112,4 +113,21 @@ export const neighbours = (table: LimitedTable, land: Land): Land[] => {
       other.emoji !== land.emoji &&
       isBorder(table.adjacency, other.emoji, land.emoji)
   );
+};
+
+const mapCycle = ["Planeta", "Montoya", "DeLucía", "Sabicas", "Cepero"];
+export const nextMap = (map: string) => {
+  let next = map;
+  let fuse = 0;
+  while (next === map) {
+    next = shuffle(mapCycle)[0];
+    fuse += 1;
+    if (fuse > 100) {
+      logger.error(
+        "Tried to shuffle nextMap 100 times and did not get a different result!"
+      );
+      return next;
+    }
+  }
+  return next;
 };

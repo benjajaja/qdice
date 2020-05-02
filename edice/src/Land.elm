@@ -8,6 +8,7 @@ import Hex exposing (Hex, Point, borderLeftCorner, cellCubicCoords, hexToOffset,
 import Hexagons.Hex as HH exposing (Direction)
 import List
 import Random
+import Tables exposing (MapName)
 
 
 type alias Cells =
@@ -49,7 +50,7 @@ type alias MapSize =
 
 
 type alias Map =
-    { name : String
+    { name : MapName
     , lands : List Land
     , width : Int
     , height : Int

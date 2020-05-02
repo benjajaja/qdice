@@ -13,13 +13,13 @@ import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
 import Land exposing (LandUpdate)
 import Maps exposing (load)
 import Snackbar exposing (toastError, toastMessage)
-import Tables exposing (Map(..), Table, isTournament)
+import Tables exposing (MapName(..), Table, isTournament)
 import Task
 import Time
 import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
 
 
-init : Maybe Table -> Maybe Map -> ( Game.Types.Model, Cmd Msg )
+init : Maybe Table -> Maybe MapName -> ( Game.Types.Model, Cmd Msg )
 init table tableMap_ =
     let
         map : Result MapLoadError Land.Map
@@ -172,7 +172,7 @@ changeTable model table =
         |> pipeUpdates Backend.subscribeGameTable ( table, model.game.table )
 
 
-tableMap : Table -> List Game.Types.TableInfo -> Maybe Map
+tableMap : Table -> List Game.Types.TableInfo -> Maybe MapName
 tableMap table tableList =
     Maybe.map .mapName
         (List.filter (\t -> t.table == table) tableList
@@ -234,21 +234,16 @@ updateTableStatus model status =
 
         board_ : Board.Types.Model
         board_ =
-            model.game.table
-                |> Maybe.andThen (\t -> tableMap t model.tableList)
-                |> Maybe.andThen
-                    (\map ->
-                        if map /= status.mapName then
-                            Just status.mapName
+            (if oldBoard.map.name /= status.mapName then
+                Maps.load status.mapName
+                    |> Result.map Board.State.init
+                    |> Result.toMaybe
+                    |> Maybe.withDefault oldBoard
 
-                        else
-                            Nothing
-                    )
-                |> Result.fromMaybe ""
-                |> Result.andThen Maps.load
-                |> Result.toMaybe
-                |> Maybe.map Board.State.init
-                |> Maybe.withDefault (Board.State.updateLands oldBoard status.lands Nothing)
+             else
+                oldBoard
+            )
+                |> (\b -> Board.State.updateLands b status.lands Nothing)
 
         hasStarted =
             game.status /= Playing && status.status == Playing

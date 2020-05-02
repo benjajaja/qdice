@@ -35,7 +35,7 @@ import Profile
 import Routing exposing (navigateTo, parseLocation)
 import Snackbar exposing (toastError, toastMessage)
 import Static.View
-import Tables exposing (Map(..), Table)
+import Tables exposing (MapName(..), Table)
 import Task
 import Time
 import Types exposing (..)

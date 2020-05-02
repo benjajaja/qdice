@@ -341,7 +341,7 @@ globalSettingsDecoder =
 --         string |> Json.Decode.andThen convert
 
 
-mapNameDecoder : Decoder Tables.Map
+mapNameDecoder : Decoder Tables.MapName
 mapNameDecoder =
     map Tables.decodeMap string
         |> andThen

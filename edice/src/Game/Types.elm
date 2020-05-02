@@ -98,7 +98,7 @@ type alias PlayerName =
 
 type alias TableStatus =
     { players : List Player
-    , mapName : Tables.Map
+    , mapName : Tables.MapName
     , playerSlots : Int
     , status : GameStatus
     , gameStart : Int
@@ -127,7 +127,7 @@ type alias RollPart =
 
 type alias TableInfo =
     { table : Table
-    , mapName : Tables.Map
+    , mapName : Tables.MapName
     , playerSlots : Int
     , startSlots : Int
     , playerCount : Int
