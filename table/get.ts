@@ -150,8 +150,11 @@ export const save = async (
     watching: watching ?? table.watching,
     retired: retired ?? table.retired,
   };
-  memoryTables[table.tag] = result;
-  return result;
+
+  const [_, adjacency] = maps.loadMap(result.mapName);
+  const savedTable = { ...result, adjacency };
+  memoryTables[table.tag] = savedTable;
+  return savedTable;
 };
 
 export const getStatuses = (): readonly TableInfo[] =>

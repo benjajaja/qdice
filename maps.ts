@@ -95,8 +95,7 @@ export const hasChanged = (
   if (isEqualEmojis(dbLands, lands)) {
     return dbLands;
   } else {
-    logger.warn("lands DID change:", mapName);
-    return lands.map(land => {
+    return lands.map((land: Land) => {
       const match = dbLands.find(l => l.emoji === land.emoji);
       if (match) {
         return match;
