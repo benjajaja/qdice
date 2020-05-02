@@ -101,7 +101,7 @@ module.exports = {
       name: "Hourly2000",
       mapName: "Sabicas",
       playerSlots: 8,
-      startSlots: 8,
+      startSlots: 2,
       points: 500,
       stackSize: 8,
       params: {
@@ -120,9 +120,9 @@ module.exports = {
     {
       tag: "5MinuteFix",
       name: "5MinuteFix",
-      mapName: "DeLucía",
+      mapName: "Cepero",
       playerSlots: 8,
-      startSlots: 8,
+      startSlots: 2,
       points: 200,
       stackSize: 8,
       params: {
@@ -132,7 +132,7 @@ module.exports = {
         readySlots: null,
         turnSeconds: 45,
         tournament: {
-          frequency: "minutely",
+          frequency: "5minutely",
           prize: 1000,
           fee: 0,
         },
@@ -143,7 +143,7 @@ module.exports = {
       name: "Daily10k",
       mapName: "Planeta",
       playerSlots: 8,
-      startSlots: 8,
+      startSlots: 4,
       points: 1000,
       stackSize: 8,
       params: {

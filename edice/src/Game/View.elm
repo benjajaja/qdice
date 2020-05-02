@@ -272,51 +272,55 @@ onlineButtons model =
                                                            )
                                                     )
                                                   <|
-                                                    ShowDialog <|
-                                                        Confirm
-                                                            (\model_ ->
-                                                                ( "Enter game for "
-                                                                    ++ (if tournament.fee > 0 then
-                                                                            Helpers.formatPoints tournament.fee
+                                                    if tournament.fee > 0 then
+                                                        ShowDialog <|
+                                                            Confirm
+                                                                (\model_ ->
+                                                                    ( "Enter game for "
+                                                                        ++ (if tournament.fee > 0 then
+                                                                                Helpers.formatPoints tournament.fee
 
-                                                                        else
-                                                                            "free"
-                                                                       )
-                                                                    ++ "?"
-                                                                , [ text <|
-                                                                        "The prize for 1st is "
-                                                                            ++ Helpers.formatPoints tournament.prize
-                                                                            ++ "."
-                                                                            ++ """
-You will be sat and cannot leave the game until it starts.
+                                                                            else
+                                                                                "free"
+                                                                           )
+                                                                        ++ "?"
+                                                                    , [ text <|
+                                                                            "The prize for 1st is "
+                                                                                ++ Helpers.formatPoints tournament.prize
+                                                                                ++ "."
+                                                                                ++ """
+  You will be sat and cannot leave the game until it starts.
 
-You can meanwhile play on other tables.
+  You can meanwhile play on other tables.
 
-If minimum player requirements is not met, the fee will be returned.
+  If minimum player requirements is not met, the fee will be returned.
 
-"""
-                                                                            ++ (case model_.game.gameStart of
-                                                                                    Nothing ->
-                                                                                        "Remember to come back at the game start time."
+  """
+                                                                                ++ (case model_.game.gameStart of
+                                                                                        Nothing ->
+                                                                                            "Remember to come back at the game start time."
 
-                                                                                    Just timestamp ->
-                                                                                        "Remember to come back at "
-                                                                                            ++ tournamentTime model_.zone model_.time timestamp
-                                                                                            ++ """.
-"""
-                                                                               )
+                                                                                        Just timestamp ->
+                                                                                            "Remember to come back at "
+                                                                                                ++ tournamentTime model_.zone model_.time timestamp
+                                                                                                ++ """.
+  """
+                                                                                   )
 
-                                                                  -- , a [ href "#" ] [ text "Enable notifications" ]
-                                                                  , button [ onClick RequestNotifications ]
-                                                                        [ text "Enable notifications"
-                                                                        , Icon.icon "sms"
-                                                                        ]
-                                                                  , text " ...to get an alert at game start!"
-                                                                  ]
+                                                                      -- , a [ href "#" ] [ text "Enable notifications" ]
+                                                                      , button [ onClick RequestNotifications ]
+                                                                            [ text "Enable notifications"
+                                                                            , Icon.icon "sms"
+                                                                            ]
+                                                                      , text " ...to get an alert at game start!"
+                                                                      ]
+                                                                    )
                                                                 )
-                                                            )
-                                                        <|
-                                                            GameCmd Join
+                                                            <|
+                                                                GameCmd Join
+
+                                                    else
+                                                        GameCmd Join
                                                 ]
 
                                             else

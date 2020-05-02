@@ -195,6 +195,16 @@ const tick = async (tableTag: string, lock: AsyncLock) => {
 };
 
 const shouldStart = (table: Table) => {
+  if (table.params.tournament) {
+    if (
+      countdownFinished(table.gameStart) &&
+      table.players.length >= table.startSlots
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   if (table.players.filter(isBot).length >= table.playerSlots) {
     return true;
   }
@@ -204,17 +214,8 @@ const shouldStart = (table: Table) => {
   ) {
     return true;
   }
-  if (table.params.tournament) {
-    if (
-      countdownFinished(table.gameStart) &&
-      table.players.length >= table.startSlots
-    ) {
-      return true;
-    }
-  } else {
-    if (countdownFinished(table.gameStart) && table.players.length > 1) {
-      return true;
-    }
+  if (countdownFinished(table.gameStart) && table.players.length > 1) {
+    return true;
   }
   return false;
 };
