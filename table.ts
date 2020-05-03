@@ -161,10 +161,15 @@ const start = async (
         publish.clientError(clientId, e);
         if (e instanceof IllegalMoveError) {
           logger.error(e, e.code, e.bot, "illegal move caught gracefully");
+          // Ignore a bunch of errors that are not unexpected or probably due to client/server delay
           switch (e.code) {
             case IllegalMoveCode.IsRetired:
             case IllegalMoveCode.NotEnoughPoints:
             case IllegalMoveCode.EndTurnOutOfTurn:
+            case IllegalMoveCode.JoinWhilePlaying:
+            case IllegalMoveCode.AttackOutOfTurn:
+            case IllegalMoveCode.ReadyWhilePlaying:
+            case IllegalMoveCode.EndTurnDuringAttack:
               break;
             default: {
               Sentry.setTag("IllegalMoveSource", "user-command");
