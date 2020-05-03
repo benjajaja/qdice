@@ -2,13 +2,15 @@ import puppeteer, { Page } from "puppeteer";
 import { launch } from "./jest-puppeteer.config.js";
 import { setInterval, clearInterval } from "timers";
 
-const hisTurn = async (page: Page, name: string) =>
+const hisTurn = async (page: Page, name: string) => {
   await expect(page).toMatchElement(
     '[data-test-id="logline-turn"]:nth-last-child(1)',
     {
       text: new RegExp(`^${name}'s turn`),
     }
   );
+  await page.waitFor(100);
+};
 
 const attack = async (page: Page, from: string, to: string, name: string) => {
   console.log(`player "${name}" attack from ${from} to ${to}`);
@@ -16,6 +18,7 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
 
   await expect(page).toClick(testId(from));
   await expect(page).toMatchElement(testValue(from, "selected", "true"));
+  await page.waitFor(100);
   await expect(page).toClick(testId(to));
   await expect(page).toMatchElement(testValue(to, "selected", "true"));
 
@@ -37,6 +40,7 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
       });
     });
   });
+  await page.waitFor(100);
 
   const newLines = lines.slice(logLineCount);
 
@@ -167,7 +171,6 @@ describe("A full game", () => {
 
     await hisTurn(page, "A");
     await attack(page, "land-🍩", "land-🌵", "A");
-    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
     await expect(page).toMatchElement(
       `${testId("logline-elimination")}:nth-last-child(2)`,
