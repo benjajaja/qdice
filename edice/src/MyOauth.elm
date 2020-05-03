@@ -9,7 +9,6 @@ import Json.Decode exposing (decodeString, errorToString)
 import Json.Encode exposing (encode)
 import OAuth.AuthorizationCode exposing (AuthorizationResult(..))
 import Snackbar exposing (toastError)
-import Task
 import Types exposing (AuthNetwork(..), AuthState, Msg(..), MyOAuthModel)
 import Url exposing (Protocol(..), Url)
 

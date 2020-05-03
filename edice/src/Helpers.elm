@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeUnits, triple, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeUnits, triple, tupleApply, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -145,6 +145,11 @@ resultCombine =
 tupleCombine : ( Maybe a, Maybe b ) -> Maybe ( a, b )
 tupleCombine ( ma, mb ) =
     Maybe.andThen (\a -> Maybe.andThen (Tuple.pair a >> Just) mb) ma
+
+
+tupleApply : (a -> b -> c) -> ( a, b ) -> c
+tupleApply fn ( a, b ) =
+    fn a b
 
 
 timeUnits : Int -> ( Int, String )

@@ -7,7 +7,6 @@
     "dependencies": {
         "direct": {
             "NoRedInk/elm-json-decode-pipeline": "1.0.0",
-            "Voronchuk/hexagons": "3.0.2",
             "avh4/elm-color": "1.0.0",
             "danhandrea/elm-date-format": "2.0.1",
             "elm/browser": "1.0.2",

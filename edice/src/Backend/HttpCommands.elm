@@ -6,7 +6,7 @@ import Backend.MessageCodification exposing (..)
 import Backend.Types exposing (..)
 import Game.Types exposing (PlayerAction(..))
 import Helpers exposing (httpErrorToString)
-import Http exposing (Error, emptyBody, expectJson, expectString, expectStringResponse, expectWhatever, header, jsonBody, stringBody)
+import Http exposing (Error, emptyBody, expectJson, expectString, expectStringResponse, header, jsonBody, stringBody)
 import Land exposing (Color(..))
 import MyProfile.Types exposing (MyProfileUpdate)
 import Placeholder

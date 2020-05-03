@@ -1,6 +1,5 @@
 module Game.State exposing (canSelect, changeTable, clickLand, gameCommand, init, isChat, setUser, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
 
-import Animation
 import Backend
 import Backend.MqttCommands exposing (attack, sendGameCommand)
 import Backend.Types exposing (Topic(..))
@@ -15,7 +14,6 @@ import Maps exposing (load)
 import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (MapName(..), Table, isTournament)
 import Task
-import Time
 import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
 
 
@@ -28,14 +26,14 @@ init table tableMap_ =
                 Ok landMap ->
                     Ok landMap
 
-                Err err ->
+                Err _ ->
                     case table of
                         Just t ->
                             case Maps.mapFromTable t of
                                 Ok m ->
                                     Maps.load m |> Result.mapError MapLoadError
 
-                                Err err2 ->
+                                Err _ ->
                                     if isTournament t then
                                         Err NoTableNoMapError
 
@@ -390,7 +388,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                 game.board
 
             else
-                Board.State.updateLands game.board lands Nothing
+                Board.State.updateLands game.board lands move
 
         canMove =
             if not hasTurn then
@@ -505,14 +503,6 @@ updatePlayerStatus model player =
                 let
                     isOut =
                         player.out
-
-                    flag =
-                        case player.flag of
-                            Just _ ->
-                                Nothing
-
-                            Nothing ->
-                                Nothing
                 in
                 { game
                     | players = players
@@ -523,7 +513,7 @@ updatePlayerStatus model player =
                         else
                             game.player
                     , isPlayerOut = isOut
-                    , flag = flag
+                    , flag = Nothing -- is this right?
                 }
 
             else

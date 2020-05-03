@@ -4,6 +4,7 @@ import Backend.HttpCommands
 import DateFormat
 import Dict
 import Game.PlayerCard exposing (playerPicture)
+import Helpers
 import Html exposing (Html, a, blockquote, button, div, form, h3, span, text, textarea)
 import Html.Attributes exposing (class, disabled, href, style, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -263,15 +264,7 @@ reply model kind to =
                     comments.postState
 
                 postState_ =
-                    { postState
-                        | kind =
-                            case to of
-                                Just ( id, name ) ->
-                                    Just <| ReplyComments id name
-
-                                Nothing ->
-                                    Nothing
-                    }
+                    { postState | kind = Maybe.map (Helpers.tupleApply ReplyComments) to }
             in
             { comments | postState = postState_ }
         )

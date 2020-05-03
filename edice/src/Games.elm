@@ -1,11 +1,10 @@
 module Games exposing (..)
 
 import Backend.HttpCommands
-import Board.Colors exposing (baseCssRgb, colorName)
+import Board.Colors exposing (baseCssRgb)
 import Comments
 import DateFormat
 import Dict
-import Game.Chat
 import Games.Replayer exposing (gameReplayer)
 import Games.Replayer.Types exposing (ReplayerModel)
 import Games.Types exposing (Game, GameEvent(..), GamePlayer)

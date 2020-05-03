@@ -5,7 +5,7 @@ import Fuzz exposing (Fuzzer, int, list, string)
 import Helpers exposing (combine, resultCombine)
 import Land
 import Maps
-import Tables exposing (Map(..))
+import Tables exposing (MapName(..))
 import Test exposing (..)
 
 

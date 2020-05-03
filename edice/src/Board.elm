@@ -6,7 +6,7 @@ import Board.Types exposing (BoardMove, Model)
 import Board.View
 import Html
 import Html.Lazy
-import Land exposing (Color, Emoji, Land, LandUpdate, Map, findLand)
+import Land exposing (Color, Emoji, Land, Map, findLand)
 
 
 type alias Msg =

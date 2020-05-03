@@ -2,7 +2,6 @@ port module Snackbar exposing (toastError, toastMessage)
 
 import Helpers exposing (consoleDebug)
 import Json.Encode as E
-import Task
 import Types exposing (Msg)
 
 

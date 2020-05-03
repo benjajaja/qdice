@@ -2,10 +2,9 @@ module Backend.Decoding exposing (authStateDecoder, commentDecoder, commentsDeco
 
 import Array
 import Backend.Types exposing (TableMessage(..))
-import Board.Types
 import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus, TournamentConfig)
 import Games.Types exposing (..)
-import Helpers exposing (triple)
+import Helpers
 import Iso8601
 import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, lazy, list, map, map2, map3, map4, maybe, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
@@ -127,23 +126,6 @@ meDecoder =
     map3 (\a b c -> ( a, b, c )) (index 0 userDecoder) (index 1 stringDecoder) (index 2 preferencesDecoder)
 
 
-tableNameDecoder : Decoder Table
-tableNameDecoder =
-    string
-
-
-
--- map decodeTable string
---     |> andThen
---         (\t ->
---             case t of
---                 Just table ->
---                     succeed table
---                 Nothing ->
---                     fail "unknown table"
---         )
-
-
 tableDecoder : Decoder TableStatus
 tableDecoder =
     succeed TableStatus
@@ -230,11 +212,6 @@ gameStatusDecoder =
                     Game.Types.Paused
         )
         string
-
-
-accknowledgeDecoder : Decoder ()
-accknowledgeDecoder =
-    succeed ()
 
 
 rollDecoder : Decoder Game.Types.Roll

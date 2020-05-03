@@ -1,27 +1,79 @@
-module Hex exposing (Hex, Point, borderLeftCorner, cellCubicCoords, center, eq, hexToOffset, myLayout, offsetToHex)
-
-import Hexagons.Hex as HH
-import Hexagons.Layout as HL exposing (Layout, Point)
+module Hex exposing (Direction(..), Hex, Point, borderLeftCorner, center, eq, hexToOffset, myLayout, offsetToHex)
 
 
 type alias Point =
-    HL.Point
+    ( Float, Float )
 
 
 type alias Hex =
-    HH.Hex
+    ( Int, Int, Int )
+
+
+type Direction
+    = NE
+    | E
+    | SE
+    | SW
+    | W
+    | NW
+
+
+type alias Layout =
+    { orientation : Orientation
+    , size : Point
+    , origin : Point
+    }
+
+
+{-| 2x2 matrix, by x and y coordinates
+-}
+type alias Square2Matrix =
+    { f0 : Float
+    , f1 : Float
+    , f2 : Float
+    , f3 : Float
+    }
+
+
+{-| Orientation helper type to store these: the 2×2 forward matrix, the 2×2 inverse matrix, and the starting angle
+-}
+type alias Orientation =
+    { forward_matrix : Square2Matrix
+    , inverse_matrix : Square2Matrix
+    , start_angle : Float
+    }
 
 
 eq : Hex -> Hex -> Bool
-eq =
-    HH.eq
+eq ( a1, a2, a3 ) ( b1, b2, b3 ) =
+    a1 == b1 && a2 == b2 && a3 == b3
 
 
-myLayout : ( Float, Float ) -> HL.Layout
+myLayout : ( Float, Float ) -> Layout
 myLayout size =
-    { orientation = HL.orientationLayoutPointy
+    { orientation = orientationLayoutPointy
     , size = size
     , origin = ( 0, 0 )
+    }
+
+
+{-| Contant definition of pointy hexagon orientation
+-}
+orientationLayoutPointy : Orientation
+orientationLayoutPointy =
+    { forward_matrix =
+        { f0 = sqrt 3.0
+        , f1 = sqrt 3.0 / 2.0
+        , f2 = 0.0
+        , f3 = 3.0 / 2.0
+        }
+    , inverse_matrix =
+        { f0 = sqrt 3.0 / 3.0
+        , f1 = -1.0 / 3.0
+        , f2 = 0.0
+        , f3 = 2.0 / 3.0
+        }
+    , start_angle = 0.5
     }
 
 
@@ -31,17 +83,28 @@ offsetToHex ( col, row ) =
         x =
             col - round (toFloat (row + modBy 2 (abs row)) / 2)
     in
-    HH.intFactory ( x, row )
+    -- HH.intFactory ( x, row )
+    ( x, row, -x - row )
 
 
-hexToOffset : HH.Hex -> ( Int, Int )
-hexToOffset =
-    HL.hexToOffset
+hexToOffset : Hex -> ( Int, Int )
+hexToOffset ( q, r, _ ) =
+    let
+        offset =
+            0
+
+        col =
+            q + ((r + offset * modBy 2 (abs r)) // 2)
+
+        row =
+            r
+    in
+    ( col, row )
 
 
 {-| Left/counter-clockwise point of Hex edge
 -}
-borderLeftCorner : Layout -> ( Hex, HH.Direction ) -> Point
+borderLeftCorner : Layout -> ( Hex, Direction ) -> Point
 borderLeftCorner layout ( hex, corner ) =
     let
         ( x, y ) =
@@ -54,8 +117,24 @@ borderLeftCorner layout ( hex, corner ) =
 
 
 center : Layout -> Hex -> Point
-center layout hex =
-    HL.hexToPoint layout hex
+center layout ( q, r, _ ) =
+    let
+        { f0, f1, f2, f3 } =
+            layout.orientation.forward_matrix
+
+        ( xl, yl ) =
+            layout.size
+
+        ( xo, yo ) =
+            layout.origin
+
+        x =
+            precision 2 <| (((f0 * toFloat q) + (f1 * toFloat r)) * xl) + xo
+
+        y =
+            precision 2 <| (((f2 * toFloat q) + (f3 * toFloat r)) * yl) + yo
+    in
+    ( x, y )
 
 
 {-| Round Float number to some division
@@ -71,7 +150,7 @@ precision division number =
 
 {-| Calculate corner offset from a center of the Hex
 -}
-hexCornerOffset : ( Float, Float ) -> Float -> HH.Direction -> Point
+hexCornerOffset : ( Float, Float ) -> Float -> Direction -> Point
 hexCornerOffset ( w, h ) startAngle side =
     let
         angle =
@@ -80,33 +159,28 @@ hexCornerOffset ( w, h ) startAngle side =
     ( w * cos angle, h * sin angle )
 
 
-sideAngle : Float -> HH.Direction -> Float
+sideAngle : Float -> Direction -> Float
 sideAngle startAngle side =
     ((2.0 * pi) * (toFloat (sideIndex side) + startAngle)) / 6
 
 
-sideIndex : HH.Direction -> Int
+sideIndex : Direction -> Int
 sideIndex side =
     case side of
-        HH.SW ->
+        SW ->
             1
 
-        HH.W ->
+        W ->
             2
 
-        HH.NW ->
+        NW ->
             3
 
-        HH.NE ->
+        NE ->
             4
 
-        HH.E ->
+        E ->
             5
 
-        HH.SE ->
+        SE ->
             6
-
-
-cellCubicCoords : Hex -> ( Int, Int, Int )
-cellCubicCoords hex =
-    ( HH.intQ hex, HH.intR hex, HH.intS hex )
