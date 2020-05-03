@@ -443,6 +443,7 @@ gameDecoder =
     succeed Game
         |> required "id" int
         |> required "tag" string
+        |> required "mapName" mapNameDecoder
         |> required "gameStart" Iso8601.decoder
         |> required "players" (list gamePlayerDecoder)
         |> required "events" (list gameEventDecoder)

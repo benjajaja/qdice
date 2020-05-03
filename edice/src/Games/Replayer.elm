@@ -25,12 +25,7 @@ init game =
     let
         map : Result MapLoadError Land.Map
         map =
-            case Maps.mapFromTable game.tag of
-                Ok m ->
-                    Maps.load m |> Result.mapError MapLoadError
-
-                Err _ ->
-                    Err BadTableError
+            Maps.load game.map |> Result.mapError MapLoadError
 
         board =
             Board.init <| Result.withDefault Maps.emptyMap map

@@ -1,13 +1,14 @@
 module Games.Types exposing (..)
 
 import Land exposing (Color, Emoji)
-import Tables exposing (Table)
+import Tables exposing (MapName, Table)
 import Time exposing (Posix)
 
 
 type alias Game =
     { id : Int
     , tag : Table
+    , map : MapName
     , gameStart : Posix
     , players : List GamePlayer
     , events : List GameEvent
