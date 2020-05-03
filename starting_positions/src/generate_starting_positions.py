@@ -19,9 +19,9 @@ def get_args():
                         help='Where to put the adj_mat intermediate files')
     parser.add_argument('--adj_mat_source', type=Path, default=proj_dir / 'maps' / 'map-sources.json',
                         help='If you want to specify the map-sources.json')
-    parser.add_argument('--player_min', type=int, default=5,
+    parser.add_argument('--player_min', type=int, default=2,
                         help='Min num of players to generate starting positions for')
-    parser.add_argument('--player_max', type=int, default=12,
+    parser.add_argument('--player_max', type=int, default=9,
                         help='Max num of players to generate starting positions for')
     args = parser.parse_args()
     return args
@@ -60,7 +60,7 @@ def get_map_starting_positions(G, player_min, player_max, out_dir):
             for clique in cliques:
                 if len(clique) == clique_size:
                     k_sized_cliques.append(clique)
-            if k_sized_cliques:
+            if k_sized_cliques and len(k_sized_cliques) > 1:
                 print(f'{G.name} with {sep} separation and {clique_size} players:\t{len(k_sized_cliques)}')
                 with open(out_dir / f'{G.name}_{sep}_sep_{clique_size}_players.json', 'w', encoding='utf-8') as fp:
                     json.dump(k_sized_cliques, fp)
@@ -86,6 +86,7 @@ def main():
     Path(args.out_dir).mkdir(parents=True, exist_ok=True)
     Path(args.adj_mat_dir).mkdir(parents=True, exist_ok=True)
     for map_name in maps:
+        print(f'{map_name} starting positions')
         map_json = args.adj_mat_dir / f'{map_name}.json'
         G = get_map_graph(map_json)
         G.name = map_name
