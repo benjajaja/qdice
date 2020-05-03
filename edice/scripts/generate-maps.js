@@ -185,6 +185,7 @@ const mapSources = fs.writeFileSync(
 
 // client maps (elm file)
 if (!writeMaps) {
+  console.log("Not writing src/Maps/Sources.elm");
   process.exit(0);
 }
 console.log("Generating Elm map sources");
@@ -221,7 +222,9 @@ clientMaps.forEach(([str, adjacency]) => {
 });
 
 write.write("\n");
-write.write("mapAdjacency : MapName -> (List (String, Int), List (List Int))\n");
+write.write(
+  "mapAdjacency : MapName -> (List (String, Int), List (List Int))\n"
+);
 write.write("mapAdjacency table =\n");
 write.write("    case table of\n");
 clientMaps.forEach(([str, adjacency]) => {

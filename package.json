@@ -7,7 +7,7 @@
   "author": "Benjamin Große",
   "scripts": {
     "start": "node server.js",
-    "generate-maps": "node edice/scripts/generate-maps.js ./edice/maps/ ./edice",
+    "generate-maps": "node edice/scripts/generate-maps.js ./edice/maps/",
     "write-version": "ts-node scripts/write-version.ts $(git rev-parse HEAD)",
     "lint": "yarn prettier --check '**/*.{ts,tsx}'",
     "format": "yarn prettier --write '**/*.{ts,tsx}'",
