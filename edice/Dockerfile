@@ -4,6 +4,8 @@ FROM node:10.15.3-alpine
 WORKDIR /usr/src/edice
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production
+# install elm-test
+RUN yarn global add elm-test@0.19.1-revision2 elm@0.19.1-3
 
 # cache package.elm-lang.org
 COPY src/Dummy.elm ./src/
@@ -16,8 +18,14 @@ COPY scripts ./scripts
 COPY html ./html
 RUN yarn generate-maps
 
-# build
+# run elm-test
 COPY src ./src
+COPY tests ./tests
+RUN elm-test
+RUN yarn global remove elm-test elm
+RUN rm -rf ./tests
+
+# build
 COPY webpack.config.js ./
 ENV NODE_ENV=production
 ARG build_id

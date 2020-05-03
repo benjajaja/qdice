@@ -11,16 +11,11 @@ COPY edice/scripts/generate-maps.js ./scripts/generate-maps.js
 COPY edice/maps ./edice/maps
 RUN node ./scripts/generate-maps.js ./edice/maps/
 
-ARG build_id
-COPY scripts/write-version.ts ./scripts/write-version.ts
-RUN yarn ts-node scripts/write-version.ts $build_id
-
 COPY tsconfig.json ./
 COPY *.ts *.js ./
 COPY table ./table
 COPY test ./test
 RUN yarn test --color false
-# RUN node server.js --quit
 
 # starting positions generation
 
@@ -41,6 +36,11 @@ RUN python ./src/generate_starting_positions.py --adj_mat_source ./maps/map-sour
 FROM server
 
 COPY --from=starting_positions /starting_positions/output /usr/src/nodice/starting_positions/maps/output
+
+ARG build_id
+COPY scripts/write-version.ts ./scripts/write-version.ts
+RUN yarn ts-node scripts/write-version.ts $build_id
+
 
 WORKDIR /usr/src/nodice
 EXPOSE 5001
