@@ -2,10 +2,6 @@
   "root": "dist",
   "clean_urls": false,
   "routes": {
-    "/editor": "index.html",
-    "/help": "index.html",
-    "/Mi%C3%B1o": "index.html",
-    "/Melchor": "index.html"
   },
   "https_only": true
 }

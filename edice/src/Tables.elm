@@ -7,8 +7,6 @@ type alias Table =
 
 type MapName
     = Null
-    | Melchor
-    | Miño
     | Serrano
     | DeLucía
     | Sabicas
@@ -20,12 +18,6 @@ type MapName
 decodeMap : String -> Result String MapName
 decodeMap name =
     case name of
-        "Melchor" ->
-            Ok Melchor
-
-        "Miño" ->
-            Ok Miño
-
         "Serrano" ->
             Ok Serrano
 
@@ -53,12 +45,6 @@ encodeMap map =
     case map of
         Null ->
             "Null"
-
-        Melchor ->
-            "Melchor"
-
-        Miño ->
-            "Miño"
 
         Serrano ->
             "Serrano"

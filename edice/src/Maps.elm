@@ -349,9 +349,6 @@ mapFromTable table =
         "Lagos" ->
             Ok DeLucía
 
-        "Polo" ->
-            Ok Melchor
-
         "Arabia" ->
             Ok Sabicas
 

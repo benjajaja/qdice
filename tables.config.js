@@ -65,22 +65,6 @@ module.exports = {
       },
     },
     {
-      tag: "Polo",
-      name: "Polo",
-      mapName: "Melchor",
-      playerSlots: 3,
-      startSlots: 2,
-      points: 100,
-      stackSize: 4,
-      params: {
-        noFlagRounds: 3,
-        botLess: true,
-        startingCapitals: true,
-        readySlots: 2,
-        turnSeconds: 60,
-      },
-    },
-    {
       tag: "Arabia",
       name: "Arabia",
       mapName: "Sabicas",
