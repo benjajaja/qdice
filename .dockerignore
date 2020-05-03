@@ -8,3 +8,4 @@ e2e
 .local_env
 postgres
 map-sources.json
+starting_positions/maps/

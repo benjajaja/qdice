@@ -121,9 +121,16 @@ describe("A full game", () => {
     await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
     await hisTurn(page2, "B");
+    await attack(page2, "land-👙", "land-🌵", "B");
     await attack(page2, "land-🌵", "land-🍩", "B");
     await attack(page2, "land-🍩", "land-🌙", "B");
-    await attack(page2, "land-🌙", "land-🐸", "B");
+    await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page, "A");
+    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page2, "B");
+    await attack(page2, "land-🍩", "land-🌙", "B");
     await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
 
     await hisTurn(page, "A");
@@ -132,19 +139,18 @@ describe("A full game", () => {
     await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
     await hisTurn(page2, "B");
-    await attack(page2, "land-🌙", "land-🐸", "B");
     await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
 
     await hisTurn(page, "A");
-    await attack(page, "land-💎", "land-🐸", "A");
-    await attack(page, "land-🐸", "land-🌙", "A");
-    await attack(page, "land-🐙", "land-💰", "A");
     await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
     await hisTurn(page2, "B");
+    await attack(page2, "land-🍩", "land-🌙", "B");
     await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
 
     await hisTurn(page, "A");
+    await attack(page, "land-🐸", "land-🌙", "A");
+    await attack(page, "land-🐙", "land-💰", "A");
     await attack(page, "land-🌙", "land-🍩", "A");
     await expect(page).toClick(testId("button-seat"), { text: "End turn" });
 
@@ -170,7 +176,28 @@ describe("A full game", () => {
     await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
 
     await hisTurn(page, "A");
+    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page2, "B");
+    await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page, "A");
+    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page2, "B");
+    await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page, "A");
     await attack(page, "land-🍩", "land-🌵", "A");
+    await expect(page).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page2, "B");
+    await expect(page2).toClick(testId("button-seat"), { text: "End turn" });
+
+    await hisTurn(page, "A");
+    await attack(page, "land-🌵", "land-👙", "A");
+
+    console.log("game should have finished");
 
     await expect(page).toMatchElement(
       `${testId("logline-elimination")}:nth-last-child(2)`,
@@ -200,9 +227,9 @@ describe("A full game", () => {
     await expect(page).toClick(testId("replayer-goto-end"));
 
     await expect(page).toMatchElement(testId("game-event"), {
-      text: /A won the game after 15 rounds/,
+      text: /A won the game after 23 rounds/,
     });
     const count = (await page.$$(testId("game-event"))).length;
-    expect(count).toBe(28);
+    expect(count).toBe(30);
   });
 });

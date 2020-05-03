@@ -138,7 +138,6 @@ export const preloadStartingPositions = async (
     for (let i = 4; i > 0; i--) {
       try {
         const json: string[][] = require(`../starting_positions/maps/output/${mapName}_${i}_sep_${p}_players.json`);
-        logger.debug(`got starting positions for ${mapName} (${p} players)`);
         sizesList[p] = json;
         break;
       } catch (e) {}
