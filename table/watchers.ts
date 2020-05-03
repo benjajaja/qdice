@@ -108,9 +108,14 @@ export const exit = (
   table: Table,
   clientId: string
 ): CommandResult | null => {
-  const existing = R.find(R.propEq("clientId", clientId), table.watching);
+  const existing = table.watching.find(R.propEq("clientId", clientId));
   if (existing) {
-    publish.exit(table, user ? user.name : null);
+    if (
+      existing.id !== null &&
+      !table.players.find(player => player.id === existing.id)
+    ) {
+      publish.exit(table, user ? user.name : null);
+    }
     return {
       watchers: R.filter(
         R.complement(R.propEq("clientId", clientId)),
@@ -130,7 +135,14 @@ export const cleanWatchers = (table: Table): CommandResult | null => {
     }
   });
   if (stoppedWatching.length > 0) {
-    stoppedWatching.forEach(user => publish.exit(table, user.name));
+    stoppedWatching.forEach(user => {
+      if (
+        user.id !== null &&
+        !table.players.find(player => player.id === user.id)
+      ) {
+        publish.exit(table, user.name);
+      }
+    });
     return {
       watchers: stillWatching,
     };

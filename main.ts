@@ -241,6 +241,7 @@ export const server = async () => {
     }
   });
 
+  client.setMaxListeners(20);
   table.startTables(lock, client);
 
   client.on("message", globalServer.onMessage(lock));
