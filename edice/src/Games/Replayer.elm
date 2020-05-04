@@ -1,12 +1,14 @@
 module Games.Replayer exposing (gameReplayer, init, subscriptions, update)
 
+import Array
 import Board
 import Board.Colors exposing (baseCssRgb)
 import Board.State
 import Board.Types exposing (BoardMove(..))
-import Game.Types exposing (MapLoadError(..))
+import Game.PlayerCard exposing (TurnPlayer)
+import Game.Types exposing (GameStatus(..), MapLoadError(..), Player)
 import Games.Replayer.Types exposing (..)
-import Games.Types exposing (Game, GameEvent(..))
+import Games.Types exposing (Game, GameEvent(..), GamePlayer)
 import Helpers exposing (consoleDebug, dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -134,30 +136,17 @@ gameReplayer model game =
     div [ class "edGameReplayer" ] <|
         case model of
             Just m ->
-                [ Board.view m.board Nothing m.boardOptions [] |> Html.map Types.BoardMsg
+                [ div [ class "edPlayerChips" ] <|
+                    List.map (Game.PlayerCard.view Playing) <|
+                        List.take 4 <|
+                            List.drop 4 <|
+                                sortedPlayers m.turnIndex m.players
+                , Board.view m.board Nothing m.boardOptions [] |> Html.map Types.BoardMsg
+                , div [ class "edPlayerChips" ] <|
+                    List.map (Game.PlayerCard.view Playing) <|
+                        List.take 4 <|
+                            sortedPlayers m.turnIndex m.players
                 , div [] [ text <| "Round " ++ String.fromInt m.round ]
-                , div [] <|
-                    Helpers.join (text ", ") <|
-                        List.indexedMap
-                            (\i p ->
-                                (if p.isBot then
-                                    em
-
-                                 else
-                                    a
-                                )
-                                    [ style "color" (baseCssRgb p.color) ]
-                                    [ text <|
-                                        p.name
-                                            ++ (if i == m.turnIndex then
-                                                    "*"
-
-                                                else
-                                                    ""
-                                               )
-                                    ]
-                            )
-                            m.players
                 , div [] [ text <| "Turn " ++ String.fromInt (m.step + 1) ]
                 , div [ class "edGameReplayer__controls" ]
                     [ button [ onClick <| Types.ReplayerCmd <| TogglePlay ]
@@ -216,6 +205,53 @@ gameReplayer model game =
 
             Nothing ->
                 []
+
+
+sortedPlayers : Int -> List GamePlayer -> List TurnPlayer
+sortedPlayers turnIndex players =
+    let
+        acc : Array.Array TurnPlayer
+        acc =
+            Array.initialize 8 (\i -> { player = Nothing, index = i, turn = Nothing, isUser = False })
+
+        fold : ( Int, GamePlayer ) -> Array.Array TurnPlayer -> Array.Array TurnPlayer
+        fold ( i, p ) array =
+            Array.set (Board.Colors.colorIndex p.color - 1)
+                { player =
+                    Just <|
+                        Player p.id
+                            p.name
+                            p.color
+                            p.picture
+                            False
+                            { totalLands = 0
+                            , connectedLands = 0
+                            , currentDice = 0
+                            , position = 0
+                            , score = 0
+                            }
+                            0
+                            0
+                            0
+                            []
+                            Nothing
+                            False
+                , index = i
+                , turn =
+                    if i == turnIndex then
+                        Just 0.0
+
+                    else
+                        Nothing
+                , isUser = False
+                }
+                array
+    in
+    List.foldl
+        fold
+        acc
+        (List.indexedMap Tuple.pair players)
+        |> Array.toList
 
 
 applyEvent : ReplayerModel -> Int -> ReplayerModel
