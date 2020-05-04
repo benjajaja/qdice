@@ -800,6 +800,35 @@ updateTable model table msg =
                         <|
                             LogLeave player
 
+                    Backend.Types.Takeover player replaced ->
+                        let
+                            ( model_, cmd ) =
+                                updateChatLog
+                                    { model
+                                        | game =
+                                            updatePlayers model.game
+                                                (List.map
+                                                    (\p ->
+                                                        if p.id == replaced.id then
+                                                            player
+
+                                                        else
+                                                            p
+                                                    )
+                                                    model.game.players
+                                                )
+                                                []
+                                    }
+                                <|
+                                    LogTakeover player replaced
+                        in
+                        ( model_
+                        , Cmd.batch
+                            [ cmd
+                            , toastMessage (player.name ++ " has taken over " ++ replaced.name) <| Just 10000
+                            ]
+                        )
+
                     Backend.Types.Enter user ->
                         updateChatLog model <| LogEnter user
 

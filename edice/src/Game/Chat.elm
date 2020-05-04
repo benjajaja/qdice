@@ -104,6 +104,13 @@ gameBox lines id_ =
                                 , Html.text " left the game"
                                 ]
 
+                        LogTakeover player replaced ->
+                            div [ class "chatbox--line--takeover", dataTestId "logline-takeover" ]
+                                [ playerTag player.name player.color
+                                , Html.text " has taken over "
+                                , playerTag replaced.name replaced.color
+                                ]
+
                         LogRoll roll ->
                             rollLine roll
 

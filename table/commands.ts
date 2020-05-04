@@ -314,8 +314,7 @@ const takeover = (
   const player = makePlayer(user, clientId, table.players, bestBot.color);
   const players = table.players.map(p => (p === bestBot ? player : p));
 
-  publish.leave(table, bestBot);
-  publish.join(table, player);
+  publish.takeover(table, player, bestBot);
 
   return {
     players,

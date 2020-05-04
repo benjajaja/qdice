@@ -58,6 +58,7 @@ type TableMessage
     | Exit (Maybe Game.Types.User)
     | Join Game.Types.Player
     | Leave Game.Types.Player
+    | Takeover Game.Types.Player Game.Types.Player
     | Update Game.Types.TableStatus
     | Roll Game.Types.Roll
     | Move Game.Types.Move

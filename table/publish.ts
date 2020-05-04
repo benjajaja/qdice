@@ -10,6 +10,7 @@ import {
   Color,
   ScoredElimination,
   Chatter,
+  BotPlayer,
 } from "../types";
 import {
   serializeTable,
@@ -75,6 +76,30 @@ export const leave = (table: Table, player: Player) => {
           err,
           "tables/" + table.name + "/clients leave",
           player.name
+        );
+      }
+    }
+  );
+};
+
+export const takeover = (table: Table, player: Player, replaced: BotPlayer) => {
+  client.publish(
+    "tables/" + table.name + "/clients",
+    JSON.stringify({
+      type: "takeover",
+      payload: [
+        serializePlayer(table)(player),
+        serializePlayer(table)(replaced),
+      ],
+    }),
+    undefined!,
+    err => {
+      if (err) {
+        console.log(
+          err,
+          "tables/" + table.name + "/clients takeover",
+          player.name,
+          replaced.name
         );
       }
     }

@@ -172,6 +172,14 @@ decodeTableMessage table message =
                         Err err ->
                             Err <| errorToString err
 
+                "takeover" ->
+                    case decodeString (field "payload" <| tupleDecoder playersDecoder playersDecoder) message of
+                        Ok ( player, replaced ) ->
+                            Ok <| TableMsg table <| Takeover player replaced
+
+                        Err err ->
+                            Err <| decodeErrorToString "table" mtype err
+
                 "turn" ->
                     case decodeString (field "payload" turnDecoder) message of
                         Ok info ->

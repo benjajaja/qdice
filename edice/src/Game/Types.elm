@@ -176,6 +176,7 @@ type ChatLogEntry
     | LogChat (Maybe User) Color String
     | LogJoin Player
     | LogLeave Player
+    | LogTakeover Player Player
     | LogError String
     | LogRoll RollLog
     | LogTurn User Color
