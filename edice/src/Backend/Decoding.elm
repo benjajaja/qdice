@@ -332,6 +332,20 @@ mapNameDecoder =
             )
 
 
+safeMapNameDecoder : Decoder Tables.MapName
+safeMapNameDecoder =
+    map Tables.decodeMap string
+        |> andThen
+            (\m ->
+                case m of
+                    Ok map ->
+                        succeed map
+
+                    Err err ->
+                        succeed Tables.Null
+            )
+
+
 tableInfoDecoder : Decoder Game.Types.TableInfo
 tableInfoDecoder =
     succeed Game.Types.TableInfo
@@ -420,7 +434,7 @@ gameDecoder =
     succeed Game
         |> required "id" int
         |> required "tag" string
-        |> required "mapName" mapNameDecoder
+        |> required "mapName" safeMapNameDecoder
         |> required "gameStart" Iso8601.decoder
         |> required "players" (list gamePlayerDecoder)
         |> required "events" (list gameEventDecoder)

@@ -1,8 +1,15 @@
 module Games.Types exposing (..)
 
+import Dict exposing (Dict)
 import Land exposing (Color, Emoji)
 import Tables exposing (MapName, Table)
 import Time exposing (Posix)
+
+
+type alias GamesModel =
+    { tables : Dict String (List Game)
+    , all : List Game
+    }
 
 
 type alias Game =

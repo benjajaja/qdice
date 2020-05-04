@@ -9,7 +9,7 @@ import Browser.Navigation exposing (Key)
 import Dict exposing (Dict)
 import Game.Types exposing (Award, PlayerAction, TableInfo)
 import Games.Replayer.Types exposing (ReplayerCmd, ReplayerModel)
-import Games.Types exposing (Game, GameRef)
+import Games.Types exposing (Game, GameRef, GamesModel)
 import Html
 import Http exposing (Error)
 import MyProfile.Types
@@ -154,11 +154,7 @@ type alias Model =
     , otherProfile : Placeheld OtherProfile
     , preferences : Preferences
     , sessionPreferences : SessionPreferences
-    , games :
-        { tables : Dict String (List Game)
-        , all : List Game
-        , fetching : Maybe GamesSubRoute
-        }
+    , games : Placeheld GamesModel
     , fullscreen : Bool
     , comments : CommentsModel
     , replayer : Maybe ReplayerModel

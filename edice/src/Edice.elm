@@ -127,10 +127,10 @@ init flags location key =
             , otherProfile =
                 Profile.init
             , games =
-                { tables = Dict.empty
-                , all = []
-                , fetching = Nothing
-                }
+                Placeholder.Placeholder
+                    { tables = Dict.empty
+                    , all = []
+                    }
             , fullscreen = False
             , comments = Comments.init
             , replayer = Nothing

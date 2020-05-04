@@ -11,6 +11,7 @@ import Games.Types exposing (Game, GameEvent(..), GamePlayer)
 import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Placeholder exposing (Placeheld(..))
 import Routing.String exposing (link, routeToString)
 import Snackbar exposing (toastError)
 import Time exposing (Zone)
@@ -19,22 +20,13 @@ import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg, Route(..))
 
 fetchGames : Model -> GamesSubRoute -> ( Model, Cmd Msg )
 fetchGames model sub =
-    let
-        games =
-            model.games
-    in
-    ( { model | games = { games | fetching = Just sub } }, Backend.HttpCommands.games model.backend sub )
+    ( { model | games = Placeholder.toFetching model.games }
+    , Backend.HttpCommands.games model.backend sub
+    )
 
 
 update : Model -> GamesMsg -> ( Model, Cmd Msg )
 update model msg =
-    let
-        oldGames =
-            model.games
-
-        games =
-            { oldGames | fetching = Nothing }
-    in
     case msg of
         GetGames sub res ->
             case res of
@@ -43,19 +35,31 @@ update model msg =
                         newGames =
                             case sub of
                                 AllGames ->
-                                    { games | all = list }
+                                    model.games
+                                        |> Placeholder.value
+                                        |> (\games ->
+                                                Fetched { games | all = list }
+                                           )
 
                                 GamesOfTable table ->
-                                    { games | tables = Dict.insert table list games.tables }
+                                    model.games
+                                        |> Placeholder.value
+                                        |> (\games ->
+                                                Fetched { games | tables = Dict.insert table list games.tables }
+                                           )
 
                                 GameId table id ->
-                                    let
-                                        tableGames =
-                                            Dict.get table games.tables
-                                                |> Maybe.withDefault []
-                                                |> List.append list
-                                    in
-                                    { games | tables = Dict.insert table tableGames games.tables }
+                                    model.games
+                                        |> Placeholder.value
+                                        |> (\games ->
+                                                let
+                                                    tableGames =
+                                                        Dict.get table games.tables
+                                                            |> Maybe.withDefault []
+                                                            |> List.append list
+                                                in
+                                                Fetched { games | tables = Dict.insert table tableGames games.tables }
+                                           )
 
                         model_ =
                             { model | games = newGames }
@@ -73,7 +77,16 @@ update model msg =
                             ( model_, Cmd.none )
 
                 Err err ->
-                    ( { model | games = games }, toastError "Could not fetch game!" <| Helpers.httpErrorToString err )
+                    ( { model
+                        | games =
+                            model.games
+                                |> Placeholder.value
+                                |> (\games ->
+                                        Error (Helpers.httpErrorToString err) games
+                                   )
+                      }
+                    , toastError "Could not fetch game!" <| Helpers.httpErrorToString err
+                    )
 
 
 enter : Model -> GamesSubRoute -> ( Model, Cmd Msg )
@@ -83,16 +96,11 @@ enter model sub =
             model.games
 
         model_ =
-            { model | games = { games | fetching = Just sub } }
+            { model | games = Placeholder.toFetching model.games }
 
         cmd =
             Backend.HttpCommands.games model.backend sub
     in
-    -- case sub of
-    -- GameId table id ->
-    -- ( { model_ | replayer = Just <| Games.Replayer.init table }, cmd )
-    --
-    -- _ ->
     ( model_, cmd )
 
 
@@ -113,36 +121,33 @@ view model sub =
             ]
         , div [] <| crumbs sub
         , div [] <|
-            let
-                items =
+            case model.games of
+                Placeholder _ ->
+                    [ text "Waiting..." ]
+
+                Fetching _ ->
+                    [ text "Loading..." ]
+
+                Fetched games ->
                     case sub of
                         AllGames ->
-                            List.map (gameRow model.zone) model.games.all
+                            List.map (gameRow model.zone) games.all
 
                         GamesOfTable table ->
-                            Dict.get table model.games.tables
+                            Dict.get table games.tables
                                 |> Maybe.map (List.map <| gameRow model.zone)
                                 |> Maybe.withDefault []
 
                         GameId table id ->
-                            Dict.values model.games.tables
+                            Dict.values games.tables
                                 |> List.concat
                                 |> Helpers.find (.id >> (==) id)
                                 |> Maybe.map (gameView model.zone model.replayer)
                                 |> Maybe.map List.singleton
                                 |> Maybe.withDefault []
-            in
-            case items of
-                [] ->
-                    case model.games.fetching of
-                        Nothing ->
-                            [ text "Could not find these games" ]
 
-                        Just _ ->
-                            [ text "Loading..." ]
-
-                _ ->
-                    items
+                Error err _ ->
+                    [ text <| "Error: " ++ err ]
         ]
             ++ (case sub of
                     AllGames ->
