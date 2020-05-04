@@ -1,4 +1,4 @@
-module Game.PlayerCard exposing (TurnPlayer, playerPicture, view)
+module Game.PlayerCard exposing (TurnPlayer, playerPicture, turnProgress, view)
 
 import Awards
 import Board.Colors
@@ -14,43 +14,53 @@ import Ordinal exposing (ordinal)
 import Routing.String exposing (routeToString)
 import Svg
 import Svg.Attributes
-import Time exposing (posixToMillis)
+import Time exposing (Posix, posixToMillis)
 import Types exposing (Model, Msg(..), Route(..))
 
 
 type alias TurnPlayer =
-    ( Maybe Player, Int )
+    { player : Maybe Player
+    , index : Int
+    , turn : Maybe Float
+    , isUser : Bool
+    }
 
 
-view : Model -> TurnPlayer -> Html.Html Types.Msg
-view model ( maybePlayer, index ) =
-    case maybePlayer of
-        Just player ->
-            playerContainer player
-                (index == model.game.turnIndex)
-                (model.game.player |> Maybe.map ((==) player) |> Maybe.withDefault False)
-                [ playerImageProgress model index player
-                , Html.Lazy.lazy3 playerInfo player model.game.status index
+view : GameStatus -> TurnPlayer -> Html.Html Types.Msg
+view status { player, index, turn, isUser } =
+    let
+        hasTurn =
+            turn /= Nothing
+    in
+    case player of
+        Just p ->
+            playerContainer p
+                hasTurn
+                isUser
+                [ playerImageProgress turn p
+                , Html.Lazy.lazy3 playerInfo p status index
                 , Html.div
                     [ class "edPlayerChip__picture__bar"
                     , style "width" <|
-                        (if index == model.game.turnIndex then
-                            (1.0 - turnProgress model)
-                                * 100
-                                |> round
-                                |> String.fromInt
+                        (case turn of
+                            Just progress ->
+                                (1.0 - progress)
+                                    * 100
+                                    |> round
+                                    |> String.fromInt
 
-                         else
-                            "0"
+                            Nothing ->
+                                "0"
                         )
                             ++ "%"
                     , style "background-color" <|
                         progressColor <|
-                            if index == model.game.turnIndex then
-                                1.0 - turnProgress model
+                            case turn of
+                                Just progress ->
+                                    1.0 - progress
 
-                            else
-                                0.0
+                                Nothing ->
+                                    0.0
                     ]
                     []
                 ]
@@ -183,22 +193,14 @@ playerContainer player hasTurn isUser =
                       else
                         []
                     ]
-
-        --, if hasTurn then
-        --Elevation.z6
-        --else
-        --Elevation.z2
         ]
 
 
-playerImageProgress model index player =
+playerImageProgress progress player =
     Html.div [ class "edPlayerChip__picture" ]
-        [ playerCircleProgress <|
-            if index == model.game.turnIndex then
-                1.0 - turnProgress model
-
-            else
-                0.0
+        [ Maybe.map ((-) 1.0) progress
+            |> Maybe.withDefault 0.0
+            |> playerCircleProgress
         , Html.Lazy.lazy playerPictureHtml player.picture
         ]
 
@@ -289,24 +291,15 @@ progressColor progress =
         |> Board.Colors.cssRgb
 
 
-turnProgress : Model -> Float
-turnProgress model =
+turnProgress : Float -> Posix -> Int -> Float
+turnProgress turnTime time turnStart =
     let
-        turnTime =
-            Maybe.withDefault
-                model.settings.turnSeconds
-                model.game.params.turnSeconds
-                |> toFloat
-
         timestamp =
-            (posixToMillis model.time |> toFloat) / 1000
-
-        turnStart =
-            toFloat model.game.turnStart
+            (posixToMillis time |> toFloat) / 1000
     in
     max 0.0 <|
         min 1 <|
-            (turnTime - (timestamp - turnStart))
+            (turnTime - (timestamp - toFloat turnStart))
                 / turnTime
 
 

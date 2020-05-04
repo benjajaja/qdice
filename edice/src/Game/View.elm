@@ -22,7 +22,7 @@ import MyProfile.MyProfile
 import MyProfile.Types
 import Ordinal exposing (ordinal)
 import Routing.String exposing (routeToString)
-import Time exposing (posixToMillis)
+import Time exposing (Posix, posixToMillis)
 import Tournaments exposing (tournamentTime)
 import Types exposing (AuthNetwork(..), DialogType(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
 
@@ -157,30 +157,47 @@ chatOverlay fullscreen overlay =
 playerBar : Int -> Model -> Html Msg
 playerBar dropCount model =
     div [ class "edPlayerChips" ] <|
-        List.map (PlayerCard.view model) <|
+        List.map (PlayerCard.view model.game.status) <|
             List.take 4 <|
                 List.drop dropCount <|
-                    sortedPlayers <|
-                        model.game.players
+                    sortedPlayers model
 
 
-sortedPlayers : List Player -> List TurnPlayer
-sortedPlayers players =
+sortedPlayers : Model -> List TurnPlayer
+sortedPlayers model =
     let
         acc : Array.Array TurnPlayer
         acc =
-            Array.initialize 8 (\i -> ( Nothing, i ))
+            Array.initialize 8 (\i -> { player = Nothing, index = i, turn = Nothing, isUser = False })
 
         fold : ( Int, Player ) -> Array.Array TurnPlayer -> Array.Array TurnPlayer
         fold =
             \( i, p ) ->
-                \a ->
-                    Array.set (Board.Colors.colorIndex p.color - 1) ( Just p, i ) a
+                \array ->
+                    Array.set (Board.Colors.colorIndex p.color - 1)
+                        { player = Just p
+                        , index = i
+                        , turn =
+                            if i == model.game.turnIndex then
+                                let
+                                    turnTime =
+                                        Maybe.withDefault
+                                            model.settings.turnSeconds
+                                            model.game.params.turnSeconds
+                                            |> toFloat
+                                in
+                                Just <| PlayerCard.turnProgress turnTime model.time model.game.turnStart
+
+                            else
+                                Nothing
+                        , isUser = model.game.player |> Maybe.map ((==) p) |> Maybe.withDefault False
+                        }
+                        array
     in
     List.foldl
         fold
         acc
-        (List.indexedMap Tuple.pair players)
+        (List.indexedMap Tuple.pair model.game.players)
         |> Array.toList
 
 
