@@ -71,19 +71,34 @@ view status { player, index, turn, isUser } =
 
 playerInfo : Player -> GameStatus -> Int -> Html Msg
 playerInfo player status index =
+    let
+        isBot =
+            String.startsWith "bot_" player.id
+    in
     div [ class "edPlayerChip__info" ]
-        [ a
-            [ class "edPlayerChip__name"
-            , href <| routeToString False <| ProfileRoute player.id player.name
-            , dataTestId <| "player-name-" ++ String.fromInt index
-            , style "background-color" <| Board.Colors.baseCssRgb player.color
-            , style "color" <|
+        [ (if isBot then
+            span
+
+           else
+            a
+          )
+            ([ class "edPlayerChip__name"
+             , dataTestId <| "player-name-" ++ String.fromInt index
+             , style "background-color" <| Board.Colors.baseCssRgb player.color
+             , style "color" <|
                 (Color.Accessibility.maximumContrast (Board.Colors.base player.color)
                     [ Color.rgb255 0 0 0, Color.rgb255 30 30 30, Color.rgb255 255 255 255 ]
                     |> Maybe.withDefault (Color.rgb255 0 0 0)
                     |> Board.Colors.cssRgb
                 )
-            ]
+             ]
+                ++ (if isBot then
+                        []
+
+                    else
+                        [ href <| routeToString False <| ProfileRoute player.id player.name ]
+                   )
+            )
             [ text player.name ]
         , div
             [ class "edPlayerChip__playerStats"
