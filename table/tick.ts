@@ -8,6 +8,7 @@ import {
   Command,
   IllegalMoveError,
   Land,
+  Color,
 } from "../types";
 import { processCommand } from "../table";
 import { havePassed } from "../timestamp";
@@ -238,9 +239,9 @@ const rollDice = (table: Table): [number[], number[], Land, Land] => {
   const find = findLand(table.lands);
   const fromLand = find(table.attack!.from);
   const toLand = find(table.attack!.to);
-  if (table.roundCount === 1 && fromLand.points > toLand.points) {
+  if (table.roundCount === 1 && toLand.color === Color.Neutral) {
     const fromRoll = R.range(0, fromLand.points).map(R.always(6));
-    const toRoll = R.range(0, toLand.points).map(R.always(6));
+    const toRoll = R.range(0, toLand.points).map(R.always(1));
     return [fromRoll, toRoll, fromLand, toLand];
   }
   const [fromRoll, toRoll, _] = diceRoll(fromLand.points, toLand.points);
