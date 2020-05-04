@@ -15,7 +15,7 @@ import Routing.String exposing (routeToString)
 import Svg
 import Svg.Attributes
 import Time exposing (Posix, posixToMillis)
-import Types exposing (Model, Msg(..), Route(..))
+import Types exposing (Msg(..), Route(..))
 
 
 type alias TurnPlayer =

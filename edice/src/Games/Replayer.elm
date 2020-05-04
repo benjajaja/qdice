@@ -39,7 +39,7 @@ init game =
         { diceVisible = True
         , showEmojis = False
         }
-    , players = game.players
+    , players = List.indexedMap (mapGamePlayer game.lands) game.players
     , turnIndex = 0
     , game = game
     , playing = False
@@ -147,7 +147,7 @@ gameReplayer model game =
                         List.take 4 <|
                             sortedPlayers m.turnIndex m.players
                 , div [] [ text <| "Round " ++ String.fromInt m.round ]
-                , div [] [ text <| "Turn " ++ String.fromInt (m.step + 1) ]
+                , div [] [ text <| "Turn " ++ String.fromInt (m.step + 1) ++ " / " ++ String.fromInt m.turnIndex ]
                 , div [ class "edGameReplayer__controls" ]
                     [ button [ onClick <| Types.ReplayerCmd <| TogglePlay ]
                         [ if not m.playing then
@@ -207,35 +207,43 @@ gameReplayer model game =
                 []
 
 
-sortedPlayers : Int -> List GamePlayer -> List TurnPlayer
+mapGamePlayer : List LandUpdate -> Int -> GamePlayer -> Player
+mapGamePlayer lands i p =
+    let
+        hisLands =
+            List.filter (.color >> (==) p.color) lands
+    in
+    Player p.id
+        p.name
+        p.color
+        p.picture
+        False
+        { totalLands = List.length hisLands
+        , connectedLands = 0
+        , currentDice = List.foldl (.points >> (+)) 0 hisLands
+        , position = i + 1
+        , score = 0
+        }
+        0
+        0
+        0
+        []
+        Nothing
+        False
+
+
+sortedPlayers : Int -> List Player -> List TurnPlayer
 sortedPlayers turnIndex players =
     let
         acc : Array.Array TurnPlayer
         acc =
             Array.initialize 8 (\i -> { player = Nothing, index = i, turn = Nothing, isUser = False })
 
-        fold : ( Int, GamePlayer ) -> Array.Array TurnPlayer -> Array.Array TurnPlayer
+        fold : ( Int, Player ) -> Array.Array TurnPlayer -> Array.Array TurnPlayer
         fold ( i, p ) array =
             Array.set (Board.Colors.colorIndex p.color - 1)
                 { player =
-                    Just <|
-                        Player p.id
-                            p.name
-                            p.color
-                            p.picture
-                            False
-                            { totalLands = 0
-                            , connectedLands = 0
-                            , currentDice = 0
-                            , position = 0
-                            , score = 0
-                            }
-                            0
-                            0
-                            0
-                            []
-                            Nothing
-                            False
+                    Just p
                 , index = i
                 , turn =
                     if i == turnIndex then
@@ -256,19 +264,21 @@ sortedPlayers turnIndex players =
 
 applyEvent : ReplayerModel -> Int -> ReplayerModel
 applyEvent model step =
-    case List.drop step model.game.events |> List.head of
+    (case List.drop step model.game.events |> List.head of
         Just event ->
             case event of
                 Attack player from to ->
                     case Helpers.tupleCombine ( Land.findLand from model.board.map.lands, Land.findLand to model.board.map.lands ) of
                         Just ( fromLand, toLand ) ->
-                            { model
+                            ( { model
                                 | board =
                                     Board.State.updateLands model.board [] <| Just <| FromTo fromLand toLand
-                            }
+                              }
+                            , Nothing
+                            )
 
                         Nothing ->
-                            model
+                            ( model, Nothing )
 
                 Roll fromRoll toRoll ->
                     let
@@ -299,6 +309,13 @@ applyEvent model step =
                                 )
                                 model.players
 
+                        isKill =
+                            if List.length players /= List.length model.players then
+                                Just 100
+
+                            else
+                                Nothing
+
                         turnIndex =
                             if
                                 (List.drop model.turnIndex model.players |> List.head)
@@ -309,11 +326,13 @@ applyEvent model step =
                             else
                                 model.turnIndex
                     in
-                    { model
+                    ( { model
                         | board = board
                         , players = players
                         , turnIndex = turnIndex
-                    }
+                      }
+                    , isKill
+                    )
 
                 EndTurn id landDice reserveDice capitals player ->
                     let
@@ -344,7 +363,7 @@ applyEvent model step =
                             else
                                 model.round
                     in
-                    { model
+                    ( { model
                         | board =
                             case updates of
                                 Just u ->
@@ -354,10 +373,95 @@ applyEvent model step =
                                     model.board
                         , turnIndex = turnIndex
                         , round = round
-                    }
+                      }
+                    , Nothing
+                    )
 
                 _ ->
-                    model
+                    ( model, Nothing )
 
         Nothing ->
-            model
+            ( model, Nothing )
+    )
+        |> updatePlayers
+
+
+updatePlayers : ( ReplayerModel, Maybe Int ) -> ReplayerModel
+updatePlayers ( model, score ) =
+    { model
+        | players =
+            List.indexedMap (mapPlayer model score) model.players
+                |> updatePlayerPositions
+    }
+
+
+mapPlayer : ReplayerModel -> Maybe Int -> Int -> Player -> Player
+mapPlayer model score i p =
+    let
+        hisLands =
+            List.filter (.color >> (==) p.color) model.board.map.lands
+    in
+    Player p.id
+        p.name
+        p.color
+        p.picture
+        False
+        { totalLands = List.length hisLands
+        , connectedLands = 0
+        , currentDice = List.foldl (.points >> (+)) 0 hisLands
+        , position = 0
+        , score =
+            if score /= Nothing && i == model.turnIndex then
+                p.gameStats.score + Maybe.withDefault 0 score
+
+            else
+                p.gameStats.score
+        }
+        0
+        0
+        0
+        []
+        Nothing
+        False
+
+
+updatePlayerPositions : List Player -> List Player
+updatePlayerPositions players =
+    let
+        sorted =
+            List.indexedMap Tuple.pair players
+                |> List.sortWith
+                    (\( ai, a ) ( bi, b ) ->
+                        if a.gameStats.totalLands == b.gameStats.totalLands then
+                            if a.gameStats.currentDice == b.gameStats.currentDice then
+                                if ai > bi then
+                                    GT
+
+                                else
+                                    LT
+
+                            else if a.gameStats.currentDice > b.gameStats.currentDice then
+                                GT
+
+                            else
+                                LT
+
+                        else if a.gameStats.totalLands > b.gameStats.totalLands then
+                            GT
+
+                        else
+                            LT
+                    )
+                |> List.reverse
+    in
+    sorted
+        |> List.map
+            (\( i, p ) ->
+                let
+                    stats =
+                        p.gameStats
+                in
+                ( i, { p | gameStats = { stats | position = i + 1 } } )
+            )
+        |> List.sortBy Tuple.first
+        |> List.map Tuple.second
