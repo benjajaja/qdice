@@ -1,4 +1,4 @@
-module Backend.Decoding exposing (authStateDecoder, commentDecoder, commentsDecoder, eliminationsDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, rollDecoder, stringDecoder, tableDecoder, tableInfoDecoder, turnDecoder)
+module Backend.Decoding exposing (authStateDecoder, commentDecoder, commentsDecoder, eliminationsDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, rollDecoder, tableDecoder, tableInfoDecoder, tupleDecoder, turnDecoder)
 
 import Array
 import Backend.Types exposing (TableMessage(..))
@@ -13,9 +13,16 @@ import Tables exposing (Table)
 import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, ProfileStatsStatistics, PushEvent(..), Replies(..), StaticPage(..))
 
 
-stringDecoder : Decoder String
-stringDecoder =
-    string
+tupleDecoder : Decoder a -> Decoder b -> Decoder ( a, b )
+tupleDecoder =
+    tupleMapDecoder Tuple.pair
+
+
+tupleMapDecoder : (a -> b -> c) -> Decoder a -> Decoder b -> Decoder c
+tupleMapDecoder mapFn decA decB =
+    map2 mapFn
+        (index 0 decA)
+        (index 1 decB)
 
 
 userDecoder : Decoder LoggedUser
@@ -123,7 +130,7 @@ pushEventDecoder =
 
 meDecoder : Decoder ( LoggedUser, String, Preferences )
 meDecoder =
-    map3 (\a b c -> ( a, b, c )) (index 0 userDecoder) (index 1 stringDecoder) (index 2 preferencesDecoder)
+    map3 (\a b c -> ( a, b, c )) (index 0 userDecoder) (index 1 string) (index 2 preferencesDecoder)
 
 
 tableDecoder : Decoder TableStatus
@@ -485,11 +492,8 @@ gameEventDecoder =
                             (field "dice"
                                 (succeed (\a b c -> ( a, b, c ))
                                     |> required "lands"
-                                        (list
-                                            (map2 Tuple.pair
-                                                (index 0 string)
-                                                (index 1 int)
-                                            )
+                                        (list <|
+                                            tupleDecoder string int
                                         )
                                     |> required "reserve" int
                                     |> required "capitals" (list string)
@@ -552,7 +556,7 @@ statsDecoder =
     succeed ProfileStatsStatistics
         |> optional "rolls" (map Array.fromList (list int)) (Array.fromList [ 0, 0, 0, 0, 0, 0 ])
         |> optional "attacks"
-            (map2 Tuple.pair (index 0 int) (index 1 int))
+            (tupleDecoder int int)
             ( 0, 0 )
         |> optional "kills" int 0
         |> optional "eliminations" (map Array.fromList (list int)) (Array.fromList [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ])
@@ -579,9 +583,7 @@ turnDecoder =
 
 giveDiceDecoder : Decoder ( Player, Int )
 giveDiceDecoder =
-    map2 Tuple.pair
-        (index 0 playersDecoder)
-        (index 1 int)
+    tupleDecoder playersDecoder int
 
 
 commentsDecoder : Decoder (List Comment)
@@ -602,7 +604,7 @@ commentDecoder =
 
 kindDecoder : Decoder CommentKind
 kindDecoder =
-    map2
+    tupleMapDecoder
         (\kind kindId ->
             case kind of
                 "user" ->
@@ -631,8 +633,8 @@ kindDecoder =
                 _ ->
                     Nothing
         )
-        (index 0 string)
-        (index 1 string)
+        string
+        string
         |> andThen
             (\k ->
                 case k of
