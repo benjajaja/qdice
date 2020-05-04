@@ -371,10 +371,6 @@ applyEvent model step =
                                 Just nextPlayer ->
                                     case nextPlayer.out of
                                         Just r ->
-                                            let
-                                                _ =
-                                                    Debug.log "out/round" ( r, round, nextPlayer.name )
-                                            in
                                             if round > r + 3 then
                                                 List.filter (\p -> p.id /= nextPlayer.id) model.players
 
@@ -462,7 +458,7 @@ removeFlagged players =
                 (\p ->
                     case p.flag of
                         Just flag ->
-                            not (length == flag && flag == p.gameStats.position)
+                            not (length == flag)
 
                         Nothing ->
                             True
