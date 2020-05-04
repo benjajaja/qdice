@@ -39,7 +39,7 @@ type GameEvent
     | SitOut ShortGamePlayer
     | SitIn ShortGamePlayer
     | ToggleReady ShortGamePlayer Bool
-    | Flag ShortGamePlayer
+    | Flag ShortGamePlayer Int
     | EndGame (Maybe ShortGamePlayer) Int
     | Unknown String
 

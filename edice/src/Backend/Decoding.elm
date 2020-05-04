@@ -517,6 +517,7 @@ gameEventDecoder =
                     "Flag" ->
                         succeed Games.Types.Flag
                             |> required "player" shortPlayerDecoder
+                            |> required "position" int
 
                     "EndGame" ->
                         succeed Games.Types.EndGame

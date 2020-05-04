@@ -377,6 +377,36 @@ applyEvent model step =
                     , Nothing
                     )
 
+                Flag player position ->
+                    let
+                        players =
+                            List.map
+                                (\p ->
+                                    if p.id == player.id then
+                                        { p | flag = Just position }
+
+                                    else
+                                        p
+                                )
+                                model.players
+                    in
+                    ( { model | players = players }, Nothing )
+
+                SitOut player ->
+                    let
+                        players =
+                            List.map
+                                (\p ->
+                                    if p.id == player.id then
+                                        { p | out = True }
+
+                                    else
+                                        p
+                                )
+                                model.players
+                    in
+                    ( { model | players = players }, Nothing )
+
                 _ ->
                     ( model, Nothing )
 
@@ -392,7 +422,33 @@ updatePlayers ( model, score ) =
         | players =
             List.indexedMap (mapPlayer model score) model.players
                 |> updatePlayerPositions
+                |> removeFlagged
     }
+
+
+removeFlagged : List Player -> List Player
+removeFlagged players =
+    let
+        length =
+            List.length players
+
+        cleared =
+            List.filter
+                (\p ->
+                    case p.flag of
+                        Just flag ->
+                            not (length == flag && flag == p.gameStats.position)
+
+                        Nothing ->
+                            True
+                )
+                players
+    in
+    if List.length cleared == length then
+        players
+
+    else
+        removeFlagged cleared
 
 
 mapPlayer : ReplayerModel -> Maybe Int -> Int -> Player -> Player
@@ -400,29 +456,23 @@ mapPlayer model score i p =
     let
         hisLands =
             List.filter (.color >> (==) p.color) model.board.map.lands
-    in
-    Player p.id
-        p.name
-        p.color
-        p.picture
-        False
-        { totalLands = List.length hisLands
-        , connectedLands = 0
-        , currentDice = List.foldl (.points >> (+)) 0 hisLands
-        , position = 0
-        , score =
-            if score /= Nothing && i == model.turnIndex then
-                p.gameStats.score + Maybe.withDefault 0 score
 
-            else
-                p.gameStats.score
-        }
-        0
-        0
-        0
-        []
-        Nothing
-        False
+        stats =
+            p.gameStats
+    in
+    { p
+        | gameStats =
+            { stats
+                | totalLands = List.length hisLands
+                , currentDice = List.foldl (.points >> (+)) 0 hisLands
+                , score =
+                    if score /= Nothing && i == model.turnIndex then
+                        p.gameStats.score + Maybe.withDefault 0 score
+
+                    else
+                        p.gameStats.score
+            }
+    }
 
 
 updatePlayerPositions : List Player -> List Player

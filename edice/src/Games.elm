@@ -11,6 +11,7 @@ import Games.Types exposing (Game, GameEvent(..), GamePlayer)
 import Helpers exposing (dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Ordinal exposing (ordinal)
 import Placeholder exposing (Placeheld(..))
 import Routing.String exposing (link, routeToString)
 import Snackbar exposing (toastError)
@@ -336,8 +337,8 @@ foldGame event ( game, list ) =
                        )
             )
 
-        Flag player ->
-            ( game, foldGameItem list <| player.name ++ " flagged" )
+        Flag player position ->
+            ( game, foldGameItem list <| player.name ++ " flagged " ++ ordinal position )
 
         EndGame winner turnCount ->
             ( game
