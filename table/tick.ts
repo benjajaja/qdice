@@ -100,7 +100,7 @@ const tick = async (tableTag: string, lock: AsyncLock) => {
       } else if (table.attack) {
         if (
           havePassed(
-            table.players[table.turnIndex].bot
+            process.env.E2E || table.players[table.turnIndex].bot
               ? ROLL_SECONDS_BOT
               : ROLL_SECONDS,
             table.attack.start

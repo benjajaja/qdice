@@ -194,7 +194,7 @@ landDies diceAnimations options land x_ y_ =
                 |> fill
             , textAnchor "middle"
             ]
-            [ Svg.text <| String.fromInt land.points ]
+            [ Svg.text <| land.emoji ++ String.fromInt land.points ]
 
 
 landDie : Maybe (Array Bool) -> Float -> Float -> Int -> Svg Msg
