@@ -189,7 +189,7 @@ playerContainer player hasTurn isUser =
             String.join " " <|
                 List.concat
                     [ [ "edPlayerChip" ]
-                    , if player.out then
+                    , if player.out /= Nothing then
                         [ "edPlayerChip--out" ]
 
                       else if player.flag /= Nothing then

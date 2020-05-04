@@ -217,7 +217,7 @@ mapGamePlayer lands i p =
         p.name
         p.color
         p.picture
-        False
+        Nothing
         { totalLands = List.length hisLands
         , connectedLands = 0
         , currentDice = List.foldl (.points >> (+)) 0 hisLands
@@ -362,6 +362,30 @@ applyEvent model step =
 
                             else
                                 model.round
+
+                        turnPlayer =
+                            List.drop turnIndex model.players |> List.head
+
+                        players =
+                            case turnPlayer of
+                                Just nextPlayer ->
+                                    case nextPlayer.out of
+                                        Just r ->
+                                            let
+                                                _ =
+                                                    Debug.log "out/round" ( r, round, nextPlayer.name )
+                                            in
+                                            if round > r + 3 then
+                                                List.filter (\p -> p.id /= nextPlayer.id) model.players
+
+                                            else
+                                                model.players
+
+                                        Nothing ->
+                                            model.players
+
+                                Nothing ->
+                                    model.players
                     in
                     ( { model
                         | board =
@@ -373,6 +397,7 @@ applyEvent model step =
                                     model.board
                         , turnIndex = turnIndex
                         , round = round
+                        , players = players
                       }
                     , Nothing
                     )
@@ -398,7 +423,7 @@ applyEvent model step =
                             List.map
                                 (\p ->
                                     if p.id == player.id then
-                                        { p | out = True }
+                                        { p | out = Just model.round }
 
                                     else
                                         p

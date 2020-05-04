@@ -220,12 +220,7 @@ updateTableStatus model status =
                     indexOf turnPlayer status.players == status.turnIndex
 
         isOut =
-            case player of
-                Nothing ->
-                    False
-
-                Just outPlayer ->
-                    outPlayer.out
+            player |> Maybe.andThen .out |> Maybe.map (always True) |> Maybe.withDefault False
 
         oldBoard =
             model.game.board
@@ -369,12 +364,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                     not hasTurn && model.game.hasTurn
 
         isOut =
-            case player of
-                Nothing ->
-                    False
-
-                Just outPlayer ->
-                    outPlayer.out
+            player |> Maybe.andThen .out |> Maybe.map (always True) |> Maybe.withDefault False
 
         move =
             if hasLostTurn then
@@ -443,7 +433,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
             hasGainedTurn
                 && (case player of
                         Just p ->
-                            not p.out
+                            p.out == Nothing
 
                         Nothing ->
                             False
@@ -502,7 +492,7 @@ updatePlayerStatus model player =
             if isUser then
                 let
                     isOut =
-                        player.out
+                        player.out |> Maybe.map (always True) |> Maybe.withDefault False
                 in
                 { game
                     | players = players

@@ -156,7 +156,17 @@ playersDecoder =
         |> required "name" string
         |> required "color" colorDecoder
         |> required "picture" string
-        |> required "out" bool
+        |> required "out"
+            (map
+                (\b ->
+                    if b then
+                        Just 0
+
+                    else
+                        Nothing
+                )
+                bool
+            )
         |> required "derived" playerGameStatsDecoder
         |> required "reserveDice" int
         |> required "points" int

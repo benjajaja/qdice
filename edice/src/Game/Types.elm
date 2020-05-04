@@ -68,7 +68,7 @@ type alias Player =
     , name : PlayerName
     , color : Color
     , picture : String
-    , out : Bool
+    , out : Maybe Int
     , gameStats : PlayerGameStats
     , reserveDice : Int
     , points : Int
@@ -245,7 +245,7 @@ makePlayer name =
     , name = name
     , picture = ""
     , color = Land.Neutral
-    , out = False
+    , out = Nothing
     , points = 0
     , level = 0
     , awards = []
