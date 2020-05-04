@@ -333,6 +333,14 @@ export const turn = (
   players: readonly Player[],
   lands: readonly Land[]
 ) => {
+  if (giveDice) {
+    const inPlayers = players.find(p => p.id === giveDice[0].id)!;
+    logger.debug(
+      "give",
+      serializePlayer(table, lands)(giveDice[0]).derived.currentDice,
+      serializePlayer(table, lands)(inPlayers).derived.currentDice
+    );
+  }
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
@@ -342,9 +350,9 @@ export const turn = (
         turnStart: Math.floor(turnStart / 1000),
         roundCount,
         giveDice: giveDice
-          ? [serializePlayer(table)(giveDice[0]), giveDice[1]]
+          ? [serializePlayer(table, lands)(giveDice[0]), giveDice[1]]
           : null,
-        players: players.map(serializePlayer(table)),
+        players: players.map(serializePlayer(table, lands)),
         lands: lands
           .filter(hasChanged(table.lands))
           .map(serializeLand(players)),

@@ -1,12 +1,12 @@
 module Games.Replayer exposing (gameReplayer, init, subscriptions, update)
 
 import Board
-import Board.Colors exposing (baseCssRgb, colorName)
+import Board.Colors exposing (baseCssRgb)
 import Board.State
 import Board.Types exposing (BoardMove(..))
 import Game.Types exposing (MapLoadError(..))
 import Games.Replayer.Types exposing (..)
-import Games.Types exposing (Game, GameEvent(..), GamePlayer)
+import Games.Types exposing (Game, GameEvent(..))
 import Helpers exposing (consoleDebug, dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,7 +15,6 @@ import Icon
 import Land exposing (LandUpdate)
 import Maps
 import Snackbar
-import Tables exposing (Table)
 import Time
 import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg)
 

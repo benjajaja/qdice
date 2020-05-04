@@ -61,9 +61,10 @@ export const serializeLand = (players: readonly Player[]) => ({
 };
 
 export const serializePlayer = (
-  table: Table
+  table: Table,
+  lands: readonly Land[] = table.lands
 ): ((p: Player) => SerializedPlayer) => {
-  const derived = computePlayerDerived(table);
+  const derived = computePlayerDerived(table, lands);
   return (player: Player) => {
     return {
       ...trimPlayer(player),
@@ -118,21 +119,24 @@ export type PlayerDerived = {
   score: number;
 };
 
-export const computePlayerDerived = (table: Table) => {
+export const computePlayerDerived = (
+  table: Table,
+  lands: readonly Land[] = table.lands
+) => {
   const positions = groupedPlayerPositions(table);
   const getScore =
     table.playerStartCount > 0
       ? positionScore(tablePoints(table))(table.playerStartCount)
       : () => 0;
   return (player: Player): PlayerDerived => {
-    const lands = table.lands.filter(R.propEq("color", player.color));
+    const lands_ = lands.filter(R.propEq("color", player.color));
     const connectedLands = maps.countConnectedLands(table)(player.color);
     const position = positions(player);
     if (position === undefined) {
       return {
         connectedLands,
-        totalLands: lands.length,
-        currentDice: R.sum(lands.map(R.prop("points"))),
+        totalLands: lands_.length,
+        currentDice: R.sum(lands_.map(R.prop("points"))),
         position: 0,
         score: 0,
       };
@@ -144,8 +148,8 @@ export const computePlayerDerived = (table: Table) => {
     }
     return {
       connectedLands,
-      totalLands: lands.length,
-      currentDice: R.sum(lands.map(R.prop("points"))),
+      totalLands: lands_.length,
+      currentDice: R.sum(lands_.map(R.prop("points"))),
       position,
       score,
     };

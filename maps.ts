@@ -26,10 +26,11 @@ export const isBorder = (
   return matrix[indexes[from]][indexes[to]];
 };
 
-export const landMasses = (table: LimitedTable) => (
-  color: Color
-): Emoji[][] => {
-  const colorLands: Land[] = table.lands.filter(R.propEq("color", color));
+export const landMasses = (
+  table: LimitedTable,
+  lands: readonly Land[] = table.lands
+) => (color: Color): Emoji[][] => {
+  const colorLands: Land[] = lands.filter(R.propEq("color", color));
 
   const landMasses: Land[][] = colorLands.reduce(
     (masses: Land[][], land: Land): Land[][] => {
@@ -62,11 +63,17 @@ export const landMasses = (table: LimitedTable) => (
   return landMasses.map(mass => mass.map(land => land.emoji));
 };
 
-export const countConnectedLands = (table: {
-  lands: ReadonlyArray<Land>;
-  adjacency: Adjacency;
-}) => (color: Color): number => {
-  const counts: number[] = landMasses(table)(color).map(R.prop("length"));
+export const countConnectedLands = (
+  table: {
+    lands: ReadonlyArray<Land>;
+    adjacency: Adjacency;
+  },
+  lands: readonly Land[] = table.lands
+) => (color: Color): number => {
+  const counts: number[] = landMasses(
+    table,
+    lands
+  )(color).map(R.prop("length"));
   return R.reduce(R.max, 0, counts) as number;
 };
 
