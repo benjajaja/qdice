@@ -573,10 +573,10 @@ input[type="range"]::-webkit-slider-runnable-track {
   display: block;
   color: white;
   background: black;
-  content: '-';
+  content: '⮾';
 }
 .edPlayerChip--flag .edPlayerChip__picture__image:after {
-  content: '🏳 ';
+  content: '⚑';
 }
 
 .edPlayerChip--turn {
@@ -1104,6 +1104,28 @@ input[type="range"]::-webkit-slider-runnable-track {
   }
   .edPlayerChip {
     flex-direction: column;
+  }
+  .edPlayerChip--out .edPlayerChip__name:before {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    color: white;
+    background: black;
+    content: '⮾';
+  }
+  .edPlayerChip--flag .edPlayerChip__name:before {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    color: white;
+    background: black;
+    content: '⚑';
   }
 }
 
