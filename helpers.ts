@@ -65,17 +65,21 @@ export const positionScore = (multiplier: number) => (gameSize: number) => (
   return score;
 };
 
-export const groupedPlayerPositions = (table: {
-  players: ReadonlyArray<{ id: string; color: number }>;
-  lands: ReadonlyArray<{ color: number }>;
-}): ((player: { id: string; color: number }) => number) => {
-  const idLandCounts = table.players.map<[UserId, number, number]>(
-    (player, i) => [
-      player.id,
-      table.lands.filter(R.propEq("color", player.color)).length,
-      i,
-    ]
-  );
+type LimitedPlayer = { id: string; color: number };
+type LimitedLand = { color: number };
+export const groupedPlayerPositions = (
+  table: {
+    players: readonly LimitedPlayer[];
+    lands: readonly LimitedLand[];
+  },
+  lands: readonly LimitedLand[] = table.lands,
+  players: readonly LimitedPlayer[] = table.players
+): ((player: { id: string; color: number }) => number) => {
+  const idLandCounts = players.map<[UserId, number, number]>((player, i) => [
+    player.id,
+    lands.filter(R.propEq("color", player.color)).length,
+    i,
+  ]);
   const sorted = R.sortWith(
     [R.descend(R.nth(1)), R.ascend(R.nth(2))],
     idLandCounts

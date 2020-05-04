@@ -1,6 +1,6 @@
 import * as R from "ramda";
 import logger from "./logger";
-import { Adjacency, Land, Emoji, Color } from "./types";
+import { Adjacency, Land, Emoji, Color, Player } from "./types";
 
 import * as mapJson from "./map-sources.json";
 

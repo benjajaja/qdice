@@ -121,16 +121,17 @@ export type PlayerDerived = {
 
 export const computePlayerDerived = (
   table: Table,
-  lands: readonly Land[] = table.lands
+  lands: readonly Land[] = table.lands,
+  players: readonly Player[] = table.players
 ) => {
-  const positions = groupedPlayerPositions(table);
+  const positions = groupedPlayerPositions(table, lands, players);
   const getScore =
     table.playerStartCount > 0
       ? positionScore(tablePoints(table))(table.playerStartCount)
       : () => 0;
   return (player: Player): PlayerDerived => {
     const lands_ = lands.filter(R.propEq("color", player.color));
-    const connectedLands = maps.countConnectedLands(table)(player.color);
+    const connectedLands = maps.countConnectedLands(table, lands)(player.color);
     const position = positions(player);
     if (position === undefined) {
       return {
