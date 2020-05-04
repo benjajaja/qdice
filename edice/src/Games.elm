@@ -131,12 +131,26 @@ view model sub =
                 Fetched games ->
                     case sub of
                         AllGames ->
-                            List.map (gameRow model.zone) games.all
+                            case games.all of
+                                [] ->
+                                    [ text "No games found" ]
+
+                                _ ->
+                                    List.map (gameRow model.zone) games.all
 
                         GamesOfTable table ->
                             Dict.get table games.tables
                                 |> Maybe.map (List.map <| gameRow model.zone)
-                                |> Maybe.withDefault []
+                                |> Maybe.map
+                                    (\rows ->
+                                        case rows of
+                                            [] ->
+                                                [ text "No games yet" ]
+
+                                            _ ->
+                                                rows
+                                    )
+                                |> Maybe.withDefault [ text "Games not found" ]
 
                         GameId table id ->
                             Dict.values games.tables
@@ -144,7 +158,7 @@ view model sub =
                                 |> Helpers.find (.id >> (==) id)
                                 |> Maybe.map (gameView model.zone model.replayer)
                                 |> Maybe.map List.singleton
-                                |> Maybe.withDefault []
+                                |> Maybe.withDefault [ text "Game not found." ]
 
                 Error err _ ->
                     [ text <| "Error: " ++ err ]
