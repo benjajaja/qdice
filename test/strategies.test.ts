@@ -44,6 +44,7 @@ const mkTable = (props?: Partial<Table>): Table =>
   ({
     players: [mkPlayer(Color.Red), mkPlayer(Color.Blue), mkPlayer(Color.Green)],
     lands: [],
+    stackSize: 8,
     ...props,
   } as any);
 

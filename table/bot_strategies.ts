@@ -254,7 +254,7 @@ export const wouldRefillAll = (player: Player, table: Table): boolean => {
   const lands = table.lands.filter(land => land.color === player.color);
 
   const necessaryDice = lands.reduce((count, land) => {
-    return count + (8 - land.points);
+    return count + (table.stackSize - land.points);
   }, 0);
   return lands.length + player.reserveDice >= necessaryDice + 7;
 };
