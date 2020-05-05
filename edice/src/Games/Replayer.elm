@@ -2,7 +2,7 @@ module Games.Replayer exposing (gameReplayer, init, subscriptions, update)
 
 import Array
 import Board
-import Board.Colors exposing (baseCssRgb)
+import Board.Colors
 import Board.State
 import Board.Types exposing (BoardMove(..))
 import Game.PlayerCard exposing (TurnPlayer)
@@ -303,12 +303,20 @@ applyEvent model step =
         |> updatePlayers
 
 
-turnPlayerLogPart : List Player -> Int -> ReplayerLogPart
-turnPlayerLogPart players turnIndex =
-    List.drop turnIndex players
-        |> List.head
-        |> Maybe.map LogPlayer
-        |> Maybe.withDefault LogNeutralPlayer
+turnPlayerLogPart : List Player -> Int -> Maybe ShortGamePlayer -> ReplayerLogPart
+turnPlayerLogPart players turnIndex mPlayer =
+    let
+        player =
+            List.drop turnIndex players
+                |> List.head
+    in
+    if mPlayer /= Nothing && Maybe.map .id mPlayer /= Maybe.map .id player then
+        LogError <| "Bad turn index: " ++ (Maybe.map .name mPlayer |> Maybe.withDefault "nothing")
+
+    else
+        player
+            |> Maybe.map LogPlayer
+            |> Maybe.withDefault LogNeutralPlayer
 
 
 shortPlayerLogPart : ShortGamePlayer -> ReplayerModel -> ReplayerLogPart
@@ -331,7 +339,7 @@ mapEvent model step =
                                     Board.State.updateLands model.board [] <| Just <| FromTo fromLand toLand
                               }
                             , Nothing
-                            , [ turnPlayerLogPart model.players model.turnIndex
+                            , [ turnPlayerLogPart model.players model.turnIndex <| Just player
                               , LogString <| " attacked "
                               , Helpers.find (.color >> (==) toLand.color) model.players
                                     |> Maybe.map LogPlayer
@@ -348,20 +356,52 @@ mapEvent model step =
                         isSuccess =
                             List.sum fromRoll > List.sum toRoll
 
-                        updates =
+                        ( updates, stealCount ) =
                             case model.board.move of
                                 FromTo from to ->
                                     if isSuccess then
-                                        [ LandUpdate from.emoji from.color 1 from.capital
-                                        , LandUpdate to.emoji from.color (from.points - 1) Nothing
-                                        ]
+                                        let
+                                            steal =
+                                                Maybe.map .count to.capital
+                                                    |> Maybe.map ((+) to.points)
+
+                                            capitalUpdates =
+                                                steal
+                                                    |> Maybe.andThen
+                                                        (\s ->
+                                                            Helpers.find
+                                                                (\l ->
+                                                                    l.color == from.color && l.capital /= Nothing
+                                                                )
+                                                                model.board.map.lands
+                                                                |> Maybe.map
+                                                                    (\l ->
+                                                                        [ LandUpdate l.emoji l.color l.points <|
+                                                                            Maybe.map
+                                                                                (\c ->
+                                                                                    { c | count = c.count + s }
+                                                                                )
+                                                                                l.capital
+                                                                        ]
+                                                                    )
+                                                        )
+                                                    |> Maybe.withDefault []
+                                        in
+                                        ( [ LandUpdate from.emoji from.color 1 from.capital
+                                          , LandUpdate to.emoji from.color (from.points - 1) Nothing
+                                          ]
+                                            ++ capitalUpdates
+                                        , steal
+                                        )
 
                                     else
-                                        [ LandUpdate from.emoji from.color 1 from.capital
-                                        ]
+                                        ( [ LandUpdate from.emoji from.color 1 from.capital
+                                          ]
+                                        , Nothing
+                                        )
 
                                 _ ->
-                                    []
+                                    ( [], Nothing )
 
                         board =
                             Board.State.updateLands model.board updates <| Just Idle
@@ -374,6 +414,23 @@ mapEvent model step =
                                         |> Helpers.flip (>) 0
                                 )
                                 model.players
+                                |> List.map
+                                    (\p ->
+                                        Maybe.withDefault p <|
+                                            Maybe.map
+                                                (\match ->
+                                                    if p == match then
+                                                        { p | reserveDice = p.reserveDice + Maybe.withDefault 0 stealCount }
+
+                                                    else
+                                                        p
+                                                )
+                                            <|
+                                                List.head <|
+                                                    List.drop
+                                                        model.turnIndex
+                                                        model.players
+                                    )
 
                         isKill =
                             if List.length players /= List.length model.players then
@@ -384,8 +441,8 @@ mapEvent model step =
 
                         turnIndex =
                             if
-                                (List.drop model.turnIndex model.players |> List.head)
-                                    /= (List.drop model.turnIndex players |> List.head)
+                                (List.drop model.turnIndex model.players |> List.head |> Maybe.map .id)
+                                    /= (List.drop model.turnIndex players |> List.head |> Maybe.map .id)
                             then
                                 model.turnIndex - 1
 
@@ -398,7 +455,7 @@ mapEvent model step =
                         , turnIndex = turnIndex
                       }
                     , isKill
-                    , [ turnPlayerLogPart players turnIndex
+                    , [ turnPlayerLogPart players turnIndex Nothing
                       , LogString <|
                             if isSuccess then
                                 " succeed"
@@ -413,7 +470,7 @@ mapEvent model step =
                       ]
                     )
 
-                EndTurn id landDice reserveDice capitals player sitOut ->
+                EndTurn _ landDice reserveDice capitals player sitOut ->
                     let
                         updates =
                             landDice
@@ -421,7 +478,9 @@ mapEvent model step =
                                     (\( emoji, dice ) ->
                                         case Land.findLand emoji model.board.map.lands of
                                             Just land ->
-                                                Just <| LandUpdate emoji land.color (land.points + dice) land.capital
+                                                Just <|
+                                                    LandUpdate emoji land.color (land.points + dice) <|
+                                                        Maybe.map (always { count = reserveDice }) land.capital
 
                                             Nothing ->
                                                 Nothing
@@ -442,6 +501,40 @@ mapEvent model step =
                                             |> Helpers.combine
                                             |> Maybe.withDefault []
                                         )
+                                    )
+                                |> Maybe.map
+                                    (\list ->
+                                        if List.any (.capital >> (/=) Nothing) list then
+                                            List.map
+                                                (\u ->
+                                                    { u | capital = Maybe.map (\c -> { c | count = reserveDice }) u.capital }
+                                                )
+                                                list
+
+                                        else
+                                            list
+                                                ++ (List.drop model.turnIndex model.players
+                                                        |> List.head
+                                                        |> Maybe.andThen
+                                                            (\p ->
+                                                                Helpers.find
+                                                                    (\l ->
+                                                                        l.color == p.color && l.capital /= Nothing
+                                                                    )
+                                                                    model.board.map.lands
+                                                                    |> Maybe.map
+                                                                        (\l ->
+                                                                            [ LandUpdate l.emoji l.color l.points <|
+                                                                                Maybe.map
+                                                                                    (\c ->
+                                                                                        { c | count = reserveDice }
+                                                                                    )
+                                                                                    l.capital
+                                                                            ]
+                                                                        )
+                                                            )
+                                                        |> Maybe.withDefault []
+                                                   )
                                     )
 
                         turnIndex =
@@ -478,19 +571,22 @@ mapEvent model step =
                                 Nothing ->
                                     model.players
                             )
-                                |> (if sitOut then
-                                        List.map
-                                            (\p ->
-                                                if p.id == player.id then
-                                                    { p | out = Just model.round }
+                                |> List.map
+                                    (\p ->
+                                        if p.id == player.id then
+                                            { p
+                                                | out =
+                                                    if sitOut then
+                                                        Just model.round
 
-                                                else
-                                                    p
-                                            )
+                                                    else
+                                                        p.out
+                                                , reserveDice = reserveDice
+                                            }
 
-                                    else
-                                        identity
-                                   )
+                                        else
+                                            p
+                                    )
                     in
                     ( { model
                         | board =
@@ -505,7 +601,7 @@ mapEvent model step =
                         , players = players
                       }
                     , Nothing
-                    , [ turnPlayerLogPart players turnIndex, LogString "'s turn" ]
+                    , [ turnPlayerLogPart players turnIndex Nothing, LogString "'s turn" ]
                     )
 
                 Flag player position ->
