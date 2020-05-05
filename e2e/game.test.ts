@@ -18,27 +18,29 @@ const attack = async (page: Page, from: string, to: string, name: string) => {
 
   await expect(page).toClick(testId(from));
   await expect(page).toMatchElement(testValue(from, "selected", "true"));
-  await expect(page).toClick(testId(to));
-  await expect(page).toMatchElement(testValue(to, "selected", "true"));
 
-  const lines = await page.$eval("#gameLog-Lagos", container => {
-    return new Promise<string[]>(resolve => {
-      const observer = new MutationObserver(() => {
-        observer.disconnect();
-        resolve(
-          Array.prototype.slice
-            .call(container.querySelectorAll('[data-test-id="logline-roll"]'))
-            .map((line: Element) => line.textContent ?? "")
-        );
+  const [_, __, lines] = await Promise.all([
+    expect(page).toClick(testId(to)),
+    expect(page).toMatchElement(testValue(to, "selected", "true")),
+    page.$eval("#gameLog-Lagos", container => {
+      return new Promise<string[]>(resolve => {
+        const observer = new MutationObserver(() => {
+          observer.disconnect();
+          resolve(
+            Array.prototype.slice
+              .call(container.querySelectorAll('[data-test-id="logline-roll"]'))
+              .map((line: Element) => line.textContent ?? "")
+          );
+        });
+        observer.observe(container, {
+          attributes: false,
+          childList: true,
+          characterData: false,
+          subtree: false,
+        });
       });
-      observer.observe(container, {
-        attributes: false,
-        childList: true,
-        characterData: false,
-        subtree: false,
-      });
-    });
-  });
+    }),
+  ]);
 
   const newLines = lines.slice(logLineCount);
 
