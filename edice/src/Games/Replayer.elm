@@ -409,7 +409,7 @@ mapEvent model step =
                       ]
                     )
 
-                EndTurn id landDice reserveDice capitals player ->
+                EndTurn id landDice reserveDice capitals player sitOut ->
                     let
                         updates =
                             landDice
@@ -442,7 +442,7 @@ mapEvent model step =
                             List.drop turnIndex model.players |> List.head
 
                         players =
-                            case turnPlayer of
+                            (case turnPlayer of
                                 Just nextPlayer ->
                                     case nextPlayer.out of
                                         Just r ->
@@ -457,6 +457,20 @@ mapEvent model step =
 
                                 Nothing ->
                                     model.players
+                            )
+                                |> (if sitOut then
+                                        List.map
+                                            (\p ->
+                                                if p.id == player.id then
+                                                    { p | out = Just model.round }
+
+                                                else
+                                                    p
+                                            )
+
+                                    else
+                                        identity
+                                   )
                     in
                     ( { model
                         | board =

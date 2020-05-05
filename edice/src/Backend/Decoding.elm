@@ -494,7 +494,7 @@ gameEventDecoder =
                             |> required "toRoll" (list int)
 
                     "EndTurn" ->
-                        map3
+                        map4
                             (\id ( lands, reserve, capitals ) player ->
                                 Games.Types.EndTurn id lands reserve capitals player
                             )
@@ -510,6 +510,7 @@ gameEventDecoder =
                                 )
                             )
                             (field "player" shortPlayerDecoder)
+                            (field "sitPlayerOut" bool)
 
                     "SitOut" ->
                         succeed Games.Types.SitOut
