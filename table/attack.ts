@@ -84,13 +84,6 @@ export const rollResult = (
         });
       }
       if (loser && toLand.capital) {
-        if (R.filter(R.propEq("color", loser.color), lands).length !== 0) {
-          newCapital = shuffle(lands.filter(R.propEq("color", loser.color)))[0];
-          lands = updateLand(lands, newCapital, { capital: true });
-        }
-        logger.debug(
-          `Giving ${loser.reserveDice} + ${toLand.points} reserveDice from ${loser.name} to ${attacker.name}`
-        );
         players = players.map(player => {
           if (player.id === loser.id) {
             return { ...player, reserveDice: 0 };
@@ -132,7 +125,6 @@ export const rollResult = (
         to: { emoji: table.attack.to, roll: toRoll },
         turnStart: Math.floor(props.turnStart / 1000),
         players: players,
-        capital: newCapital?.emoji ?? null,
       }
     );
     const result: CommandResult = {

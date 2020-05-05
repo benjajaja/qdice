@@ -38,7 +38,7 @@ init game =
     { board = board_
     , boardOptions =
         { diceVisible = True
-        , showEmojis = False
+        , showEmojis = True
         }
     , players = List.indexedMap (mapGamePlayer game.lands) game.players
     , turnIndex = 0
@@ -349,7 +349,7 @@ mapEvent model step =
                                 FromTo from to ->
                                     if isSuccess then
                                         [ LandUpdate from.emoji from.color 1 from.capital
-                                        , LandUpdate to.emoji from.color (from.points - 1) to.capital
+                                        , LandUpdate to.emoji from.color (from.points - 1) Nothing
                                         ]
 
                                     else

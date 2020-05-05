@@ -143,7 +143,6 @@ type Roll = {
   to: { emoji: Emoji; roll: number[] };
   turnStart: number;
   players: readonly Player[];
-  capital: Emoji | null;
 };
 export const roll = (table: Table, roll: Roll) => {
   client.publish(
@@ -358,14 +357,6 @@ export const turn = (
   players: readonly Player[],
   lands: readonly Land[]
 ) => {
-  if (giveDice) {
-    const inPlayers = players.find(p => p.id === giveDice[0].id)!;
-    logger.debug(
-      "give",
-      serializePlayer(table, lands)(giveDice[0]).derived.currentDice,
-      serializePlayer(table, lands)(inPlayers).derived.currentDice
-    );
-  }
   client.publish(
     "tables/" + table.name + "/clients",
     JSON.stringify({
