@@ -715,13 +715,45 @@ updatePlayers ( model, score, line ) =
         | players =
             List.indexedMap (mapPlayer model score) model.players
                 |> updatePlayerPositions
-                |> removeFlagged
         , log = line :: model.log
     }
+        |> removeFlagged
 
 
-removeFlagged : List Player -> List Player
-removeFlagged players =
+removeFlagged : ReplayerModel -> ReplayerModel
+removeFlagged model =
+    let
+        players =
+            removeFlaggedPlayers model.players
+
+        removedColors =
+            List.filter (.id >> Helpers.flip List.member (List.map .id players) >> not) model.players
+                |> List.map .color
+
+        board_ =
+            if List.length removedColors > 0 then
+                Board.State.updateLands model.board
+                    (List.foldl
+                        (\color updates ->
+                            updates
+                                ++ (List.filter (.color >> (==) color) model.board.map.lands
+                                        |> List.map (\l -> LandUpdate l.emoji Land.Neutral l.points Nothing)
+                                   )
+                        )
+                        []
+                        removedColors
+                    )
+                <|
+                    Just model.board.move
+
+            else
+                model.board
+    in
+    { model | players = players, board = board_ }
+
+
+removeFlaggedPlayers : List Player -> List Player
+removeFlaggedPlayers players =
     let
         length =
             List.length players
@@ -742,7 +774,7 @@ removeFlagged players =
         players
 
     else
-        removeFlagged cleared
+        removeFlaggedPlayers cleared
 
 
 mapPlayer : ReplayerModel -> Maybe Int -> Int -> Player -> Player
