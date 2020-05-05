@@ -309,6 +309,7 @@ input[type="range"]::-webkit-slider-runnable-track {
 
 
 .edBoard {
+  margin-top: 20px;
 }
 .edBoard--svg {
   min-height: 0;
@@ -1065,6 +1066,7 @@ input[type="range"]::-webkit-slider-runnable-track {
     flex-direction: column;
   }
   .edBoard {
+    margin-top: 0px;
     flex-grow: 2;
     flex-shrink: 2;
     flex-basis: 100%;
@@ -1126,6 +1128,9 @@ input[type="range"]::-webkit-slider-runnable-track {
     color: white;
     background: black;
     content: '⚑';
+  }
+  .edBoard {
+    margin-top: 6px;
   }
 }
 
