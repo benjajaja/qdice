@@ -11,6 +11,7 @@ type alias ReplayerModel =
     { board : Board.Model
     , boardOptions : Board.BoardOptions
     , players : List Player
+    , avatarUrls : List ( Color, String )
     , turnIndex : Int
     , game : Game
     , step : Int

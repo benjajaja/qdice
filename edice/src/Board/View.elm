@@ -166,8 +166,8 @@ landDies diceAnimations options land x_ y_ =
                    )
                 ++ (if options.showEmojis then
                         [ Svg.text_
-                            [ x <| String.fromFloat (x_ - 3.0)
-                            , y <| String.fromFloat (y_ + 1.0)
+                            [ x <| String.fromFloat (x_ - 5.0)
+                            , y <| String.fromFloat (y_ + 0.0)
                             , fontSize "3"
                             ]
                             [ Svg.text land.emoji ]
