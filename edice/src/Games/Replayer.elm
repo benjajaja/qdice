@@ -207,7 +207,7 @@ gameReplayer model game =
                     case
                         List.map
                             (\parts ->
-                                div [] <|
+                                div [ dataTestId "game-event" ] <|
                                     List.map
                                         (\part ->
                                             case part of

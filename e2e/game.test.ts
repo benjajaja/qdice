@@ -302,14 +302,20 @@ describe("A full game", () => {
     await expect(page).toClick(testId("table-games-link"));
     await expect(page).toClick(testId("game-entry-" + gameId));
 
-    await expect(page).toMatchElement(testId("game-event"));
+    await expect(page).toMatchElement(testId("player-name-0"), { text: "A" });
+    await expect(page).toMatchElement(testId("player-name-1"), { text: "B" });
 
     await expect(page).toClick(testId("replayer-goto-end"));
 
+    await expect(page).not.toMatchElement(testId("player-name-0"), {
+      text: "A",
+    });
+    await expect(page).toMatchElement(testId("player-name-0"), { text: "B" });
+
     await expect(page).toMatchElement(testId("game-event"), {
-      text: /B won the game after 30 rounds/,
+      text: /B won the game after 30 turns/,
     });
     const count = (await page.$$(testId("game-event"))).length;
-    expect(count).toBe(42);
+    expect(count).toBe(71);
   });
 });
