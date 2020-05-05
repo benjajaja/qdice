@@ -111,6 +111,7 @@ function preCache() {
             .concat([
               "./",
               "./die.svg",
+              "./quedice.svg",
               "./favicons-2/favicon.png",
               "./iconfont/MaterialIcons-Regular.woff2",
               "./fonts/rubik-v7-latin-regular.woff2",

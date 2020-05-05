@@ -33,6 +33,7 @@ import MyProfile.Types
 import Placeholder
 import Profile
 import Routing exposing (navigateTo, parseLocation)
+import Routing.String
 import Snackbar exposing (toastError, toastMessage)
 import Static.View
 import Tables exposing (MapName(..), Table)
@@ -1080,8 +1081,17 @@ mainView model =
 
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg
-viewWrapper =
-    Html.div [ Html.Attributes.class "edMainScreen edMainScreen__static" ]
+viewWrapper children =
+    Html.div [ Html.Attributes.class "edMainScreen edMainScreen__static" ] <|
+        [ Html.a
+            [ Html.Attributes.class "edLogo"
+            , Html.Attributes.href <| Routing.String.routeToString False <| Types.HomeRoute
+            ]
+            [ Html.img [ Html.Attributes.src "quedice.svg", Html.Attributes.width 28, Html.Attributes.height 28, Html.Attributes.class "edLogo_img" ] []
+            , Html.span [ Html.Attributes.class "edLogo__text" ] [ Html.text "Qdice.wtf!" ]
+            ]
+        ]
+            ++ children
 
 
 mainViewSubscriptions : Model -> Sub Msg

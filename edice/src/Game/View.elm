@@ -13,7 +13,7 @@ import Game.State exposing (canSelect)
 import Game.Types exposing (ChatLogEntry(..), GameStatus(..), Msg(..), Player, PlayerAction(..), isBot)
 import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
-import Html.Attributes exposing (class, disabled, href, style)
+import Html.Attributes exposing (class, disabled, height, href, src, style, width)
 import Html.Events exposing (onClick)
 import Html.Lazy
 import Icon
@@ -503,44 +503,50 @@ sitInModal model =
 tableInfo : Model -> Html Types.Msg
 tableInfo model =
     div [ class "edGameStatus" ] <|
-        (case model.game.table of
-            Just table ->
-                case model.game.currentGame of
-                    Just id ->
-                        [ span [ class "edGameStatus__chip" ] [ text <| table ++ "\u{00A0}" ]
-                        , a
-                            [ href <|
-                                routeToString False <|
-                                    GamesRoute <|
-                                        GameId table id
-                            , dataTestId "current-game-id"
-                            ]
-                            [ text <|
-                                "game #"
-                                    ++ String.fromInt id
-                            ]
-                        , span
-                            [ dataTestId "game-round"
-                            ]
-                            [ text <|
-                                "\u{00A0}round "
-                                    ++ String.fromInt model.game.roundCount
-                            ]
-                        ]
+        [ a
+            [ class "edLogo"
+            , href <| routeToString model.zip <| Types.HomeRoute
+            ]
+            [ img [ src "quedice.svg", width 28, height 28, class "edLogo_img" ] [] ]
+        ]
+            ++ (case model.game.table of
+                    Just table ->
+                        case model.game.currentGame of
+                            Just id ->
+                                [ span [ class "edGameStatus__chip" ] [ text <| table ++ "\u{00A0}" ]
+                                , a
+                                    [ href <|
+                                        routeToString False <|
+                                            GamesRoute <|
+                                                GameId table id
+                                    , dataTestId "current-game-id"
+                                    ]
+                                    [ text <|
+                                        "game #"
+                                            ++ String.fromInt id
+                                    ]
+                                , span
+                                    [ dataTestId "game-round"
+                                    ]
+                                    [ text <|
+                                        "\u{00A0}round "
+                                            ++ String.fromInt model.game.roundCount
+                                    ]
+                                ]
+
+                            Nothing ->
+                                [ a
+                                    [ class "edGameStatus__chip"
+                                    , href <| routeToString False <| GamesRoute <| GamesOfTable table
+                                    , dataTestId "table-games-link"
+                                    ]
+                                    [ text table
+                                    ]
+                                ]
 
                     Nothing ->
-                        [ a
-                            [ class "edGameStatus__chip"
-                            , href <| routeToString False <| GamesRoute <| GamesOfTable table
-                            , dataTestId "table-games-link"
-                            ]
-                            [ text table
-                            ]
-                        ]
-
-            Nothing ->
-                []
-        )
+                        []
+               )
             ++ [ div [ class "edGameStatus__buttons" ]
                     [ button
                         [ class "edGameStatus__button edButton--icon"

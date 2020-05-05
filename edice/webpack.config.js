@@ -95,6 +95,7 @@ module.exports = env => ({
       { from: "html/favicons-2", to: "favicons-2" },
       { from: "html/favicon.ico" },
       { from: "html/die.svg" },
+      { from: "html/quedice.svg" },
       { from: "html/board_header.svg" },
       { from: "html/elm-dice-serviceworker.js" },
       { from: "html/mapnames.json" },

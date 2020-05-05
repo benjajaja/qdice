@@ -273,7 +273,7 @@ input[type="range"]::-webkit-slider-runnable-track {
   border: 15px solid black;
   opacity: 0.25;
   border-radius: 50%;
-  width: 100px;
+  width: 50px;
   animation: pulse 0.2s infinite alternate;
   position: relative;
   margin-top: -30px;
@@ -1295,4 +1295,18 @@ input[type="range"]::-webkit-slider-runnable-track {
   position: absolute;
   right: 0;
   z-index: 100;
+}
+
+.edLogo {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.edLogo__text {
+  margin-left: 4px;
+  padding-top: 4px;
+}
+.edLogo:hover {
+  text-decoration: underline;
 }
