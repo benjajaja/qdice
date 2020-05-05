@@ -423,6 +423,22 @@ mapEvent model step =
                                                 Nothing
                                     )
                                 |> Helpers.combine
+                                |> Maybe.map
+                                    ((++)
+                                        (capitals
+                                            |> List.map
+                                                (\e ->
+                                                    case Land.findLand e model.board.map.lands of
+                                                        Just land ->
+                                                            Just <| LandUpdate e land.color land.points <| Just { count = 0 }
+
+                                                        Nothing ->
+                                                            Nothing
+                                                )
+                                            |> Helpers.combine
+                                            |> Maybe.withDefault []
+                                        )
+                                    )
 
                         turnIndex =
                             if model.turnIndex < List.length model.players - 1 then
