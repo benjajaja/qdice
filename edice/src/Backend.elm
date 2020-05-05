@@ -1,11 +1,11 @@
-port module Backend exposing (addSubscribed, connect, desiredTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, reset, setConnected, setStatus, subscribeGameTable, subscriptions, toDie, toDiesEmojis, toRollLog, unsubscribeGameTable)
+port module Backend exposing (addSubscribed, connect, desiredTable, init, mqttConnect, mqttOnConnect, mqttOnConnected, mqttOnMessage, mqttOnOffline, mqttOnReconnect, mqttOnSubscribed, mqttOnUnSubscribed, mqttSubscribe, mqttUnsubscribe, reset, setConnected, setStatus, subscribeGameTable, subscriptions, toRollLog, unsubscribeGameTable)
 
 import Backend.HttpCommands exposing (loadMe)
 import Backend.MessageCodification exposing (..)
 import Backend.MqttCommands exposing (..)
 import Backend.Types exposing (..)
 import Game.Types exposing (PlayerAction(..), RollLog)
-import Helpers exposing (consoleDebug, find)
+import Helpers exposing (consoleDebug, find, toDiesEmojis)
 import Land exposing (Color(..))
 import String
 import Tables exposing (Table)
@@ -556,36 +556,6 @@ toRollLog model roll =
     , success = success
     , steal = steal
     }
-
-
-toDiesEmojis : List Int -> String
-toDiesEmojis list =
-    List.foldl (++) "" <| List.map toDie list
-
-
-toDie : Int -> String
-toDie face =
-    case face of
-        1 ->
-            "⚀"
-
-        2 ->
-            "⚁"
-
-        3 ->
-            "⚂"
-
-        4 ->
-            "⚃"
-
-        5 ->
-            "⚄"
-
-        6 ->
-            "⚅"
-
-        _ ->
-            "🎲"
 
 
 desiredTable : Model -> Maybe Table

@@ -172,8 +172,8 @@ view model sub =
                         []
 
                     GameId table id ->
-                        [ div [] [ text "Unfair play? Bugs? Write something on this game!" ]
-                        , Comments.view model.zone model.user model.comments <| Comments.gameComments table id
+                        [ --div [] [ text "Unfair play? Bugs? Write something on this game!" ]
+                          Comments.view model.zone model.user model.comments <| Comments.gameComments table id
                         ]
                )
 
@@ -256,20 +256,6 @@ gameView zone replayer game =
             [ span [] [ text "Starting players: " ] ]
                 ++ playersList game.players
         , gameReplayer replayer game
-        , div [] [ text "Ledger: " ]
-        , ul [] <|
-            Tuple.second <|
-                List.foldl
-                    foldGame
-                    ( game, [] )
-                <|
-                    case replayer of
-                        Just { step } ->
-                            List.take (step + 1) game.events
-                                |> List.reverse
-
-                        Nothing ->
-                            game.events
         ]
 
 

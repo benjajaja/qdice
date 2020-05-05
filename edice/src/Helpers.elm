@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeUnits, triple, tupleApply, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeUnits, toDie, toDiesEmojis, triple, tupleApply, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -193,3 +193,33 @@ join separator list =
         )
         []
         list
+
+
+toDiesEmojis : List Int -> String
+toDiesEmojis list =
+    List.foldl (++) "" <| List.map toDie list
+
+
+toDie : Int -> String
+toDie face =
+    case face of
+        1 ->
+            "⚀"
+
+        2 ->
+            "⚁"
+
+        3 ->
+            "⚂"
+
+        4 ->
+            "⚃"
+
+        5 ->
+            "⚄"
+
+        6 ->
+            "⚅"
+
+        _ ->
+            "🎲"

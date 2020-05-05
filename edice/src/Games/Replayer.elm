@@ -8,7 +8,7 @@ import Board.Types exposing (BoardMove(..))
 import Game.PlayerCard exposing (TurnPlayer)
 import Game.Types exposing (GameStatus(..), MapLoadError(..), Player)
 import Games.Replayer.Types exposing (..)
-import Games.Types exposing (Game, GameEvent(..), GamePlayer)
+import Games.Types exposing (Game, GameEvent(..), GamePlayer, ShortGamePlayer)
 import Helpers exposing (consoleDebug, dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,6 +16,7 @@ import Html.Events exposing (..)
 import Icon
 import Land exposing (LandUpdate)
 import Maps
+import Ordinal exposing (ordinal)
 import Snackbar
 import Time
 import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg)
@@ -45,6 +46,7 @@ init game =
     , playing = False
     , step = 0
     , round = 1
+    , log = []
     }
 
 
@@ -146,8 +148,7 @@ gameReplayer model game =
                     List.map (Game.PlayerCard.view Playing) <|
                         List.take 4 <|
                             sortedPlayers m.turnIndex m.players
-                , div [] [ text <| "Round " ++ String.fromInt m.round ]
-                , div [] [ text <| "Turn " ++ String.fromInt (m.step + 1) ++ " / " ++ String.fromInt m.turnIndex ]
+                , div [] [ text <| "Round " ++ String.fromInt m.round ++ ", step " ++ String.fromInt (m.step + 1) ]
                 , div [ class "edGameReplayer__controls" ]
                     [ button [ onClick <| Types.ReplayerCmd <| TogglePlay ]
                         [ if not m.playing then
@@ -201,6 +202,36 @@ gameReplayer model game =
                         ]
                         []
                     ]
+                , div [] [ text "Log:" ]
+                , div [] <|
+                    case
+                        List.map
+                            (\parts ->
+                                div [] <|
+                                    List.map
+                                        (\part ->
+                                            case part of
+                                                LogPlayer p ->
+                                                    text p.name
+
+                                                LogNeutralPlayer ->
+                                                    text "Neutral"
+
+                                                LogString str ->
+                                                    text str
+
+                                                LogError err ->
+                                                    text err
+                                        )
+                                        parts
+                            )
+                            m.log
+                    of
+                        [] ->
+                            [ text "Stopped." ]
+
+                        lines ->
+                            lines
                 ]
 
             Nothing ->
@@ -264,7 +295,28 @@ sortedPlayers turnIndex players =
 
 applyEvent : ReplayerModel -> Int -> ReplayerModel
 applyEvent model step =
-    (case List.drop step model.game.events |> List.head of
+    mapEvent model step
+        |> updatePlayers
+
+
+turnPlayerLogPart : List Player -> Int -> ReplayerLogPart
+turnPlayerLogPart players turnIndex =
+    List.drop turnIndex players
+        |> List.head
+        |> Maybe.map LogPlayer
+        |> Maybe.withDefault LogNeutralPlayer
+
+
+shortPlayerLogPart : ShortGamePlayer -> ReplayerModel -> ReplayerLogPart
+shortPlayerLogPart shortPlayer model =
+    Helpers.find (.id >> (==) shortPlayer.id) model.players
+        |> Maybe.map LogPlayer
+        |> Maybe.withDefault (LogError <| "can't find player in board: " ++ shortPlayer.name)
+
+
+mapEvent : ReplayerModel -> Int -> ( ReplayerModel, Maybe Int, ReplayerLogLine )
+mapEvent model step =
+    case List.drop step model.game.events |> List.head of
         Just event ->
             case event of
                 Attack player from to ->
@@ -275,17 +327,27 @@ applyEvent model step =
                                     Board.State.updateLands model.board [] <| Just <| FromTo fromLand toLand
                               }
                             , Nothing
+                            , [ turnPlayerLogPart model.players model.turnIndex
+                              , LogString <| " attacked "
+                              , Helpers.find (.color >> (==) toLand.color) model.players
+                                    |> Maybe.map LogPlayer
+                                    |> Maybe.withDefault LogNeutralPlayer
+                              , LogString <| fromLand.emoji ++ "→" ++ toLand.emoji
+                              ]
                             )
 
                         Nothing ->
-                            ( model, Nothing )
+                            ( model, Nothing, [ LogError "Attack occured but cannot find lands in board" ] )
 
                 Roll fromRoll toRoll ->
                     let
+                        isSuccess =
+                            List.sum fromRoll > List.sum toRoll
+
                         updates =
                             case model.board.move of
                                 FromTo from to ->
-                                    if List.sum fromRoll > List.sum toRoll then
+                                    if isSuccess then
                                         [ LandUpdate from.emoji from.color 1 from.capital
                                         , LandUpdate to.emoji from.color (from.points - 1) to.capital
                                         ]
@@ -332,6 +394,19 @@ applyEvent model step =
                         , turnIndex = turnIndex
                       }
                     , isKill
+                    , [ turnPlayerLogPart players turnIndex
+                      , LogString <|
+                            if isSuccess then
+                                " succeed"
+
+                            else
+                                " failed"
+                      , LogString " ("
+                      , LogString <| Helpers.toDiesEmojis fromRoll
+                      , LogString " / "
+                      , LogString <| Helpers.toDiesEmojis toRoll
+                      , LogString ")"
+                      ]
                     )
 
                 EndTurn id landDice reserveDice capitals player ->
@@ -396,6 +471,7 @@ applyEvent model step =
                         , players = players
                       }
                     , Nothing
+                    , [ turnPlayerLogPart players turnIndex, LogString "'s turn" ]
                     )
 
                 Flag player position ->
@@ -411,7 +487,15 @@ applyEvent model step =
                                 )
                                 model.players
                     in
-                    ( { model | players = players }, Nothing )
+                    ( { model | players = players }
+                    , Nothing
+                    , [ shortPlayerLogPart player model
+                      , LogString <|
+                            " flagged "
+                                ++ ordinal
+                                    position
+                      ]
+                    )
 
                 SitOut player ->
                     let
@@ -426,24 +510,83 @@ applyEvent model step =
                                 )
                                 model.players
                     in
-                    ( { model | players = players }, Nothing )
+                    ( { model | players = players }
+                    , Nothing
+                    , [ shortPlayerLogPart player model
+                      , LogString " sat out"
+                      ]
+                    )
 
-                _ ->
-                    ( model, Nothing )
+                SitIn player ->
+                    let
+                        players =
+                            List.map
+                                (\p ->
+                                    if p.id == player.id then
+                                        { p | out = Nothing }
+
+                                    else
+                                        p
+                                )
+                                model.players
+                    in
+                    ( { model | players = players }
+                    , Nothing
+                    , [ shortPlayerLogPart player model
+                      , LogString " sat in"
+                      ]
+                    )
+
+                EndGame winner turns ->
+                    ( model
+                    , Nothing
+                    , [ Maybe.map (\p -> shortPlayerLogPart p model) winner |> Maybe.withDefault LogNeutralPlayer
+                      , LogString <| " won the game after " ++ String.fromInt turns ++ " turns"
+                      ]
+                    )
+
+                Chat player message ->
+                    ( model
+                    , Nothing
+                    , [ shortPlayerLogPart player model
+                      , LogString <| ": " ++ message
+                      ]
+                    )
+
+                ToggleReady player ready ->
+                    ( model
+                    , Nothing
+                    , [ shortPlayerLogPart player model
+                      , LogString <|
+                            " "
+                                ++ (if ready then
+                                        "checked"
+
+                                    else
+                                        "unchecked"
+                                   )
+                                ++ " ready"
+                      ]
+                    )
+
+                Start ->
+                    ( model, Nothing, [ LogString <| "Game started" ] )
+
+                Unknown eventStr ->
+                    ( model, Nothing, [ LogString <| "Unhandled event: " ++ eventStr ] )
 
         Nothing ->
-            ( model, Nothing )
-    )
-        |> updatePlayers
+            ( model, Nothing, [ LogError "no more events" ] )
 
 
-updatePlayers : ( ReplayerModel, Maybe Int ) -> ReplayerModel
-updatePlayers ( model, score ) =
+updatePlayers : ( ReplayerModel, Maybe Int, ReplayerLogLine ) -> ReplayerModel
+updatePlayers ( model, score, line ) =
     { model
         | players =
             List.indexedMap (mapPlayer model score) model.players
                 |> updatePlayerPositions
                 |> removeFlagged
+        , log = line :: model.log
     }
 
 

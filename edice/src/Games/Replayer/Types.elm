@@ -3,6 +3,7 @@ module Games.Replayer.Types exposing (..)
 import Board
 import Game.Types exposing (Player)
 import Games.Types exposing (Game)
+import Land exposing (Color)
 import Time exposing (Posix)
 
 
@@ -15,7 +16,19 @@ type alias ReplayerModel =
     , step : Int
     , round : Int
     , playing : Bool
+    , log : List ReplayerLogLine
     }
+
+
+type alias ReplayerLogLine =
+    List ReplayerLogPart
+
+
+type ReplayerLogPart
+    = LogPlayer Player
+    | LogNeutralPlayer
+    | LogString String
+    | LogError String
 
 
 type ReplayerCmd

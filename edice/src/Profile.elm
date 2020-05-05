@@ -2,12 +2,11 @@ module Profile exposing (init, view)
 
 import Array
 import Awards
-import Backend exposing (toDie)
 import Comments
 import DateFormat
 import Game.PlayerCard exposing (playerPicture)
 import Games.Types exposing (GameRef)
-import Helpers exposing (dataTestId, flip, pointsSymbol, pointsToNextLevel)
+import Helpers exposing (dataTestId, flip, pointsSymbol, pointsToNextLevel, toDie)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Icon
