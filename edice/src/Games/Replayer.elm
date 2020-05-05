@@ -131,7 +131,7 @@ update model cmd =
 subscriptions : ReplayerModel -> Sub Msg
 subscriptions model =
     if model.playing then
-        Time.every 100 (Types.ReplayerCmd << Tick)
+        Time.every 250 (Types.ReplayerCmd << Tick)
 
     else
         Sub.none
