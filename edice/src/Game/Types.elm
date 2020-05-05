@@ -183,6 +183,7 @@ type ChatLogEntry
     | LogElimination User Color Int Int EliminationReason
     | LogBegin Table
     | LogReceiveDice Player Int
+    | LogEndGame Table Int
 
 
 type alias RollLog =

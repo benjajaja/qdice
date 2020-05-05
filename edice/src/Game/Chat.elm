@@ -10,7 +10,8 @@ import Http exposing (Error(..))
 import Icon
 import Land exposing (Color)
 import Ordinal exposing (ordinal)
-import Types exposing (Msg(..))
+import Routing.String exposing (routeToString)
+import Types exposing (GamesSubRoute(..), Msg(..), Route(..))
 
 
 chatBox : String -> List ChatLogEntry -> String -> Html Types.Msg
@@ -156,6 +157,14 @@ gameBox lines id_ =
 
                                     else
                                         " got " ++ String.fromInt count ++ " dice"
+                                ]
+
+                        LogEndGame table id ->
+                            div [ class "chatbox--line--end" ]
+                                [ a
+                                    [ href <| routeToString False <| GamesRoute <| GameId table id
+                                    ]
+                                    [ Html.text <| "Watch replay of game #" ++ String.fromInt id ]
                                 ]
                 )
             <|

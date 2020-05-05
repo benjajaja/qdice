@@ -131,13 +131,13 @@ describe("A full game", () => {
     await expect(page2).toClick(testId("check-flag"));
 
     await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-last-child(2)`,
+      `${testId("logline-elimination")}:nth-last-child(3)`,
       {
         text: /^🏳 B finished 2nd with -?\d+ ✪ \(Flagged for 2nd\)/,
       }
     );
     await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-last-child(1)`,
+      `${testId("logline-elimination")}:nth-last-child(2)`,
       {
         text: /^🏆 A won the game! with \d+ ✪ \(Last standing player after \d+ turns\)/,
       }
@@ -280,13 +280,13 @@ describe("A full game", () => {
     console.log("game should have finished");
 
     await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-last-child(2)`,
+      `${testId("logline-elimination")}:nth-last-child(3)`,
       {
         text: /^☠ A finished 2nd with -?\d+ ✪ \(Killed by B for \d+✪\)/,
       }
     );
     await expect(page).toMatchElement(
-      `${testId("logline-elimination")}:nth-last-child(1)`,
+      `${testId("logline-elimination")}:nth-last-child(2)`,
       {
         text: /^🏆 B won the game! with \d+ ✪ \(Last standing player after \d+ turns\)/,
       }

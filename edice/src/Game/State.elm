@@ -903,17 +903,39 @@ updateTable model table msg =
                                 )
 
                     Backend.Types.Eliminations eliminations players ->
-                        List.foldl
-                            (\elimination ( model_, cmd ) ->
-                                let
-                                    ( m, c ) =
-                                        updateChatLog model_ <|
-                                            Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
-                                in
-                                ( m, Cmd.batch [ cmd, c ] )
-                            )
-                            ( { model | game = updatePlayers model.game players (List.map (.player >> .color) eliminations) }, Cmd.none )
-                            eliminations
+                        let
+                            ( model_, cmds ) =
+                                List.foldl
+                                    (\elimination ( next, cmd ) ->
+                                        let
+                                            ( m, c ) =
+                                                updateChatLog next <|
+                                                    Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
+                                        in
+                                        ( m, Cmd.batch [ cmd, c ] )
+                                    )
+                                    ( { model | game = updatePlayers model.game players (List.map (.player >> .color) eliminations) }, Cmd.none )
+                                    eliminations
+                        in
+                        if List.any (\e -> e.position == 1) eliminations then
+                            let
+                                ( m, c ) =
+                                    case model.game.currentGame of
+                                        Just id ->
+                                            case model.game.table of
+                                                Just t ->
+                                                    updateChatLog model_ <| Game.Types.LogEndGame t id
+
+                                                Nothing ->
+                                                    ( model, Cmd.none )
+
+                                        Nothing ->
+                                            ( model, Cmd.none )
+                            in
+                            ( m, Cmd.batch [ c, cmds ] )
+
+                        else
+                            ( model_, cmds )
 
                     Backend.Types.Turn info ->
                         updateTurn model info
