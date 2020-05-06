@@ -1,8 +1,9 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeUnits, toDie, toDiesEmojis, triple, tupleApply, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeRandomDice, timeUnits, toDie, toDiesEmojis, triple, tupleApply, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
 import Http exposing (Error(..))
+import Time exposing (Posix)
 
 
 port consoleDebug : String -> Cmd msg
@@ -223,3 +224,18 @@ toDie face =
 
         _ ->
             "🎲"
+
+
+timeRandomDice : Posix -> List Int -> List Int
+timeRandomDice time dice =
+    List.indexedMap
+        (\i _ ->
+            remainderBy 6
+                (round
+                    (toFloat (Time.posixToMillis time)
+                        / toFloat (i + 1)
+                    )
+                )
+                + 1
+        )
+        dice

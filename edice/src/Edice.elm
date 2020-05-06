@@ -877,8 +877,32 @@ update msg model =
 
                         Nothing ->
                             game
+
+                game_2 =
+                    case game_.lastRoll of
+                        Just roll ->
+                            if Time.posixToMillis newTime - Time.posixToMillis roll.timestamp > 3000 then
+                                { game_ | lastRoll = Nothing }
+
+                            else if roll.rolling then
+                                { game_
+                                    | lastRoll =
+                                        Just
+                                            { roll
+                                                | from =
+                                                    Tuple.mapSecond (Helpers.timeRandomDice newTime) roll.from
+                                                , to =
+                                                    Tuple.mapSecond (Helpers.timeRandomDice newTime) roll.to
+                                            }
+                                }
+
+                            else
+                                game_
+
+                        Nothing ->
+                            game_
             in
-            ( { model | time = newTime, game = game_ }, cmd )
+            ( { model | time = newTime, game = game_2 }, cmd )
 
         UserZone zone ->
             ( { model | zone = zone }, Cmd.none )

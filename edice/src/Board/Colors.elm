@@ -1,4 +1,4 @@
-module Board.Colors exposing (animationColor, base, baseCssRgb, colorIndex, colorName, contrastColors, cssRgb, downlight, highlight, hover)
+module Board.Colors exposing (animationColor, base, baseCssRgb, colorIndex, colorName, contrastColors, cssRgb, cssRgba, downlight, highlight, hover)
 
 import Animation
 import Color
@@ -61,6 +61,16 @@ hover =
 cssRgb : Color.Color -> String
 cssRgb =
     colorToHex
+
+
+cssRgba : Float -> Color.Color -> String
+cssRgba alpha color =
+    let
+        { red, green, blue } =
+            Color.toRgba color
+    in
+    Color.rgba red green blue alpha
+        |> Color.Convert.colorToCssRgba
 
 
 baseCssRgb : Color -> String

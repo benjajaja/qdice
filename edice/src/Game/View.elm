@@ -5,12 +5,14 @@ import Awards
 import Backend.Types exposing (ConnectionStatus(..))
 import Board
 import Board.Colors
+import Board.Die
+import Color
 import Comments
 import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
 import Game.State exposing (canSelect)
-import Game.Types exposing (ChatLogEntry(..), GameStatus(..), Msg(..), Player, PlayerAction(..), isBot)
+import Game.Types exposing (ChatLogEntry(..), GameStatus(..), Msg(..), Player, PlayerAction(..), RollUI, isBot)
 import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, height, href, src, style, width)
@@ -64,6 +66,11 @@ view model =
                 )
                     ++ [ header model
                        , board
+                       , if model.game.boardOptions.diceVisible then
+                            lastRoll model.game.lastRoll
+
+                         else
+                            text ""
                        , sitInModal model
                        , boardFooter model
                        , tableDetails model
@@ -813,5 +820,32 @@ findTableButton model =
         []
 
 
+lastRoll : Maybe RollUI -> Html msg
+lastRoll mRoll =
+    div [ class "edRoll" ] <|
+        case mRoll of
+            Just roll ->
+                [ div
+                    [ class "edRoll__from"
+                    , style "background-color" <|
+                        (Board.Colors.base (Tuple.first roll.from)
+                            |> Board.Colors.cssRgb
+                        )
+                    ]
+                  <|
+                    List.map Board.Die.rollDie <|
+                        Tuple.second roll.from
+                , div
+                    [ class "edRoll__to"
+                    , style "background-color" <|
+                        (Board.Colors.base (Tuple.first roll.to)
+                            |> Board.Colors.cssRgb
+                        )
+                    ]
+                  <|
+                    List.map Board.Die.rollDie <|
+                        Tuple.second roll.to
+                ]
 
--- if not <| List.any (.botCount >> (/=) 0) model.tableList then
+            Nothing ->
+                []

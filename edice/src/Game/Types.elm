@@ -60,6 +60,7 @@ type alias Model =
     , params : TableParams
     , currentGame : Maybe Int
     , expandChat : Bool
+    , lastRoll : Maybe RollUI
     }
 
 
@@ -108,6 +109,14 @@ type alias TableStatus =
     , roundCount : Int
     , watchCount : Int
     , currentGame : Maybe Int
+    }
+
+
+type alias RollUI =
+    { from : ( Color, List Int )
+    , to : ( Color, List Int )
+    , rolling : Bool
+    , timestamp : Posix
     }
 
 

@@ -1057,6 +1057,44 @@ input[type="range"]::-webkit-slider-runnable-track {
   color: #efefef;
 }
 
+.edRoll {
+  position: relative;
+  height: 0;
+  display: flex;
+}
+.edRoll__to, .edRoll__from {
+  pointer-events: none;
+  position: absolute;
+  bottom: 20px;
+  border-radius: 6px;
+  display: grid;
+  row-gap: 4px;
+  padding: 4px;
+}
+.edRoll__from {
+  left: 8px;
+}
+.edRoll__to {
+  right: 8px;
+}
+.edRoll .edDie {
+  max-width: 28px;
+}
+.edDie {
+  width: 28px;
+}
+@media screen and (max-width: 700px) and (orientation: portrait) {
+  .edRoll__to, .edRoll__from {
+    border-radius: 2px;
+    row-gap: 1px;
+    padding: 1px;
+  }
+  .edRoll__from .edDie, .edRoll__to .edDie {
+    width: 14px;
+  }
+}
+
+
 @media (min-width: 900px) {
   .edMainScreen, .edGameHeader {
     width: 900px;

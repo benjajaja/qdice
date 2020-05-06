@@ -14,6 +14,7 @@ import Maps exposing (load)
 import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (MapName(..), Table, isTournament)
 import Task
+import Time
 import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
 
 
@@ -89,6 +90,14 @@ init table tableMap_ =
             }
       , currentGame = Nothing
       , expandChat = False
+      , lastRoll =
+            Nothing
+
+      -- Just <|
+      -- RollUI ( Land.Red, [ 0, 0, 0, 0, 0 ] )
+      -- ( Land.Yellow, [ 0, 1, 1, 1, 5, 4, 5, 3 ] )
+      -- True
+      -- (Time.millisToPosix 100000000000000)
       }
     , case map of
         Ok _ ->
@@ -662,6 +671,18 @@ showRoll model roll =
                             |> List.map (Board.canAttackFrom board_.map p.color >> Result.toMaybe)
                             |> List.any ((==) Nothing >> not)
 
+        lastRoll : Maybe RollUI
+        lastRoll =
+            Helpers.tupleCombine ( fromLand, toLand )
+                |> Maybe.map
+                    (\( from, to ) ->
+                        { from = ( from.color, roll.from.roll )
+                        , to = ( to.color, roll.to.roll )
+                        , rolling = False
+                        , timestamp = model.time
+                        }
+                    )
+
         game_ =
             { game
                 | board = board_
@@ -669,6 +690,7 @@ showRoll model roll =
                 , player = player
                 , turnStart = roll.turnStart
                 , canMove = canMove
+                , lastRoll = lastRoll
             }
 
         soundName =
@@ -897,6 +919,28 @@ updateTable model table msg =
                                                             []
                                                     )
                                                     (Just move_)
+                                            , lastRoll =
+                                                case move_ of
+                                                    Board.Types.FromTo from to ->
+                                                        Just
+                                                            { from =
+                                                                ( from.color
+                                                                , List.range 1 from.points
+                                                                    |> List.map (always 0)
+                                                                    |> Helpers.timeRandomDice model.time
+                                                                )
+                                                            , to =
+                                                                ( to.color
+                                                                , List.range 1 to.points
+                                                                    |> List.map (always 0)
+                                                                    |> Helpers.timeRandomDice model.time
+                                                                )
+                                                            , rolling = True
+                                                            , timestamp = model.time
+                                                            }
+
+                                                    _ ->
+                                                        Nothing
                                         }
                                   }
                                 , playSound model.sessionPreferences "kick"
