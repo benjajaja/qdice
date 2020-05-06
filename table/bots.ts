@@ -221,21 +221,25 @@ const setState = (p: BotPlayer, s: Partial<BotState>): BotPlayer => ({
   },
 });
 
-export const botsNotifyAttack = (table: Table): readonly Player[] =>
-  table.players.map<Player>(player => {
-    if (
-      isBot(player) &&
-      findLand(table.lands)(table.attack!.to).color === player.color
-    ) {
-      const lastAgressor = table.players.find(
-        player =>
-          player.color === findLand(table.lands)(table.attack!.from).color
-      );
+export const botsNotifyAttack = (table: Table): readonly Player[] => {
+  if (table.attack !== null) {
+    const attack = table.attack;
+    return table.players.map<Player>(player => {
+      if (
+        isBot(player) &&
+        findLand(table.lands)(attack.to).color === player.color
+      ) {
+        const lastAgressor = table.players.find(
+          player => player.color === findLand(table.lands)(attack.from).color
+        );
 
-      return setState(player, { lastAgressor: lastAgressor?.id ?? null });
-    }
-    return player;
-  });
+        return setState(player, { lastAgressor: lastAgressor?.id ?? null });
+      }
+      return player;
+    });
+  }
+  return table.players;
+};
 
 const botSources = (table: Table, player: Player): Source[] => {
   const otherLands = table.lands.filter(other => other.color !== player.color);

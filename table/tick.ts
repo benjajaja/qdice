@@ -238,8 +238,16 @@ const lastJoined = (players: ReadonlyArray<Player>): Timestamp => {
 
 const rollDice = (table: Table): [number[], number[], Land, Land] => {
   const find = findLand(table.lands);
+  if (table.attack === null) {
+    logger.error("Could not roll dice for null attack!");
+    return [[], [], table.lands[0], table.lands[1]];
+  }
   const fromLand = find(table.attack!.from);
   const toLand = find(table.attack!.to);
+  if (!fromLand || !toLand) {
+    logger.error("Could not roll dice for attack!", table.attack);
+    return [[], [], table.lands[0], table.lands[1]];
+  }
   if (table.roundCount === 1 && toLand.color === Color.Neutral) {
     const fromRoll = R.range(0, fromLand.points).map(R.always(6));
     const toRoll = R.range(0, toLand.points).map(R.always(1));
