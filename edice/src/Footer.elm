@@ -3,7 +3,7 @@ module Footer exposing (footer)
 import Backend.Types exposing (ConnectionStatus(..))
 import Helpers exposing (dataTestId)
 import Html exposing (..)
-import Html.Attributes exposing (class, href)
+import Html.Attributes exposing (class, height, href, src, style, width)
 import Icon
 import Routing.String exposing (routeToString)
 import Types exposing (LoginDialogStatus(..), Model, Msg(..), Route(..), StaticPage(..), User(..))
@@ -30,7 +30,10 @@ footer route version status =
 
 links1 : List (Html Msg)
 links1 =
-    [ link HomeRoute "Play!" "casino"
+    [ a [ href <| routeToString False HomeRoute, class "edFooter--box__link" ]
+        [ img [ src "quedice.svg", width 24, height 24, style "margin-right" "2px" ] []
+        , text "Play!"
+        ]
     ]
 
 

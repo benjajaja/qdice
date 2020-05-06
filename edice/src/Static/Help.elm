@@ -5,7 +5,7 @@ import Markdown
 
 markdown =
     Markdown.toHtml [] """
-## ¡Qué Dice!
+## How to play
 
 ### Goal
 
@@ -52,5 +52,13 @@ Some tables have capitals assigned randomly on start, one per player. "Pocket" d
 When a capital is defeated then all it's dice, including pocket dice, are **stolen** by the attacker. They are put into the attackers pocket/capital immediately, and given out at turn end. A new capital will be assigned to the defender before the next turn.
 
 > Tip: stealing nearby capitals can be a huge dice boost - getting yours stolen can be the end!
+
+### Discussion
+
+  * [Qdice reddit](https://www.reddit.com/r/Qdice/) to post any questions or opinion
+  * [Discord](https://discord.gg/E2m3Gra) to chat with fellow players
+  * [@qdicewtf](https://twitter.com/qdicewtf) on twitter
+  * [github](https://github.com/gipsy-king/qdice) code and bugs
+  * Comment here
 
 """

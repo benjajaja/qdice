@@ -31,8 +31,6 @@ Created by <ste3ls@gmail.com>.
 
 ## Development
 
-There is also the **[changelog](/changelog)** with a complete list of all changes that go live.
-
 Qdice is **Free Open Source Software**! See repo here: [github.com/gipsy-king/qdice](https://github.com/gipsy-king/qdice).
 
 Before making a PR, I suggest to get in contact with me however you want, an issue in github is a good start.
@@ -58,11 +56,11 @@ Before making a PR, I suggest to get in contact with me however you want, an iss
   other.
 * **PostgreSQL** - Solid relational database with good support for JSON columns when needed.
 * **Docker** - everything is built and run with docker.
-* **Testing** - Elm needs almost no unit test due to it's guarantees, there is much more benefit in
+* **Testing** - Elm needs much less unit tests due to it's guarantees, there is much more benefit in
   having end-to-end tests where unit tests would be too cumbersome and overblown.
   End-to-end tests are run with docker and play a real game from beginning to end.
   The node.js server has a greater number of unit tests.
-* **CI/CD** - Everything is built and e2e-tested before deploying automatically.
+* **CI/CD** - Everything is continuosly deployed in a _build -> unit test -> end-to-end test_ pipeline.
 """
         , Comments.view model.zone model.user model.comments <| Comments.staticComments page
         ]

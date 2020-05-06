@@ -110,7 +110,7 @@ select:-webkit-autofill:focus {
 .edMainScreen {}
 .edMainScreen__static {
   padding: 5px 10px;
-  margin: 10px 10px;
+  margin: 0 10px;
   background: #edfcff;
 }
 .edMainScreen__static img {
@@ -297,6 +297,19 @@ input[type="range"]::-webkit-slider-runnable-track {
     transform: scale(0.66);
     opacity: 0.2;
   }
+}
+.edLogo {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+.edLogo__text {
+  margin-left: 4px;
+  padding-top: 4px;
+}
+.edLogo:hover {
+  text-decoration: underline;
 }
 
 .overlay-loading {
@@ -1052,6 +1065,16 @@ input[type="range"]::-webkit-slider-runnable-track {
     /* padding-left: 0; */
   }
 }
+@media (max-width: 908px) {
+  .edGameBoardWrapper .edLogo {
+    margin-left: 6px;
+  }
+}
+@media (max-width: 900px) {
+  .edMainScreen__static {
+    margin: 0;
+  }
+}
 
 @media screen and (max-width: 840px) and (orientation: landscape) and (min-aspect-ratio: 13/9) {
   body, .Main, .edMainScreen, .edGameBoardWrapper {
@@ -1297,16 +1320,3 @@ input[type="range"]::-webkit-slider-runnable-track {
   z-index: 100;
 }
 
-.edLogo {
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  text-decoration: none;
-}
-.edLogo__text {
-  margin-left: 4px;
-  padding-top: 4px;
-}
-.edLogo:hover {
-  text-decoration: underline;
-}
