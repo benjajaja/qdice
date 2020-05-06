@@ -271,7 +271,7 @@ onlineButtons model =
 
                             Nothing ->
                                 findTableButton model
-                                    ++ [ joinButton "Join" <| ShowLogin Types.LoginShowJoin ]
+                                    ++ [ joinButton "Play now" <| ShowLogin Types.LoginShowJoin ]
 
                     Types.Logged user ->
                         case model.game.params.tournament of
@@ -583,63 +583,71 @@ tableDetails model =
 
                     _ ->
                         [ div [ class "edGameStatus__chip" ] <|
-                            case model.game.params.tournament of
-                                Nothing ->
-                                    [ text <|
-                                        if model.game.playerSlots == 0 then
-                                            "∅"
+                            [ text <|
+                                if model.game.playerSlots == 0 then
+                                    "∅"
 
-                                        else
-                                            String.fromInt model.game.playerSlots
-                                    , text " players"
-                                    , if model.game.params.botLess then
-                                        text ", no bots"
+                                else
+                                    String.fromInt model.game.playerSlots
+                            , text " players"
+                            , if model.game.params.botLess then
+                                text ", no bots"
 
-                                      else if not <| List.any (.botCount >> (/=) 0) model.tableList then
-                                        text ", bots will join"
+                              else if not <| List.any (.botCount >> (/=) 0) model.tableList then
+                                text ", bots will join"
 
-                                      else
-                                        text ", bots will join"
-                                    ]
-                                        ++ (case model.game.gameStart of
+                              else
+                                text ", bots will join"
+                            ]
+                                ++ (if model.game.params.tournament == Nothing then
+                                        case model.game.gameStart of
+                                            Nothing ->
+                                                [ text <|
+                                                    ", starts with "
+                                                        ++ String.fromInt model.game.startSlots
+                                                        ++ " players"
+                                                        ++ (case model.game.params.readySlots of
+                                                                Just n ->
+                                                                    " or when " ++ String.fromInt n ++ " are ready"
+
+                                                                Nothing ->
+                                                                    ""
+                                                           )
+                                                ]
+
+                                            Just timestamp ->
+                                                [ text ", starting in"
+                                                , span [ class "edGameStatus__chip--strong" ] [ text <| "\u{00A0}" ++ String.fromInt ((round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) + 1) ++ "s" ]
+                                                ]
+
+                                    else
+                                        []
+                                   )
+                        ]
+                            ++ (case model.game.params.tournament of
+                                    Nothing ->
+                                        []
+
+                                    Just tournament ->
+                                        [ div [ class "edGameStatus__chip" ] <|
+                                            case model.game.gameStart of
                                                 Nothing ->
-                                                    [ text <|
-                                                        ", starts with "
-                                                            ++ String.fromInt model.game.startSlots
-                                                            ++ " players"
-                                                            ++ (case model.game.params.readySlots of
-                                                                    Just n ->
-                                                                        " or when " ++ String.fromInt n ++ " are ready"
-
-                                                                    Nothing ->
-                                                                        ""
-                                                               )
-                                                    ]
+                                                    [ text <| "Game scheduled " ++ tournament.frequency ]
 
                                                 Just timestamp ->
-                                                    [ text ", starting in"
-                                                    , span [ class "edGameStatus__chip--strong" ] [ text <| "\u{00A0}" ++ String.fromInt ((round <| toFloat timestamp - ((toFloat <| posixToMillis model.time) / 1000)) + 1) ++ "s" ]
+                                                    [ text <| "Game scheduled at "
+                                                    , span [ class "edGameStatus__chip--strong" ]
+                                                        [ text <| tournamentTime model.zone model.time timestamp ]
                                                     ]
-                                           )
+                                        ]
+                               )
+                            ++ (case model.game.params.turnSeconds of
+                                    Just n ->
+                                        [ div [ class "edGameStatus__chip" ] [ text <| "Turn timeout is " ++ turnTimeDisplay n ] ]
 
-                                Just tournament ->
-                                    case model.game.gameStart of
-                                        Nothing ->
-                                            [ text <| "Game scheduled " ++ tournament.frequency ]
-
-                                        Just timestamp ->
-                                            [ text <| "Game scheduled at "
-                                            , span [ class "edGameStatus__chip--strong" ]
-                                                [ text <| tournamentTime model.zone model.time timestamp ]
-                                            ]
-                        , div [ class "edGameStatus__chip" ] <|
-                            case model.game.params.turnSeconds of
-                                Just n ->
-                                    [ text <| "Turn timeout is " ++ turnTimeDisplay n ]
-
-                                Nothing ->
-                                    [ text "\u{00A0}" ]
-                        ]
+                                    Nothing ->
+                                        []
+                               )
                             ++ (case model.game.params.tournament of
                                     Nothing ->
                                         []
@@ -783,7 +791,11 @@ findTableButton model =
     if
         (List.length model.game.players
             == 0
-            && List.any (.playerCount >> (/=) 0) model.tableList
+            && model.game.table
+            /= Just "5MinuteFix"
+            -- && List.any (.playerCount >> (/=) 0) model.tableList
+            && model.user
+            /= Types.Anonymous
         )
             || (Maybe.map .points model.game.player |> Maybe.withDefault 1000000)
             < model.game.points

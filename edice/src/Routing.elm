@@ -5,6 +5,7 @@ import Browser.Navigation exposing (Key)
 import Comments
 import Game.Types exposing (GameStatus(..), TableInfo)
 import Games
+import Helpers
 import LeaderBoard.State exposing (fetchLeaderboard)
 import Profile
 import Routing.String exposing (routeToString)
@@ -126,6 +127,28 @@ findBestTable model current =
             )
         |> List.head
         |> Maybe.map .table
+        |> (\best ->
+                case best of
+                    Just b ->
+                        Just b
+
+                    Nothing ->
+                        case current of
+                            Nothing ->
+                                Nothing
+
+                            Just c ->
+                                case Helpers.find (.table >> (==) "5MinuteFix") model.tableList of
+                                    Just t ->
+                                        if t.status /= Game.Types.Playing then
+                                            Just t.table
+
+                                        else
+                                            Nothing
+
+                                    Nothing ->
+                                        Nothing
+           )
         |> Maybe.andThen
             (\best ->
                 case current of

@@ -11,7 +11,9 @@ describe("Home", () => {
   });
 
   test('should display "join" button on page', async () => {
-    await expect(page).toMatchElement(testId("button-seat"), { text: "Join" });
+    await expect(page).toMatchElement(testId("button-seat"), {
+      text: "Play now",
+    });
   });
 
   test("should display and close the login dialog", async () => {

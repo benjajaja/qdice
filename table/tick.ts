@@ -199,6 +199,7 @@ const shouldStart = (table: Table) => {
   if (table.params.tournament) {
     if (
       countdownFinished(table.gameStart) &&
+      // table.players.filter(R.complement(isBot)).length > 1 &&
       table.players.length >= table.startSlots
     ) {
       return true;
