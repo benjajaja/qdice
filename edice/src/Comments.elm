@@ -66,6 +66,9 @@ kindName kind =
                    )
                 ++ "\""
 
+        AllComments ->
+            "everywhere"
+
 
 profileComments : Profile -> CommentKind
 profileComments profile =
@@ -106,6 +109,9 @@ routeEnter route model cmd =
 
         StaticPageRoute page ->
             fetchWith model cmd <| StaticPageComments page
+
+        CommentsRoute ->
+            fetchWith model cmd <| AllComments
 
         _ ->
             ( model, cmd )
@@ -307,7 +313,7 @@ view zone user comments kind =
                             [ text "No comments yet" ]
 
                         _ ->
-                            List.map (singleComment zone 0) list_
+                            List.map (singleComment zone 0 kind) list_
         ]
             ++ (case user of
                     Logged _ ->
@@ -386,8 +392,8 @@ view zone user comments kind =
                )
 
 
-singleComment : Zone -> Int -> Comment -> Html Msg
-singleComment zone depth comment =
+singleComment : Zone -> Int -> CommentKind -> Comment -> Html Msg
+singleComment zone depth kind comment =
     div [ class "edComments__comment", style "margin-left" <| String.fromInt (depth * 30) ++ "px" ] <|
         [ div [ class "edComments__comment__header" ] <|
             [ a
@@ -399,30 +405,46 @@ singleComment zone depth comment =
                 [ playerPicture "small" comment.author.picture comment.author.name
                 , span [] [ text <| comment.author.name ]
                 ]
-            , span
-                [ class "edComments__comment__header__timestamp" ]
-                [ text <|
-                    (DateFormat.format "dddd, dd MMMM yyyy HH:mm:ss" zone <| Time.millisToPosix comment.timestamp)
-                        ++ " (#"
-                        ++ String.fromInt comment.id
-                        ++ ")"
-                ]
             ]
-                ++ (case depth of
-                        0 ->
-                            [ span
-                                [ class "edComments__comment__header__reply"
-                                , onClick <| ReplyComment comment.kind <| Just ( comment.id, comment.author.name )
-                                ]
-                                [ text "Reply" ]
-                            ]
+                ++ (if depth == 0 then
+                        case kind of
+                            AllComments ->
+                                [ span [ class "edComments__comment__header__on" ] [ text <| "on " ++ kindName comment.kind ] ]
 
-                        _ ->
-                            []
+                            _ ->
+                                []
+
+                    else
+                        []
+                   )
+                ++ [ span
+                        [ class "edComments__comment__header__timestamp" ]
+                        [ text <|
+                            (DateFormat.format "dddd, dd MMMM yyyy HH:mm:ss" zone <| Time.millisToPosix comment.timestamp)
+                                ++ " (#"
+                                ++ String.fromInt comment.id
+                                ++ ")"
+                        ]
+                   ]
+                ++ (if kind == comment.kind then
+                        case depth of
+                            0 ->
+                                [ span
+                                    [ class "edComments__comment__header__reply"
+                                    , onClick <| ReplyComment comment.kind <| Just ( comment.id, comment.author.name )
+                                    ]
+                                    [ text "Reply" ]
+                                ]
+
+                            _ ->
+                                []
+
+                    else
+                        []
                    )
         , blockquote [ class "edComments__comment__body" ] [ text <| comment.text ]
         ]
             ++ (case comment.replies of
                     Replies list ->
-                        List.map (singleComment zone (depth + 1)) list
+                        List.map (singleComment zone (depth + 1) kind) list
                )

@@ -171,9 +171,7 @@ view model sub =
                         []
 
                     GameId table id ->
-                        [ --div [] [ text "Unfair play? Bugs? Write something on this game!" ]
-                          Comments.view model.zone model.user model.comments <| Comments.gameComments table id
-                        ]
+                        [ Comments.view model.zone model.user model.comments <| Comments.gameComments table id ]
                )
 
 

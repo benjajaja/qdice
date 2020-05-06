@@ -119,6 +119,7 @@ type Route
     | ProfileRoute UserId String
     | LeaderBoardRoute
     | GamesRoute GamesSubRoute
+    | CommentsRoute
 
 
 type GamesSubRoute
@@ -351,6 +352,7 @@ type CommentKind
     | TableComments String
     | ReplyComments Int String
     | StaticPageComments StaticPage
+    | AllComments
 
 
 commentKindKey : CommentKind -> String
@@ -377,6 +379,9 @@ commentKindKey kind =
                         About ->
                             "about"
                    )
+
+        AllComments ->
+            "all"
 
 
 type alias Comment =

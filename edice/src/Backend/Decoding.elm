@@ -642,6 +642,9 @@ kindDecoder =
                         _ ->
                             Nothing
 
+                "all" ->
+                    Just AllComments
+
                 _ ->
                     Nothing
         )

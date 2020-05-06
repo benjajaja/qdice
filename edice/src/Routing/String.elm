@@ -57,6 +57,9 @@ routeToString useHash route =
                                 AllGames ->
                                     ""
                            )
+
+                CommentsRoute ->
+                    "posts"
            )
 
 

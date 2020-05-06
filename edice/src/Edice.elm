@@ -1079,6 +1079,11 @@ mainView model =
             viewWrapper
                 [ Games.view model sub ]
 
+        CommentsRoute ->
+            viewWrapper
+                [ Comments.view model.zone model.user model.comments <| Types.AllComments
+                ]
+
 
 viewWrapper : List (Html.Html Msg) -> Html.Html Msg
 viewWrapper children =

@@ -20,6 +20,8 @@ footer route version status =
                     links2
                 , div [ class "edFooter--box edFooter--box__links" ] <|
                     links3
+                , div [ class "edFooter--box edFooter--box__links" ] <|
+                    links4
                 ]
             , div [ class "edFooter--row" ]
                 [ statusMessage route version status
@@ -46,6 +48,12 @@ links2 =
 links3 : List (Html Msg)
 links3 =
     [ link (StaticPageRoute About) "What's Qdice.wtf?" "info"
+    ]
+
+
+links4 : List (Html Msg)
+links4 =
+    [ link CommentsRoute "Posts" "comment"
     ]
 
 

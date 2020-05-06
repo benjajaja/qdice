@@ -1245,6 +1245,9 @@ input[type="range"]::-webkit-slider-runnable-track {
 .edComments__comment__header__author > img {
   margin-right: 6px;
 }
+.edComments__comment__header__on {
+  margin-right: 6px;
+}
 .edComments__comment__header__timestamp {
   font-size: 0.8em;
   margin-right: 6px;

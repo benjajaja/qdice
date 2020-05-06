@@ -781,6 +781,50 @@ export const getUserStats = async (id: string) => {
   };
 };
 
+const sortComments = (rows: any[]) => {
+  const list = rows.map(camelize).map((row: any) => ({
+    id: row.id,
+    kind: [row.kind, row.kindId],
+    body: row.body,
+    author: {
+      id: row.authorId,
+      name: row.authorName,
+      picture: row.authorPicture || EMPTY_PROFILE_PICTURE,
+    },
+    timestamp: ts(date(row.timestamp)),
+    replies: [],
+  }));
+
+  const topComments = list.filter(comment => comment.kind[0] !== "comments");
+  return R.sortWith(
+    [
+      (a, b) => {
+        return (
+          [b.timestamp]
+            .concat(b.replies.map(R.prop("timestamp")))
+            .reduce(R.max, 0) -
+          [a.timestamp]
+            .concat(a.replies.map(R.prop("timestamp")))
+            .reduce(R.max, 0)
+        );
+      },
+    ],
+    list
+      .filter(comment => comment.kind[0] === "comments")
+      .reduce((list, reply) => {
+        return list.map(top => {
+          if (top.id.toString() === reply.kind[1]) {
+            return {
+              ...top,
+              replies: R.sortBy(R.prop("timestamp"), [...top.replies, reply]),
+            };
+          }
+          return top;
+        });
+      }, topComments)
+  );
+};
+
 export const comments = async (kind: string, kindId: string) => {
   const result = await pool.query({
     name: "comments",
@@ -796,34 +840,20 @@ export const comments = async (kind: string, kindId: string) => {
     DESC LIMIT 100`,
     values: [kind, kindId],
   });
+  return sortComments(result.rows);
+};
 
-  const list = result.rows.map(camelize).map((row: any) => ({
-    id: row.id,
-    kind: [row.kind, row.kindId],
-    body: row.body,
-    author: {
-      id: row.authorId,
-      name: row.authorName,
-      picture: row.authorPicture || EMPTY_PROFILE_PICTURE,
-    },
-    timestamp: ts(date(row.timestamp)),
-    replies: [],
-  }));
-
-  const topComments = list.filter(comment => comment.kind[0] === kind);
-  return list
-    .filter(comment => comment.kind[0] === "comments")
-    .reduce((list, reply) => {
-      return list.map(top => {
-        if (top.id.toString() === reply.kind[1]) {
-          return {
-            ...top,
-            replies: R.sortBy(R.prop("timestamp"), [...top.replies, reply]),
-          };
-        }
-        return top;
-      });
-    }, topComments);
+export const allComments = async () => {
+  const result = await pool.query({
+    name: "comments-all",
+    text: `SELECT comments.*,
+      users.id as author_id, users.name as author_name, users.picture as author_picture
+    FROM comments
+    LEFT JOIN users ON users.id = comments.author
+    ORDER BY timestamp DESC
+    LIMIT 100`,
+  });
+  return sortComments(result.rows);
 };
 
 export const postComment = async (

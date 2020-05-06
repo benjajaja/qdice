@@ -37,6 +37,7 @@ matchers =
                         , map GamesOfTable string
                         ]
             )
+        , map CommentsRoute (s "posts")
         , tableMatcher
         ]
 

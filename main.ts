@@ -69,6 +69,23 @@ export const server = async () => {
         code: "boom!",
       };
     };
+    res.header("Access-Control-Allow-Origin", "*");
+
+    return cb();
+  });
+
+  server.on("NotFound", function(req, res, err, cb) {
+    err.toString = function toString() {
+      return "404 not found";
+    };
+    err.toJSON = function toJSON() {
+      return {
+        message: "resource not found",
+        code: 404,
+      };
+    };
+    logger.debug("NotFound", err);
+    res.header("Access-Control-Allow-Origin", "*");
 
     return cb();
   });
@@ -77,7 +94,7 @@ export const server = async () => {
     // this listener will fire after both events above!
     // `err` here is the same as the error that was passed to the above
     // error handlers.
-    logger.error(err);
+    logger.error("event restifyError:", err);
     return cb();
   });
 
@@ -262,17 +279,20 @@ export const server = async () => {
   server.get(`${root}/games/:table/:id`, games.game);
   server.get(`${root}/games/:table/:id/chat`, games.chat("game"));
 
+  const allCommentKinds = ["user", "games", "tables", "comments", "page"];
   server.get(`${root}/comments/:kind/:id`, async (req, res, next) => {
     if (
-      ["user", "games", "tables", "comments", "page"].indexOf(
-        req.params.kind
-      ) === -1 ||
+      allCommentKinds.indexOf(req.params.kind) === -1 ||
       R.empty(req.params.id)
     ) {
       res.sendRaw(401, "bad kind/id");
       return next();
     }
     res.send(await db.comments(req.params.kind, req.params.id));
+    next();
+  });
+  server.get(`${root}/comments/all`, async (req, res, next) => {
+    res.send(await db.allComments());
     next();
   });
 
@@ -282,6 +302,13 @@ export const server = async () => {
     const kind = req.params.kind;
     const id = req.params.id;
     const result = await db.postComment(user, kind, id, body);
+    res.send(result);
+    next();
+  });
+  server.post(`${root}/comments/all`, async (req, res, next) => {
+    const body = req.body;
+    const user = (req as any).user;
+    const result = await db.postComment(user, "all", "all", body);
     res.send(result);
     next();
   });
