@@ -839,6 +839,9 @@ input[type="range"]::-webkit-slider-runnable-track {
 .edGameTable tbody tr:hover {
   background: #ccc;
 }
+.edGameTable__row--disabled {
+  color: #888;
+}
 
 .edTables {
   margin-top: 20px;

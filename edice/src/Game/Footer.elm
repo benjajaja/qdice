@@ -47,6 +47,12 @@ tableOfTables tableList =
                     tr
                         [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                         , dataTestId <| "go-to-table-" ++ table.table
+                        , class <|
+                            if table.table == "Planeta" || table.playerCount > 0 then
+                                "edGameTable__row edGameTable__row--enabled"
+
+                            else
+                                "edGameTable__row edGameTable__row--disabled"
                         ]
                         [ td [ align "left" ] [ text <| table.table ]
                         , td [ align "right" ]
@@ -127,6 +133,12 @@ tableOfTournaments zone time tableList =
                             tr
                                 [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                                 , dataTestId <| "go-to-table-" ++ table.table
+                                , class <|
+                                    if table.playerCount > 0 then
+                                        "edGameTable__row edGameTable__row--enabled"
+
+                                    else
+                                        "edGameTable__row edGameTable__row--disabled"
                                 ]
                             <|
                                 [ td [ align "left" ] [ text <| table.table ]
