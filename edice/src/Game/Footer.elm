@@ -147,12 +147,17 @@ tableOfTournaments zone time tableList =
                                             Just tournament ->
                                                 [ td [ align "left" ]
                                                     [ text <|
-                                                        case table.gameStart of
-                                                            Nothing ->
-                                                                tournament.frequency
+                                                        case table.status of
+                                                            Game.Types.Playing ->
+                                                                "Playing"
 
-                                                            Just timestamp ->
-                                                                tournamentTime zone time timestamp
+                                                            _ ->
+                                                                case table.gameStart of
+                                                                    Nothing ->
+                                                                        tournament.frequency
+
+                                                                    Just timestamp ->
+                                                                        tournamentTime zone time timestamp
                                                     ]
                                                 , td [ align "right" ] [ text <| formatPoints tournament.prize ]
                                                 ]
