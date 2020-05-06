@@ -127,12 +127,16 @@ describe("Pick tactic from strategy", () => {
       const tactic = pickTactic("Revengeful", bot, table);
       assert.strictEqual(tactic.name, "focusColor");
       assert.strictEqual(
-        tactic(-Infinity, mkLand(4, Color.Red), mkLand(1, Color.Blue)),
+        tactic(table, -Infinity, mkLand(4, Color.Red), mkLand(1, Color.Blue)),
         undefined
       );
       assert.ok(
-        tactic(-Infinity, mkLand(4, Color.Red), mkLand(1, Color.Neutral)) !==
-          undefined
+        tactic(
+          table,
+          -Infinity,
+          mkLand(4, Color.Red),
+          mkLand(1, Color.Neutral)
+        ) !== undefined
       );
     });
   });
@@ -166,21 +170,21 @@ describe("Tactics", () => {
     });
     it("attacks to reconnect", () => {
       const attack = tactics.reconnect(
+        table,
         -Infinity,
         table.lands[0],
         table.lands[3],
-        bot,
-        table
+        bot
       );
       assert.strictEqual(attack!.to.emoji, "D");
     });
     it("does not attack if no reconnect", () => {
       const attack = tactics.reconnect(
+        table,
         -Infinity,
         table.lands[0],
         table.lands[2],
-        bot,
-        table
+        bot
       );
       assert.strictEqual(attack, undefined);
     });

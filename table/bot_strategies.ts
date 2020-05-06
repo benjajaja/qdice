@@ -1,6 +1,5 @@
 import * as R from "ramda";
 import { BotStrategy, BotPlayer, Table, Land, Color, Player } from "../types";
-import logger from "../logger";
 import { landMasses, neighbours } from "../maps";
 import { rand } from "../rand";
 import { groupedPlayerPositions } from "../helpers";
@@ -9,11 +8,11 @@ export type Source = { source: Land; targets: Land[] };
 export type Attack = { from: Land; to: Land; wheight: number };
 
 type Tactic = (
+  table: Table,
   bestChance: number,
   source: Land,
   target: Land,
-  player?: BotPlayer,
-  table?: Table
+  player?: BotPlayer
 ) => Attack | undefined;
 
 export const move = (strategy: BotStrategy) => {
@@ -45,7 +44,7 @@ const applyTactic = (sources: Source[], player: BotPlayer, table: Table) => (
       targets.reduce((attack: Attack, target: Land): Attack => {
         const bestChance = attack ? attack.wheight : -Infinity;
 
-        const result = tactic(bestChance, source, target, player, table);
+        const result = tactic(table, bestChance, source, target, player);
         return result ?? attack;
       }, attack),
     null
@@ -113,7 +112,7 @@ export const pickTactic = (
 };
 
 export const tactics = {
-  careful: (bestChance: number, source: Land, target: Land) => {
+  careful: (_: Table, bestChance: number, source: Land, target: Land) => {
     const thisChance = source.points - target.points;
     if (thisChance > bestChance) {
       if (
@@ -125,8 +124,8 @@ export const tactics = {
     }
   },
 
-  careless: (bestChance: number, source: Land, target: Land) => {
-    if (isHighRisk(source, target)) {
+  careless: (table: Table, bestChance: number, source: Land, target: Land) => {
+    if (isHighRisk(source, target, table.stackSize)) {
       return;
     }
     const thisChance = source.points - target.points;
@@ -136,26 +135,31 @@ export const tactics = {
   },
 
   focusColor: (color: Color) =>
-    function focusColor(bestChance: number, source: Land, target: Land) {
-      if (isHighRisk(source, target)) {
+    function focusColor(
+      table: Table,
+      bestChance: number,
+      source: Land,
+      target: Land
+    ): Attack | undefined {
+      if (isHighRisk(source, target, table.stackSize)) {
         return;
       }
       if (target.color === color) {
         if (color === Color.Neutral) {
-          return tactics.careful(bestChance, source, target);
+          return tactics.careful(table, bestChance, source, target);
         }
-        return tactics.careless(bestChance, source, target);
+        return tactics.careless(table, bestChance, source, target);
       }
     },
 
   reconnect: (
+    table: Table,
     bestChance: number,
     source: Land,
     target: Land,
-    player: BotPlayer,
-    table: Table
+    player: BotPlayer
   ) => {
-    if (isHighRisk(source, target, 2)) {
+    if (isHighRisk(source, target, table.stackSize, 2)) {
       return;
     }
     const currentCount = landMasses(table)(player.color).length;
@@ -176,11 +180,11 @@ export const tactics = {
   },
 
   targetCareful: (
+    table: Table,
     bestChance: number,
     source: Land,
     target: Land,
-    player: BotPlayer,
-    table: Table
+    player: BotPlayer
   ) => {
     const targetNeighboursCarefulness = table.roundCount < 5 ? -1 : 0;
     if (target.points > 3 && target.points > source.points) {
@@ -206,11 +210,11 @@ export const tactics = {
   },
 
   extraCareful: (
+    table: Table,
     bestChance: number,
     source: Land,
     target: Land,
-    player: BotPlayer,
-    table: Table
+    player: BotPlayer
   ) => {
     const targetNeighboursCarefulness = table.roundCount < 5 ? -1 : 0;
     const remainingPoints = source.points - 1;
@@ -234,7 +238,7 @@ export const tactics = {
     if (
       sourceNeighbours.length > 0 &&
       sourceNeighbours.some(
-        land => land.points > (remainingPoints >= 6 ? 3 : 2)
+        land => land.points > (remainingPoints >= table.stackSize - 2 ? 3 : 2)
       )
     ) {
       return;
@@ -256,15 +260,18 @@ export const wouldRefillAll = (player: Player, table: Table): boolean => {
   const necessaryDice = lands.reduce((count, land) => {
     return count + (table.stackSize - land.points);
   }, 0);
-  return lands.length + player.reserveDice >= necessaryDice + 7;
+  return (
+    lands.length + player.reserveDice >= necessaryDice + table.stackSize - 1
+  );
 };
 
 export const isHighRisk = (
   source: Land,
   target: Land,
+  stackSize: number,
   increase = 0
 ): boolean => {
-  if (source.points <= 4) {
+  if (source.points <= Math.ceil(stackSize / 2)) {
     return target.points > source.points + 1 + increase;
   } else {
     return target.points > source.points + 2 + increase;
