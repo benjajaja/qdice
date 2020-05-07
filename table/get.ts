@@ -7,11 +7,13 @@ import { STATUS_FINISHED } from "../constants";
 import * as config from "../tables.config";
 import logger from "../logger";
 import { isBot } from "./bots";
+import { Tedis } from "tedis";
+
+const tedis = new Tedis({
+  host: process.env.REDIS_HOST,
+});
 
 let memoryTables: { [tag: string]: Table } = {};
-let memoryChats: {
-  [tag: string]: readonly { user: Chatter; message: string }[];
-} = {};
 
 export const clearMemoryTables = () => {
   memoryTables = {};
@@ -177,14 +179,16 @@ export const getStatuses = (): readonly TableInfo[] =>
       }))
   );
 
-export const addChat = (table: Table, user: Chatter, message: string) => {
-  const existing = memoryChats[table.tag] ?? [];
-  const chatlines: readonly { user: Chatter; message: string }[] = [
-    ...existing.slice(-99),
-    { user, message },
-  ];
-  return (memoryChats[table.tag] = chatlines);
+export const addChat = async (table: Table, user: Chatter, message: string) => {
+  await tedis.lpush(
+    "chatlines-" + table.tag,
+    JSON.stringify({ user, message })
+  );
+  await tedis.ltrim("chatlines-" + table.tag, 0, 99);
 };
-export const getChat = (table: Table) => {
-  return memoryChats[table.tag] ?? [];
+
+export const getChat = async (table: Table) => {
+  return (await tedis.lrange("chatlines-" + table.tag, 0, 99))
+    .reverse()
+    .map(str => JSON.parse(str));
 };

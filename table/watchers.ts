@@ -72,10 +72,11 @@ export const enter = (
   clientId: string
 ): CommandResult | null => {
   publish.tableStatus(table, clientId);
-  const chatlines = getChat(table);
-  if (chatlines.length > 0) {
-    publish.chat(table, chatlines, clientId);
-  }
+  getChat(table).then(chatlines => {
+    if (chatlines.length > 0) {
+      publish.chat(table, chatlines, clientId);
+    }
+  });
   const existing = R.find(R.propEq("clientId", clientId), table.watching);
   if (!existing) {
     publish.enter(table, user ? user.name : null);

@@ -22,7 +22,6 @@ import logger from "../logger";
 import * as jwt from "jsonwebtoken";
 import { MqttClient } from "mqtt";
 import { hasChanged } from "../helpers";
-import { addChat } from "./get";
 
 let client: MqttClient;
 export const setMqtt = (client_: MqttClient) => {
