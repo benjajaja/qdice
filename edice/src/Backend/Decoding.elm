@@ -1,4 +1,4 @@
-module Backend.Decoding exposing (authStateDecoder, commentDecoder, commentsDecoder, eliminationsDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, rollDecoder, tableDecoder, tableInfoDecoder, tupleDecoder, turnDecoder)
+module Backend.Decoding exposing (authStateDecoder, chatterDecoder, commentDecoder, commentsDecoder, eliminationsDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, rollDecoder, tableDecoder, tableInfoDecoder, tupleDecoder, turnDecoder)
 
 import Array
 import Backend.Types exposing (TableMessage(..))
@@ -667,3 +667,10 @@ authorDecoder =
         |> required "id" int
         |> required "name" string
         |> required "picture" string
+
+
+chatterDecoder : Decoder { name : String, color : Maybe Color }
+chatterDecoder =
+    succeed (\name color -> { name = name, color = color })
+        |> required "name" string
+        |> optional "color" (map Just colorDecoder) Nothing

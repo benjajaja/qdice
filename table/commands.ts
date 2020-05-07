@@ -552,9 +552,21 @@ export const sitIn = (user: Player, table: Table): CommandResult => {
   return { players };
 };
 
-export const chat = (user: Chatter, table: Table, payload: string): null => {
-  publish.chat(table, user, payload);
-  addChat(table, user, payload);
+export const chat = (
+  user: { id: string; name: string } | null,
+  table: Table,
+  message: string
+): null => {
+  const chatter =
+    user !== null
+      ? {
+          id: user.id,
+          name: user.name,
+          color: table.players.find(p => p.id === user.id)?.color,
+        }
+      : null;
+  publish.chat(table, [{ user: chatter, message }]);
+  addChat(table, chatter, message);
   return null;
 };
 

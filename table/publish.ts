@@ -311,8 +311,10 @@ export const clientError = (clientId: string, error: Error) => {
 
 export const chat = (
   table: Table,
-  user: Chatter,
-  message: string,
+  lines: readonly {
+    user: Chatter | null;
+    message: string;
+  }[],
   clientId?: string
 ) => {
   client.publish(
@@ -320,7 +322,7 @@ export const chat = (
     JSON.stringify({
       type: "chat",
       table: clientId ? table.tag : undefined,
-      payload: { user: user ? user.name : null, message },
+      payload: lines,
     }),
     undefined!,
     err => {

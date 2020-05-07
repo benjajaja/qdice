@@ -74,9 +74,7 @@ export const enter = (
   publish.tableStatus(table, clientId);
   const chatlines = getChat(table);
   if (chatlines.length > 0) {
-    chatlines.forEach(([player, message]) => {
-      publish.chat(table, player, message, clientId);
-    });
+    publish.chat(table, chatlines, clientId);
   }
   const existing = R.find(R.propEq("clientId", clientId), table.watching);
   if (!existing) {

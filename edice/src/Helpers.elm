@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, findIndex_, flip, formatPoints, httpErrorToString, indexOf, is502, join, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeRandomDice, timeUnits, toDie, toDiesEmojis, triple, tupleApply, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, flip, formatPoints, httpErrorToString, indexOf, is502, join, last, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeRandomDice, timeUnits, toDie, toDiesEmojis, triple, tupleApply, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -64,6 +64,12 @@ indexOf a =
 find : (a -> Bool) -> List a -> Maybe a
 find f lst =
     List.filter f lst |> List.head
+
+
+last : List a -> Maybe a
+last list =
+    List.drop (List.length list - 1) list
+        |> List.head
 
 
 pipeUpdates : (a -> b -> ( a, Cmd c )) -> b -> ( a, Cmd c ) -> ( a, Cmd c )

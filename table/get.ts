@@ -9,7 +9,9 @@ import logger from "../logger";
 import { isBot } from "./bots";
 
 let memoryTables: { [tag: string]: Table } = {};
-let memoryChats: { [tag: string]: readonly [Chatter, string][] } = {};
+let memoryChats: {
+  [tag: string]: readonly { user: Chatter; message: string }[];
+} = {};
 
 export const clearMemoryTables = () => {
   memoryTables = {};
@@ -175,11 +177,11 @@ export const getStatuses = (): readonly TableInfo[] =>
       }))
   );
 
-export const addChat = (table: Table, player: Chatter, message: string) => {
+export const addChat = (table: Table, user: Chatter, message: string) => {
   const existing = memoryChats[table.tag] ?? [];
-  const chatlines: readonly [Chatter, string][] = [
+  const chatlines: readonly { user: Chatter; message: string }[] = [
     ...existing.slice(-99),
-    [player, message],
+    { user, message },
   ];
   return (memoryChats[table.tag] = chatlines);
 };

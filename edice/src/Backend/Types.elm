@@ -54,7 +54,7 @@ type AllClientsMessage
 
 type TableMessage
     = Enter (Maybe Game.Types.User)
-    | Chat (Maybe Game.Types.User) String
+    | Chat (List ( Maybe Game.Types.Chatter, String ))
     | Exit (Maybe Game.Types.User)
     | Join Game.Types.Player
     | Leave Game.Types.Player

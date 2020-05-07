@@ -263,7 +263,10 @@ export type Command =
   | CommandSkeleton<"Start", { players: readonly Player[] }>
   | CommandSkeleton<"Enter", { user: User | null; clientId: string }>
   | CommandSkeleton<"Exit", { user: User | null; clientId: string }>
-  | CommandSkeleton<"Chat", { user: { name: string } | null; message: string }>
+  | CommandSkeleton<
+      "Chat",
+      { user: { id: string; name: string } | null; message: string }
+    >
   | CommandSkeleton<
       "Join",
       { user: User; clientId: string | null; bot: Persona | null }

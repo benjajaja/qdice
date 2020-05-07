@@ -39,9 +39,9 @@ chatBox inputValue lines id_ =
 chatLine : ChatLogEntry -> Html Types.Msg
 chatLine line =
     case line of
-        LogChat user color message ->
+        LogChat chatter message ->
             div [ class "chatbox--line--chat" ]
-                [ chatPlayerTag user color
+                [ chatPlayerTag chatter
                 , Html.text ": "
                 , Html.span []
                     [ Html.text message ]
@@ -80,7 +80,7 @@ gameBox lines id_ =
             List.map
                 (\c ->
                     case c of
-                        LogChat _ _ _ ->
+                        LogChat _ _ ->
                             Html.text "ERRchat"
 
                         LogEnter _ ->
@@ -95,21 +95,21 @@ gameBox lines id_ =
 
                         LogJoin player ->
                             div [ class "chatbox--line--join", dataTestId "logline-join" ]
-                                [ playerTag player.name player.color
+                                [ playerTag player.name <| Just player.color
                                 , Html.text " joined the game"
                                 ]
 
                         LogLeave player ->
                             div [ class "chatbox--line--leave", dataTestId "logline-leave" ]
-                                [ playerTag player.name player.color
+                                [ playerTag player.name <| Just player.color
                                 , Html.text " left the game"
                                 ]
 
                         LogTakeover player replaced ->
                             div [ class "chatbox--line--takeover", dataTestId "logline-takeover" ]
-                                [ playerTag player.name player.color
+                                [ playerTag player.name <| Just player.color
                                 , Html.text " has taken over "
-                                , playerTag replaced.name replaced.color
+                                , playerTag replaced.name <| Just replaced.color
                                 ]
 
                         LogRoll roll ->
@@ -117,7 +117,7 @@ gameBox lines id_ =
 
                         LogTurn user color ->
                             div [ class "chatbox--line--turn", dataTestId "logline-turn" ]
-                                [ playerTag user color
+                                [ playerTag user <| Just color
                                 , Html.text "'s turn"
                                 ]
 
@@ -125,7 +125,7 @@ gameBox lines id_ =
                             div [ class "chatbox--line--elimination", dataTestId "logline-elimination" ]
                                 [ eliminationEmoji reason
                                 , Html.text " "
-                                , playerTag user color
+                                , playerTag user <| Just color
                                 , Html.strong []
                                     [ Html.text <|
                                         if position == 1 then
@@ -146,7 +146,7 @@ gameBox lines id_ =
 
                         LogReceiveDice player count ->
                             div [ class "chatbox--line--receive" ]
-                                [ playerTag player.name player.color
+                                [ playerTag player.name <| Just player.color
                                 , Html.text <|
                                     if player.gameStats.connectedLands < player.gameStats.totalLands then
                                         " got "
@@ -182,22 +182,28 @@ maybeUserChatTag user =
             "🕵️ Anonymous"
 
 
-chatPlayerTag : Maybe Game.Types.User -> Color -> Html Types.Msg
-chatPlayerTag user color =
-    case user of
-        Just name ->
-            playerTag name color
+chatPlayerTag : Maybe Game.Types.Chatter -> Html Types.Msg
+chatPlayerTag chatter =
+    case chatter of
+        Just c ->
+            playerTag c.name c.color
 
         Nothing ->
             Html.span [] [ Html.text "Anonymous" ]
 
 
-playerTag : Game.Types.User -> Color -> Html Types.Msg
+playerTag : String -> Maybe Color -> Html Types.Msg
 playerTag name color =
     Html.span
-        [ class <| "chatbox__tag__player chatbox__tag__player--" ++ colorName color
-        , style "color" (baseCssRgb color)
-        ]
+        (case color of
+            Just c ->
+                [ class <| "chatbox__tag__player chatbox__tag__player--" ++ colorName c
+                , style "color" <| baseCssRgb c
+                ]
+
+            Nothing ->
+                []
+        )
         [ Html.text <| name ]
 
 
@@ -205,14 +211,14 @@ rollLine : RollLog -> Html Types.Msg
 rollLine roll =
     let
         text =
-            [ playerTag roll.attacker roll.attackerColor
+            [ playerTag roll.attacker <| Just roll.attackerColor
             , Html.text <|
                 if roll.success then
                     " won over "
 
                 else
                     " lost against "
-            , playerTag roll.defender roll.defenderColor
+            , playerTag roll.defender <| Just roll.defenderColor
             , Html.text <|
                 " "
                     ++ String.fromInt roll.attackRoll

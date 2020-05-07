@@ -29,7 +29,7 @@ type PlayerAction
 
 
 type Msg
-    = ScrollChat String ChatLogEntry (Result Dom.Error Dom.Viewport)
+    = ScrollChat String (List ChatLogEntry) (Result Dom.Error Dom.Viewport)
     | ToggleDiceVisible Bool
 
 
@@ -176,13 +176,20 @@ type alias Move =
 
 
 type alias User =
+    -- TODO replace with Chatter
     String
+
+
+type alias Chatter =
+    { name : String
+    , color : Maybe Color
+    }
 
 
 type ChatLogEntry
     = LogEnter (Maybe User)
     | LogExit (Maybe User)
-    | LogChat (Maybe User) Color String
+    | LogChat (Maybe Chatter) String
     | LogJoin Player
     | LogLeave Player
     | LogTakeover Player Player

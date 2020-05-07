@@ -25,7 +25,6 @@ import {
   giveDice,
 } from "../helpers";
 import { move, Source } from "./bot_strategies";
-import { getStatuses } from "./get";
 
 const defaultPersona: Persona = {
   name: "Personality",

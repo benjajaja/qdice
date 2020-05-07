@@ -2,4 +2,4 @@
 docker-compose stop nodice &
 export $(cat .env | xargs)
 export $(cat .local_env | xargs)
-nodemon -e .ts main.ts
+TS_NODE_CACHE=false nodemon -e .ts main.ts

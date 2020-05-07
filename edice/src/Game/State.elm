@@ -14,7 +14,6 @@ import Maps exposing (load)
 import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (MapName(..), Table, isTournament)
 import Task
-import Time
 import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
 
 
@@ -423,7 +422,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
         ( tmpModel, turnCmd ) =
             case newTurnPlayer of
                 Just p ->
-                    updateChatLog { model | game = game_ } <| LogTurn p.name p.color
+                    updateChatLog { model | game = game_ } <| [ LogTurn p.name p.color ]
 
                 Nothing ->
                     ( { model | game = game_ }, Cmd.none )
@@ -431,7 +430,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
         ( ( model_, receiveCmd ), givenDiceCount ) =
             case giveDice of
                 Just ( p, count ) ->
-                    ( updateChatLog tmpModel <| Game.Types.LogReceiveDice p count, count )
+                    ( updateChatLog tmpModel <| [ LogReceiveDice p count ], count )
 
                 Nothing ->
                     ( ( tmpModel, Cmd.none ), 0 )
@@ -801,16 +800,16 @@ updateTable model table msg =
             if table == gameTable then
                 case msg of
                     Backend.Types.Error error ->
-                        updateChatLog model <| LogError error
+                        updateChatLog model <| [ LogError error ]
 
                     Backend.Types.Join player ->
-                        updateChatLog model <| LogJoin player
+                        updateChatLog model <| [ LogJoin player ]
 
                     Backend.Types.Leave player ->
                         updateChatLog
                             { model | game = updatePlayers model.game (List.filter (.id >> (/=) player.id) model.game.players) [] }
                         <|
-                            LogLeave player
+                            [ LogLeave player ]
 
                     Backend.Types.Takeover player replaced ->
                         let
@@ -832,7 +831,7 @@ updateTable model table msg =
                                                 []
                                     }
                                 <|
-                                    LogTakeover player replaced
+                                    [ LogTakeover player replaced ]
                         in
                         ( model_
                         , Cmd.batch
@@ -842,22 +841,16 @@ updateTable model table msg =
                         )
 
                     Backend.Types.Enter user ->
-                        updateChatLog model <| LogEnter user
+                        updateChatLog model <| [ LogEnter user ]
 
                     Backend.Types.Exit user ->
-                        updateChatLog model <| LogExit user
+                        updateChatLog model <| [ LogExit user ]
 
-                    Backend.Types.Chat user text ->
-                        let
-                            color =
-                                case user of
-                                    Nothing ->
-                                        Land.Black
-
-                                    Just name ->
-                                        userColor model.game.players name
-                        in
-                        updateChatLog model <| LogChat user color text
+                    Backend.Types.Chat lines ->
+                        updateChatLog model <|
+                            List.map
+                                (Helpers.tupleApply LogChat)
+                                lines
 
                     Backend.Types.Update status ->
                         updateTableStatus model status
@@ -866,8 +859,9 @@ updateTable model table msg =
                         let
                             ( firstModel, chatCmd ) =
                                 updateChatLog model <|
-                                    Game.Types.LogRoll <|
+                                    [ Game.Types.LogRoll <|
                                         Backend.toRollLog model roll
+                                    ]
 
                             ( secondModel, gameCmd ) =
                                 showRoll firstModel roll
@@ -954,7 +948,7 @@ updateTable model table msg =
                                         let
                                             ( m, c ) =
                                                 updateChatLog next <|
-                                                    Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason
+                                                    [ Game.Types.LogElimination elimination.player.name elimination.player.color elimination.position elimination.score elimination.reason ]
                                         in
                                         ( m, Cmd.batch [ cmd, c ] )
                                     )
@@ -968,7 +962,7 @@ updateTable model table msg =
                                         Just id ->
                                             case model.game.table of
                                                 Just t ->
-                                                    updateChatLog model_ <| Game.Types.LogEndGame t id
+                                                    updateChatLog model_ <| [ Game.Types.LogEndGame t id ]
 
                                                 Nothing ->
                                                     ( model, Cmd.none )
@@ -1005,33 +999,46 @@ isChat entry =
         LogExit _ ->
             True
 
-        LogChat _ _ _ ->
+        LogChat _ _ ->
             True
 
         _ ->
             False
 
 
-updateChatLog : Types.Model -> ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
-updateChatLog model entry =
+updateChatLog : Types.Model -> List ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
+updateChatLog model entries =
     if model.fullscreen then
         let
             game =
                 model.game
 
             game_ =
-                case entry of
-                    LogChat _ _ _ ->
-                        { game | chatOverlay = Just ( model.time, entry ) }
+                case Helpers.last entries of
+                    Just entry ->
+                        case entry of
+                            LogChat _ _ ->
+                                { game | chatOverlay = Just ( model.time, entry ) }
 
-                    _ ->
+                            _ ->
+                                game
+
+                    Nothing ->
                         game
         in
-        ( if isChat entry then
-            { model | game = { game_ | chatLog = List.append game.chatLog [ entry ] } }
+        ( { model
+            | game =
+                List.foldl
+                    (\entry g ->
+                        if isChat entry then
+                            { g | chatLog = List.append g.chatLog [ entry ] }
 
-          else
-            { model | game = { game_ | gameLog = List.append game.gameLog [ entry ] } }
+                        else
+                            { g | gameLog = List.append g.gameLog [ entry ] }
+                    )
+                    game_
+                    entries
+          }
         , Cmd.none
         )
 
@@ -1042,68 +1049,94 @@ updateChatLog model entry =
 
             Just table ->
                 ( model
-                , updateChatCmd table entry <|
-                    if isChat entry then
-                        "chatLog"
-
-                    else
-                        "gameLog"
+                , updateChatCmd table entries
                 )
 
 
-updateChatCmd : Table -> ChatLogEntry -> String -> Cmd Types.Msg
-updateChatCmd table entry idPrefix =
-    Dom.getViewportOf (idPrefix ++ "-" ++ table)
-        |> Task.attempt (\info -> GameMsg <| Game.Types.ScrollChat (idPrefix ++ "-" ++ table) entry info)
+updateChatCmd : Table -> List ChatLogEntry -> Cmd Types.Msg
+updateChatCmd table entries =
+    let
+        ( chat, game ) =
+            List.partition isChat entries
+    in
+    Cmd.batch
+        [ if List.length chat > 0 then
+            Dom.getViewportOf ("chatLog-" ++ table)
+                |> Task.attempt (\info -> GameMsg <| Game.Types.ScrollChat ("chatLog-" ++ table) chat info)
+
+          else
+            Cmd.none
+        , if List.length game > 0 then
+            Dom.getViewportOf ("gameLog-" ++ table)
+                |> Task.attempt (\info -> GameMsg <| Game.Types.ScrollChat ("gameLog-" ++ table) game info)
+
+          else
+            Cmd.none
+        ]
 
 
 update : Types.Model -> Game.Types.Model -> Game.Types.Msg -> ( Types.Model, Cmd Types.Msg )
 update model game msg =
     case msg of
-        ScrollChat id entry res ->
-            ( if isChat entry then
-                { model
-                    | game =
-                        { game
-                            | chatLog = List.append game.chatLog [ entry ]
-                        }
-                }
+        ScrollChat id entries res ->
+            ( { model
+                | game =
+                    List.foldl
+                        (\entry g ->
+                            if isChat entry then
+                                { g | chatLog = List.append g.chatLog [ entry ] }
 
-              else
-                { model | game = { game | gameLog = List.append game.gameLog [ entry ] } }
+                            else
+                                { g | gameLog = List.append g.gameLog [ entry ] }
+                        )
+                        model.game
+                        entries
+              }
             , Cmd.batch
                 [ case res of
                     Err _ ->
-                        consoleDebug "cannot scroll chat"
+                        consoleDebug <| "cannot scroll chat"
 
                     Ok info ->
                         if info.viewport.y + info.viewport.height + 10 >= info.scene.height then
-                            Dom.setViewportOf id 0 info.scene.height
+                            Dom.setViewportOf id 0 5076944270305263616
                                 |> Task.attempt
                                     (\_ -> Nop)
 
                         else
                             Cmd.none
-                , case entry of
-                    LogReceiveDice player count ->
-                        case game.player of
-                            Just me ->
-                                if player.id == me.id && count < player.gameStats.totalLands then
-                                    toastMessage
-                                        ("You missed "
-                                            ++ (String.fromInt <| player.gameStats.totalLands - count)
-                                            ++ " dice because you have disconnected lands!"
-                                        )
-                                    <|
-                                        Just 10000
+                , case
+                    List.foldl
+                        (\entry maybe ->
+                            case entry of
+                                LogReceiveDice player count ->
+                                    case game.player of
+                                        Just me ->
+                                            if player.id == me.id && count < player.gameStats.totalLands then
+                                                Just <| player.gameStats.totalLands - count
 
-                                else
-                                    Cmd.none
+                                            else
+                                                maybe
 
-                            Nothing ->
-                                Cmd.none
+                                        Nothing ->
+                                            maybe
 
-                    _ ->
+                                _ ->
+                                    maybe
+                        )
+                        Nothing
+                        entries
+                  of
+                    Just count ->
+                        toastMessage
+                            ("You missed "
+                                ++ (String.fromInt <| count)
+                                ++ " dice because you have disconnected lands!"
+                            )
+                        <|
+                            Just 10000
+
+                    Nothing ->
                         Cmd.none
                 ]
             )

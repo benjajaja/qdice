@@ -87,15 +87,21 @@ decodeTableMessage table message =
                     case
                         decodeString
                             (field "payload"
-                                (map2 (\a b -> ( a, b ))
-                                    (field "user" (Dec.nullable Dec.string))
-                                    (field "message" Dec.string)
+                                (list
+                                    (map2 Tuple.pair
+                                        (field "user"
+                                            (Dec.nullable
+                                                chatterDecoder
+                                            )
+                                        )
+                                        (field "message" Dec.string)
+                                    )
                                 )
                             )
                             message
                     of
                         Ok chat ->
-                            Ok (TableMsg table <| (\( a, b ) -> Chat a b) <| chat)
+                            Ok (TableMsg table <| Chat <| chat)
 
                         Err err ->
                             Err <| decodeErrorToString "table" mtype err
