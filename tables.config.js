@@ -107,7 +107,7 @@ module.exports = {
       mapName: "Cepero",
       playerSlots: 8,
       startSlots: 4,
-      points: 200,
+      points: 0,
       stackSize: 8,
       params: {
         noFlagRounds: 5,
@@ -117,7 +117,7 @@ module.exports = {
         turnSeconds: null,
         tournament: {
           frequency: "5minutely",
-          prize: 500,
+          prize: 1000,
           fee: 0,
         },
       },

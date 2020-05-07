@@ -12,7 +12,7 @@ import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
 import Game.State exposing (canSelect)
-import Game.Types exposing (ChatLogEntry(..), GameStatus(..), Msg(..), Player, PlayerAction(..), RollUI, isBot)
+import Game.Types exposing (ChatLogEntry(..), GameStatus(..), Msg(..), Player, PlayerAction(..), RollUI, TableInfo, isBot)
 import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, height, href, src, style, width)
@@ -267,13 +267,24 @@ onlineButtons model =
                 case model.user of
                     Types.Anonymous ->
                         case model.game.params.tournament of
-                            Just _ ->
+                            Just tournament ->
                                 findTableButton model
                                     ++ [ button
                                             [ class "edButton edGameHeader__button"
                                             , onClick <| ShowLogin Types.LoginShow
+                                            , disabled <| tournament.fee /= 0 || model.game.points /= 0
                                             ]
-                                            [ text "Log in to check your eligibility" ]
+                                            [ text <|
+                                                if tournament.fee == 0 then
+                                                    if model.game.points == 0 then
+                                                        "Log in to join for free"
+
+                                                    else
+                                                        "Minimum points: " ++ Helpers.formatPoints model.game.points
+
+                                                else
+                                                    "Game entry fee is " ++ Helpers.formatPoints tournament.fee
+                                            ]
                                        ]
 
                             Nothing ->
@@ -793,31 +804,59 @@ canPlayerFlag roundCount noFlagRounds uiFlagged player =
            )
 
 
+canPlay : User -> TableInfo -> Bool
+canPlay user info =
+    info.points
+        == 0
+        || info.points
+        < (case user of
+            Logged u ->
+                u.points
+
+            _ ->
+                0
+          )
+        && (if info.status == Playing then
+                info.botCount > 0
+
+            else
+                info.playerCount < info.playerSlots
+           )
+
+
 findTableButton : Model -> List (Html Msg)
 findTableButton model =
-    if
-        (List.length model.game.players
-            == 0
-            && model.game.table
-            /= Just "5MinuteFix"
-            -- && List.any (.playerCount >> (/=) 0) model.tableList
-            && model.user
-            /= Types.Anonymous
-        )
-            || (Maybe.map .points model.game.player |> Maybe.withDefault 1000000)
-            < model.game.points
-    then
-        [ button
-            [ class <|
-                "edButton edGameHeader__button edGameHeader__button--left"
-            , onClick <| FindGame model.game.table
-            , dataTestId "button-find"
-            ]
-            [ text "Find players" ]
-        ]
+    case Maybe.andThen (\table -> Helpers.find (.table >> (==) table) model.tableList) model.game.table of
+        Just t ->
+            let
+                existPlayerTables =
+                    List.any (\info -> info.playerCount /= 0 && canPlay model.user info) model.tableList
 
-    else
-        []
+                willBotsJoin =
+                    not t.params.botLess
+
+                canUserPlay =
+                    canPlay model.user t
+
+                isEmpty =
+                    t.playerCount
+                        == 0
+            in
+            if not canUserPlay || (isEmpty && existPlayerTables) || not willBotsJoin then
+                [ button
+                    [ class <|
+                        "edButton edGameHeader__button edGameHeader__button--left"
+                    , onClick <| FindGame model.game.table
+                    , dataTestId "button-find"
+                    ]
+                    [ text "Find players" ]
+                ]
+
+            else
+                []
+
+        Nothing ->
+            []
 
 
 lastRoll : Maybe RollUI -> Html msg
