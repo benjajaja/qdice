@@ -125,7 +125,9 @@ client.on("message", async (topic, message) => {
         event.player.id
       );
       const text = `It's your turn on "${event.table}!"`;
-      console.log("PN turn", event.player.id, subscriptions);
+      if (subscriptions.some(row => row.subscription)) {
+        console.log("PN turn", event.player.id, subscriptions);
+      }
       subscriptions.forEach(async row => {
         if (!row.subscription) {
           return;

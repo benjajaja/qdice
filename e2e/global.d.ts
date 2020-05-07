@@ -1,7 +1,8 @@
-import { Page } from "puppeteer";
+import { Page, Browser } from "puppeteer";
 
 declare global {
   var page: Page;
+  var browser: Browser;
   var localStorage: any; // for `page.eval(() => ... )` that is run in browser
   var jestPuppeteer: { debug: () => void }; // pause browser, needs large timeout
   var testId: (id: string) => string;

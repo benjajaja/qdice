@@ -63,7 +63,9 @@ export const startGame = (table: Table): CommandResult => {
 };
 
 const assignLands = (table: Table, lands: readonly Land[]): readonly Land[] => {
-  const spread = loadSpread(table.mapName, table.players.length);
+  const spread = process.env.E2E
+    ? null
+    : loadSpread(table.mapName, table.players.length);
   if (spread !== null) {
     logger.debug("attempting to use pregenerated spread");
     const newLands = lands.map(land => {

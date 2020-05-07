@@ -8,5 +8,5 @@ AVATAR_PATH=~/data-avatars
 SCREENSHOT_PATH=/screenshots
 SCREENSHOT_HOST=http://localhost:5000
 SCREENSHOT_URL=http://localhost/screenshots
-E2E=
+E2E=1
 REDIS_HOST=localhost
