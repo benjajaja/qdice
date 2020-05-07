@@ -87,8 +87,12 @@ export const join = (
   clientId: string | null,
   bot: Persona | null
 ): CommandResult => {
-  if (!table.params.tournament && table.status === STATUS_PLAYING) {
-    if (clientId !== null && table.players.some(isBot)) {
+  if (table.status === STATUS_PLAYING) {
+    if (
+      !table.params.tournament &&
+      clientId !== null &&
+      table.players.some(isBot)
+    ) {
       return takeover(user, table, clientId);
     }
     throw new IllegalMoveError(
