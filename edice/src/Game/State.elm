@@ -14,6 +14,7 @@ import Maps exposing (load)
 import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (MapName(..), Table, isTournament)
 import Task
+import Time
 import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
 
 
@@ -929,7 +930,7 @@ updateTable model table msg =
                                                                     |> List.map (always 0)
                                                                     |> Helpers.timeRandomDice model.time
                                                                 )
-                                                            , rolling = True
+                                                            , rolling = game.boardOptions.diceVisible
                                                             , timestamp = model.time
                                                             }
 

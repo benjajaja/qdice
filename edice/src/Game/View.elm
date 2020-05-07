@@ -865,7 +865,14 @@ lastRoll mRoll =
         case mRoll of
             Just roll ->
                 [ div
-                    [ class "edRoll__from"
+                    [ class <|
+                        "edRoll__from"
+                            ++ (if roll.rolling then
+                                    " edRoll__from--rolling"
+
+                                else
+                                    ""
+                               )
                     , style "background-color" <|
                         (Board.Colors.base (Tuple.first roll.from)
                             |> Board.Colors.cssRgb
@@ -875,7 +882,14 @@ lastRoll mRoll =
                     List.map Board.Die.rollDie <|
                         Tuple.second roll.from
                 , div
-                    [ class "edRoll__to"
+                    [ class <|
+                        "edRoll__to"
+                            ++ (if roll.rolling then
+                                    " edRoll__to--rolling"
+
+                                else
+                                    ""
+                               )
                     , style "background-color" <|
                         (Board.Colors.base (Tuple.first roll.to)
                             |> Board.Colors.cssRgb

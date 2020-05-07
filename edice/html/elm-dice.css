@@ -1071,6 +1071,20 @@ input[type="range"]::-webkit-slider-runnable-track {
   row-gap: 4px;
   padding: 4px;
 }
+.edRoll__to--rolling .edDie {
+  animation: roll 0.25s infinite reverse;
+}
+.edRoll__from--rolling .edDie {
+  animation: roll 0.25s infinite;
+}
+@keyframes roll {
+  0 {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(90deg);
+  }
+}
 .edRoll__from {
   left: 8px;
 }
