@@ -111,7 +111,7 @@ findBestTable model current =
     List.filter
         (\i ->
             if i.status == Playing then
-                i.botCount > 0
+                i.botCount > 0 && i.params.tournament == Nothing
 
             else
                 i.playerCount > 0
@@ -144,7 +144,16 @@ findBestTable model current =
                                             Just t.table
 
                                         else
-                                            Nothing
+                                            case Helpers.find (.table >> (==) "Planeta") model.tableList of
+                                                Just t2 ->
+                                                    if t2.status /= Game.Types.Playing || t2.botCount > 0 then
+                                                        Just t2.table
+
+                                                    else
+                                                        Nothing
+
+                                                Nothing ->
+                                                    Nothing
 
                                     Nothing ->
                                         Nothing

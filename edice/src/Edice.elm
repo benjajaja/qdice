@@ -746,7 +746,7 @@ update msg model =
             ( model
             , case Routing.findBestTable model current of
                 Nothing ->
-                    toastError "Could't find a better table for you" "FindGame: no best table"
+                    toastError "Couldn't find a better table for you" "FindGame: no best table"
 
                 Just table ->
                     Routing.navigateTo model.zip model.key <| GameRoute table

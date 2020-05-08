@@ -385,20 +385,25 @@ onlineButtons model =
     else
         case model.game.player of
             Nothing ->
-                if model.game.players |> List.any isBot then
-                    case model.user of
-                        Types.Anonymous ->
-                            [ joinButton "Join & Take over a bot" <| ShowLogin Types.LoginShowJoin ]
+                case model.game.params.tournament of
+                    Just _ ->
+                        findTableButton model
 
-                        Types.Logged user ->
-                            if user.points >= model.game.points then
-                                [ joinButton "Join & Take over a bot" <| GameCmd Join ]
+                    Nothing ->
+                        if model.game.players |> List.any isBot then
+                            case model.user of
+                                Types.Anonymous ->
+                                    [ joinButton "Join & Take over a bot" <| ShowLogin Types.LoginShowJoin ]
 
-                            else
-                                [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]
+                                Types.Logged user ->
+                                    if user.points >= model.game.points then
+                                        [ joinButton "Join & Take over a bot" <| GameCmd Join ]
 
-                else
-                    []
+                                    else
+                                        [ text <| "Table has minimum points of " ++ String.fromInt model.game.points ]
+
+                        else
+                            findTableButton model
 
             Just player ->
                 let
@@ -842,7 +847,12 @@ findTableButton model =
                     t.playerCount
                         == 0
             in
-            if not canUserPlay || (isEmpty && existPlayerTables) || not willBotsJoin then
+            if
+                not canUserPlay
+                    || (isEmpty && existPlayerTables)
+                    || not willBotsJoin
+                    || (model.game.status == Playing && model.game.params.tournament /= Nothing)
+            then
                 [ button
                     [ class <|
                         "edButton edGameHeader__button edGameHeader__button--left"
