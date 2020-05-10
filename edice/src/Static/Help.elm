@@ -49,9 +49,19 @@ Of course it is also possible to verbally "flag" a single player in chat saying 
 
 Some tables have capitals assigned randomly on start, one per player. "Pocket" dice that did not fit on the table because all lands were full are put on the capitals, displayed as `+N`. Next time the player receives dice, the pocket dice will be given first into the capital if there is space, then any other lands if there is space, or be kept in the pocket until next time.
 
-When a capital is defeated then all it's dice, including pocket dice, are **stolen** by the attacker. They are put into the attackers pocket/capital immediately, and given out at turn end. A new capital will be assigned to the defender before the next turn.
+When a capital is defeated then all it's dice, including pocket dice, are **stolen** by the attacker. They are put into the attackers pocket/capital immediately, and given out at turn end like usual. A new capital will be assigned to the defender before the next turn.
 
 > Tip: stealing nearby capitals can be a huge dice boost - getting yours stolen can be the end!
+
+### General rules
+
+1. No hate speech (racism, homophobia, etc) (includes avatars)
+2. No harassment
+
+### Game rules
+
+1. No pre-game alliances
+2. Only one account per player
 
 ### Discussion
 

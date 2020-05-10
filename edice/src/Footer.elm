@@ -22,6 +22,8 @@ footer route version status =
                     links3
                 , div [ class "edFooter--box edFooter--box__links" ] <|
                     links4
+                , div [ class "edFooter--box edFooter--box__links" ] <|
+                    links5
                 ]
             , div [ class "edFooter--row" ]
                 [ statusMessage route version status
@@ -54,6 +56,15 @@ links3 =
 links4 : List (Html Msg)
 links4 =
     [ link CommentsRoute "Posts" "comment"
+    ]
+
+
+links5 : List (Html Msg)
+links5 =
+    [ a [ href "https://discord.gg/E2m3Gra", class "edFooter--box__link" ]
+        [ i [ class "material-icons" ] [ text "headset" ]
+        , text "Discord"
+        ]
     ]
 
 
