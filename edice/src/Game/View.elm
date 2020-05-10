@@ -900,7 +900,7 @@ lastRoll mRoll =
                 [ div
                     [ class <|
                         "edRoll__from"
-                            ++ (if rolling then
+                            ++ (if rolling /= Nothing then
                                     " edRoll__from--rolling"
 
                                 else
@@ -912,12 +912,12 @@ lastRoll mRoll =
                         )
                     ]
                   <|
-                    [ Html.Lazy.lazy4 lastRollSum sumFrom True luck rolling ]
+                    [ Html.Lazy.lazy4 lastRollSum sumFrom True luck (rolling /= Nothing) ]
                         ++ (List.map Board.Die.rollDie <| fromRoll)
                 , div
                     [ class <|
                         "edRoll__to"
-                            ++ (if rolling then
+                            ++ (if rolling /= Nothing then
                                     " edRoll__to--rolling"
 
                                 else
@@ -929,7 +929,7 @@ lastRoll mRoll =
                         )
                     ]
                   <|
-                    [ Html.Lazy.lazy4 lastRollSum sumTo False luck rolling ]
+                    [ Html.Lazy.lazy4 lastRollSum sumTo False luck (rolling /= Nothing) ]
                         ++ (List.map Board.Die.rollDie <| toRoll)
                 ]
 

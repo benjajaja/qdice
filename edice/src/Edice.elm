@@ -9,7 +9,7 @@ import Board
 import Board.Types
 import Browser
 import Browser.Dom
-import Browser.Events
+import Browser.Events exposing (onAnimationFrame)
 import Browser.Navigation exposing (Key)
 import Comments
 import Dialog exposing (dialog)
@@ -844,14 +844,17 @@ update msg model =
         GameMsg gameMsg ->
             Game.State.update model model.game gameMsg
 
-        Tick newTime ->
+        Frame newTime ->
             let
+                newTimeMs =
+                    Time.posixToMillis newTime
+
                 cmd =
                     case model.route of
-                        GameRoute table ->
+                        GameRoute _ ->
                             case model.backend.status of
                                 Online _ _ ->
-                                    if Time.posixToMillis newTime - Time.posixToMillis model.backend.lastHeartbeat > 5000 then
+                                    if newTimeMs - Time.posixToMillis model.backend.lastHeartbeat > 5000 then
                                         sendGameCommand model.backend model.game.table Heartbeat
 
                                     else
@@ -868,8 +871,8 @@ update msg model =
 
                 game_ =
                     case game.chatOverlay of
-                        Just ( t, entry ) ->
-                            if Time.posixToMillis newTime - Time.posixToMillis t > 10000 then
+                        Just ( t, _ ) ->
+                            if newTimeMs - Time.posixToMillis t > 10000 then
                                 { game | chatOverlay = Nothing }
 
                             else
@@ -881,23 +884,30 @@ update msg model =
                 game_2 =
                     case game_.lastRoll of
                         Just roll ->
-                            if not roll.rolling && Time.posixToMillis newTime - Time.posixToMillis roll.timestamp > 5000 then
+                            if roll.rolling == Nothing && newTimeMs - Time.posixToMillis roll.timestamp > 5000 then
                                 { game_ | lastRoll = Nothing }
 
-                            else if roll.rolling then
-                                { game_
-                                    | lastRoll =
-                                        Just
-                                            { roll
-                                                | from =
-                                                    Tuple.mapSecond (Helpers.timeRandomDice newTime) roll.from
-                                                , to =
-                                                    Tuple.mapSecond (Helpers.timeRandomDice newTime) roll.to
-                                            }
-                                }
-
                             else
-                                game_
+                                case roll.rolling of
+                                    Just lastUpdate ->
+                                        if newTimeMs - Time.posixToMillis lastUpdate > 100 then
+                                            { game_
+                                                | lastRoll =
+                                                    Just
+                                                        { roll
+                                                            | from =
+                                                                Tuple.mapSecond (Helpers.timeRandomDice newTime) roll.from
+                                                            , to =
+                                                                Tuple.mapSecond (Helpers.timeRandomDice newTime) roll.to
+                                                            , rolling = Just newTime
+                                                        }
+                                            }
+
+                                        else
+                                            game_
+
+                                    Nothing ->
+                                        game_
 
                         Nothing ->
                             game_
@@ -1203,7 +1213,7 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
-        , Time.every 250 Tick
+        , onAnimationFrame Frame
         , Browser.Events.onResize Resized
         , notificationsChange NotificationsChange
         , pushGetKey (\_ -> PushGetKey)

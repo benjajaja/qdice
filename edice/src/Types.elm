@@ -24,7 +24,7 @@ type Msg
     = NavigateTo Route
     | OnLocationChange Url
     | OnUrlRequest Browser.UrlRequest
-    | Tick Time.Posix
+    | Frame Time.Posix
     | Resized Int Int
     | UserZone Time.Zone
     | Animate Animation.Msg

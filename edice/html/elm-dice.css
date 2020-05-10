@@ -1072,10 +1072,10 @@ input[type="range"]::-webkit-slider-runnable-track {
   padding: 4px;
 }
 .edRoll__to--rolling .edDie {
-  animation: roll 0.25s infinite reverse;
+  animation: roll 0.2s infinite reverse;
 }
 .edRoll__from--rolling .edDie {
-  animation: roll 0.25s infinite;
+  animation: roll 0.2s infinite;
 }
 .edRoll__sum {
   display: flex;

@@ -115,7 +115,7 @@ type alias TableStatus =
 type alias RollUI =
     { from : ( Color, List Int )
     , to : ( Color, List Int )
-    , rolling : Bool
+    , rolling : Maybe Posix
     , timestamp : Posix
     }
 

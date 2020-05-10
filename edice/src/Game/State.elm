@@ -678,7 +678,7 @@ showRoll model roll =
                     (\( from, to ) ->
                         { from = ( from.color, roll.from.roll )
                         , to = ( to.color, roll.to.roll )
-                        , rolling = False
+                        , rolling = Nothing
                         , timestamp = model.time
                         }
                     )
@@ -930,7 +930,12 @@ updateTable model table msg =
                                                                     |> List.map (always 0)
                                                                     |> Helpers.timeRandomDice model.time
                                                                 )
-                                                            , rolling = game.boardOptions.diceVisible
+                                                            , rolling =
+                                                                if game.boardOptions.diceVisible then
+                                                                    Just model.time
+
+                                                                else
+                                                                    Nothing
                                                             , timestamp = model.time
                                                             }
 
