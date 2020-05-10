@@ -189,9 +189,11 @@ const changeMap = (
   const newLands = maps
     .hasChanged(mapName, lands)
     .map(land => ({ ...land, points: 0, color: Color.Neutral }));
+
+  const [_, adjacency] = maps.loadMap(mapName);
   return {
     ...result,
-    table: { ...result.table, mapName },
+    table: { ...result.table, mapName, adjacency },
     lands: newLands,
   };
 };

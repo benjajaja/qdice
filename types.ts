@@ -28,12 +28,12 @@ export type TableProps = {
   readonly attack: Attack | null;
   readonly currentGame: number | null;
   readonly mapName: string;
+  readonly adjacency: Adjacency;
 };
 
 export type Table = TableProps & {
   readonly name: string;
   readonly tag: string;
-  readonly adjacency: Adjacency;
   readonly stackSize: number;
   readonly playerSlots: number;
   readonly startSlots: number;
