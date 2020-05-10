@@ -21,7 +21,7 @@ import {
 import * as db from "./db";
 import * as publish from "./table/publish";
 import * as tick from "./table/tick";
-import { getTable } from "./table/get";
+import { getTable, getTableTags, deleteTable } from "./table/get";
 import { startGameEvent } from "./table/games";
 import {
   startGame,
@@ -59,10 +59,8 @@ import { processEliminations } from "./table/eliminations";
 const verifyJwt = promisify(jwt.verify);
 
 export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
-  const tables: string[] = (await db.getTablesStatus()).map(
-    status => status.tag
-  );
-  const deleteTables = tables.filter(tag =>
+  const runningTableTags: string[] = await getTableTags();
+  const deleteTables = runningTableTags.filter(tag =>
     R.not(
       R.contains(
         tag,
@@ -87,6 +85,12 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
           index: number
         ) => {
           const table = await getTable(tag);
+          logger.debug(
+            "start got table",
+            tag,
+            typeof table,
+            table === null ? "null" : "not null"
+          );
           const lands = maps.hasChanged(table.mapName, table.lands);
           await save(
             table,
@@ -111,7 +115,7 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
       .concat(
         deleteTables.map(async tag => {
           logger.warn(`Deleting table: "${tag}"`);
-          await db.deleteTable(tag);
+          await deleteTable(tag);
         })
       )
   );

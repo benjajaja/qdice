@@ -40,7 +40,7 @@ import * as user from "./user";
 import { profile } from "./profile";
 import * as games from "./games";
 import { resetGenerator } from "./rand";
-import { clearMemoryTables } from "./table/get";
+import { clearGames } from "./table/get";
 
 process.on("unhandledRejection", (reason, p) => {
   logger.error("Unhandled Rejection at: Promise", p, "reason:", reason);
@@ -251,8 +251,7 @@ export const server = async () => {
       server.get(`${root}/e2e`, async (req, res) => {
         const ref = resetGenerator();
         logger.debug(`E2E first random value: ${ref()}`);
-        await db.clearGames(lock);
-        clearMemoryTables();
+        await clearGames(lock);
         res.send(200, "ok.");
       });
     }

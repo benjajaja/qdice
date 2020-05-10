@@ -9,3 +9,4 @@ e2e
 postgres
 map-sources.json
 starting_positions/maps/
+redis

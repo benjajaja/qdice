@@ -73,12 +73,8 @@ export const isBot = (player: Player): player is BotPlayer =>
 
 export const addBots = (
   table: Table,
-  persona: Persona | null,
-  otherTables: readonly TableInfo[]
+  persona: Persona | null
 ): Command | undefined => {
-  // if (otherTables.some(info => info.botCount > 0)) {
-  // return undefined;
-  // }
   const unusedPersonas = personas.filter(
     p =>
       !R.contains(

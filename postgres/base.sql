@@ -62,37 +62,6 @@ CREATE TABLE authorizations (
 
 ALTER TABLE authorizations OWNER TO bgrosse;
 
---
--- Name: tables; Type: TABLE; Schema: public; Owner: bgrosse
---
-
-CREATE TABLE tables (
-    tag character varying(100) NOT NULL,
-    name character varying(100) NOT NULL,
-    map_name character varying(100) NOT NULL,
-    stack_size integer NOT NULL,
-    player_slots integer NOT NULL,
-    start_slots integer NOT NULL,
-    points integer NOT NULL,
-    players json,
-    player_start_count integer NOT NULL,
-    status character varying(20),
-    game_start timestamp with time zone,
-    turn_start timestamp with time zone,
-    turn_index integer,
-    turn_activity boolean,
-    lands json,
-    turn_count integer,
-    round_count integer,
-    watching json,
-    attack json,
-    params json,
-    retired json,
-    current_game integer
-);
-
-
-ALTER TABLE tables OWNER TO bgrosse;
 
 --
 -- Name: users; Type: TABLE; Schema: public; Owner: bgrosse
@@ -153,12 +122,6 @@ COPY authorizations (user_id, profile, network, network_id) FROM stdin;
 \.
 
 
---
--- Data for Name: tables; Type: TABLE DATA; Schema: public; Owner: bgrosse
---
-
-COPY tables (tag, name, map_name, stack_size, player_slots, start_slots, points, players, player_start_count, status, game_start, turn_start, turn_index, turn_activity, lands, turn_count, round_count, watching, attack) FROM stdin;
-\.
 
 
 --
@@ -192,12 +155,6 @@ ALTER TABLE ONLY authorizations
     ADD CONSTRAINT authorizations_uniq UNIQUE (user_id, network, network_id);
 
 
---
--- Name: tables tables_pkey; Type: CONSTRAINT; Schema: public; Owner: bgrosse
---
-
-ALTER TABLE ONLY tables
-    ADD CONSTRAINT tables_pkey PRIMARY KEY (tag);
 
 
 --

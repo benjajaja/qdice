@@ -546,6 +546,13 @@
   resolved "https://registry.yarnpkg.com/@types/ramda/-/ramda-0.25.46.tgz#8399a35eb117f4a821deb9c4cfecc9b276fb7daf"
   integrity sha512-UiyHmzWu0KftAWZXfiUvwToVTHGhaG2fnWVckGwaic4By6YyGqtOpq7m8R3HLrpEsYH0AnRQjtXhdL8igmCuDw==
 
+"@types/redis@^2.8.14":
+  version "2.8.20"
+  resolved "https://registry.yarnpkg.com/@types/redis/-/redis-2.8.20.tgz#7060fa9d65ccf7ef32f714f05f83a016a20211c8"
+  integrity sha512-IJOvkg+BnCRDlMrrBIasCs8bqddnjiplI26HwsPSeY/biEJaDzAQnjs2i5z5vJelTbi3TIiLUIrKXk7j9Tmi/Q==
+  dependencies:
+    "@types/node" "*"
+
 "@types/redis@^2.8.18":
   version "2.8.18"
   resolved "https://registry.yarnpkg.com/@types/redis/-/redis-2.8.18.tgz#6e95de50d848cd9c0aacb89aa8a6aef07a0a34b3"
@@ -2063,6 +2070,14 @@ growly@^1.3.0:
 handle-thing@^1.2.5:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/handle-thing/-/handle-thing-1.2.5.tgz#fd7aad726bf1a5fd16dfc29b2f7a6601d27139c4"
+
+handy-redis@^1.8.1:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/handy-redis/-/handy-redis-1.8.1.tgz#7e5f0fc63bbe8e7ed7a4641e41d314b81a4cd6a0"
+  integrity sha512-/yA/8l351iLNC/hrbgiz5qrFZNSZYrIVu/lZK6sYPHV8QiKFUb9Xcb1pZjeO7Fe5Z/4Pn6l6KbaQrdkovWqSjQ==
+  dependencies:
+    "@types/redis" "^2.8.14"
+    redis "^3.0.2"
 
 har-schema@^2.0.0:
   version "2.0.0"
@@ -4789,13 +4804,6 @@ symbol-tree@^3.2.2, symbol-tree@^3.2.4:
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.4.tgz#430637d248ba77e078883951fb9aa0eed7c63fa2"
   integrity sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==
-
-tedis@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/tedis/-/tedis-0.1.12.tgz#e3eeccc92a5d068a35e7b16efef3e4d75cc3ef12"
-  integrity sha512-bxOKYWvdF1WsjkBYIfeO+2+xZuiqHmikqTTYPm3j/FYFpxQsX2JTBh6fFSlH6jDiCL4lfPcS2woIdD3FHopS/Q==
-  dependencies:
-    uuid "^3.3.2"
 
 telegraf@^3.17.2:
   version "3.17.2"

@@ -20,7 +20,6 @@ import {
 } from "./types";
 import { date, now, ts } from "./timestamp";
 import * as sleep from "sleep-promise";
-import * as config from "./tables.config"; // for e2e only
 import AsyncLock = require("async-lock");
 import { EMPTY_PROFILE_PICTURE } from "./constants";
 
@@ -44,18 +43,6 @@ export const retry = async function retry() {
     await sleep(1000);
     return await retry();
   }
-};
-
-export const clearGames = async (lock: AsyncLock): Promise<void> => {
-  lock.acquire([config.tables.map(table => table.name)], async done => {
-    await pool.query(`DELETE FROM tables`);
-    for (const table of config.tables) {
-      const newTable = await require("./table/get").getTable(table.name);
-      require("./table/publish").tableStatus(newTable);
-    }
-    logger.debug("E2E cleared all tables");
-    done();
-  });
 };
 
 export const NETWORK_GOOGLE: Network = "google";
@@ -434,142 +421,6 @@ export const userProfile = (
   };
 };
 
-export const getTable = async (tag: string) => {
-  const result = await pool.query({
-    name: "table",
-    text: `
-SELECT *
-FROM tables
-WHERE tag = $1
-LIMIT 1`,
-    values: [tag],
-  });
-  const row = camelize(result.rows.pop());
-  if (!row) {
-    return null;
-  }
-  return {
-    ...row,
-    gameStart: row.gameStart ? row.gameStart.getTime() : 0,
-    turnStart: row.turnStart ? row.turnStart.getTime() : 0,
-    retired: row.retired ?? [],
-  };
-};
-
-export const createTable = async (table: Table) => {
-  const result = await pool.query(
-    `
-INSERT INTO tables
-(tag, name, map_name, stack_size, player_slots, start_slots, points, players, lands, watching, player_start_count, status, turn_index, turn_activity, turn_count, round_count, game_start, turn_start, params, retired)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
-RETURNING *`,
-    [
-      table.tag,
-      table.name,
-      table.mapName,
-      table.stackSize,
-      table.playerSlots,
-      table.startSlots,
-      table.points,
-      JSON.stringify(table.players),
-      JSON.stringify(table.lands),
-      JSON.stringify(table.watching),
-      table.playerStartCount,
-      table.status,
-      table.turnIndex,
-      table.turnActivity,
-      table.turnCount,
-      table.roundCount,
-      date(table.gameStart),
-      date(table.turnStart),
-      JSON.stringify(table.params),
-      JSON.stringify(table.retired),
-    ]
-  );
-  const row = camelize(result.rows.pop());
-  return {
-    ...row,
-    gameStart: row.gameStart ? row.gameStart.getTime() : 0,
-    turnStart: row.turnStart ? row.turnStart.getTime() : 0,
-    retired: row.retired ?? [],
-  };
-};
-
-export const saveTable = async (
-  tag: string,
-  props: Partial<Table> = {},
-  players?: ReadonlyArray<Player>,
-  lands?: ReadonlyArray<{ emoji: Emoji; color: Color; points: number }>,
-  watching?: ReadonlyArray<Watcher>,
-  retired?: ReadonlyArray<Player>
-): Promise<Table | null> => {
-  const propColumns = Object.keys(props);
-  const propValues = propColumns.map(column => {
-    if (column === "gameStart" || column === "turnStart") {
-      return date(props[column]!);
-    }
-    return props[column];
-  });
-  const values = [tag as any]
-    .concat(propValues)
-    .concat(players ? [JSON.stringify(players)] : [])
-    .concat(lands ? [JSON.stringify(lands)] : [])
-    .concat(watching ? [JSON.stringify(watching)] : [])
-    .concat(retired ? [JSON.stringify(retired)] : []);
-
-  const extra = (players ? ["players"] : [])
-    .concat(lands ? ["lands"] : [])
-    .concat(watching ? ["watching"] : [])
-    .concat(retired ? ["retired"] : []);
-  const columns = propColumns.concat(extra);
-  const decamelizedColumns = columns.map(column => decamelize(column));
-  const name = "W" + decamelizedColumns.join("-");
-  const text = `
-UPDATE tables
-SET (${decamelizedColumns.join(", ")})
-  = (${columns.map((_, i) => `$${i + 2}`).join(", ")})
-WHERE tag = $1
-RETURNING *`;
-  if (values.some(value => value === undefined)) {
-    logger.error(
-      "undefined db",
-      columns,
-      values.map(v => `${v}`)
-    );
-    throw new Error("got undefined db value, use null");
-  }
-  const result =
-    name.length < 64
-      ? await pool.query({ name, text, values })
-      : await pool.query(text, values);
-
-  const row = camelize(result.rows.pop()) ?? {};
-  if (!row) {
-    logger.warn("UPDATE did not RETURN table");
-    return null;
-  }
-  return {
-    ...row,
-    gameStart: row.gameStart ? row.gameStart.getTime() : 0,
-    turnStart: row.turnStart ? row.turnStart.getTime() : 0,
-    retired: row.retired ?? [],
-  };
-};
-
-export const getTablesStatus = async (): Promise<any> => {
-  const result = await pool.query({
-    name: "tables-status",
-    text: `
-SELECT tag, name, map_name, stack_size, status, player_slots, start_slots, points, players, watching, params
-FROM tables
-LIMIT 100`,
-  });
-  return result.rows.map(camelize);
-};
-
-export const deleteTable = async (tag: string): Promise<any> =>
-  await pool.query("DELETE FROM tables WHERE tag = $1", [tag]);
-
 export const getPushSubscriptions = async (event: string) => {
   const res = await pool.query({
     name: "push-subscriptions",
@@ -678,11 +529,7 @@ export const addGameEvent = async (gameId: number, command: Command) => {
   return event;
 };
 
-const validTableTags: string[] = config.tables.map(table => table.tag);
 export const games = async (table?: string) => {
-  if (table && validTableTags.indexOf(table) === -1) {
-    throw new Error(`bad table tag: ${table}`);
-  }
   const { rows: games } = await (table
     ? pool.query({
         name: `games-${table}`,

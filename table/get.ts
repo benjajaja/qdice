@@ -1,23 +1,20 @@
 import * as R from "ramda";
 import { Table, Player, Land, Watcher, TableInfo, Chatter } from "../types";
 import * as maps from "../maps";
-import * as db from "../db";
 import * as Sentry from "@sentry/node";
 import { STATUS_FINISHED } from "../constants";
 import * as config from "../tables.config";
 import logger from "../logger";
 import { isBot } from "./bots";
-import { Tedis } from "tedis";
+import AsyncLock = require("async-lock");
+import { createHandyClient } from "handy-redis";
+import { tableStatus } from "./publish";
 
-const tedis = new Tedis({
+const redis = createHandyClient({
   host: process.env.REDIS_HOST,
 });
 
 let memoryTables: { [tag: string]: Table } = {};
-
-export const clearMemoryTables = () => {
-  memoryTables = {};
-};
 
 const makeTable = (config: any): Table => {
   if (!config.tag) {
@@ -49,7 +46,7 @@ const makeTable = (config: any): Table => {
     attack: null,
     params: config.params ?? {},
     retired: config.retired || [],
-    currentGame: 0,
+    currentGame: null,
   };
 };
 
@@ -57,55 +54,59 @@ export const getTable = async (tableTag: string): Promise<Table> => {
   if (memoryTables[tableTag] && Math.random() > 0.01) {
     return memoryTables[tableTag];
   }
-  let dbTable = await db.getTable(tableTag);
-  if (!dbTable) {
-    const tableConfig = config.tables
-      .filter(config => config.tag === tableTag)
-      .pop();
+  try {
+    const str = await redis.hget("tables", tableTag);
+    const table = JSON.parse(str!);
+
+    if (memoryTables[tableTag]) {
+      if (!R.equals(memoryTables[tableTag], table)) {
+        logger.error("cache diff error");
+        const memTable = memoryTables[tableTag];
+        if (Object.keys(memTable).length !== Object.keys(table).length) {
+          logger.debug(`${Object.keys(memTable)} vs ${Object.keys(table)}`);
+        } else {
+          for (const key in memTable) {
+            if (!R.equals(memTable[key], table[key])) {
+              logger.debug(`diff key ${key}`);
+            }
+          }
+        }
+        Sentry.captureException(new Error("DB/Memory inconsistent"));
+        Sentry.captureEvent({
+          message: "CacheError",
+          extra: {
+            memory: memoryTables[tableTag],
+            db: table,
+          },
+        });
+      }
+    }
+
+    if (typeof table !== "object" || table === null) {
+      throw new Error("bad saved table: " + table);
+    }
+
+    return table;
+  } catch (e) {
+    logger.debug("table get failed", tableTag, e.toString());
     try {
+      const tableConfig = config.tables.find(config => config.tag === tableTag);
       const [lands, adjacency] = maps.loadMap(tableConfig.mapName);
-      const dbTableData = {
+      const table = {
         ...makeTable(tableConfig),
         lands: lands.map(R.omit(["cells"])),
         adjacency,
       };
-      dbTable = await db.createTable(dbTableData);
-      const [_, adjacency_] = maps.loadMap(dbTable.mapName);
-      memoryTables[tableTag] = { ...dbTable, adjacency: adjacency_ };
+      logger.debug("recreated table", tableTag);
+      await redis.hset("tables", tableTag, JSON.stringify(table));
+      memoryTables[tableTag] = table;
+      logger.debug("table SET", tableTag);
+      return table;
     } catch (e) {
-      logger.error(`could not load map ${tableTag}`);
+      logger.error("Could not create fresh table");
       throw e;
     }
   }
-
-  const [_, adjacency] = maps.loadMap(dbTable.mapName);
-  const table = { ...dbTable, adjacency };
-
-  if (memoryTables[tableTag]) {
-    if (!R.equals(memoryTables[tableTag], table)) {
-      logger.error("cache diff error");
-      const memTable = memoryTables[tableTag];
-      if (Object.keys(memTable).length !== Object.keys(table).length) {
-        logger.debug(`${Object.keys(memTable)} vs ${Object.keys(table)}`);
-      } else {
-        for (const key in memTable) {
-          if (!R.equals(memTable[key], table[key])) {
-            logger.debug(`diff key ${key}`);
-          }
-        }
-      }
-      Sentry.captureException(new Error("DB/Memory inconsistent"));
-      Sentry.captureEvent({
-        message: "CacheError",
-        extra: {
-          memory: memoryTables[tableTag],
-          db: table,
-        },
-      });
-    }
-  }
-
-  return table;
 };
 
 export const save = async (
@@ -116,59 +117,43 @@ export const save = async (
   watching?: readonly Watcher[],
   retired?: readonly Player[]
 ): Promise<Table> => {
-  if (props && (props as any).table) {
-    throw new Error("bad save");
+  try {
+    const newTable = {
+      ...table,
+      ...props,
+      players: players ?? table.players,
+      lands: lands ?? table.lands,
+      watching: watching ?? table.watching,
+      retired: retired ?? table.retired,
+    };
+    const str = JSON.stringify(newTable);
+    if (typeof str !== "string") {
+      throw new Error("could not stringify table: " + table.tag);
+    }
+    if (typeof table.tag !== "string") {
+      throw new Error("table has no tag: " + table.name);
+    }
+    await redis.hset("tables", table.tag, str);
+    memoryTables[table.tag] = newTable;
+    return newTable;
+  } catch (e) {
+    logger.error("redis table SET", e);
+    throw e;
   }
-
-  if (
-    (!props || Object.keys(props).length === 0) &&
-    !players &&
-    !lands &&
-    !watching
-  ) {
-    console.trace();
-    throw new Error("cannot save nothing to table");
-  }
-  const lands_ = lands
-    ? lands.map(land => ({
-        emoji: land.emoji,
-        color: land.color,
-        points: land.points,
-        capital: !!land.capital,
-      }))
-    : undefined;
-  const saved =
-    (await db.saveTable(
-      table.tag,
-      props,
-      players,
-      lands_,
-      watching,
-      retired
-    )) ?? {};
-  const result: Table = {
-    ...table,
-    ...saved,
-    lands: lands_ ?? table.lands,
-    players: players ?? table.players,
-    watching: watching ?? table.watching,
-    retired: retired ?? table.retired,
-  };
-
-  const [_, adjacency] = maps.loadMap(result.mapName);
-  const savedTable = { ...result, adjacency };
-  memoryTables[table.tag] = savedTable;
-  return savedTable;
 };
 
-export const getStatuses = (): readonly TableInfo[] =>
-  R.sortWith(
+export const getStatuses = async (): Promise<readonly TableInfo[]> => {
+  const tables: Table[] = await Promise.all(
+    config.tables.map(t => getTable(t.tag))
+  );
+
+  return R.sortWith(
     [
       R.ascend(R.prop("name")),
       // R.descend(R.prop("playerCount")),
       // R.descend(R.prop("watchCount")),
     ],
-    Object.values(memoryTables)
+    tables
       // .filter(table => !table.params.twitter)
       .map(table => ({
         ...R.omit(["lands", "players", "watchers", "adjacency"], table),
@@ -178,17 +163,39 @@ export const getStatuses = (): readonly TableInfo[] =>
         botCount: table.players.filter(isBot).length,
       }))
   );
+};
 
 export const addChat = async (table: Table, user: Chatter, message: string) => {
-  await tedis.lpush(
+  await redis.lpush(
     "chatlines-" + table.tag,
     JSON.stringify({ user, message })
   );
-  await tedis.ltrim("chatlines-" + table.tag, 0, 99);
+  await redis.ltrim("chatlines-" + table.tag, 0, 99);
 };
 
 export const getChat = async (table: Table) => {
-  return (await tedis.lrange("chatlines-" + table.tag, 0, 99))
-    .reverse()
-    .map(str => JSON.parse(str));
+  const raw = await redis.lrange("chatlines-" + table.tag, 0, 99);
+  return raw.reverse().map(str => JSON.parse(str));
+};
+
+export const clearGames = async (lock: AsyncLock): Promise<void> => {
+  lock.acquire([config.tables.map(table => table.name)], async done => {
+    await redis.del("tables");
+    memoryTables = {};
+    for (const table of config.tables) {
+      const newTable = await getTable(table.name);
+      tableStatus(newTable);
+    }
+    logger.debug("E2E cleared all tables");
+    done();
+  });
+};
+
+export const getTableTags = async () => {
+  const tags = await redis.hkeys("tables");
+  return tags;
+};
+
+export const deleteTable = async (tag: string) => {
+  await redis.hdel("tables", tag);
 };

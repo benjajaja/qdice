@@ -11,7 +11,7 @@ import { death } from "./table/watchers";
 import AsyncLock = require("async-lock");
 
 export const global = (version: string) => async (req, res, next) => {
-  const tables = getStatuses();
+  const tables = await getStatuses();
   const top = await db.leaderBoardTop(10);
   res.send(200, {
     settings: {
@@ -28,20 +28,23 @@ export const global = (version: string) => async (req, res, next) => {
   });
 };
 
-export const findtable = (req, res, next) => {
-  const tables = getStatuses();
-  let best = tables.reduce(
-    (best, table) => (table.playerCount > best.playerCount ? table : best),
-    tables[0]
-  );
-  res.send(200, best.tag);
+export const findtable = async (req, res, next) => {
+  try {
+    const tables = await getStatuses();
+    let best = tables.reduce(
+      (best, table) => (table.playerCount > best.playerCount ? table : best),
+      tables[0]
+    );
+    res.send(200, best.tag);
+  } catch (e) {
+    next(e);
+  }
 };
 
 export const onMessage = (lock: AsyncLock) => async (topic, message) => {
   try {
     if (topic === "events") {
       const event = JSON.parse(message);
-      const tables = getStatuses();
       switch (event.type) {
         case "join":
         case "leave":
@@ -49,6 +52,7 @@ export const onMessage = (lock: AsyncLock) => async (topic, message) => {
         case "elimination":
         case "watching":
         case "countdown":
+          const tables = await getStatuses();
           publish.tables(tables);
           return;
       }

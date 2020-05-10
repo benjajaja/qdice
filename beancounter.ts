@@ -9,7 +9,7 @@ import * as R from "ramda";
 import * as mqtt from "mqtt";
 import * as Twitter from "twitter";
 import * as puppeteer from "puppeteer";
-import * as redis from "redis";
+import { createHandyClient } from "handy-redis";
 
 import { addRoll, addElimination, addKill } from "./stats";
 import logger from "./logger";
@@ -41,15 +41,9 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
   );
 }
 
-const redisClient = redis.createClient({
+const redisClient = createHandyClient({
   host: process.env.REDIS_HOST,
 });
-const redisGet: (key: string) => Promise<string | undefined> = promisify(
-  redisClient.get
-).bind(redisClient);
-const redisSmembers: (key: string) => Promise<string[] | undefined> = promisify(
-  redisClient.smembers
-).bind(redisClient);
 
 let browser: puppeteer.Browser;
 (async () =>
@@ -279,15 +273,15 @@ const postTwitterGame = async (
     };
     const post = await twitter.post("statuses/update", params);
     logger.debug(post);
-    redisClient.set("twitter_game", post.id_str);
+    await redisClient.set("twitter_game", post.id_str);
   } else if (command.type === "EndGame") {
-    const post = await redisGet("twitter_game");
+    const post = await redisClient.get("twitter_game");
     if (!post) {
       logger.debug(`no twitter id for game ${gameId}`);
       return;
     }
   } else {
-    const post = await redisGet("twitter_game");
+    const post = await redisClient.get("twitter_game");
     if (!post) {
       logger.debug(`no twitter id for game ${gameId}`);
       return;
@@ -347,7 +341,7 @@ const listen = async () => {
   if (!twitter) {
     return;
   }
-  const post = await redisGet("twitter_game");
+  const post = await redisClient.get("twitter_game");
   if (!post) {
     return logger.info("no ongoing twitter game");
   }
