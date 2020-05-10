@@ -23,6 +23,7 @@ import {
   groupedPlayerPositions,
   assertNever,
   giveDice,
+  getPreviousPlayer,
 } from "../helpers";
 import { move, Source } from "./bot_strategies";
 
@@ -120,6 +121,16 @@ export const tickBotTurn = (table: Table): Command | undefined => {
     ? (table.params.turnSeconds ?? TURN_SECONDS) - 1
     : 0.5;
   if (!havePassed(passTimeNeeded, table.turnStart)) {
+    return;
+  }
+
+  const lastPlayer = getPreviousPlayer(table);
+  if (
+    lastPlayer &&
+    !lastPlayer.bot &&
+    !table.turnActivity &&
+    !havePassed(1, table.turnStart)
+  ) {
     return;
   }
 

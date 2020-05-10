@@ -324,3 +324,10 @@ export const giveDice = (
   }
   return { lands: result, reserve, capitals };
 };
+
+export const getPreviousPlayer = (table: Table) => {
+  if (table.turnIndex === 0) {
+    return R.last(table.players);
+  }
+  return table.players[table.turnIndex - 1];
+};
