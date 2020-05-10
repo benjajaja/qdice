@@ -121,6 +121,10 @@ export const tactics = {
       ) {
         return { from: source, to: target, wheight: thisChance };
       }
+    } else if (thisChance === bestChance && target.capital) {
+      if (thisChance >= 0) {
+        return { from: source, to: target, wheight: thisChance };
+      }
     }
   },
 
@@ -128,8 +132,10 @@ export const tactics = {
     if (isHighRisk(source, target, table.stackSize)) {
       return;
     }
-    const thisChance = source.points - target.points;
+    const thisChance = source.points - target.points + (target.capital ? 1 : 0);
     if (thisChance > bestChance) {
+      return { from: source, to: target, wheight: thisChance };
+    } else if (thisChance === bestChance && target.capital) {
       return { from: source, to: target, wheight: thisChance };
     }
   },
@@ -195,6 +201,7 @@ export const tactics = {
       land => land.color !== player.color && land.color != Color.Neutral
     );
     if (
+      !target.capital &&
       targetNeighbours.length > 0 &&
       targetNeighbours.some(
         land => land.points > remainingPoints + targetNeighboursCarefulness
@@ -205,6 +212,8 @@ export const tactics = {
 
     const thisChance = source.points - target.points;
     if (thisChance > bestChance) {
+      return { from: source, to: target, wheight: thisChance };
+    } else if (thisChance === bestChance && target.capital) {
       return { from: source, to: target, wheight: thisChance };
     }
   },
@@ -222,6 +231,7 @@ export const tactics = {
       land => land.color !== player.color && land.color != Color.Neutral
     );
     if (
+      !target.capital &&
       targetNeighbours.length > 0 &&
       targetNeighbours.some(
         land => land.points > remainingPoints + targetNeighboursCarefulness
@@ -245,6 +255,8 @@ export const tactics = {
     }
     const thisChance = source.points - target.points;
     if (thisChance > bestChance) {
+      return { from: source, to: target, wheight: thisChance };
+    } else if (thisChance === bestChance && target.capital) {
       return { from: source, to: target, wheight: thisChance };
     }
   },
