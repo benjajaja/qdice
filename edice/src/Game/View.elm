@@ -6,7 +6,6 @@ import Backend.Types exposing (ConnectionStatus(..))
 import Board
 import Board.Colors
 import Board.Die
-import Color
 import Comments
 import Game.Chat
 import Game.Footer
@@ -19,6 +18,7 @@ import Html.Attributes exposing (class, disabled, height, href, src, style, widt
 import Html.Events exposing (onClick)
 import Html.Lazy
 import Icon
+import Land
 import LeaderBoard.View
 import MyProfile.MyProfile
 import MyProfile.Types
@@ -873,42 +873,87 @@ lastRoll : Maybe RollUI -> Html msg
 lastRoll mRoll =
     div [ class "edRoll" ] <|
         case mRoll of
-            Just roll ->
+            Just { from, to, rolling } ->
+                let
+                    ( fromColor, fromRoll ) =
+                        from
+
+                    ( toColor, toRoll ) =
+                        to
+
+                    sumFrom =
+                        List.sum <| fromRoll
+
+                    sumTo =
+                        List.sum <| toRoll
+
+                    luck =
+                        if sumFrom > sumTo && List.length fromRoll < List.length toRoll then
+                            1
+
+                        else if sumFrom < sumTo && List.length fromRoll > List.length toRoll then
+                            -1
+
+                        else
+                            0
+                in
                 [ div
                     [ class <|
                         "edRoll__from"
-                            ++ (if roll.rolling then
+                            ++ (if rolling then
                                     " edRoll__from--rolling"
 
                                 else
                                     ""
                                )
                     , style "background-color" <|
-                        (Board.Colors.base (Tuple.first roll.from)
+                        (Board.Colors.base fromColor
                             |> Board.Colors.cssRgb
                         )
                     ]
                   <|
-                    List.map Board.Die.rollDie <|
-                        Tuple.second roll.from
+                    [ Html.Lazy.lazy4 lastRollSum sumFrom True luck rolling ]
+                        ++ (List.map Board.Die.rollDie <| fromRoll)
                 , div
                     [ class <|
                         "edRoll__to"
-                            ++ (if roll.rolling then
+                            ++ (if rolling then
                                     " edRoll__to--rolling"
 
                                 else
                                     ""
                                )
                     , style "background-color" <|
-                        (Board.Colors.base (Tuple.first roll.to)
+                        (Board.Colors.base toColor
                             |> Board.Colors.cssRgb
                         )
                     ]
                   <|
-                    List.map Board.Die.rollDie <|
-                        Tuple.second roll.to
+                    [ Html.Lazy.lazy4 lastRollSum sumTo False luck rolling ]
+                        ++ (List.map Board.Die.rollDie <| toRoll)
                 ]
 
             Nothing ->
                 []
+
+
+lastRollSum : Int -> Bool -> Int -> Bool -> Html msg
+lastRollSum sum isFrom luck rolling =
+    div
+        [ class <|
+            "edRoll__sum"
+                ++ (if rolling then
+                        " edRoll__sum--rolling"
+
+                    else if luck /= 0 then
+                        if (isFrom && luck == 1) || (not isFrom && luck == -1) then
+                            " edRoll__sum--lucky"
+
+                        else
+                            " edRoll__sum--unlucky"
+
+                    else
+                        ""
+                   )
+        ]
+        [ text <| String.fromInt <| sum ]

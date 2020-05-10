@@ -881,7 +881,7 @@ update msg model =
                 game_2 =
                     case game_.lastRoll of
                         Just roll ->
-                            if Time.posixToMillis newTime - Time.posixToMillis roll.timestamp > 3000 then
+                            if not roll.rolling && Time.posixToMillis newTime - Time.posixToMillis roll.timestamp > 5000 then
                                 { game_ | lastRoll = Nothing }
 
                             else if roll.rolling then

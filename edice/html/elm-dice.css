@@ -1077,6 +1077,59 @@ input[type="range"]::-webkit-slider-runnable-track {
 .edRoll__from--rolling .edDie {
   animation: roll 0.25s infinite;
 }
+.edRoll__sum {
+  display: flex;
+  justify-content: center;
+  height: 24px;
+  width: 24px;
+  align-items: center;
+  border-radius: 50%;
+  background-color: #eee;
+  border: 2px solid black;
+  transition: transform 0.5s;
+  position: relative;
+}
+.edRoll__sum--rolling {
+  transform: scale(0);
+  transition: transform 0s;
+}
+.edRoll__sum--lucky {
+  animation: lucky 0.5s 1 alternate;
+}
+.edRoll__sum--unlucky {
+  animation: unlucky 0.25s 1 alternate;
+}
+@keyframes lucky {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-40px) rotate(180deg);
+  }
+  100% {
+    transform: translateY(0) rotate(360deg);
+  }
+}
+@keyframes unlucky {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-10px);
+  }
+  40% {
+    transform: translateX(10px);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
 @keyframes roll {
   0 {
     transform: rotate(0);
@@ -1105,6 +1158,12 @@ input[type="range"]::-webkit-slider-runnable-track {
   }
   .edRoll__from .edDie, .edRoll__to .edDie {
     width: 14px;
+  }
+  .edRoll__sum {
+    width: 12px;
+    height: 12px;
+    font-size: 0.55em;
+    border-width: 1px;
   }
 }
 
