@@ -1,4 +1,4 @@
-port module MyOauth exposing (authorize, init, saveToken)
+port module MyOauth exposing (authorize, init, networkIdName, saveToken)
 
 import Backend.Decoding exposing (authStateDecoder)
 import Backend.Encoding exposing (authStateEncoder)
@@ -16,30 +16,50 @@ import Url exposing (Protocol(..), Url)
 port saveToken : Maybe String -> Cmd msg
 
 
-authorizationEndpoint : AuthNetwork -> ( Url, String )
+authorizationEndpoint : AuthNetwork -> Maybe ( Url, String )
 authorizationEndpoint network =
     case network of
         Reddit ->
-            ( { protocol = Https
-              , host = "www.reddit.com"
-              , port_ = Nothing
-              , path = "/api/v1/authorize"
-              , query = Nothing
-              , fragment = Nothing
-              }
-            , "FjcCKkabynWNug"
-            )
+            Just
+                ( { protocol = Https
+                  , host = "www.reddit.com"
+                  , port_ = Nothing
+                  , path = "/api/v1/authorize"
+                  , query = Nothing
+                  , fragment = Nothing
+                  }
+                , "FjcCKkabynWNug"
+                )
 
-        _ ->
-            ( { protocol = Https
-              , host = "accounts.google.com"
-              , port_ = Nothing
-              , path = "/o/oauth2/v2/auth"
-              , query = Nothing
-              , fragment = Nothing
-              }
-            , "1000163928607-54qf4s6gf7ukjoevlkfpdetepm59176n.apps.googleusercontent.com"
-            )
+        Google ->
+            Just
+                ( { protocol = Https
+                  , host = "accounts.google.com"
+                  , port_ = Nothing
+                  , path = "/o/oauth2/v2/auth"
+                  , query = Nothing
+                  , fragment = Nothing
+                  }
+                , "1000163928607-54qf4s6gf7ukjoevlkfpdetepm59176n.apps.googleusercontent.com"
+                )
+
+        Github ->
+            Just
+                ( { protocol = Https
+                  , host = "github.com"
+                  , port_ = Nothing
+                  , path = "/login/oauth/authorize"
+                  , query = Nothing
+                  , fragment = Nothing
+                  }
+                , "acbcad9ce3615b6fb44d"
+                )
+
+        Telegram ->
+            Nothing
+
+        Password ->
+            Nothing
 
 
 init : Browser.Navigation.Key -> Url -> Backend.Types.Model -> ( MyOAuthModel, List (Cmd Msg) )
@@ -83,29 +103,50 @@ init key url backend =
 
 authorize : MyOAuthModel -> AuthState -> Cmd Msg
 authorize model state =
-    let
-        ( url, clientId ) =
-            authorizationEndpoint state.network
+    case authorizationEndpoint state.network of
+        Just ( url, clientId ) ->
+            let
+                stateString : String
+                stateString =
+                    encode 0 <| authStateEncoder state
 
-        stateString : String
-        stateString =
-            encode 0 <| authStateEncoder state
+                authorization : OAuth.AuthorizationCode.Authorization
+                authorization =
+                    { clientId = clientId
+                    , url = url
+                    , redirectUri = model.redirectUri
+                    , scope =
+                        case state.network of
+                            Reddit ->
+                                [ "identity" ]
 
-        authorization : OAuth.AuthorizationCode.Authorization
-        authorization =
-            { clientId = clientId
-            , url = url
-            , redirectUri = model.redirectUri
-            , scope =
-                case state.network of
-                    Reddit ->
-                        [ "identity" ]
+                            _ ->
+                                [ "email", "profile" ]
+                    , state = Just stateString
+                    }
+            in
+            Browser.Navigation.load <|
+                Url.toString <|
+                    OAuth.AuthorizationCode.makeAuthorizationUrl authorization
 
-                    _ ->
-                        [ "email", "profile" ]
-            , state = Just stateString
-            }
-    in
-    Browser.Navigation.load <|
-        Url.toString <|
-            OAuth.AuthorizationCode.makeAuthorizationUrl authorization
+        Nothing ->
+            toastError "Unknown auth method" <| networkIdName state.network
+
+
+networkIdName : AuthNetwork -> String
+networkIdName network =
+    case network of
+        Google ->
+            "google"
+
+        Github ->
+            "github"
+
+        Reddit ->
+            "reddit"
+
+        Telegram ->
+            "telegram"
+
+        Password ->
+            "password"

@@ -60,6 +60,9 @@ authNetworkDecoder =
                 "google" ->
                     Just Google
 
+                "github" ->
+                    Just Github
+
                 "telegram" ->
                     Just Telegram
 

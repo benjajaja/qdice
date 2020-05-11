@@ -963,7 +963,7 @@ input[type="range"]::-webkit-slider-runnable-track {
 .edLoginSocial > img {
   height: 20px;
   margin-right: 5px;
-  background: white;
+  margin-left: 5px;
 }
 .edLoginSocial--password {
   padding: 8px 0px;

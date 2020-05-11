@@ -9,20 +9,30 @@ import * as Scrypt from "scrypt-kdf";
 import * as db from "./db";
 import * as publish from "./table/publish"; // avoid or refactor
 import logger from "./logger";
-import { Preferences, PushNotificationEvents, User, UserId } from "./types";
+import {
+  Preferences,
+  PushNotificationEvents,
+  User,
+  UserId,
+  Network,
+} from "./types";
 import { Request } from "restify";
 import * as dataUrlStream from "data-url-stream";
 import { savePicture, downloadPicture } from "./helpers";
 import { NETWORK_PASSWORD } from "./db";
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
+const GITHUB_OAUTH_SECRET = process.env.GITHUB_OAUTH_SECRET;
 const REDDIT_OAUTH_SECRET = process.env.REDDIT_OAUTH_SECRET;
 
 export const defaultPreferences = (): Preferences => ({});
 
 export const login = async (req, res, next) => {
   try {
-    const network = req.params.network;
+    const network: Network | undefined = req.params.network;
+    if (!network) {
+      return next(new errs.InternalError("unknown network"));
+    }
     if (network === "password") {
       try {
         if ((req.body.email ?? "") === "" || (req.body.password ?? "") === "") {
@@ -61,35 +71,45 @@ export const login = async (req, res, next) => {
 
     let user = await db.getUserFromAuthorization(network, profile.id);
     if (!user) {
+      let name = profile.name;
+      if (network === "github" && profile.login) {
+        name = profile.login;
+      }
+      logger.debug("profile", profile);
       user = await db.createUser(
         network,
         profile.id, // network-id, not user-id
-        profile.name,
+        name,
         profile.email,
         "",
-        {} // GDPR friendly: don't save everything
+        profile
       );
 
       // TODO move this into db.createUser somehow
       let picture: string | null = null;
-      try {
-        picture = await downloadPicture(user.id, profile.picture);
-      } catch (e) {
-        logger.error(e);
+      const pictureURL = profile.picture ?? profile.avatar_url ?? null;
+      if (pictureURL) {
+        try {
+          picture = await downloadPicture(user.id, pictureURL);
+        } catch (e) {
+          logger.error(e);
+        }
       }
-      user = await db.updateUser(user.id, {
-        name: null,
-        email: null,
-        picture,
-        password: null,
-      });
+      if (picture) {
+        user = await db.updateUser(user.id, {
+          name: null,
+          email: null,
+          picture,
+          password: null,
+        });
+      }
     }
 
     const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET!);
     res.sendRaw(200, token);
     next();
   } catch (e) {
-    logger.error(`login error: ${e.toString()}`);
+    logger.error(`login error: ${e.toString()}`, e);
     next(new errs.InternalError("could not log in"));
   }
 };
@@ -129,7 +149,11 @@ export const addLogin = (req, res, next) => {
     });
 };
 
-const getProfile = (network, code, referer): Promise<any> => {
+const getProfile = (
+  network: Network,
+  code: string,
+  referer: string
+): Promise<any> => {
   return new Promise((resolve, reject) => {
     const options = {
       [db.NETWORK_GOOGLE]: {
@@ -142,6 +166,18 @@ const getProfile = (network, code, referer): Promise<any> => {
           scope: ["email", "profile"],
           grant_type: "authorization_code",
           redirect_uri: referer,
+        },
+      },
+      [db.NETWORK_GITHUB]: {
+        url: "https://github.com/login/oauth/access_token",
+        form: {
+          code: code,
+          client_id: "acbcad9ce3615b6fb44d",
+          client_secret: GITHUB_OAUTH_SECRET,
+          redirect_uri: referer,
+        },
+        headers: {
+          Accept: "application/json",
         },
       },
       [db.NETWORK_REDDIT]: {
@@ -165,6 +201,11 @@ const getProfile = (network, code, referer): Promise<any> => {
       body
     ) {
       if (err) {
+        logger.debug(
+          "login token request error",
+          network,
+          R.omit(["client_secret", "auth"], options)
+        );
         return reject(err);
       } else if (response.statusCode !== 200) {
         logger.error(
@@ -181,11 +222,13 @@ const getProfile = (network, code, referer): Promise<any> => {
           url: {
             [db.NETWORK_GOOGLE]: "https://www.googleapis.com/userinfo/v2/me",
             [db.NETWORK_REDDIT]: "https://oauth.reddit.com/api/v1/me",
+            [db.NETWORK_GITHUB]: "https://api.github.com/user",
           }[network],
           method: "GET",
           headers: {
             "User-Agent": "webapp:qdice.wtf:v1.0",
             Authorization: json.token_type + " " + json.access_token,
+            Accept: "application/json",
           },
         },
         function(err, response, body) {

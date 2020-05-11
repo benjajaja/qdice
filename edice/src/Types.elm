@@ -201,6 +201,7 @@ type alias UserPreferences =
 type AuthNetwork
     = Password
     | Google
+    | Github
     | Reddit
     | Telegram
 

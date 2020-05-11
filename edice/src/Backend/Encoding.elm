@@ -74,6 +74,9 @@ encodeAuthNetwork network =
         Google ->
             "google"
 
+        Github ->
+            "github"
+
         Reddit ->
             "reddit"
 

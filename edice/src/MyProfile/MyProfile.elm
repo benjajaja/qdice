@@ -8,7 +8,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Icon
-import MyOauth exposing (saveToken)
+import MyOauth exposing (networkIdName, saveToken)
 import MyProfile.Types exposing (..)
 import Routing exposing (navigateTo)
 import Snackbar exposing (toastError)
@@ -138,7 +138,7 @@ notifications model user preferences sessionPreferences =
 
 availableNetworks : LoggedUser -> List AuthNetwork
 availableNetworks user =
-    List.filter (\i -> not <| List.member i user.networks) [ Google, Reddit, Password ]
+    List.filter (\i -> not <| List.member i user.networks) [ Google, Github, Reddit, Password ]
 
 
 addNetworks : MyProfileModel -> LoggedUser -> List (Html Msg)
@@ -221,22 +221,6 @@ addNetworks model user =
                                        ]
                     )
                     []
-
-
-networkIdName : AuthNetwork -> String
-networkIdName network =
-    case network of
-        Google ->
-            "google"
-
-        Reddit ->
-            "reddit"
-
-        Telegram ->
-            "telegram"
-
-        Password ->
-            "password"
 
 
 profileForm : MyProfileModel -> LoggedUser -> Html Msg
@@ -327,6 +311,9 @@ networkDisplay nw =
     case nw of
         Password ->
             "Password"
+
+        Github ->
+            "GitHub"
 
         Google ->
             "Google"

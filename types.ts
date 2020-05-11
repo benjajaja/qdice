@@ -1,5 +1,5 @@
 export type UserId = string;
-export type Network = "google" | "password" | "telegram" | "reddit";
+export type Network = "google" | "github" | "password" | "telegram" | "reddit";
 export type Emoji = string;
 export type Timestamp = number;
 

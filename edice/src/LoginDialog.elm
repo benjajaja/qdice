@@ -32,6 +32,18 @@ body model joinTable =
             , button
                 [ onClick <|
                     Authorize
+                        { network = Github
+                        , table = joinTable
+                        , addTo = Nothing
+                        }
+                , class "edLoginSocial edLoginSocial--github"
+                ]
+                [ img [ src "assets/social_icons/github.svg" ] []
+                , text "Sign in with GitHub"
+                ]
+            , button
+                [ onClick <|
+                    Authorize
                         { network = Reddit
                         , table = joinTable
                         , addTo = Nothing

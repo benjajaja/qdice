@@ -46,6 +46,7 @@ export const retry = async function retry() {
 };
 
 export const NETWORK_GOOGLE: Network = "google";
+export const NETWORK_GITHUB: Network = "github";
 export const NETWORK_PASSWORD: Network = "password";
 export const NETWORK_TELEGRAM: Network = "telegram";
 export const NETWORK_REDDIT: Network = "reddit";
