@@ -1,4 +1,4 @@
-module Routing.String exposing (link, linkAttrs, routeToString)
+module Routing.String exposing (link, linkAttr, routeToString)
 
 import Html exposing (Html, a, text)
 import Html.Attributes exposing (href)
@@ -63,12 +63,11 @@ routeToString useHash route =
            )
 
 
-linkAttrs : Route -> List (Html.Attribute msg)
-linkAttrs route =
-    [ href <| routeToString False <| route
-    ]
+linkAttr : Route -> Html.Attribute msg
+linkAttr route =
+    href <| routeToString False <| route
 
 
 link : String -> Route -> Html msg
 link label route =
-    a (linkAttrs route) [ text label ]
+    a [ linkAttr route ] [ text label ]

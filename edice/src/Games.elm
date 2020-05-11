@@ -234,7 +234,7 @@ playersList players =
                 )
                     (style "color" (baseCssRgb p.color)
                         :: (if not p.isBot then
-                                Routing.String.linkAttrs <| ProfileRoute p.id p.name
+                                [ Routing.String.linkAttr <| ProfileRoute p.id p.name ]
 
                             else
                                 []

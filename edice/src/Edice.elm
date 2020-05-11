@@ -18,29 +18,25 @@ import Footer exposing (footer)
 import GA exposing (ga)
 import Game.State exposing (gameCommand)
 import Game.Types exposing (PlayerAction(..))
-import Game.View
 import Games
 import Games.Replayer
 import Helpers exposing (httpErrorToString, is502, pipeUpdates)
-import Html
-import Html.Attributes
 import Http exposing (Error(..))
 import LeaderBoard.State
-import LeaderBoard.View
 import MyOauth
 import MyProfile.MyProfile
 import MyProfile.Types
 import Placeholder
 import Profile
 import Routing exposing (navigateTo, parseLocation)
-import Routing.String
 import Snackbar exposing (toastError, toastMessage)
-import Static.View
 import Tables exposing (MapName(..), Table)
 import Task
 import Time
 import Types exposing (..)
 import Url exposing (Url)
+import Widgets
+import Widgets.Views
 
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
@@ -1060,77 +1056,12 @@ view model =
     { title = "Qdice.wtf"
     , body =
         [ dialog model
-        , Html.main_ [ Html.Attributes.class "Main" ]
-            [ mainView model
+        , Widgets.mainWrapper
+            [ Widgets.Views.mainView model
             ]
         , footer model.route model.backend.version model.backend.status
         ]
     }
-
-
-mainView : Model -> Html.Html Msg
-mainView model =
-    case model.route of
-        HomeRoute ->
-            viewWrapper
-                [ Html.text "Searching for a table..." ]
-
-        GameRoute table ->
-            Game.View.view model
-
-        StaticPageRoute page ->
-            viewWrapper
-                [ Static.View.view model page
-                ]
-
-        NotFoundRoute ->
-            viewWrapper
-                [ Html.text "404" ]
-
-        MyProfileRoute ->
-            viewWrapper
-                [ case model.user of
-                    Anonymous ->
-                        Html.text "You are not logged in."
-
-                    Logged user ->
-                        MyProfile.MyProfile.view model.myProfile user model.preferences model.sessionPreferences
-                ]
-
-        TokenRoute token ->
-            viewWrapper
-                [ Html.text "Getting user ready..." ]
-
-        ProfileRoute id name ->
-            viewWrapper
-                [ Profile.view model id name ]
-
-        LeaderBoardRoute ->
-            viewWrapper
-                [ LeaderBoard.View.view model ]
-
-        GamesRoute sub ->
-            viewWrapper
-                [ Games.view model sub ]
-
-        CommentsRoute ->
-            viewWrapper
-                [ Comments.view model.zone model.user model.comments <| Types.AllComments
-                ]
-
-
-viewWrapper : List (Html.Html Msg) -> Html.Html Msg
-viewWrapper children =
-    Html.div [ Html.Attributes.class "edMainScreen edMainScreen__static" ] <|
-        [ Html.a
-            [ Html.Attributes.class "edLogo"
-            , Html.Attributes.href <| Routing.String.routeToString False <| Types.HomeRoute
-            ]
-            [ Html.img [ Html.Attributes.src "quedice.svg", Html.Attributes.width 28, Html.Attributes.height 28, Html.Attributes.class "edLogo_img" ] []
-            , Html.span [ Html.Attributes.class "edLogo__text" ] [ Html.text "Qdice.wtf!" ]
-            ]
-        ]
-            ++ children
 
 
 mainViewSubscriptions : Model -> Sub Msg
@@ -1148,7 +1079,6 @@ mainViewSubscriptions model =
                                 Just replayer ->
                                     Board.animations replayer.board
 
-                                -- ++ [ Games.Replayer.subscriptions model.replayer ]
                                 Nothing ->
                                     []
 
