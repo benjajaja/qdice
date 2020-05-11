@@ -24,7 +24,7 @@ authorizationEndpoint network =
                 ( { protocol = Https
                   , host = "www.reddit.com"
                   , port_ = Nothing
-                  , path = "/api/v1/authorize"
+                  , path = "/api/v1/authorize.compact"
                   , query = Nothing
                   , fragment = Nothing
                   }

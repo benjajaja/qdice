@@ -189,17 +189,14 @@ const getProfile = (
           redirect_uri: referer,
         },
         auth: {
-          username: "Ik08wUaMvoUZ3A",
+          username: "FjcCKkabynWNug",
           password: REDDIT_OAUTH_SECRET,
         },
       },
     }[network];
 
-    request(Object.assign({ method: "POST" }, options), function(
-      err,
-      response,
-      body
-    ) {
+    const req = { method: "POST", ...options };
+    request(req, function(err, response, body) {
       if (err) {
         logger.debug(
           "login token request error",
@@ -212,7 +209,8 @@ const getProfile = (
           "could not get access_token",
           code,
           referer,
-          body.toString()
+          body.toString(),
+          req
         );
         return reject(new Error(`token request status ${response.statusCode}`));
       }
