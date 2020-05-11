@@ -124,6 +124,7 @@ select:-webkit-autofill:focus {
 
 .edPageSection {
   border-bottom: 1px solid #000;
+  padding-bottom: 10px;
 }
 
 button, .edButton {
@@ -1271,6 +1272,8 @@ input[type="range"]::-webkit-slider-runnable-track {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  font-weight: bold;
+  margin-top: 20px;
 }
 .edFormLabel input {
   margin-bottom: 4px;
@@ -1433,3 +1436,25 @@ input[type="range"]::-webkit-slider-runnable-track {
   z-index: 100;
 }
 
+.edAvatarPreview {
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
+  margin: 10px;
+  border: 4px dashed black;
+  border-radius: 50%;
+}
+.edAvatarPreview img {
+  height: 100px;
+  width: 100px;
+  object-fit: cover;
+  max-width: initial;
+}
+.edAvatarCropper {
+  width: 100px;
+  height: 100px;
+  margin: 10px;
+  border: 4px dashed black;
+  border-radius: 50%;
+  overflow: hidden;
+}

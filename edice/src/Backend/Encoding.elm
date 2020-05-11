@@ -1,5 +1,6 @@
 module Backend.Encoding exposing (authStateEncoder, encodeAuthNetwork, encodePlayerAction, loginEncoder, myProfileUpdateEncoder, passwordEncoder, profileEncoder)
 
+import Cropper
 import Game.Types exposing (PlayerAction(..), actionToString)
 import Json.Encode exposing (Value, bool, encode, int, list, null, object, string)
 import MyProfile.Types exposing (MyProfileUpdate)
@@ -7,13 +8,8 @@ import Types exposing (..)
 
 
 stringOrNull : Maybe String -> Value
-stringOrNull s =
-    case s of
-        Just s_ ->
-            string s_
-
-        Nothing ->
-            null
+stringOrNull =
+    Maybe.map string >> Maybe.withDefault null
 
 
 profileEncoder : LoggedUser -> Value
@@ -107,10 +103,40 @@ myProfileUpdateEncoder update =
     object
         [ ( "name", stringOrNull update.name )
         , ( "email", stringOrNull update.email )
-        , ( "picture", stringOrNull update.picture )
+        , ( "picture", cropDataEncoder update.picture )
         , ( "password", stringOrNull update.password )
         , ( "passwordCheck", stringOrNull update.passwordCheck )
         ]
+
+
+cropDataEncoder : Maybe Cropper.CropData -> Value
+cropDataEncoder =
+    Maybe.map
+        (\cropData ->
+            object
+                [ ( "url", string cropData.url )
+                , ( "size", rect cropData.size )
+                , ( "crop", rect cropData.crop )
+                , ( "resized", rect cropData.resized )
+                , ( "origin", point cropData.origin )
+                ]
+         -- { url : String
+         -- , size : Rect
+         -- , crop : Rect
+         -- , resized : Rect
+         -- , origin : Point
+        )
+        >> Maybe.withDefault null
+
+
+rect : { width : Int, height : Int } -> Value
+rect { width, height } =
+    object [ ( "width", int width ), ( "height", int height ) ]
+
+
+point : { x : Int, y : Int } -> Value
+point { x, y } =
+    object [ ( "x", int x ), ( "y", int y ) ]
 
 
 passwordEncoder : ( String, String ) -> Maybe String -> Value

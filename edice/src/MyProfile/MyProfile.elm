@@ -1,6 +1,8 @@
-module MyProfile.MyProfile exposing (addNetworks, update, view)
+module MyProfile.MyProfile exposing (addNetworks, init, update, view)
 
 import Backend.HttpCommands
+import Browser.Dom as Dom
+import Cropper
 import File
 import File.Select as Select
 import Helpers exposing (consoleDebug)
@@ -11,16 +13,37 @@ import Icon
 import MyOauth exposing (networkIdName, saveToken)
 import MyProfile.Types exposing (..)
 import Routing exposing (navigateTo)
+import Routing.String exposing (linkAttr)
 import Snackbar exposing (toastError)
 import Task
 import Types exposing (AuthNetwork(..), LoggedUser, Model, Msg(..), PushEvent(..), Route(..), User(..))
+
+
+init : MyProfileModel
+init =
+    { name = Nothing
+    , email = Nothing
+    , password = Nothing
+    , passwordCheck = Nothing
+    , picture = Nothing
+    , cropper =
+        Cropper.init
+            { url = ""
+            , crop = { width = 100, height = 100 }
+            }
+    , deleteAccount = MyProfile.Types.None
+    , saving = False
+    }
 
 
 view : MyProfileModel -> LoggedUser -> Types.Preferences -> Types.SessionPreferences -> Html Msg
 view model user preferences sessionPreferences =
     div [ class "edPage" ]
         [ div [ class "edPageSection" ]
-            [ h2 [] [ text "My profile" ]
+            [ h2 [] [ text "My Account" ]
+            , p []
+                [ a [ linkAttr <| ProfileRoute user.id user.name ] [ text "Go to my public profile as seen by others" ]
+                ]
             , profileForm model user
             ]
         , div [ class "edPageSection" ] <|
@@ -239,8 +262,7 @@ profileForm model user =
         ]
             ++ (if List.member Password user.networks then
                     [ label [ class "edFormLabel" ]
-                        [ p [] [ text "Email+Password login:" ]
-                        , text "Email"
+                        [ text "Email"
                         , input
                             [ type_ "email"
                             , value <| Maybe.withDefault (Maybe.withDefault "" user.email) model.email
@@ -272,7 +294,10 @@ profileForm model user =
                )
             ++ [ div []
                     [ button
-                        (if model.password == Nothing && model.email == Nothing && model.passwordCheck == Nothing then
+                        (if model.saving then
+                            [ disabled True ]
+
+                         else if model.password == Nothing && model.email == Nothing && model.passwordCheck == Nothing then
                             []
 
                          else if model.passwordCheck == Nothing then
@@ -281,7 +306,13 @@ profileForm model user =
                          else
                             []
                         )
-                        [ text "Save" ]
+                        [ text <|
+                            if model.saving then
+                                "Saving..."
+
+                            else
+                                "Save changes"
+                        ]
                     ]
                ]
 
@@ -290,19 +321,39 @@ avatarUpload : MyProfileModel -> LoggedUser -> Html Msg
 avatarUpload model user =
     div []
         [ label [ class "edFormLabel" ]
-            [ text "Avatar"
-            , div []
-                [ img
-                    [ src <| Maybe.withDefault user.picture model.picture
-                    , width 100
-                    , height 100
-                    ]
-                    []
-                ]
-            , button
-                [ type_ "button", onClick <| MyProfileMsg AvatarRequested ]
-                [ text "Set picture..." ]
+            [ text "Current avatar"
             ]
+        , div [] <|
+            case model.picture of
+                Just _ ->
+                    [ div [ class "edAvatarCropper" ]
+                        [ Cropper.view model.cropper |> Html.map (ToCropper >> MyProfileMsg)
+                        ]
+                    , div [] [ text "Drag to center, use handle to zoom:" ]
+                    , p []
+                        [ input
+                            [ onInput <| Zoom >> MyProfileMsg
+                            , type_ "range"
+                            , class "edButton"
+                            , Html.Attributes.min "0"
+                            , Html.Attributes.max "1"
+                            , Html.Attributes.step "0.0001"
+                            , value (String.fromFloat model.cropper.zoom)
+                            ]
+                            []
+                        ]
+                    , button
+                        [ type_ "button", onClick <| MyProfileMsg AvatarReset ]
+                        [ text "Reset picture" ]
+                    ]
+
+                Nothing ->
+                    [ div [ class "edAvatarPreview" ]
+                        [ img [ src user.picture ] [] ]
+                    , button
+                        [ type_ "button", onClick <| MyProfileMsg AvatarRequested ]
+                        [ text "Chose new picture..." ]
+                    ]
         ]
 
 
@@ -423,15 +474,38 @@ update model msg =
             case model.user of
                 Logged user ->
                     let
+                        profileUpdate : MyProfileUpdate
                         profileUpdate =
                             { name = model.myProfile.name
                             , email = model.myProfile.email
-                            , picture = model.myProfile.picture
+                            , picture =
+                                Maybe.map
+                                    (always <|
+                                        Cropper.cropData
+                                            model.myProfile.cropper
+                                    )
+                                    model.myProfile.picture
                             , password = model.myProfile.password
                             , passwordCheck = model.myProfile.passwordCheck
                             }
+
+                        p =
+                            model.myProfile
+
+                        p_ =
+                            { p
+                                | saving =
+                                    not <|
+                                        List.all ((==) Nothing)
+                                            [ model.myProfile.name
+                                            , model.myProfile.email
+                                            , model.myProfile.picture
+                                            , model.myProfile.password
+                                            , model.myProfile.passwordCheck
+                                            ]
+                            }
                     in
-                    ( model
+                    ( { model | myProfile = p_ }
                     , if
                         List.all ((==) Nothing)
                             [ model.myProfile.name
@@ -515,6 +589,46 @@ update model msg =
                     model.myProfile
 
                 p_ =
-                    { p | picture = Just url }
+                    { p
+                        | picture = Just url
+                        , cropper =
+                            Cropper.zoom
+                                (Cropper.init
+                                    { url = url
+                                    , crop = { width = 100, height = 100 }
+                                    }
+                                )
+                                0
+                    }
+            in
+            ( { model | myProfile = p_ }, Cmd.none )
+
+        AvatarReset ->
+            let
+                p =
+                    model.myProfile
+            in
+            ( { model | myProfile = { p | picture = Nothing } }, Cmd.none )
+
+        ToCropper subMsg ->
+            let
+                p =
+                    model.myProfile
+
+                ( updatedSubModel, subCmd ) =
+                    Cropper.update subMsg p.cropper
+
+                p_ =
+                    { p | cropper = updatedSubModel }
+            in
+            ( { model | myProfile = p_ }, Cmd.map (ToCropper >> MyProfileMsg) subCmd )
+
+        Zoom zoom ->
+            let
+                p =
+                    model.myProfile
+
+                p_ =
+                    { p | cropper = Cropper.zoom p.cropper (Maybe.withDefault 0 (String.toFloat zoom)) }
             in
             ( { model | myProfile = p_ }, Cmd.none )

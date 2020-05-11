@@ -12,6 +12,7 @@ import Browser.Dom
 import Browser.Events exposing (onAnimationFrame)
 import Browser.Navigation exposing (Key)
 import Comments
+import Cropper
 import Dialog exposing (dialog)
 import Dict
 import Footer exposing (footer)
@@ -82,7 +83,7 @@ init flags location key =
             , key = key
             , oauth = oauth
             , game = game
-            , myProfile = { name = Nothing, email = Nothing, password = Nothing, passwordCheck = Nothing, picture = Nothing, deleteAccount = MyProfile.Types.None }
+            , myProfile = MyProfile.MyProfile.init
             , backend = backend_
             , user = Types.Anonymous
             , tableList = []
@@ -304,7 +305,19 @@ update msg model =
         GetUpdateProfile res ->
             case res of
                 Err err ->
-                    ( model
+                    let
+                        myProfile =
+                            case model.route of
+                                MyProfileRoute ->
+                                    MyProfile.MyProfile.init
+
+                                _ ->
+                                    model.myProfile
+
+                        model_ =
+                            { model | myProfile = myProfile }
+                    in
+                    ( model_
                     , toastError err err
                     )
 
@@ -316,8 +329,16 @@ update msg model =
                         backend_ =
                             { backend | jwt = Just token }
 
+                        myProfile =
+                            case model.route of
+                                MyProfileRoute ->
+                                    MyProfile.MyProfile.init
+
+                                _ ->
+                                    model.myProfile
+
                         model_ =
-                            { model | backend = backend_ }
+                            { model | backend = backend_, myProfile = myProfile }
                     in
                     ( model_
                     , Cmd.batch
@@ -1105,6 +1126,11 @@ mainViewSubscriptions model =
 
                             _ ->
                                 []
+
+                    MyProfileRoute ->
+                        [ Sub.map (MyProfileMsg << MyProfile.Types.ToCropper)
+                            (Cropper.subscriptions model.myProfile.cropper)
+                        ]
 
                     _ ->
                         []

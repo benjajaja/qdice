@@ -18,7 +18,7 @@ import {
 } from "./types";
 import { Request } from "restify";
 import * as dataUrlStream from "data-url-stream";
-import { savePicture, downloadPicture } from "./helpers";
+import { savePicture, downloadPicture, CropData } from "./helpers";
 import { NETWORK_PASSWORD } from "./db";
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
@@ -298,7 +298,11 @@ export const profile = async function(req, res, next) {
     next();
   } catch (e) {
     logger.error(e);
-    res.sendRaw(500, "Something went wrong.");
+    if (e.message === "user update needs some fields") {
+      res.sendRaw(400, "Profile was not updated because nothing has changed.");
+    } else {
+      res.sendRaw(500, "Something went wrong.");
+    }
   }
 };
 
@@ -417,9 +421,11 @@ export const registerVote = (source: "topwebgames") => async (
   }
 };
 
-const saveAvatar = (id: UserId, url: string): Promise<string> => {
-  logger.debug("picture:", url.slice(0, 20));
+const saveAvatar = (
+  id: UserId,
+  crop: CropData & { url: string }
+): Promise<string> => {
   const filename = `user_${id}.gif`;
-  const stream: fs.ReadStream = dataUrlStream(url);
-  return savePicture(filename, stream);
+  const stream: fs.ReadStream = dataUrlStream(crop.url);
+  return savePicture(filename, stream, R.omit(["url"], crop));
 };

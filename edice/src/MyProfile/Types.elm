@@ -1,5 +1,6 @@
 module MyProfile.Types exposing (DeleteAccountState(..), MyProfileModel, MyProfileMsg(..), MyProfileUpdate)
 
+import Cropper
 import File exposing (File)
 import Http exposing (Error)
 
@@ -14,6 +15,9 @@ type MyProfileMsg
     | AvatarRequested
     | AvatarSelected File
     | AvatarLoaded String
+    | AvatarReset
+    | ToCropper Cropper.Msg
+    | Zoom String
 
 
 type alias MyProfileModel =
@@ -22,7 +26,9 @@ type alias MyProfileModel =
     , password : Maybe String
     , passwordCheck : Maybe String
     , picture : Maybe String
+    , cropper : Cropper.Model
     , deleteAccount : DeleteAccountState
+    , saving : Bool
     }
 
 
@@ -36,7 +42,7 @@ type DeleteAccountState
 type alias MyProfileUpdate =
     { name : Maybe String
     , email : Maybe String
-    , picture : Maybe String
+    , picture : Maybe Cropper.CropData
     , password : Maybe String
     , passwordCheck : Maybe String
     }

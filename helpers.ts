@@ -5,6 +5,7 @@ import * as request from "request";
 import * as ps from "promise-streams";
 import * as pics from "pics";
 import * as resize from "resizer-stream";
+import * as crop from "crop-image-stream";
 
 import * as R from "ramda";
 import {
@@ -211,17 +212,54 @@ const removeNext = ([players, lands, turnIndex, eliminations, killPoints]: [
   return [players, lands, turnIndex, eliminations];
 };
 
-export const savePicture = async (filename: string, stream: ReadStream) => {
+type Rect = { width: number; height: number };
+type Point = { x: number; y: number };
+export type CropData = {
+  size: Rect;
+  crop: Rect;
+  resized: Rect;
+  origin: Point;
+};
+export const savePicture = async (
+  filename: string,
+  stream: ReadStream,
+  cropData?: CropData
+) => {
   const file = createWriteStream(path.join(process.env.AVATAR_PATH!, filename));
   await new Promise((resolve, reject) =>
-    pipeline(
-      stream,
-      pics.decode(),
-      resize({ width: 100, height: 100, fit: true, allowUpscale: true }),
-      pics.encode("image/gif"),
-      file,
-      err => (err ? reject(err) : resolve())
-    )
+    cropData
+      ? pipeline(
+          stream,
+          pics.decode(),
+          resize({
+            width: cropData.resized.width,
+            height: cropData.resized.height,
+            fit: false,
+            allowUpscale: true,
+          }),
+          crop({
+            x: cropData.origin.x,
+            y: cropData.origin.y,
+            width: 100,
+            height: 100,
+          }),
+          pics.encode("image/gif"),
+          file,
+          err => (err ? reject(err) : resolve())
+        )
+      : pipeline(
+          stream,
+          pics.decode(),
+          resize({
+            width: 100,
+            height: 100,
+            fit: true,
+            allowUpscale: true,
+          }),
+          pics.encode("image/gif"),
+          file,
+          err => (err ? reject(err) : resolve())
+        )
   );
   return `${process.env.PICTURE_URL_PREFIX}/${filename}`;
 };

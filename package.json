@@ -31,6 +31,7 @@
     "@types/web-push": "^3.3.0",
     "async-lock": "^1.2.2",
     "camelize": "^1.0.0",
+    "crop-image-stream": "^1.0.0",
     "data-url-stream": "^1.0.0",
     "decamelize": "^2.0.0",
     "gif-stream": "^1.1.0",

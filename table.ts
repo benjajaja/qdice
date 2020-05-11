@@ -85,12 +85,6 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
           index: number
         ) => {
           const table = await getTable(tag);
-          logger.debug(
-            "start got table",
-            tag,
-            typeof table,
-            table === null ? "null" : "not null"
-          );
           const lands = maps.hasChanged(table.mapName, table.lands);
           await save(
             table,
