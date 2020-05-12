@@ -769,7 +769,7 @@ export const addElimination = async (event: {
       event.turns,
       event.reason,
       event.flag,
-      event.killer?.id,
+      event.killer?.bot ? null : event.killer?.id,
     ]
   );
   return elimination;
