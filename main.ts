@@ -41,6 +41,7 @@ import { profile } from "./profile";
 import * as games from "./games";
 import { resetGenerator } from "./rand";
 import { clearGames } from "./table/get";
+import { EMPTY_PROFILE_PICTURE } from "./constants";
 
 process.on("unhandledRejection", (reason, p) => {
   logger.error("Unhandled Rejection at: Promise", p, "reason:", reason);
@@ -178,6 +179,7 @@ export const server = async () => {
           req =>
             req.method === "GET" &&
             req.path().indexOf(`${root}/comments`) === 0,
+          req => req.path().indexOf(`${root}/tablestats`) === 0,
         ])(req);
         return ok;
       },
@@ -309,6 +311,17 @@ export const server = async () => {
     const user = (req as any).user;
     const result = await db.postComment(user, "all", "all", body);
     res.send(result);
+    next();
+  });
+
+  server.get(`${root}/tablestats/:table`, async (req, res, next) => {
+    res.send({
+      period: "2020",
+      top: (await db.topScores(req.params.table)).map(row => ({
+        ...row,
+        picture: row.picture ?? EMPTY_PROFILE_PICTURE,
+      })),
+    });
     next();
   });
 

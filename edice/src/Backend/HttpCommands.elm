@@ -364,3 +364,14 @@ postComment model kind replyKind text =
         , timeout = Nothing
         , tracker = Nothing
         }
+
+
+tableStats : Model -> Table -> Cmd Msg
+tableStats model table =
+    Http.get
+        { url = model.baseUrl ++ "/tablestats/" ++ table
+        , expect =
+            expectJson
+                (Result.mapError httpErrorToString >> GetTableStats)
+                (tableStatsDecoder table)
+        }

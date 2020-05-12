@@ -23,6 +23,7 @@ import LeaderBoard.View
 import MyProfile.MyProfile
 import MyProfile.Types
 import Ordinal exposing (ordinal)
+import Placeholder exposing (Placeheld(..))
 import Routing.String exposing (routeToString)
 import Time exposing (Posix, posixToMillis)
 import Tournaments exposing (tournamentTime)
@@ -105,6 +106,20 @@ view model =
                         ++ [ div [ class "edBoxes cartonCard" ] <|
                                 [ Html.Lazy.lazy3 playerBox model.user model.myProfile model.sessionPreferences
                                 , Html.Lazy.lazy leaderboardBox model.leaderBoard
+                                ]
+                           , div [ class "cartonCard" ] <|
+                                [ case model.tableStats of
+                                    Error err p ->
+                                        div [] [ text <| "Could not load table statistics: " ++ err ]
+
+                                    Fetching p ->
+                                        div [] [ text <| "Loading statistics..." ]
+
+                                    Placeholder p ->
+                                        div [] [ text <| "Waiting for load..." ]
+
+                                    Fetched p ->
+                                        Html.Lazy.lazy tableLeaderboardBox p
                                 ]
                            , div [ class "cartonCard cartonCard--padded" ] <|
                                 case model.game.table of
@@ -775,6 +790,22 @@ leaderboardBox leaderBoard =
             ]
         , div [ class "edBox__inner" ]
             [ LeaderBoard.View.table 10 leaderBoard.top ]
+        ]
+
+
+tableLeaderboardBox : Types.TableStats -> Html Msg
+tableLeaderboardBox stats =
+    div [ class "edBox edLeaderboardBox" ]
+        [ div [ class "edBox__header" ]
+            [ text <| "Top players on table " ++ stats.table ++ " this week"
+            ]
+        , div [ class "edBox__inner" ] <|
+            case stats.top of
+                [] ->
+                    [ text "(Nobody yet - be the first!)" ]
+
+                top ->
+                    [ LeaderBoard.View.tableTable top ]
         ]
 
 

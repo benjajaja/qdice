@@ -67,6 +67,7 @@ type Msg
     | PostComment CommentKind (Maybe CommentKind) String
     | GetPostComment CommentKind (Maybe CommentKind) (Result String Comment)
     | ReplyComment CommentKind (Maybe ( Int, String ))
+    | GetTableStats (Result String TableStats)
       -- game
     | BoardMsg Board.Msg
     | InputChat String
@@ -133,6 +134,7 @@ type alias Model =
     , key : Key
     , oauth : MyOAuthModel
     , game : Game.Types.Model
+    , tableStats : Placeheld TableStats
     , myProfile : MyProfile.Types.MyProfileModel
     , backend : Backend.Types.Model
     , user : User
@@ -304,6 +306,17 @@ type alias LeaderBoardModel =
     , board : List Profile
     , page : Int
     }
+
+
+type alias TableStats =
+    { table : Table
+    , period : String
+    , top : List TableStatPlayer
+    }
+
+
+type alias TableStatPlayer =
+    { id : String, name : String, picture : String, score : Int }
 
 
 type alias LeaderBoardResponse =

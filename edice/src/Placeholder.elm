@@ -1,4 +1,4 @@
-module Placeholder exposing (Placeheld(..), isFetched, toFetching, toMaybe, toResult, updateIfPlaceholder, value)
+module Placeholder exposing (Placeheld(..), isFetched, toError, toFetching, toMaybe, toResult, updateIfPlaceholder, value)
 
 {-| Placeholder type
 -}
@@ -32,6 +32,11 @@ value placeholder =
 toFetching : Placeheld a -> Placeheld a
 toFetching placeholder =
     Fetching <| value placeholder
+
+
+toError : String -> Placeheld a -> Placeheld a
+toError err placeholder =
+    Error err <| value placeholder
 
 
 {-| Result with any placeholder value

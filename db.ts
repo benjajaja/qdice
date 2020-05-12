@@ -774,3 +774,23 @@ export const addElimination = async (event: {
   );
   return elimination;
 };
+
+export const topScores = async (tableTag: string) => {
+  const { rows } = await pool.query(
+    `SELECT users.id::text, users.name, users.picture, SUM(eliminations.score)::integer AS score
+    FROM eliminations
+    LEFT JOIN users
+      ON users.id = eliminations.user_id
+    LEFT JOIN games
+      ON games.id = eliminations.game_id
+    WHERE games.tag = $1
+      AND score > 0
+      AND timestamp > NOW()::DATE-EXTRACT(DOW from NOW())::INTEGER+2
+    GROUP BY users.id, users.name, users.picture
+    ORDER BY score DESC
+    LIMIT 10
+    `,
+    [tableTag]
+  );
+  return rows;
+};

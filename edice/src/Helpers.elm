@@ -72,7 +72,7 @@ last list =
         |> List.head
 
 
-pipeUpdates : (a -> b -> ( a, Cmd c )) -> b -> ( a, Cmd c ) -> ( a, Cmd c )
+pipeUpdates : (model -> b -> ( model, Cmd c )) -> b -> ( model, Cmd c ) -> ( model, Cmd c )
 pipeUpdates updater arg ( model, cmd ) =
     let
         ( model_, cmd_ ) =

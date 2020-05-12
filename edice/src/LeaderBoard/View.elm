@@ -1,4 +1,4 @@
-module LeaderBoard.View exposing (table, view)
+module LeaderBoard.View exposing (table, tableTable, view)
 
 import Game.PlayerCard exposing (playerPicture)
 import Helpers exposing (pointsSymbol)
@@ -70,6 +70,37 @@ table limit list =
                                 ]
                             , td [ align "right" ] [ text <| String.fromInt profile.points ++ pointsSymbol ]
                             , td [ align "right" ] [ text <| String.fromInt profile.level ]
+                            ]
+                    )
+                |> tbody []
+            ]
+        ]
+
+
+tableTable : List Types.TableStatPlayer -> Html Msg
+tableTable list =
+    div [ class "edLeaderboard" ]
+        [ Html.table []
+            [ thead []
+                [ tr []
+                    [ th [ align "right" ] []
+                    , th [ align "left" ] [ text "Name" ]
+                    , th [ align "right" ] [ text "Points" ]
+                    ]
+                ]
+            , list
+                |> List.map
+                    (\profile ->
+                        tr []
+                            [ td [ align "right" ]
+                                [ playerPicture "small" profile.picture profile.name
+                                ]
+                            , td [ align "left" ]
+                                [ a [ href <| routeToString False <| ProfileRoute profile.id profile.name ]
+                                    [ text profile.name
+                                    ]
+                                ]
+                            , td [ align "right" ] [ text <| String.fromInt profile.score ++ pointsSymbol ]
                             ]
                     )
                 |> tbody []

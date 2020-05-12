@@ -1,4 +1,4 @@
-module Backend.Decoding exposing (authStateDecoder, chatterDecoder, commentDecoder, commentsDecoder, eliminationsDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, rollDecoder, tableDecoder, tableInfoDecoder, tupleDecoder, turnDecoder)
+module Backend.Decoding exposing (authStateDecoder, chatterDecoder, commentDecoder, commentsDecoder, eliminationsDecoder, gamesDecoder, globalDecoder, leaderBoardDecoder, meDecoder, moveDecoder, otherProfileDecoder, playersDecoder, profileDecoder, rollDecoder, tableDecoder, tableInfoDecoder, tableStatsDecoder, tupleDecoder, turnDecoder)
 
 import Array
 import Backend.Types exposing (TableMessage(..))
@@ -10,7 +10,7 @@ import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, la
 import Json.Decode.Pipeline exposing (optional, required)
 import Land exposing (Color, LandUpdate, playerColor)
 import Tables exposing (Table)
-import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, ProfileStatsStatistics, PushEvent(..), Replies(..), StaticPage(..))
+import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, ProfileStatsStatistics, PushEvent(..), Replies(..), StaticPage(..), TableStatPlayer, TableStats)
 
 
 tupleDecoder : Decoder a -> Decoder b -> Decoder ( a, b )
@@ -677,3 +677,19 @@ chatterDecoder =
     succeed (\name color -> { name = name, color = color })
         |> required "name" string
         |> optional "color" (map Just colorDecoder) Nothing
+
+
+tableStatsDecoder : Table -> Decoder TableStats
+tableStatsDecoder table =
+    succeed (TableStats table)
+        |> required "period" string
+        |> required "top" (list playerIdNamePictureDecoder)
+
+
+playerIdNamePictureDecoder : Decoder TableStatPlayer
+playerIdNamePictureDecoder =
+    succeed TableStatPlayer
+        |> required "id" string
+        |> required "name" string
+        |> required "picture" string
+        |> required "score" int

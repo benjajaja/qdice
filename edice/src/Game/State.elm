@@ -1,6 +1,7 @@
 module Game.State exposing (canSelect, changeTable, clickLand, gameCommand, init, isChat, setUser, tableMap, update, updateGameInfo, updateTable, updateTableStatus)
 
 import Backend
+import Backend.HttpCommands
 import Backend.MqttCommands exposing (attack, sendGameCommand)
 import Backend.Types exposing (Topic(..))
 import Board
@@ -177,6 +178,7 @@ changeTable model table =
     in
     ( model_, cmd )
         |> pipeUpdates Backend.subscribeGameTable ( table, model.game.table )
+        |> pipeUpdates fetchTableTop table
 
 
 tableMap : Table -> List Game.Types.TableInfo -> Maybe MapName
@@ -1223,3 +1225,8 @@ playSound preferences sound =
 
     else
         Helpers.playSound sound
+
+
+fetchTableTop : Types.Model -> Table -> ( Types.Model, Cmd Msg )
+fetchTableTop model table =
+    ( model, Backend.HttpCommands.tableStats model.backend table )

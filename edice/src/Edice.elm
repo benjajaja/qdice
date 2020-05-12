@@ -83,6 +83,7 @@ init flags location key =
             , key = key
             , oauth = oauth
             , game = game
+            , tableStats = Placeholder.Placeholder { table = "Planeta", period = "", top = [] }
             , myProfile = MyProfile.MyProfile.init
             , backend = backend_
             , user = Types.Anonymous
@@ -1055,6 +1056,14 @@ update msg model =
 
         PushNotification json ->
             ( model, Helpers.consoleDebug <| "push notification: " ++ json )
+
+        GetTableStats res ->
+            case res of
+                Err err ->
+                    ( { model | tableStats = Placeholder.toError err model.tableStats }, Cmd.none )
+
+                Ok stats ->
+                    ( { model | tableStats = Placeholder.Fetched stats }, Cmd.none )
 
 
 tableFromRoute : Route -> Maybe Table
