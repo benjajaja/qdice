@@ -165,20 +165,25 @@ export const tickBotTurn = (table: Table): Command | undefined => {
       };
     }
   }
-  if (table.roundCount >= 10 && table.players.length === 2 && position === 2) {
+  if (
+    player.flag === null &&
+    table.roundCount >= 10 &&
+    table.players.length === 2 &&
+    position === 2
+  ) {
     const otherPlayer = table.players.find(
       other => other.color !== player.color
     )!;
-    if (
-      table.lands.filter(land => land.color === otherPlayer.color).length >=
-      table.lands.filter(land => land.color === player.color).length * 0.5
-    ) {
-      if (player.flag === null) {
-        if (!player.bot.state.surrender) {
-          return { type: "BotState", player, botCommand: "Surrender" };
-        } else {
-          return { type: "Flag", player, position };
-        }
+    const botLands = table.lands.filter(land => land.color === player.color);
+    const otherLands = table.lands.filter(
+      land => land.color === otherPlayer.color
+    );
+
+    if (otherLands.length >= 10 && otherLands.length >= botLands.length * 2) {
+      if (!player.bot.state.surrender) {
+        return { type: "BotState", player, botCommand: "Surrender" };
+      } else {
+        return { type: "Flag", player, position };
       }
     }
   }
