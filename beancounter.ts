@@ -202,6 +202,7 @@ client.on("message", async (topic, message) => {
     } else if (event.type === "elimination") {
       if (!event.player.bot) {
         await addElimination(event.player, event.position);
+        await db.addElimination(event);
       }
       if (event.killer && !event.killer.bot) {
         await addKill(event.killer);

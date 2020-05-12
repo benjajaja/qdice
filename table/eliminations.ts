@@ -3,11 +3,13 @@ import * as db from "../db";
 import * as publish from "./publish";
 import { positionScore, tablePoints } from "../helpers";
 import { tournamentScore } from "./tournament";
+import logger from "../logger";
 
 export const processEliminations = async (
   table: Table,
   eliminations: readonly Elimination[],
-  players: readonly Player[]
+  players: readonly Player[],
+  gameId: number | null
 ): Promise<void> => {
   const scoredEliminations: readonly ScoredElimination[] = await Promise.all(
     eliminations.map(async elimination => {
@@ -22,6 +24,9 @@ export const processEliminations = async (
         elimination.reason === "☠"
           ? ((elimination.source as any).player as Player)
           : null;
+      if (gameId === null) {
+        logger.error("pub elimination without game_id");
+      }
       publish.event({
         type: "elimination",
         table: table.name,
@@ -30,6 +35,9 @@ export const processEliminations = async (
         score,
         killer,
         flag: elimination.reason === "🏳",
+        turns: 0,
+        gameId: gameId ?? 0,
+        reason: elimination.reason,
       });
 
       if (player.bot === null) {

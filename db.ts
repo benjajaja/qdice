@@ -17,6 +17,7 @@ import {
   CommandResult,
   Command,
   PlayerStats,
+  EliminationReason,
 } from "./types";
 import { date, now, ts } from "./timestamp";
 import * as sleep from "sleep-promise";
@@ -741,4 +742,35 @@ export const postComment = async (
     timestamp: ts(date(row.timestamp)),
     replies: [],
   }))[0];
+};
+
+export const addElimination = async (event: {
+  type: "elimination";
+  table: string;
+  player: Player;
+  position: number;
+  score: number;
+  killer: Player | null;
+  flag: boolean;
+  turns: number;
+  gameId: number;
+  reason: EliminationReason;
+}) => {
+  const {
+    rows: [elimination],
+  } = await pool.query(
+    `INSERT INTO eliminations (timestamp, game_id, user_id, position, score, turns, reason, flag, killer_id)
+     VALUES (current_timestamp, $1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+    [
+      event.gameId,
+      event.player.id,
+      event.position,
+      event.score,
+      event.turns,
+      event.reason,
+      event.flag,
+      event.killer?.id,
+    ]
+  );
+  return elimination;
 };

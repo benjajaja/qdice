@@ -268,3 +268,32 @@ ALTER TABLE ONLY comments ALTER COLUMN id SET DEFAULT nextval('comments_id_seq':
 ALTER TABLE ONLY comments
     ADD CONSTRAINT comments_pkey PRIMARY KEY (id);
 
+
+CREATE TABLE eliminations (
+    id integer NOT NULL,
+    timestamp timestamp with time zone NOT NULL,
+    game_id integer NOT NULL,
+    user_id integer NOT NULL,
+    position integer NOT NULL,
+    score integer NOT NULL,
+    turns integer NOT NULL,
+    reason character varying(100) NOT NULL,
+    flag boolean,
+    killer_id integer
+);
+
+
+ALTER TABLE eliminations OWNER TO bgrosse;
+CREATE SEQUENCE eliminations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER TABLE eliminations_id_seq OWNER TO bgrosse;
+ALTER SEQUENCE eliminations_id_seq OWNED BY eliminations.id;
+ALTER TABLE ONLY eliminations ALTER COLUMN id SET DEFAULT nextval('eliminations_id_seq'::regclass);
+ALTER TABLE ONLY eliminations ADD CONSTRAINT eliminations_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY eliminations ADD CONSTRAINT eliminations_game_id_fkey FOREIGN KEY (game_id) REFERENCES games(id);
+ALTER TABLE ONLY eliminations ADD CONSTRAINT eliminations_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id);
+

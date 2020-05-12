@@ -395,7 +395,8 @@ export const processCommand = async (table: Table, command: Command) => {
       await processEliminations(
         newTable,
         eliminations,
-        players ?? newTable.players
+        players ?? newTable.players,
+        newTable.currentGame ?? table.currentGame
       );
     }
     if (payScores) {
