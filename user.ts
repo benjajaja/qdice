@@ -425,7 +425,8 @@ const saveAvatar = (
   id: UserId,
   crop: CropData & { url: string }
 ): Promise<string> => {
-  const filename = `user_${id}.gif`;
+  const suffix = `${Math.floor(Math.random() * 10000)}`;
+  const filename = `user_${id}_${suffix}.png`;
   const stream: fs.ReadStream = dataUrlStream(crop.url);
   return savePicture(filename, stream, R.omit(["url"], crop));
 };

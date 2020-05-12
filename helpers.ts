@@ -243,7 +243,7 @@ export const savePicture = async (
             width: 100,
             height: 100,
           }),
-          pics.encode("image/gif"),
+          pics.encode("image/png"),
           file,
           err => (err ? reject(err) : resolve())
         )
@@ -256,7 +256,7 @@ export const savePicture = async (
             fit: true,
             allowUpscale: true,
           }),
-          pics.encode("image/gif"),
+          pics.encode("image/png"),
           file,
           err => (err ? reject(err) : resolve())
         )
