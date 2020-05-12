@@ -45,16 +45,20 @@ const redisClient = createHandyClient({
   host: process.env.REDIS_HOST,
 });
 
-let browser: puppeteer.Browser;
-(async () =>
-  (browser = await puppeteer.launch({
-    ignoreHTTPSErrors: true,
-    defaultViewport: {
-      width: 600,
-      height: 400,
-    },
-    args: ["--disable-infobars", "--no-sandbox", "--disable-setuid-sandbox"],
-  })))();
+let browser_: puppeteer.Browser;
+const browser = async () => {
+  if (!browser_) {
+    browser_ = await puppeteer.launch({
+      ignoreHTTPSErrors: true,
+      defaultViewport: {
+        width: 600,
+        height: 400,
+      },
+      args: ["--disable-infobars", "--no-sandbox", "--disable-setuid-sandbox"],
+    });
+  }
+  return browser_;
+};
 
 var client = mqtt.connect(process.env.MQTT_URL, {
   username: process.env.MQTT_USERNAME,
@@ -321,7 +325,7 @@ const postTwitterGame = async (
 };
 
 const screenshot = async (tableName: string, id: number) => {
-  const page = await browser.newPage();
+  const page = await (await browser()).newPage();
   await page.goto(`${process.env.SCREENSHOT_HOST}/${tableName}`, {
     waitUntil: "networkidle2",
   });
