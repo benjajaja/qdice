@@ -4,6 +4,7 @@ import Backend.Decoding exposing (..)
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
 import Backend.Types exposing (..)
+import Dict
 import Game.Types exposing (PlayerAction(..))
 import Helpers exposing (httpErrorToString)
 import Http exposing (Error, emptyBody, expectJson, expectString, expectStringResponse, header, jsonBody, stringBody)
@@ -161,10 +162,28 @@ expectStringWithError toMsg =
     expectStringResponse toMsg <|
         \response ->
             case response of
-                Http.BadStatus_ metadata body ->
-                    Err body
+                Http.BadStatus_ { headers, statusCode, statusText } body ->
+                    if Dict.get "content-type" headers == Just "text/html" then
+                        case statusCode of
+                            413 ->
+                                Err "413 Payload too large - maybe you sent a file that is too big?"
 
-                Http.GoodStatus_ metadata body ->
+                            500 ->
+                                Err "500 Internal server error"
+
+                            502 ->
+                                Err "502 Web server could not connect to game server"
+
+                            504 ->
+                                Err "504 Web server timed out while connecting to game server"
+
+                            _ ->
+                                Err <| String.fromInt statusCode ++ " " ++ statusText
+
+                    else
+                        Err body
+
+                Http.GoodStatus_ _ body ->
                     Ok body
 
                 _ ->

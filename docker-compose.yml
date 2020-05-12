@@ -29,7 +29,7 @@ services:
     image: bgrosse/qdice:backend
     env_file: .env
     volumes:
-      - ${AVATAR_PATH}:/avatars
+      - ${AVATAR_PATH}:${AVATAR_PATH}
     depends_on:
       - postgres
       - emqx
