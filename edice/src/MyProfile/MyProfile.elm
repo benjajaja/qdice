@@ -259,6 +259,7 @@ profileForm model user =
                 []
             ]
         , avatarUpload model user
+        , p [] []
         ]
             ++ (if List.member Password user.networks then
                     [ label [ class "edFormLabel" ]
@@ -293,26 +294,19 @@ profileForm model user =
                     []
                )
             ++ [ div []
-                    [ button
-                        (if model.saving then
-                            [ disabled True ]
+                    [ if model.saving then
+                        button [ disabled True ] [ text "Saving..." ]
 
-                         else if model.password == Nothing && model.email == Nothing && model.passwordCheck == Nothing then
-                            []
+                      else
+                        button
+                            (if List.member Password user.networks && model.password /= Nothing && model.passwordCheck == Nothing then
+                                [ disabled True ]
 
-                         else if model.passwordCheck == Nothing then
-                            [ disabled True ]
-
-                         else
-                            []
-                        )
-                        [ text <|
-                            if model.saving then
-                                "Saving..."
-
-                            else
-                                "Save changes"
-                        ]
+                             else
+                                []
+                            )
+                            [ text "Save changes"
+                            ]
                     ]
                ]
 
@@ -477,7 +471,12 @@ update model msg =
                         profileUpdate : MyProfileUpdate
                         profileUpdate =
                             { name = model.myProfile.name
-                            , email = model.myProfile.email
+                            , email =
+                                if List.member Password user.networks then
+                                    model.myProfile.email
+
+                                else
+                                    Nothing
                             , picture =
                                 Maybe.map
                                     (always <|
@@ -485,8 +484,18 @@ update model msg =
                                             model.myProfile.cropper
                                     )
                                     model.myProfile.picture
-                            , password = model.myProfile.password
-                            , passwordCheck = model.myProfile.passwordCheck
+                            , password =
+                                if List.member Password user.networks then
+                                    model.myProfile.password
+
+                                else
+                                    Nothing
+                            , passwordCheck =
+                                if List.member Password user.networks then
+                                    model.myProfile.passwordCheck
+
+                                else
+                                    Nothing
                             }
 
                         p =
