@@ -59,7 +59,6 @@
     "mime-db": "^1.42.0",
     "mime-type": "^3.0.7",
     "mqtt": "^3.0.0",
-    "node-snackbar": "^0.1.15",
     "postcss-loader": "^1.1.1",
     "postcss-partial-import": "^2.1.0",
     "ramda": "0.25",

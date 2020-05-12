@@ -99,7 +99,7 @@ app.ports.consoleDebug.subscribe(function(string) {
 
 var snackbar = function(options) {
   try {
-    var snackbar = require("node-snackbar/dist/snackbar.min.js");
+    var snackbar = require("./snackbar");
     snackbar.show(options);
   } catch (e) {
     console.error(e);

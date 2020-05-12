@@ -3587,10 +3587,6 @@ node-pre-gyp@^0.6.39:
     tar "^2.2.1"
     tar-pack "^3.4.0"
 
-node-snackbar@^0.1.15:
-  version "0.1.15"
-  resolved "https://registry.yarnpkg.com/node-snackbar/-/node-snackbar-0.1.15.tgz#e64397b255c88014785037162953ecc30bba07e9"
-
 noop-logger@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/noop-logger/-/noop-logger-0.1.1.tgz#94a2b1633c4f1317553007d8966fd0e841b6a4c2"
