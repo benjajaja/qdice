@@ -19,18 +19,35 @@ export const addRoll = async (
   defender: Player | null,
   toRoll: number[]
 ) => {
+  const fromPoints = fromRoll.length;
+  const toPoints = toRoll.length;
+  const fromSum = R.sum(fromRoll);
+  const toSum = R.sum(toRoll);
   if (!attacker.bot) {
     await addStats(attacker, stats => {
+      let luck = stats.luck ?? [0, 0];
+      if (fromPoints <= toPoints && fromSum > toSum) {
+        luck = [luck[0] + 1, luck[1]];
+      } else if (fromPoints > toPoints && fromSum < toSum) {
+        luck = [luck[0], luck[1] + 1];
+      }
       return {
         ...stats,
         rolls: addRolls(stats.rolls, fromRoll),
         attacks: addAttacks(stats.attacks, R.sum(fromRoll) > R.sum(toRoll)),
+        luck,
       };
     });
   }
   if (defender && !defender.bot) {
     await addStats(defender, stats => {
-      return { ...stats, rolls: addRolls(stats.rolls, toRoll) };
+      let luck = stats.luck ?? [0, 0];
+      if (fromPoints < toPoints && fromSum > toSum) {
+        luck = [luck[0], luck[1] + 1];
+      } else if (fromPoints >= toPoints && fromSum < toSum) {
+        luck = [luck[0] + 1, luck[1]];
+      }
+      return { ...stats, rolls: addRolls(stats.rolls, toRoll), luck };
     });
   }
 };

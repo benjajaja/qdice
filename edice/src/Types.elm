@@ -296,6 +296,7 @@ type alias ProfileStatsStatistics =
     , attacks : ( Int, Int )
     , kills : Int
     , eliminations : Array Int
+    , luck : ( Int, Int )
     }
 
 

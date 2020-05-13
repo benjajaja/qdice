@@ -575,6 +575,7 @@ statsDecoder =
             ( 0, 0 )
         |> optional "kills" int 0
         |> optional "eliminations" (map Array.fromList (list int)) (Array.fromList [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ])
+        |> optional "luck" (tupleDecoder int int) ( 0, 0 )
 
 
 gameRefDecoder : Decoder GameRef

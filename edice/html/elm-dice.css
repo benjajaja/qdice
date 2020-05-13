@@ -1387,6 +1387,19 @@ input[type="range"]::-webkit-slider-runnable-track {
   transition-property: width;
   transition-duration: 0.5s;
 }
+.edStatistics__gauge {
+  max-width: 120px;
+}
+.edStatistics__gauge path {
+  stroke: linear-gradient(90deg, rgba(36,0,0,1) 0%, rgba(0,255,83,1) 100%);
+}
+.edStatistics__gauge polygon, .edStatistics__gauge circle {
+  transform-origin: 50px 75px;
+  transform: rotate(0deg);
+  transition-property: transform;
+  transition-duration: 2s;
+  transition-timing-function: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+}
 
 .material-icon-spinner {
   animation: spinner 0.5s infinite;

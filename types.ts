@@ -347,8 +347,8 @@ export type BotStrategy =
 export type BotCommand = "Surrender";
 
 export type PlayerStats = {
-  readonly rolls?: [number, number, number, number, number, number];
-  readonly attacks?: [number, number];
+  readonly rolls?: [number, number, number, number, number, number]; // key/index: die, value: count
+  readonly attacks?: [number, number]; // [failed, succeeded]
   readonly eliminations?: [
     number,
     number,
@@ -359,6 +359,7 @@ export type PlayerStats = {
     number,
     number,
     number
-  ];
-  readonly kills?: number;
+  ]; // key/index: positions 1-9, value: count
+  readonly kills?: number; // count
+  readonly luck?: [number, number]; // [lucky, unlucky] attacks/defenses count
 };

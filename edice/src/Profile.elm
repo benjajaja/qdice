@@ -6,7 +6,7 @@ import Comments
 import DateFormat
 import Game.PlayerCard exposing (playerPicture)
 import Games.Types exposing (GameRef)
-import Helpers exposing (dataTestId, flip, pointsSymbol, pointsToNextLevel, toDie)
+import Helpers exposing (pointsSymbol, pointsToNextLevel, toDie)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Icon
@@ -17,6 +17,7 @@ import Svg
 import Svg.Attributes
 import Time exposing (Zone)
 import Types exposing (..)
+import Widgets.Charts exposing (chart, gauge)
 
 
 init : Placeheld OtherProfile
@@ -45,6 +46,7 @@ init =
                 , attacks = ( 0, 0 )
                 , kills = 0
                 , eliminations = Array.fromList [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+                , luck = ( 0, 0 )
                 }
             }
     in
@@ -176,7 +178,7 @@ gameHeader zone game =
 statisticsView : Bool -> Profile -> ProfileStats -> List (Html Msg)
 statisticsView isFetched profile { stats } =
     let
-        { rolls, attacks, eliminations, kills } =
+        { rolls, attacks, eliminations, kills, luck } =
             stats
 
         ( attacksSucceeded, attacksFailed ) =
@@ -184,6 +186,25 @@ statisticsView isFetched profile { stats } =
 
         attacksTotal =
             attacksSucceeded + attacksFailed
+
+        ( luckGood, luckBad ) =
+            luck
+
+        luckFraction =
+            if luckGood > luckBad then
+                1.0
+                    - (toFloat luckBad
+                        / toFloat luckGood
+                        / 2
+                      )
+
+            else if luckGood < luckBad then
+                toFloat luckGood
+                    / toFloat luckBad
+                    / 2
+
+            else
+                0.5
     in
     [ div []
         [ text <|
@@ -218,6 +239,16 @@ statisticsView isFetched profile { stats } =
         ]
     , p [] []
     , div []
+        [ div [] [ text <| "Lucky rolls: " ++ String.fromInt luckGood ++ " lucky / " ++ String.fromInt luckBad ++ " unlucky" ]
+        , gauge <|
+            if isNaN luckFraction then
+                0.5
+
+            else
+                luckFraction
+        ]
+    , p [] []
+    , div []
         [ div [] [ text "Dice rolls:" ]
         , chart
             isFetched
@@ -234,82 +265,3 @@ statisticsView isFetched profile { stats } =
             rolls
         ]
     ]
-
-
-chart : Bool -> Int -> (Int -> Html msg) -> Int -> Array.Array Int -> Html msg
-chart isFetched size legends offset values =
-    let
-        list =
-            arrayAsList values size
-
-        max =
-            List.maximum list |> Maybe.withDefault 100
-    in
-    List.map
-        legends
-        (List.range 0 size)
-        |> List.append
-            (List.indexedMap
-                (\i value ->
-                    Svg.text_
-                        [ Svg.Attributes.x <| String.fromInt offset
-                        , Svg.Attributes.y <| String.fromFloat (toFloat i * 10 + 6.5)
-                        , Svg.Attributes.fontSize "8"
-                        , Svg.Attributes.fill "#ffffff"
-                        ]
-                        [ Svg.text <| String.fromInt value ]
-                )
-                list
-            )
-        |> List.append
-            (List.indexedMap
-                (\i dice ->
-                    Svg.rect
-                        [ Svg.Attributes.x <| String.fromInt offset
-                        , Svg.Attributes.y <| String.fromFloat (toFloat i * 10 + 0.25)
-                        , Svg.Attributes.height <| String.fromFloat 7.5
-                        , Svg.Attributes.width <|
-                            if isFetched then
-                                String.fromInt <|
-                                    round <|
-                                        (\w ->
-                                            if isNaN w then
-                                                0
-
-                                            else
-                                                w
-                                        )
-                                        <|
-                                            toFloat dice
-                                                / toFloat max
-                                                * 190
-
-                            else
-                                "190"
-                        , Svg.Attributes.fill <|
-                            if isFetched then
-                                "#519ab1"
-
-                            else
-                                "#888888"
-                        , Svg.Attributes.opacity <|
-                            if isFetched then
-                                "1"
-
-                            else
-                                "0.5"
-                        ]
-                        []
-                )
-                list
-            )
-        |> Svg.svg [ Svg.Attributes.viewBox "0 0 200 60", Svg.Attributes.class "edStatistics__rolls" ]
-
-
-arrayAsList : Array.Array Int -> Int -> List Int
-arrayAsList rolls size =
-    List.range 0 (size - 1)
-        |> List.map
-            (flip Array.get rolls
-                >> Maybe.withDefault 0
-            )
