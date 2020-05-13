@@ -17,6 +17,8 @@ import {
   BotPlayer,
   IllegalMoveCode,
   UserId,
+  Adjacency,
+  Land,
 } from "./types";
 import * as db from "./db";
 import * as publish from "./table/publish";
@@ -55,6 +57,7 @@ import endGame from "./table/endGame";
 import { rollResult } from "./table/attack";
 import { botState } from "./table/bots";
 import { processEliminations } from "./table/eliminations";
+import { STATUS_PLAYING } from "./constants";
 
 const verifyJwt = promisify(jwt.verify);
 
@@ -85,12 +88,18 @@ export const startTables = async (lock: AsyncLock, client: mqtt.MqttClient) => {
           index: number
         ) => {
           const table = await getTable(tag);
-          const lands = maps.hasChanged(table.mapName, table.lands);
+          let lands: readonly Land[] = table.lands;
+          let maybeMapChange = {};
+          if (table.status !== STATUS_PLAYING && !params.tournament) {
+            lands = maps.hasChanged(table.mapName, table.lands);
+            const [_, adjacency] = maps.loadMap(mapName);
+            maybeMapChange = { mapName, adjacency };
+          }
           await save(
             table,
             {
+              ...maybeMapChange,
               name,
-              mapName,
               playerSlots,
               startSlots,
               points,

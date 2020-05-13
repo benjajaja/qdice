@@ -118,9 +118,20 @@ export const save = async (
   retired?: readonly Player[]
 ): Promise<Table> => {
   try {
+    let maybeMapChange = {};
+    if (props?.mapName && props.mapName !== table.mapName) {
+      const [_, adjacency] = maps.loadMap(props.mapName);
+      if (!R.equals(adjacency, props.adjacency)) {
+        logger.error(
+          `SET mapName ${table.mapName}->${props.mapName} but adjacency was NOT matching`
+        );
+        maybeMapChange = { adjacency };
+      }
+    }
     const newTable = {
       ...table,
       ...props,
+      ...maybeMapChange,
       players: players ?? table.players,
       lands: lands ?? table.lands,
       watching: watching ?? table.watching,
