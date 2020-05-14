@@ -19,17 +19,16 @@ import Svg.Events exposing (..)
 import Svg.Lazy
 
 
-view : Model -> Maybe Land.Emoji -> BoardOptions -> List ( Land.Color, String ) -> Html.Html Msg
-view model hovered options avatarUrls =
-    Html.Lazy.lazy4 board
+view : Model -> Maybe Land.Emoji -> BoardOptions -> Html.Html Msg
+view model hovered options =
+    Html.Lazy.lazy3 board
         model
         hovered
         options
-        avatarUrls
 
 
-board : Model -> Maybe Land.Emoji -> BoardOptions -> List ( Land.Color, String ) -> Svg Msg
-board { map, viewBox, pathCache, animations, move } hovered options avatarUrls =
+board : Model -> Maybe Land.Emoji -> BoardOptions -> Svg Msg
+board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options =
     Html.div [ class "edBoard" ]
         [ Svg.svg
             [ Svg.Attributes.viewBox viewBox
@@ -38,7 +37,7 @@ board { map, viewBox, pathCache, animations, move } hovered options avatarUrls =
             , class "edBoard--svg"
             ]
             [ die
-            , avatarDefs avatarUrls
+            , Svg.Lazy.lazy avatarDefs <| Maybe.withDefault [] avatarUrls
             , Svg.Lazy.lazy2 waterConnections pathCache map.waterConnections
             , Svg.Lazy.lazy4 realLands
                 pathCache

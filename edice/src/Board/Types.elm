@@ -3,7 +3,7 @@ module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), Boa
 import Animation
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Land exposing (Emoji, Land, Map, MapSize)
+import Land exposing (Color, Emoji, Land, Map, MapSize)
 
 
 type Msg
@@ -21,6 +21,7 @@ type alias Model =
     , layout : MapSize
     , viewBox : String
     , animations : BoardAnimations
+    , avatarUrls : Maybe (List ( Color, String ))
     }
 
 

@@ -26,9 +26,9 @@ init =
     Board.State.init
 
 
-view : Model -> Maybe Land.Emoji -> BoardOptions -> List ( Land.Color, String ) -> Html.Html Msg
+view : Model -> Maybe Land.Emoji -> BoardOptions -> Html.Html Msg
 view =
-    Html.Lazy.lazy4 Board.View.view
+    Html.Lazy.lazy3 Board.View.view
 
 
 animations : Model -> List Animation.State

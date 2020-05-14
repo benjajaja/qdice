@@ -47,12 +47,6 @@ view model =
                     model.game.hovered
                 )
                 model.game.boardOptions
-                (List.map
-                    (\p ->
-                        ( p.color, p.picture )
-                    )
-                    model.game.players
-                )
                 |> Html.map BoardMsg
     in
     div [ class "edMainScreen" ] <|

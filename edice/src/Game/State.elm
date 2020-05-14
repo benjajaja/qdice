@@ -236,6 +236,9 @@ updateTableStatus model status =
         oldBoard =
             model.game.board
 
+        hasStarted =
+            game.status /= Playing && status.status == Playing
+
         board_ : Board.Types.Model
         board_ =
             (if oldBoard.map.name /= status.mapName then
@@ -248,9 +251,12 @@ updateTableStatus model status =
                 oldBoard
             )
                 |> (\b -> Board.State.updateLands b status.lands Nothing)
+                |> (if hasStarted then
+                        \b -> { b | avatarUrls = Just <| List.map (\p -> ( p.color, p.picture )) status.players }
 
-        hasStarted =
-            game.status /= Playing && status.status == Playing
+                    else
+                        identity
+                   )
 
         hasFinished =
             game.status == Playing && status.status == Finished
@@ -1173,6 +1179,14 @@ updatePlayers model newPlayers removedColor =
         player =
             findPlayer model newPlayers
 
+        board =
+            model.board
+
+        board_ =
+            { board
+                | avatarUrls = Just <| List.map (\p -> ( p.color, p.picture )) newPlayers
+            }
+
         model_ =
             if List.length removedColor > 0 then
                 { model
@@ -1187,18 +1201,18 @@ updatePlayers model newPlayers removedColor =
                     , board =
                         if List.length newPlayers > 1 then
                             List.foldl
-                                (\color board ->
-                                    Board.State.removeColor board color
+                                (\color acc ->
+                                    Board.State.removeColor acc color
                                 )
-                                model.board
+                                board_
                                 removedColor
 
                         else
-                            model.board
+                            board_
                 }
 
             else
-                { model | players = newPlayers }
+                { model | players = newPlayers, board = board_ }
     in
     case model.player of
         Just p ->

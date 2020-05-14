@@ -38,13 +38,15 @@ init game =
         players =
             List.indexedMap (mapGamePlayer game.lands) game.players
     in
-    { board = board_
+    { board =
+        { board_
+            | avatarUrls = Just <| List.map (\p -> ( p.color, p.picture )) players
+        }
     , boardOptions =
         { diceVisible = True
         , showEmojis = True
         }
     , players = players
-    , avatarUrls = List.map (\p -> ( p.color, p.picture )) players
     , turnIndex = 0
     , game = game
     , playing = False
@@ -147,7 +149,7 @@ gameReplayer model game =
                         List.take 4 <|
                             List.drop 4 <|
                                 sortedPlayers m.turnIndex m.players
-                , Board.view m.board Nothing m.boardOptions m.avatarUrls |> Html.map Types.BoardMsg
+                , Board.view m.board Nothing m.boardOptions |> Html.map Types.BoardMsg
                 , div [ class "edPlayerChips" ] <|
                     List.map (Game.PlayerCard.view Playing) <|
                         List.take 4 <|

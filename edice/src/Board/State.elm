@@ -19,7 +19,7 @@ init map =
             Board.PathCache.addToDict layout map.lands Dict.empty
                 |> Board.PathCache.addToDictLines layout map.lands map.waterConnections
     in
-    Model map Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty }
+    Model map Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty } Nothing
 
 
 updateLands : Model -> List LandUpdate -> Maybe BoardMove -> Model
