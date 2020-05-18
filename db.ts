@@ -784,12 +784,12 @@ export const topScores = async (tableTag: string) => {
     LEFT JOIN games
       ON games.id = eliminations.game_id
     WHERE games.tag = $1
-      AND score > 0
-      AND timestamp > NOW()::DATE-EXTRACT(DOW from NOW())::INTEGER+2
+      AND timestamp >= current_date - cast(extract(dow from current_date) as int) + 1
     GROUP BY users.id, users.name, users.picture
     ORDER BY score DESC
     LIMIT 10
     `,
+    // AND score > 0
     [tableTag]
   );
   return rows;
