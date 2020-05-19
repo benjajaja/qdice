@@ -42,6 +42,7 @@ import * as games from "./games";
 import { resetGenerator } from "./rand";
 import { clearGames } from "./table/get";
 import { EMPTY_PROFILE_PICTURE } from "./constants";
+import {date, now} from "./timestamp";
 
 process.on("unhandledRejection", (reason, p) => {
   logger.error("Unhandled Rejection at: Promise", p, "reason:", reason);
@@ -315,12 +316,24 @@ export const server = async () => {
   });
 
   server.get(`${root}/tablestats/:table`, async (req, res, next) => {
-    res.send({
-      period: "2020",
-      top: (await db.topScores(req.params.table)).map(row => ({
+    const top = (await db.topScores(req.params.table)).map(row => ({
+      ...row,
+      picture: row.picture ?? EMPTY_PROFILE_PICTURE,
+    }));
+    const today = date(now()).getDay();
+    const dailyRaw = await Promise.all(
+      R.range(0, today).map(offset => db.dailyScores(req.params.table, offset))
+    );
+    const daily = dailyRaw.map(dailyRows =>
+      dailyRows.map(row => ({
         ...row,
         picture: row.picture ?? EMPTY_PROFILE_PICTURE,
-      })),
+      }))
+    );
+    res.send({
+      period: "2020",
+      top,
+      daily,
     });
     next();
   });

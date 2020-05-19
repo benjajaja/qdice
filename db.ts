@@ -794,3 +794,23 @@ export const topScores = async (tableTag: string) => {
   );
   return rows;
 };
+
+export const dailyScores = async (tableTag: string, offset: number) => {
+  const { rows } = await pool.query(
+    `SELECT users.id::text, users.name, users.picture, SUM(eliminations.score)::integer AS score
+    FROM eliminations
+    LEFT JOIN users
+      ON users.id = eliminations.user_id
+    LEFT JOIN games
+      ON games.id = eliminations.game_id
+    WHERE games.tag = $1
+      AND timestamp >= current_date - cast(extract(dow from current_date) as int) + ($2::int)
+      AND timestamp < current_date - cast(extract(dow from current_date) as int) + ($3::int)
+    GROUP BY users.id, users.name, users.picture
+    ORDER BY score DESC
+    LIMIT 10
+    `,
+    [tableTag, offset + 1, offset + 2]
+  );
+  return rows;
+};
