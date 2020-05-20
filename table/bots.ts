@@ -179,7 +179,7 @@ export const tickBotTurn = (table: Table): Command | undefined => {
       land => land.color === otherPlayer.color
     );
 
-    if (otherLands.length >= 10 && otherLands.length >= botLands.length * 2) {
+    if (otherLands.length >= 10 && otherLands.length >= botLands.length * 1.25) {
       if (!player.bot.state.surrender) {
         return { type: "BotState", player, botCommand: "Surrender" };
       } else {
