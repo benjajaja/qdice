@@ -20,6 +20,7 @@ import Html.Lazy
 import Icon
 import Land
 import LeaderBoard.Chart
+import LeaderBoard.ChartTypes exposing (Datum)
 import LeaderBoard.View
 import MyProfile.MyProfile
 import MyProfile.Types
@@ -114,7 +115,7 @@ view model =
                                         div [] [ text <| "Waiting for load..." ]
 
                                     Fetched p ->
-                                        Html.Lazy.lazy tableLeaderboardBox p
+                                        Html.Lazy.lazy2 tableLeaderboardBox model.game.chartHinted p
                                 ]
                            , div [ class "cartonCard cartonCard--padded" ] <|
                                 case model.game.table of
@@ -788,27 +789,33 @@ leaderboardBox leaderBoard =
         ]
 
 
-tableLeaderboardBox : Types.TableStats -> Html Msg
-tableLeaderboardBox stats =
+tableLeaderboardBox : Maybe Datum -> Types.TableStats -> Html Msg
+tableLeaderboardBox hinted stats =
     div [ class "edBox edLeaderboardBox" ]
         [ div [ class "edBox__header" ]
             [ text <| "Top players on table " ++ stats.table ++ " this week"
             ]
         , div [ class "edBox__inner edBox__inner--grid" ]
-            [ div [ class "edBox__inner__col" ] <|
-                case stats.top of
-                    [] ->
-                        [ text "(Nobody yet - be the first!)" ]
+            [ Html.Lazy.lazy
+                (\top ->
+                    div [ class "edBox__inner__col" ] <|
+                        case top of
+                            [] ->
+                                [ text "(Nobody yet - be the first!)" ]
 
-                    top ->
-                        [ LeaderBoard.View.tableTable top ]
+                            some ->
+                                [ LeaderBoard.View.tableTable some ]
+                )
+                stats.top
             , div [ class "edBox__inner__col" ] <|
                 case stats.daily of
                     [] ->
                         [ text "(No daily scores yet)" ]
 
                     daily ->
-                        [ LeaderBoard.Chart.view daily Nothing ]
+                        [ LeaderBoard.Chart.view daily hinted
+                            |> Html.map GameMsg
+                        ]
             ]
         ]
 

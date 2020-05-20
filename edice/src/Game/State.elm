@@ -99,6 +99,7 @@ init table tableMap_ =
       -- ( Land.Yellow, [ 0, 1, 1, 1, 5, 4, 5, 3 ] )
       -- True
       -- (Time.millisToPosix 100000000000000)
+      , chartHinted = Nothing
       }
     , case map of
         Ok _ ->
@@ -1165,6 +1166,9 @@ update model game msg =
               }
             , Cmd.none
             )
+
+        Hint point ->
+            ( { model | game = { game | chartHinted = point } }, Cmd.none )
 
 
 setUser : Model -> Types.LoggedUser -> Model

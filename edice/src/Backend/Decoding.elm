@@ -2,6 +2,7 @@ module Backend.Decoding exposing (authStateDecoder, chatterDecoder, commentDecod
 
 import Array
 import Backend.Types exposing (TableMessage(..))
+import Dict
 import Game.Types exposing (Award, Player, PlayerGameStats, TableParams, TableStatus, TournamentConfig)
 import Games.Types exposing (..)
 import Helpers
@@ -9,6 +10,7 @@ import Iso8601
 import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, lazy, list, map, map2, map3, map4, maybe, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
 import Land exposing (Color, LandUpdate, playerColor)
+import LeaderBoard.ChartTypes exposing (Datum, PlayerRef)
 import Tables exposing (Table)
 import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, ProfileStatsStatistics, PushEvent(..), Replies(..), StaticPage(..), TableStatPlayer, TableStats)
 
@@ -685,7 +687,55 @@ tableStatsDecoder table =
     succeed (TableStats table)
         |> required "period" string
         |> required "top" (list playerIdNamePictureDecoder)
-        |> required "daily" (list (list playerIdNamePictureDecoder))
+        |> required "daily"
+            (list (list playerIdNamePictureDecoder)
+                |> map sortDatums
+            )
+
+
+sortDatums : List (List TableStatPlayer) -> List ( PlayerRef, List Datum )
+sortDatums playerStats =
+    playerStats
+        |> List.indexedMap Tuple.pair
+        |> List.foldl
+            (\( index, day ) dict ->
+                List.foldl
+                    (\playerScore dict_ ->
+                        let
+                            existing : Maybe ( PlayerRef, List Datum )
+                            existing =
+                                Dict.get playerScore.id dict_
+
+                            datum : Datum
+                            datum =
+                                { time = index
+                                , score =
+                                    existing
+                                        |> Maybe.map (Tuple.second >> Helpers.last >> Maybe.map .score >> Maybe.withDefault 0)
+                                        |> Maybe.withDefault 0
+                                        |> (+) playerScore.score
+                                }
+
+                            datums =
+                                existing
+                                    |> Maybe.map (\( ref, d ) -> ( ref, d ++ [ datum ] ))
+                                    |> Maybe.withDefault
+                                        ( { id = playerScore.id
+                                          , name = playerScore.name
+                                          , picture = playerScore.picture
+                                          }
+                                        , [ datum ]
+                                        )
+                        in
+                        Dict.insert playerScore.id datums dict_
+                    )
+                    dict
+                    day
+            )
+            Dict.empty
+        |> Dict.values
+        |> List.sortBy (Tuple.second >> List.reverse >> List.head >> Maybe.map .score >> Maybe.withDefault 0)
+        |> List.reverse
 
 
 playerIdNamePictureDecoder : Decoder TableStatPlayer

@@ -12,6 +12,7 @@ import Games.Replayer.Types exposing (ReplayerCmd, ReplayerModel)
 import Games.Types exposing (Game, GameRef, GamesModel)
 import Html
 import Http exposing (Error)
+import LeaderBoard.ChartTypes exposing (Datum, PlayerRef)
 import MyProfile.Types
 import OAuth
 import Placeholder exposing (Placeheld)
@@ -313,7 +314,7 @@ type alias TableStats =
     { table : Table
     , period : String
     , top : List TableStatPlayer
-    , daily : List (List TableStatPlayer)
+    , daily : List ( PlayerRef, List Datum )
     }
 
 

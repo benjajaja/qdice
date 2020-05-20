@@ -4,10 +4,12 @@ import Board.Colors
 import Color
 import Color.Manipulate as Manipulate
 import Dict
+import Game.Types exposing (Msg(..))
 import Helpers
 import Html exposing (..)
 import Html.Attributes exposing (align, class, disabled, href)
 import Land
+import LeaderBoard.ChartTypes exposing (..)
 import LineChart
 import LineChart.Area as Area
 import LineChart.Axis as Axis
@@ -29,23 +31,10 @@ import LineChart.Legends as Legends
 import LineChart.Line as Line
 import Svg
 import Time
-import Types exposing (Msg, TableStatPlayer)
+import Types exposing (TableStatPlayer)
 
 
-type alias Datum =
-    { time : Int
-    , score : Int
-    }
-
-
-type alias PlayerRef =
-    { id : String
-    , name : String
-    , picture : String
-    }
-
-
-view : List (List TableStatPlayer) -> Maybe Datum -> Html Msg
+view : List ( PlayerRef, List Datum ) -> Maybe Datum -> Html Msg
 view days hinted =
     div [ class "edLeaderboardChart" ]
         [ LineChart.viewCustom (chartConfig hinted) <|
@@ -58,58 +47,8 @@ view days hinted =
                         datums
                 )
             <|
-                daysToLines days
+                days
         ]
-
-
-daysToLines : List (List TableStatPlayer) -> List ( PlayerRef, List Datum )
-daysToLines playerStats =
-    playerStats
-        |> List.indexedMap Tuple.pair
-        |> List.foldl
-            (\( index, day ) dict ->
-                List.foldl
-                    (\playerScore dict_ ->
-                        let
-                            existing : Maybe ( PlayerRef, List Datum )
-                            existing =
-                                Dict.get playerScore.id dict_
-
-                            datum : Datum
-                            datum =
-                                { time = index
-                                , score =
-                                    existing
-                                        |> Maybe.map (Tuple.second >> Helpers.last >> Maybe.map .score >> Maybe.withDefault 0)
-                                        |> Maybe.withDefault 0
-                                        |> (+) playerScore.score
-                                }
-
-                            datums =
-                                existing
-                                    |> Maybe.map (\( ref, d ) -> ( ref, d ++ [ datum ] ))
-                                    |> Maybe.withDefault
-                                        ( { id = playerScore.id
-                                          , name = playerScore.name
-                                          , picture = playerScore.picture
-                                          }
-                                        , [ datum ]
-                                        )
-                        in
-                        Dict.insert playerScore.id datums dict_
-                    )
-                    dict
-                    day
-            )
-            Dict.empty
-        |> Dict.values
-        |> List.sortBy (Tuple.second >> List.reverse >> List.head >> Maybe.map .score >> Maybe.withDefault 0)
-        |> List.reverse
-
-
-dayToDatum : Time.Posix -> Int -> List TableStatPlayer -> List Datum
-dayToDatum time index playerStats =
-    []
 
 
 chartConfig : Maybe Datum -> LineChart.Config Datum Msg
@@ -251,15 +190,15 @@ containerConfig =
 -- CHART CONFIG / EVENTS
 
 
-eventsConfig : Events.Config Datum Msg
+eventsConfig : Events.Config Datum Game.Types.Msg
 eventsConfig =
-    Events.custom []
+    Events.custom
+        [ Events.onMouseMove Hint Events.getNearest
+        , Events.onMouseLeave (Hint Nothing)
+        ]
 
 
 
--- [ Events.onMouseMove Hint Events.getNearest
--- , Events.onMouseLeave (Hint Nothing)
--- ]
 -- CHART CONFIG / LINE
 
 

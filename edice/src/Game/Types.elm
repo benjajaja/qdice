@@ -3,6 +3,7 @@ module Game.Types exposing (..)
 import Board
 import Browser.Dom as Dom
 import Land exposing (Color, Emoji, LandUpdate)
+import LeaderBoard.ChartTypes exposing (Datum)
 import Tables exposing (Table)
 import Time exposing (Posix)
 
@@ -31,6 +32,7 @@ type PlayerAction
 type Msg
     = ScrollChat String (List ChatLogEntry) (Result Dom.Error Dom.Viewport)
     | ToggleDiceVisible Bool
+    | Hint (Maybe Datum)
 
 
 type alias Model =
@@ -61,6 +63,7 @@ type alias Model =
     , currentGame : Maybe Int
     , expandChat : Bool
     , lastRoll : Maybe RollUI
+    , chartHinted : Maybe Datum
     }
 
 
