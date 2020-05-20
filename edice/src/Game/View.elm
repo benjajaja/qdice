@@ -19,6 +19,7 @@ import Html.Events exposing (onClick)
 import Html.Lazy
 import Icon
 import Land
+import LeaderBoard.Chart
 import LeaderBoard.View
 import MyProfile.MyProfile
 import MyProfile.Types
@@ -793,13 +794,22 @@ tableLeaderboardBox stats =
         [ div [ class "edBox__header" ]
             [ text <| "Top players on table " ++ stats.table ++ " this week"
             ]
-        , div [ class "edBox__inner" ] <|
-            case stats.top of
-                [] ->
-                    [ text "(Nobody yet - be the first!)" ]
+        , div [ class "edBox__inner edBox__inner--grid" ]
+            [ div [ class "edBox__inner__col" ] <|
+                case stats.top of
+                    [] ->
+                        [ text "(Nobody yet - be the first!)" ]
 
-                top ->
-                    [ LeaderBoard.View.tableTable top ]
+                    top ->
+                        [ LeaderBoard.View.tableTable top ]
+            , div [ class "edBox__inner__col" ] <|
+                case stats.daily of
+                    [] ->
+                        [ text "(No daily scores yet)" ]
+
+                    daily ->
+                        [ LeaderBoard.Chart.view daily Nothing ]
+            ]
         ]
 
 

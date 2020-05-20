@@ -313,6 +313,7 @@ type alias TableStats =
     { table : Table
     , period : String
     , top : List TableStatPlayer
+    , daily : List (List TableStatPlayer)
     }
 
 

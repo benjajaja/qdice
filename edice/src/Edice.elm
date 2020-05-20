@@ -83,7 +83,7 @@ init flags location key =
             , key = key
             , oauth = oauth
             , game = game
-            , tableStats = Placeholder.Placeholder { table = "Planeta", period = "", top = [] }
+            , tableStats = Placeholder.Placeholder { table = "Planeta", period = "", top = [], daily = [] }
             , myProfile = MyProfile.MyProfile.init
             , backend = backend_
             , user = Types.Anonymous

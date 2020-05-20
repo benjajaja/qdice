@@ -685,6 +685,7 @@ tableStatsDecoder table =
     succeed (TableStats table)
         |> required "period" string
         |> required "top" (list playerIdNamePictureDecoder)
+        |> required "daily" (list (list playerIdNamePictureDecoder))
 
 
 playerIdNamePictureDecoder : Decoder TableStatPlayer

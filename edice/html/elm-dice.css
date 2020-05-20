@@ -875,6 +875,13 @@ input[type="range"]::-webkit-slider-runnable-track {
 .edBox__inner {
   padding: 8px;
 }
+.edBox__inner--grid {
+  display: flex;
+}
+.edBox__inner__col {
+  padding: 8px;
+  flex: 2 1 50%;
+}
 
 
 .edLeaderboardBox{
@@ -1464,4 +1471,7 @@ input[type="range"]::-webkit-slider-runnable-track {
   border: 4px dashed black;
   border-radius: 50%;
   overflow: hidden;
+}
+
+.edLeaderboardChart {
 }
