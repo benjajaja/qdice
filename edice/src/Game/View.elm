@@ -16,6 +16,7 @@ import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
 import Html.Attributes exposing (class, disabled, height, href, src, style, width)
 import Html.Events exposing (onClick)
+import Html.Keyed
 import Html.Lazy
 import Icon
 import Land
@@ -165,8 +166,7 @@ chatOverlay fullscreen overlay =
             Just ( _, entry ) ->
                 div
                     [ class "edChatOverlay" ]
-                    [ Game.Chat.chatLine entry
-                    ]
+                    [ Game.Chat.chatLine entry ]
 
             Nothing ->
                 text ""
@@ -174,7 +174,9 @@ chatOverlay fullscreen overlay =
 
 playerBar : Int -> Model -> Html Msg
 playerBar dropCount model =
-    div [ class "edPlayerChips" ] <|
+    Html.Keyed.node "div"
+        [ class "edPlayerChips" ]
+    <|
         List.map (PlayerCard.view model.game.status) <|
             List.take 4 <|
                 List.drop dropCount <|
@@ -913,7 +915,9 @@ findTableButton model =
 
 lastRoll : Maybe RollUI -> Html msg
 lastRoll mRoll =
-    div [ class "edRoll" ] <|
+    Html.Keyed.node "div"
+        [ class "edRoll" ]
+    <|
         case mRoll of
             Just { from, to, rolling } ->
                 let
@@ -939,40 +943,44 @@ lastRoll mRoll =
                         else
                             0
                 in
-                [ div
-                    [ class <|
-                        "edRoll__from"
-                            ++ (if rolling /= Nothing then
-                                    " edRoll__from--rolling"
+                [ ( "from"
+                  , Html.Keyed.node "div"
+                        [ class <|
+                            "edRoll__from"
+                                ++ (if rolling /= Nothing then
+                                        " edRoll__from--rolling"
 
-                                else
-                                    ""
-                               )
-                    , style "background-color" <|
-                        (Board.Colors.base fromColor
-                            |> Board.Colors.cssRgb
-                        )
-                    ]
-                  <|
-                    [ Html.Lazy.lazy4 lastRollSum sumFrom True luck (rolling /= Nothing) ]
-                        ++ (List.map Board.Die.rollDie <| fromRoll)
-                , div
-                    [ class <|
-                        "edRoll__to"
-                            ++ (if rolling /= Nothing then
-                                    " edRoll__to--rolling"
+                                    else
+                                        ""
+                                   )
+                        , style "background-color" <|
+                            (Board.Colors.base fromColor
+                                |> Board.Colors.cssRgb
+                            )
+                        ]
+                    <|
+                        [ ( "sum", Html.Lazy.lazy4 lastRollSum sumFrom True luck (rolling /= Nothing) ) ]
+                            ++ List.indexedMap (\i roll -> ( String.fromInt i, Board.Die.rollDie roll )) fromRoll
+                  )
+                , ( "to"
+                  , Html.Keyed.node "div"
+                        [ class <|
+                            "edRoll__to"
+                                ++ (if rolling /= Nothing then
+                                        " edRoll__to--rolling"
 
-                                else
-                                    ""
-                               )
-                    , style "background-color" <|
-                        (Board.Colors.base toColor
-                            |> Board.Colors.cssRgb
-                        )
-                    ]
-                  <|
-                    [ Html.Lazy.lazy4 lastRollSum sumTo False luck (rolling /= Nothing) ]
-                        ++ (List.map Board.Die.rollDie <| toRoll)
+                                    else
+                                        ""
+                                   )
+                        , style "background-color" <|
+                            (Board.Colors.base toColor
+                                |> Board.Colors.cssRgb
+                            )
+                        ]
+                    <|
+                        [ ( "sum", Html.Lazy.lazy4 lastRollSum sumTo False luck (rolling /= Nothing) ) ]
+                            ++ List.indexedMap (\i roll -> ( String.fromInt i, Board.Die.rollDie roll )) toRoll
+                  )
                 ]
 
             Nothing ->

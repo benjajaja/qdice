@@ -26,13 +26,14 @@ type alias TurnPlayer =
     }
 
 
-view : GameStatus -> TurnPlayer -> Html.Html Types.Msg
+view : GameStatus -> TurnPlayer -> ( String, Html.Html Types.Msg )
 view status { player, index, turn, isUser } =
     let
         hasTurn =
             turn /= Nothing
     in
-    case player of
+    ( String.fromInt index
+    , case player of
         Just p ->
             playerContainer p
                 hasTurn
@@ -67,6 +68,7 @@ view status { player, index, turn, isUser } =
 
         Nothing ->
             div [ class "edPlayerChip edPlayerChip--empty" ] []
+    )
 
 
 playerInfo : Player -> GameStatus -> Int -> Html Msg

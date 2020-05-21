@@ -16,6 +16,7 @@ import String
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Svg.Events exposing (..)
+import Svg.Keyed
 import Svg.Lazy
 
 
@@ -51,7 +52,7 @@ board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options 
 
 realLands : PathCache -> BoardMove -> Maybe Land.Emoji -> List Land -> Svg Msg
 realLands pathCache move hovered lands =
-    g [] <|
+    Svg.Keyed.node "g" [] <|
         List.map
             (lazyLandElement
                 pathCache
@@ -61,7 +62,7 @@ realLands pathCache move hovered lands =
             lands
 
 
-lazyLandElement : PathCache -> BoardMove -> Maybe Land.Emoji -> Land.Land -> Svg Msg
+lazyLandElement : PathCache -> BoardMove -> Maybe Land.Emoji -> Land.Land -> ( Land.Emoji, Svg Msg )
 lazyLandElement pathCache move hovered land =
     let
         isSelected =
@@ -83,7 +84,7 @@ lazyLandElement pathCache move hovered land =
                 Nothing ->
                     False
     in
-    Svg.Lazy.lazy5 landElement pathCache isSelected isHovered land.emoji land.color
+    ( land.emoji, Svg.Lazy.lazy5 landElement pathCache isSelected isHovered land.emoji land.color )
 
 
 landElement : PathCache -> Bool -> Bool -> Land.Emoji -> Land.Color -> Svg Msg
@@ -113,11 +114,34 @@ landElement pathCache isSelected isHovered emoji color =
 
 allDies : PathCache -> BoardAnimations -> List Land.Land -> BoardOptions -> Svg Msg
 allDies pathCache animations lands options =
-    g [] <| List.map (Svg.Lazy.lazy4 animatedStackDies pathCache animations options) lands
+    Svg.Keyed.node "g" [] <|
+        List.map (intermediateStack pathCache animations options) lands
 
 
-animatedStackDies : PathCache -> BoardAnimations -> BoardOptions -> Land.Land -> Svg Msg
-animatedStackDies pathCache { stack, dice } options land =
+intermediateStack : PathCache -> BoardAnimations -> BoardOptions -> Land.Land -> ( Land.Emoji, Svg Msg )
+intermediateStack pathCache { stack, dice } options land =
+    let
+        animationAttrs =
+            stack
+                |> Maybe.andThen
+                    (\( emoji, animation ) ->
+                        if emoji == land.emoji then
+                            Just animation
+
+                        else
+                            Nothing
+                    )
+
+        diceAnimation =
+            Dict.get land.emoji dice
+    in
+    ( land.emoji
+    , Svg.Lazy.lazy5 animatedStackDies pathCache animationAttrs diceAnimation options land
+    )
+
+
+animatedStackDies : PathCache -> Maybe AnimationState -> Maybe (Array Bool) -> BoardOptions -> Land.Land -> Svg Msg
+animatedStackDies pathCache stack dice options land =
     let
         ( x_, y_ ) =
             Board.PathCache.center pathCache land.emoji
@@ -125,25 +149,15 @@ animatedStackDies pathCache { stack, dice } options land =
 
         animationAttrs =
             stack
-                |> Maybe.andThen
-                    (\( emoji, animation ) ->
-                        if emoji == land.emoji then
-                            Just <| Animation.render animation
-
-                        else
-                            Nothing
-                    )
+                |> Maybe.map Animation.render
                 |> Maybe.withDefault Helpers.emptyList
-
-        diceAnimation =
-            Dict.get land.emoji dice
     in
     g [] <|
         [ g
             (class "edBoard--stack"
                 :: animationAttrs
             )
-            [ Svg.Lazy.lazy5 landDies diceAnimation options land x_ y_
+            [ Svg.Lazy.lazy5 landDies dice options land x_ y_
             , Svg.Lazy.lazy4 capitalText land.capital x_ y_ land.color
             ]
         ]
@@ -152,24 +166,26 @@ animatedStackDies pathCache { stack, dice } options land =
 landDies : Maybe (Array Bool) -> BoardOptions -> Land.Land -> Float -> Float -> Svg Msg
 landDies diceAnimations options land x_ y_ =
     if options.diceVisible == True then
-        g
+        Svg.Keyed.node "g"
             [ class "edBoard--stack--inner" ]
         <|
-            [ Html.Lazy.lazy3 Board.Die.shadow land.points x_ y_ ]
+            [ ( "shadow", Html.Lazy.lazy3 Board.Die.shadow land.points x_ y_ ) ]
                 ++ (List.map
-                        (Svg.Lazy.lazy4 landDie diceAnimations x_ y_)
+                        (landDie diceAnimations x_ y_)
                     <|
                         List.range
                             0
                             (land.points - 1)
                    )
                 ++ (if options.showEmojis then
-                        [ Svg.text_
-                            [ x <| String.fromFloat (x_ - 5.0)
-                            , y <| String.fromFloat (y_ + 0.0)
-                            , fontSize "3"
-                            ]
-                            [ Svg.text land.emoji ]
+                        [ ( "emoji"
+                          , Svg.text_
+                                [ x <| String.fromFloat (x_ - 5.0)
+                                , y <| String.fromFloat (y_ + 0.0)
+                                , fontSize "3"
+                                ]
+                                [ Svg.text land.emoji ]
+                          )
                         ]
 
                     else
@@ -196,16 +212,9 @@ landDies diceAnimations options land x_ y_ =
             [ Svg.text <| String.fromInt land.points ]
 
 
-landDie : Maybe (Array Bool) -> Float -> Float -> Int -> Svg Msg
+landDie : Maybe (Array Bool) -> Float -> Float -> Int -> ( String, Svg Msg )
 landDie animations cx cy index =
     let
-        ( xOffset, yOffset ) =
-            if index >= 4 then
-                ( 1.0, 1.1 )
-
-            else
-                ( 2.2, 2 )
-
         animation : Bool
         animation =
             case animations |> Maybe.andThen (Array.get index) of
@@ -215,8 +224,23 @@ landDie animations cx cy index =
                 Nothing ->
                     False
     in
+    ( String.fromInt index
+    , Svg.Lazy.lazy4 lazyDie cx cy index animation
+    )
+
+
+lazyDie : Float -> Float -> Int -> Bool -> Svg.Svg msg
+lazyDie x_ y_ index animated =
+    let
+        ( xOffset, yOffset ) =
+            if index >= 4 then
+                ( 1.0, 1.1 )
+
+            else
+                ( 2.2, 2 )
+    in
     Svg.use
-        ((if animation == False then
+        ((if not animated then
             [ class "edBoard--dies" ]
 
           else
@@ -224,8 +248,8 @@ landDie animations cx cy index =
             , Svg.Attributes.style <| "animation-delay: " ++ (String.fromFloat <| (*) 0.1 <| toFloat index) ++ "s"
             ]
          )
-            ++ [ y <| String.fromFloat <| cy - yOffset - (toFloat (modBy 4 index) * 1.2)
-               , x <| String.fromFloat <| cx - xOffset
+            ++ [ x <| String.fromFloat <| x_ - xOffset
+               , y <| String.fromFloat <| y_ - yOffset - (toFloat (modBy 4 index) * 1.2)
                , textAnchor "middle"
                , alignmentBaseline "central"
                , xlinkHref "#die"
@@ -238,7 +262,7 @@ landDie animations cx cy index =
 
 waterConnections : PathCache -> List ( Land.Emoji, Land.Emoji ) -> Svg Msg
 waterConnections pathCache connections =
-    g [] <| List.map (waterConnection pathCache) connections
+    g [] <| List.map (Svg.Lazy.lazy2 waterConnection pathCache) connections
 
 
 waterConnection : PathCache -> ( Land.Emoji, Land.Emoji ) -> Svg Msg

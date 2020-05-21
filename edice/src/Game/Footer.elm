@@ -5,14 +5,11 @@ import Helpers exposing (dataTestId, formatPoints)
 import Html exposing (..)
 import Html.Attributes exposing (align, class, style)
 import Html.Events exposing (onClick)
+import Html.Keyed
 import Html.Lazy
 import Time exposing (Posix, Zone)
 import Tournaments exposing (tournamentTime)
 import Types exposing (Model, Msg(..))
-
-
-
---import Tables exposing (Table, tableList)
 
 
 footer : Model -> List (Html.Html Types.Msg)
@@ -41,10 +38,11 @@ tableOfTables tableList =
                 -- , th [ align "right" ] [ text "Stacks" ]
                 ]
             ]
-        , tbody [] <|
+        , Html.Keyed.node "tbody" [] <|
             List.map
                 (\table ->
-                    tr
+                    ( table.table
+                    , tr
                         [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                         , dataTestId <| "go-to-table-" ++ table.table
                         , class <|
@@ -97,6 +95,7 @@ tableOfTables tableList =
 
                         -- , td [ align "right" ] [ text <| String.fromInt table.stackSize ]
                         ]
+                    )
                 )
             <|
                 List.filter
@@ -127,10 +126,11 @@ tableOfTournaments zone time tableList =
                         , th [ align "right" ] [ text "Watch" ]
                         ]
                     ]
-                , tbody [] <|
+                , Html.Keyed.node "tbody" [] <|
                     List.map
                         (\table ->
-                            tr
+                            ( table.table
+                            , tr
                                 [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                                 , dataTestId <| "go-to-table-" ++ table.table
                                 , class <|
@@ -140,7 +140,7 @@ tableOfTournaments zone time tableList =
                                     else
                                         "edGameTable__row edGameTable__row--disabled"
                                 ]
-                            <|
+                              <|
                                 [ td [ align "left" ] [ text <| table.table ]
                                 ]
                                     ++ (case table.params.tournament of
@@ -181,6 +181,7 @@ tableOfTournaments zone time tableList =
                                             ]
                                        , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
                                        ]
+                            )
                         )
                     <|
                         List.filter

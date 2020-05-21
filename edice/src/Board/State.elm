@@ -5,6 +5,7 @@ import Array exposing (Array)
 import Board.PathCache
 import Board.Types exposing (..)
 import Dict
+import Ease
 import Land exposing (Color(..), LandUpdate)
 
 
@@ -184,11 +185,11 @@ translateStack reverse pathCache from to =
             (Animation.easing
                 { duration =
                     if not reverse then
-                        200
+                        400
 
                     else
-                        100
-                , ease = \z -> z ^ 2
+                        200
+                , ease = Ease.outCubic
                 }
             )
             [ toAnimation ]

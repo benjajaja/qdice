@@ -13,6 +13,7 @@ import Helpers exposing (consoleDebug, dataTestId)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed
 import Icon
 import Land exposing (LandUpdate)
 import Maps
@@ -144,13 +145,13 @@ gameReplayer model game =
     div [ class "edGameReplayer" ] <|
         case model of
             Just m ->
-                [ div [ class "edPlayerChips" ] <|
+                [ Html.Keyed.node "div" [ class "edPlayerChips" ] <|
                     List.map (Game.PlayerCard.view Playing) <|
                         List.take 4 <|
                             List.drop 4 <|
                                 sortedPlayers m.turnIndex m.players
                 , Board.view m.board Nothing m.boardOptions |> Html.map Types.BoardMsg
-                , div [ class "edPlayerChips" ] <|
+                , Html.Keyed.node "div" [ class "edPlayerChips" ] <|
                     List.map (Game.PlayerCard.view Playing) <|
                         List.take 4 <|
                             sortedPlayers m.turnIndex m.players

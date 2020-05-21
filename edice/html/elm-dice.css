@@ -367,14 +367,14 @@ input[type="range"]::-webkit-slider-runnable-track {
 }
 .edBoard--dies__animated {
   animation-name: dies-drop;
-  animation-duration: 0.3s;
+  animation-duration: 0.2s;
   animation-timing-function: ease-out;
   animation-fill-mode: backwards;
 }
 @keyframes dies-drop {
   0% {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-20px);
   }
   100% {
     opacity: 1;
