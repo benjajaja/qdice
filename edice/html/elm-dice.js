@@ -92,9 +92,13 @@ app.ports.saveToken.subscribe(function(token) {
 
 app.ports.consoleDebug.subscribe(function(string) {
   var lines = string.split("\n");
-  console.groupCollapsed(lines.shift());
-  console.debug(lines.join("\n"));
-  console.groupEnd();
+  if (lines.length === 1) {
+    console.debug(lines[0]);
+  } else {
+    console.groupCollapsed(lines.shift());
+    console.debug(lines.join("\n"));
+    console.groupEnd();
+  }
 });
 
 var snackbar = function(options) {

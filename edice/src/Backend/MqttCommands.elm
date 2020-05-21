@@ -22,13 +22,18 @@ publish jwt status table action =
         Online clientId t ->
             case encodePlayerAction jwt clientId action of
                 Ok playerAction ->
-                    Cmd.batch <|
-                        [ ( encodeTopic <|
+                    let
+                        topicString =
+                            encodeTopic <|
                                 Tables table ServerDirection
+                    in
+                    Cmd.batch <|
+                        [ ( topicString
                           , playerAction
                           )
                             |> mqttPublish
                         , Task.perform SetLastHeartbeat Time.now
+                        , consoleDebug <| "MQTT Publish " ++ topicString ++ ": " ++ actionToString action
                         ]
                             ++ (if t /= table then
                                     [ consoleDebug <| "Warning: not subscribed but publish to table " ++ t ++ " (" ++ actionToString action ++ ")" ]

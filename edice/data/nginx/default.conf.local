@@ -57,5 +57,13 @@ server {
         auth_basic_user_file /etc/nginx/.htpasswd;
         alias /var/www/goaccess;
     }
+    location /emqx {
+        access_log off;
+        log_not_found off;
+        auth_basic "web stats";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+        proxy_pass http://emqx:18083/;
+        include /etc/nginx/proxy_params;
+    }
 }
 

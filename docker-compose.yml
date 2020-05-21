@@ -24,6 +24,8 @@ services:
       EMQX_DASHBOARD__DEFAULT_USER__PASSWORD: ${EMQX_DASHBOARD_PASSWORD}
       EMQX_AUTH__USER__1__USERNAME: ${MQTT_USERNAME}
       EMQX_AUTH__USER__1__PASSWORD: ${MQTT_PASSWORD}
+    ports:
+      - 28083:18083
   nodice:
     restart: always
     image: bgrosse/qdice:backend
