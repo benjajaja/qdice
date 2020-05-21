@@ -45,11 +45,13 @@ setTimeout(function() {
             );
           })
           .catch(function(error) {
+            var Sentry = require("@sentry/browser");
             Sentry.captureException(error);
           });
       };
     });
   } catch (e) {
+    var Sentry = require("@sentry/browser");
     Sentry.captureException(e);
   }
 }, 1);
