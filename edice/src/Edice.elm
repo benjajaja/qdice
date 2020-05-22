@@ -1178,7 +1178,9 @@ subscriptions model =
     Sub.batch
         [ mainViewSubscriptions model
         , Backend.subscriptions model
-        , onAnimationFrame Frame
+
+        -- , onAnimationFrame Frame
+        , Time.every 1000 Frame
         , Browser.Events.onResize Resized
         , notificationsChange NotificationsChange
         , pushGetKey (\_ -> PushGetKey)
