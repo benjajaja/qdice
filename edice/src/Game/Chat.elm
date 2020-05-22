@@ -6,6 +6,7 @@ import Helpers exposing (dataTestId, pointsSymbol)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed
 import Http exposing (Error(..))
 import Icon
 import Land exposing (Color)
@@ -76,10 +77,11 @@ input value_ =
 gameBox : List ChatLogEntry -> String -> Html Types.Msg
 gameBox lines id_ =
     div [ class "gamelogContainer" ]
-        [ div [ class "gamelog", id id_ ] <|
-            List.map
-                (\c ->
-                    case c of
+        [ Html.Keyed.node "div" [ class "gamelog", id id_ ] <|
+            List.indexedMap
+                (\i c ->
+                    ( String.fromInt i
+                    , case c of
                         LogChat _ _ ->
                             Html.text "ERRchat"
 
@@ -166,6 +168,7 @@ gameBox lines id_ =
                                     ]
                                     [ Html.text <| "Watch replay of game #" ++ String.fromInt id ]
                                 ]
+                    )
                 )
             <|
                 lines

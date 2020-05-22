@@ -182,15 +182,16 @@ translateStack reverse pathCache from to =
     in
     Animation.interrupt
         [ Animation.toWith
-            (Animation.easing
-                { duration =
-                    if not reverse then
-                        400
+            (Animation.easing <|
+                if not reverse then
+                    { duration = 400
+                    , ease = Ease.outCubic
+                    }
 
-                    else
-                        200
-                , ease = Ease.outCubic
-                }
+                else
+                    { duration = 200
+                    , ease = Ease.inCubic
+                    }
             )
             [ toAnimation ]
         ]
