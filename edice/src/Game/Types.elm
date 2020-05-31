@@ -240,6 +240,7 @@ type alias Award =
     { type_ : String
     , position : Int
     , timestamp : String
+    , table : Maybe String
     }
 
 

@@ -3,6 +3,7 @@ module Awards exposing (awardsShortList)
 import Game.Types exposing (Award)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Ordinal exposing (ordinal)
 import Svg exposing (svg, use)
 import Svg.Attributes
 import Types exposing (Msg(..))
@@ -24,14 +25,16 @@ awardIcon size award =
         , Svg.Attributes.fill "currentColor"
         , Svg.Attributes.width <| String.fromInt size
         , Svg.Attributes.height <| String.fromInt size
-        , Svg.Attributes.style "background:white;border-radius:50%; color: black"
+
+        -- , Svg.Attributes.style "background:white;border-radius:50%; color: black"
         ]
     <|
         [ Svg.use
             [ Svg.Attributes.xlinkHref <| "assets/awards.svg#" ++ awardSvgId award
             , Svg.Attributes.fill <| awardFill award
             ]
-            []
+            [ Svg.title [] [ Svg.text <| awardTitle award ]
+            ]
         ]
             ++ awardText award
 
@@ -53,6 +56,9 @@ awardFill award =
                 _ ->
                     "darkgrey"
 
+        "weekly_rank" ->
+            "#cccccc"
+
         _ ->
             "#222222"
 
@@ -63,6 +69,9 @@ awardSvgId award =
         "monthly_rank" ->
             "laurel"
 
+        "weekly_rank" ->
+            "box_golden_round"
+
         "early_adopter" ->
             "lander"
 
@@ -72,18 +81,42 @@ awardSvgId award =
 
 awardText : Award -> List (Html Msg)
 awardText award =
-    case award.type_ of
-        "monthly_rank" ->
-            [ Svg.text_
-                [ Svg.Attributes.x "50%"
-                , Svg.Attributes.y "50%"
-                , Svg.Attributes.textAnchor "middle"
-                , Svg.Attributes.alignmentBaseline "middle"
-                , Svg.Attributes.fontSize "5em"
-                ]
-                [ Svg.text <| String.fromInt <| award.position
-                ]
+    if award.type_ == "monthly_rank" || award.type_ == "weekly_rank" then
+        [ Svg.text_
+            [ Svg.Attributes.x "50%"
+            , Svg.Attributes.y "50%"
+            , Svg.Attributes.textAnchor "middle"
+            , Svg.Attributes.dominantBaseline "middle"
+            , Svg.Attributes.fontSize "4em"
             ]
+            [ Svg.text <| String.fromInt <| award.position
+            ]
+        ]
+
+    else
+        []
+
+
+awardTitle : Award -> String
+awardTitle award =
+    case award.type_ of
+        "early_adopter" ->
+            "Early Adopter 💝"
+
+        "monthly_rank" ->
+            "Monthly rank: " ++ ordinal award.position
+
+        "weekly_rank" ->
+            "Weekly rank"
+                ++ (case award.table of
+                        Just table ->
+                            " on table " ++ table
+
+                        Nothing ->
+                            ""
+                   )
+                ++ ": "
+                ++ ordinal award.position
 
         _ ->
-            []
+            "???"

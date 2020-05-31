@@ -147,9 +147,10 @@ export type Preferences = {};
 export type PushNotificationEvents = "game-start" | "turn";
 
 export type Award = {
-  type: "monthly_rank" | "early_adopter";
+  type: "monthly_rank" | "weekly_rank" | "early_adopter";
   position: number;
   timestamp: Date;
+  table?: string;
 };
 
 export type Watcher = {

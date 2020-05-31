@@ -111,6 +111,7 @@ awardDecoder =
         |> required "type" string
         |> required "position" int
         |> required "timestamp" string
+        |> optional "table" (nullable string) Nothing
 
 
 pushEventDecoder : Decoder PushEvent
