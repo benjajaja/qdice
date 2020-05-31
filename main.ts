@@ -42,7 +42,7 @@ import * as games from "./games";
 import { resetGenerator } from "./rand";
 import { clearGames } from "./table/get";
 import { EMPTY_PROFILE_PICTURE } from "./constants";
-import { date, now } from "./timestamp";
+import { date, now, weekday } from "./timestamp";
 
 process.on("unhandledRejection", (reason, p) => {
   logger.error("Unhandled Rejection at: Promise", p, "reason:", reason);
@@ -320,9 +320,9 @@ export const server = async () => {
       ...row,
       picture: row.picture ?? EMPTY_PROFILE_PICTURE,
     }));
-    const today = date(now()).getDay();
+    const today = weekday(now());
     const dailyRaw = await Promise.all(
-      R.range(0, today).map(offset =>
+      R.range(0, today + 1).map(offset =>
         db.dailyScores(
           req.params.table,
           top.map(a => a.id),

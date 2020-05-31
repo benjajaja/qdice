@@ -1,13 +1,10 @@
 module LeaderBoard.Chart exposing (view)
 
 import Board.Colors
-import Color
 import Color.Manipulate as Manipulate
-import Dict
 import Game.Types exposing (Msg(..))
-import Helpers
 import Html exposing (..)
-import Html.Attributes exposing (align, class, disabled, href)
+import Html.Attributes exposing (class)
 import Land
 import LeaderBoard.ChartTypes exposing (..)
 import LineChart
@@ -21,7 +18,6 @@ import LineChart.Axis.Ticks as Ticks
 import LineChart.Axis.Title as Title
 import LineChart.Colors as Colors
 import LineChart.Container as Container
-import LineChart.Coordinate as Coordinate
 import LineChart.Dots as Dots
 import LineChart.Events as Events
 import LineChart.Grid as Grid
@@ -30,8 +26,6 @@ import LineChart.Junk as Junk
 import LineChart.Legends as Legends
 import LineChart.Line as Line
 import Svg
-import Time
-import Types exposing (TableStatPlayer)
 
 
 view : List ( PlayerRef, List Datum ) -> Maybe Datum -> Html Msg
@@ -113,19 +107,6 @@ xAxisConfig =
 -- CHART CONFIG / AXES / TICKS
 
 
-tickRain : ( Float, String ) -> Tick.Config msg
-tickRain ( value, label ) =
-    Tick.custom
-        { position = value
-        , color = Colors.gray
-        , width = 1
-        , length = 5
-        , grid = True
-        , direction = Tick.negative
-        , label = Just (tickLabel label)
-        }
-
-
 tickTime : Int -> Tick.Config msg
 tickTime i =
     Tick.custom
@@ -161,7 +142,7 @@ tickTime i =
                             "Sun"
 
                         _ ->
-                            "null"
+                            "Err"
                 )
         }
 
@@ -219,17 +200,3 @@ toLineStyle maybeHovered lineData =
 
             else
                 Line.style 1 Manipulate.grayscale
-
-
-
--- UTILS
-
-
-round10 : Float -> Float
-round10 float =
-    toFloat (round (float * 10)) / 10
-
-
-middle : Coordinate.Range -> Float
-middle r =
-    r.min + (r.max - r.min) / 2

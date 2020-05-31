@@ -60,3 +60,11 @@ export const nextFrequency = (
       return assertNever(frequency);
   }
 };
+
+export const weekday = (ts: Timestamp): number => {
+  const day = date(ts).getDay() - 1;
+  switch (day) {
+    case -1: return 6;
+    default: return day;
+  }
+};

@@ -19,7 +19,6 @@ import Html.Events exposing (onClick)
 import Html.Keyed
 import Html.Lazy
 import Icon
-import Land
 import LeaderBoard.Chart
 import LeaderBoard.ChartTypes exposing (Datum)
 import LeaderBoard.View
@@ -28,7 +27,7 @@ import MyProfile.Types
 import Ordinal exposing (ordinal)
 import Placeholder exposing (Placeheld(..))
 import Routing.String exposing (routeToString)
-import Time exposing (Posix, posixToMillis)
+import Time exposing (posixToMillis)
 import Tournaments exposing (tournamentTime)
 import Types exposing (AuthNetwork(..), DialogType(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
 
