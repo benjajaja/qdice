@@ -808,14 +808,14 @@ export const dailyScores = async (
     LEFT JOIN games
       ON games.id = eliminations.game_id
     WHERE games.tag = $1
-      AND eliminations.user_id = ANY($4::int[])
+      AND eliminations.user_id = ANY($3::int[])
       AND timestamp >= current_date - ((6 + cast(extract(dow from current_date) as int)) % 7) + ($2::int)
-      AND timestamp < current_date - ((6 + cast(extract(dow from current_date) as int)) % 7) + ($3::int)
+      AND timestamp < current_date - ((6 + cast(extract(dow from current_date) as int)) % 7) + ($2::int + 1)
     GROUP BY users.id, users.name, users.picture
     ORDER BY score DESC
     LIMIT 10
     `,
-    [tableTag, offset, offset + 1, ids]
+    [tableTag, offset, ids]
   );
   return rows;
 };
