@@ -573,6 +573,10 @@ input[type="range"]::-webkit-slider-runnable-track {
 .edPlayerChip__playerStats > * {
   margin-right: 4px;
 }
+.edPlayerChip__playerStats svg { /* awards */
+  color: initial;
+  font-size: initial;
+}
 
 
 .edPlayerChip--out .edPlayerChip__picture__image, .edPlayerChip--flag .edPlayerChip__picture__image {

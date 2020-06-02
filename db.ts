@@ -418,7 +418,25 @@ export const userProfile = (
     rank: parseInt(rank, 10),
     networks: rows.map(row => row.network).filter(R.identity),
     voted,
-    awards,
+    awards: R.sortWith(
+      [
+        R.ascend(award => {
+          switch (award.type) {
+            case "monthly_rank":
+              return 1;
+            case "weekly_rank":
+              return 2;
+            case "early_adopter":
+              return 100;
+            default:
+              return Infinity;
+          }
+        }),
+        R.ascend(R.prop("position")),
+        R.descend(R.prop("timestamp")),
+      ],
+      awards
+    ),
     ip,
   };
 };
