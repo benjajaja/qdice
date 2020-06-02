@@ -87,8 +87,8 @@ chart isFetched size legends offset values =
         |> svg [ viewBox "0 0 200 60", class "edStatistics__rolls" ]
 
 
-gauge : Float -> Html msg
-gauge fraction =
+gauge : ( String, String ) -> Float -> Html msg
+gauge ( labelMin, labelMax ) fraction =
     svg
         [ viewBox "-10 -10 120 100", class "edStatistics__gauge" ]
         [ defs []
@@ -99,9 +99,9 @@ gauge fraction =
                 , x2 "100%"
                 , y2 "0%"
                 ]
-                [ stop [ offset "0%", stopColor "red" ] []
+                [ stop [ offset "0%", stopColor "lightgreen" ] []
                 , stop [ offset "50%", stopColor "lightgreen" ] []
-                , stop [ offset "100%", stopColor "lightgreen" ] []
+                , stop [ offset "100%", stopColor "red" ] []
                 ]
             ]
         , Svg.path
@@ -115,9 +115,9 @@ gauge fraction =
         , text_ [ width "100", fill gaugePointerColor, dy "2" ]
             [ textPath
                 [ xlinkHref "#gauge-curve"
-                , startOffset "20"
+                , startOffset "1"
                 ]
-                [ text "Bad - Good" ]
+                [ text <| labelMin ++ " - " ++ labelMax ]
             ]
         , circle
             [ cx "50", cy "75", r "10", fill gaugePointerColor ]

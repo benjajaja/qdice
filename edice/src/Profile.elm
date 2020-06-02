@@ -190,32 +190,41 @@ statisticsView isFetched profile { stats } =
         ( luckGood, luckBad ) =
             luck
 
-        luckFraction =
-            if luckGood > luckBad then
-                1.0
-                    - (toFloat luckBad
-                        / toFloat luckGood
-                        / 2
-                      )
+        riskFraction =
+            toFloat attacksSucceeded / toFloat attacksTotal
 
-            else if luckGood < luckBad then
-                toFloat luckGood
-                    / toFloat luckBad
-                    / 2
+        ratioFull =
+            String.fromFloat (toFloat attacksSucceeded / toFloat attacksFailed)
 
-            else
-                0.5
+        ratio =
+            case String.split "." ratioFull of
+                [ a, b ] ->
+                    String.concat [ a, ".", String.slice 0 2 b ]
+
+                [ a ] ->
+                    a
+
+                _ ->
+                    "*" ++ ratioFull
     in
     [ div []
-        [ text <|
-            String.fromInt attacksTotal
-                ++ " attacks ("
-                ++ String.fromInt attacksSucceeded
-                ++ " successful / "
-                ++ String.fromInt attacksFailed
-                ++ " failed, ratio "
-                ++ (String.fromFloat <| toFloat attacksSucceeded / toFloat attacksFailed)
-                ++ ")"
+        [ div []
+            [ text <|
+                String.fromInt attacksTotal
+                    ++ " attacks ("
+                    ++ String.fromInt attacksSucceeded
+                    ++ " successful / "
+                    ++ String.fromInt attacksFailed
+                    ++ " failed, ratio "
+                    ++ ratio
+                    ++ ")"
+            ]
+        , gauge ( "Cautious", "Risky" ) <|
+            if isNaN riskFraction then
+                0.5
+
+            else
+                riskFraction
         ]
     , div []
         [ div [] [ text <| "Kills: " ++ String.fromInt kills ]
@@ -239,13 +248,8 @@ statisticsView isFetched profile { stats } =
         ]
     , p [] []
     , div []
-        [ div [] [ text <| "Lucky rolls: " ++ String.fromInt luckGood ++ " lucky / " ++ String.fromInt luckBad ++ " unlucky" ]
-        , gauge <|
-            if isNaN luckFraction then
-                0.5
-
-            else
-                luckFraction
+        [ div [] [ text <| "Lucky rolls: " ++ String.fromInt luckGood ++ " (attacks/defenses that succeeded with less dice than opponent)" ]
+        , div [] [ text <| "Upsets: " ++ String.fromInt luckBad ++ " (attacks/defenses that failed with more dice than opponent)" ]
         ]
     , p [] []
     , div []
