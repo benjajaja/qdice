@@ -33,10 +33,15 @@ awardIcon size award =
             [ Svg.Attributes.xlinkHref <| "assets/awards.svg#" ++ awardSvgId award
             , Svg.Attributes.fill <| awardFill award
             ]
-            [ Svg.title [] [ Svg.text <| awardTitle award ]
+            [ awardTitleElement award
             ]
         ]
             ++ awardText award
+
+
+awardTitleElement : Award -> Html msg
+awardTitleElement award =
+    Svg.title [] [ Svg.text <| awardTitle award ]
 
 
 awardFill : Award -> String
@@ -57,7 +62,15 @@ awardFill award =
                     "darkgrey"
 
         "weekly_rank" ->
-            "#cccccc"
+            case award.position of
+                1 ->
+                    "gold"
+
+                2 ->
+                    "silver"
+
+                _ ->
+                    "bronze"
 
         _ ->
             "#222222"
@@ -67,13 +80,13 @@ awardSvgId : Award -> String
 awardSvgId award =
     case award.type_ of
         "monthly_rank" ->
-            "laurel"
+            "monthly"
 
         "weekly_rank" ->
-            "box_golden_round"
+            "weekly"
 
         "early_adopter" ->
-            "lander"
+            "early"
 
         _ ->
             ""
@@ -81,20 +94,35 @@ awardSvgId award =
 
 awardText : Award -> List (Html Msg)
 awardText award =
-    if award.type_ == "monthly_rank" || award.type_ == "weekly_rank" then
-        [ Svg.text_
-            [ Svg.Attributes.x "50%"
-            , Svg.Attributes.y "50%"
-            , Svg.Attributes.textAnchor "middle"
-            , Svg.Attributes.dominantBaseline "middle"
-            , Svg.Attributes.fontSize "4em"
+    case award.type_ of
+        "monthly_rank" ->
+            [ Svg.text_
+                [ Svg.Attributes.x "50%"
+                , Svg.Attributes.y "60%"
+                , Svg.Attributes.textAnchor "middle"
+                , Svg.Attributes.dominantBaseline "middle"
+                , Svg.Attributes.fontSize "4em"
+                ]
+                [ awardTitleElement award
+                , Svg.text <| String.fromInt <| award.position
+                ]
             ]
-            [ Svg.text <| String.fromInt <| award.position
-            ]
-        ]
 
-    else
-        []
+        "weekly_rank" ->
+            [ Svg.text_
+                [ Svg.Attributes.x "50%"
+                , Svg.Attributes.y "60%"
+                , Svg.Attributes.textAnchor "middle"
+                , Svg.Attributes.dominantBaseline "start"
+                , Svg.Attributes.fontSize "1.2em"
+                ]
+                [ awardTitleElement award
+                , Svg.text <| Maybe.withDefault "Table" <| award.table
+                ]
+            ]
+
+        _ ->
+            []
 
 
 awardTitle : Award -> String
@@ -104,7 +132,7 @@ awardTitle award =
             "Early Adopter 💝"
 
         "monthly_rank" ->
-            "Monthly rank: " ++ ordinal award.position
+            "Monthly rank: " ++ ordinal award.position ++ " @ " ++ String.slice 0 10 award.timestamp
 
         "weekly_rank" ->
             "Weekly rank"
@@ -117,6 +145,8 @@ awardTitle award =
                    )
                 ++ ": "
                 ++ ordinal award.position
+                ++ " @ "
+                ++ String.slice 0 10 award.timestamp
 
         _ ->
-            "???"
+            "Unknown award"

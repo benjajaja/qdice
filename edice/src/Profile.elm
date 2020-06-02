@@ -97,7 +97,7 @@ playerBox zone placeholder =
                         [ text a.name ]
             , div [ class "edPlayerBox__stat" ] [ text "Level: ", text <| String.fromInt user.level ++ "▲" ]
             , if List.length user.awards > 0 then
-                div [ class "edPlayerBox__awards" ] <| Awards.awardsShortList 20 user.awards
+                div [ class "edPlayerBox__awards" ] [ text "Awards: ", div [] <| Awards.awardsShortList 30 user.awards ]
 
               else
                 text ""

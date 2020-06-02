@@ -6,13 +6,25 @@ ordinal number =
     String.fromInt number
         ++ (case remainderBy 10 number of
                 1 ->
-                    "st"
+                    if number == 11 then
+                        "th"
+
+                    else
+                        "st"
 
                 2 ->
-                    "nd"
+                    if number == 12 then
+                        "th"
+
+                    else
+                        "nd"
 
                 3 ->
-                    "rd"
+                    if number == 13 then
+                        "th"
+
+                    else
+                        "rd"
 
                 _ ->
                     "th"
