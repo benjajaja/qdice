@@ -60,9 +60,9 @@ const weekly = async () => {
   const client = await db.retry();
   logger.info("connected to postgres.");
 
-  const topScores: { id: string; score: number }[] = await db.topScores(
-    "Planeta"
-  );
+  const topScores: { id: string; score: number }[] = (
+    await db.topScores("Planeta")
+  ).slice(0, 3);
   const topRanks = topScores.map((scored, i) => ({
     id: scored.id,
     rank: i + 1,
