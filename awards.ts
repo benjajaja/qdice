@@ -60,40 +60,44 @@ const weekly = async () => {
   const client = await db.retry();
   logger.info("connected to postgres.");
 
-  const topScores: { id: string; score: number }[] = (
-    await db.topScores("Planeta")
-  ).slice(0, 3);
-  const topRanks = topScores.map((scored, i) => ({
-    id: scored.id,
-    rank: i + 1,
-  }));
+  await Promise.all(
+    ["Planeta", "Europa"].map(async tag => {
+      const topScores: { id: string; score: number }[] = (
+        await db.topScores(tag)
+      ).slice(0, 3);
+      const topRanks = topScores.map((scored, i) => ({
+        id: scored.id,
+        rank: i + 1,
+      }));
 
-  const timestamp = date(now());
-  try {
-    await client.query("BEGIN");
-    await Promise.all(
-      topRanks.map(async entry => {
-        const user = await db.getUser(entry.id);
-        const text = `UPDATE users SET awards = $1 WHERE id = $2`;
-        const award: Award = {
-          type: "weekly_rank",
-          table: "Planeta",
-          position: entry.rank,
-          timestamp,
-        };
-        logger.info(`User ${user.id} got award ${JSON.stringify(award)}`);
-        return await client.query(text, [
-          JSON.stringify(user.awards.concat([award])),
-          entry.id,
-        ]);
-      })
-    );
-    await client.query("COMMIT");
-  } catch (e) {
-    logger.error(e);
-    await client.query("ROLLBACK");
-    throw e;
-  }
+      const timestamp = date(now());
+      try {
+        await client.query("BEGIN");
+        await Promise.all(
+          topRanks.map(async entry => {
+            const user = await db.getUser(entry.id);
+            const text = `UPDATE users SET awards = $1 WHERE id = $2`;
+            const award: Award = {
+              type: "weekly_rank",
+              table: tag,
+              position: entry.rank,
+              timestamp,
+            };
+            logger.info(`User ${user.id} got award ${JSON.stringify(award)}`);
+            return await client.query(text, [
+              JSON.stringify(user.awards.concat([award])),
+              entry.id,
+            ]);
+          })
+        );
+        await client.query("COMMIT");
+      } catch (e) {
+        logger.error(e);
+        await client.query("ROLLBACK");
+        throw e;
+      }
+    })
+  );
 };
 
 const earlyAdopters = async () => {
