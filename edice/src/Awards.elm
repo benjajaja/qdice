@@ -56,7 +56,7 @@ awardFill award =
                     "silver"
 
                 3 ->
-                    "bronze"
+                    "coral"
 
                 _ ->
                     "darkgrey"
@@ -69,8 +69,11 @@ awardFill award =
                 2 ->
                     "silver"
 
+                3 ->
+                    "coral"
+
                 _ ->
-                    "bronze"
+                    "darkgrey"
 
         _ ->
             "#222222"
