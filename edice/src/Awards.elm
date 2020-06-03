@@ -86,7 +86,7 @@ awardSvgId award =
             "monthly"
 
         "weekly_rank" ->
-            "weekly"
+            "weekly_" ++ Maybe.withDefault "Planeta" award.table
 
         "early_adopter" ->
             "early"
@@ -108,19 +108,6 @@ awardText award =
                 ]
                 [ awardTitleElement award
                 , Svg.text <| String.fromInt <| award.position
-                ]
-            ]
-
-        "weekly_rank" ->
-            [ Svg.text_
-                [ Svg.Attributes.x "50%"
-                , Svg.Attributes.y "60%"
-                , Svg.Attributes.textAnchor "middle"
-                , Svg.Attributes.dominantBaseline "start"
-                , Svg.Attributes.fontSize "1.2em"
-                ]
-                [ awardTitleElement award
-                , Svg.text <| Maybe.withDefault "Table" <| award.table
                 ]
             ]
 
