@@ -39,7 +39,7 @@ Before making a PR, I suggest to get in contact with me however you want, an iss
 
 * **Elm** - the main motivation was to learn [Elm](https://elm-lang.org). It's an awesome project
   that is quite different from conventional "enterprise" web development. Simply fun!
-* **Node.js** - This has been qute a ride since the wirst prototype.
+* **Node.js** - This has been quite a ride since the first prototype.
   1. First there was the most simple imperative mutable OOP style, with all games in memory.
      The problem was that when it eventually crashed, any games were aborted.
   2. Next iteration had one process per game, with the game in-memory, with a more
