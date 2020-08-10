@@ -155,12 +155,12 @@ export const setGameStart = (
   mapName: string | null
 ): CommandResult => {
   if (returnFee === null) {
-    return changeMap(mapName, table.lands, {
+    return changeMap(table.tag, table.mapName, mapName, {
       table: { gameStart },
     });
   }
   if (returnFee === 0) {
-    return changeMap(mapName, table.lands, {
+    return changeMap(table.tag, table.mapName, mapName, {
       table: { gameStart },
       players: [],
     });
@@ -171,7 +171,7 @@ export const setGameStart = (
       return [player.id, player.clientId, returnFee];
     }
   );
-  return changeMap(mapName, table.lands, {
+  return changeMap(table.tag, table.mapName, mapName, {
     table: { gameStart },
     players: [],
     payScores: payScores,
@@ -179,18 +179,17 @@ export const setGameStart = (
 };
 
 const changeMap = (
+  tableName: string,
+  oldMap: string,
   mapName: string | null,
-  lands: readonly Land[],
   result: CommandResult
 ): CommandResult => {
   if (mapName === null) {
     return result;
   }
-  const newLands = maps
-    .hasChanged(mapName, lands)
-    .map(land => ({ ...land, points: 0, color: Color.Neutral }));
 
-  const [_, adjacency] = maps.loadMap(mapName);
+  const [newLands, adjacency] = maps.loadMap(mapName);
+  logger.debug(`changed map of ${tableName} to ${mapName} (was ${oldMap})`);
   return {
     ...result,
     table: { ...result.table, mapName, adjacency },
