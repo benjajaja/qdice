@@ -50,7 +50,7 @@ init flags location key =
             tableFromRoute route
 
         ( game, gameCmd ) =
-            Game.State.init table Nothing
+            Game.State.init table Nothing Nothing
 
         ( backend, backendCmd ) =
             Backend.init flags.version location flags.token
@@ -130,7 +130,7 @@ init flags location key =
                     { tables = Dict.empty
                     , all = []
                     }
-            , fullscreen = False
+            , fullscreen = Nothing
             , comments = Comments.init
             , replayer = Nothing
             }
@@ -1078,7 +1078,24 @@ tableFromRoute route =
 
 setPortrait : Model -> Int -> Int -> Model
 setPortrait model w h =
-    { model | fullscreen = w <= 840 && (toFloat w / toFloat h) > 13 / 9 }
+    let
+        fullscreen =
+            if w <= 840 && (toFloat w / toFloat h) > 13 / 9 then
+                Just <| h - 48 - 76
+
+            else
+                Nothing
+
+        game =
+            model.game
+
+        options =
+            game.boardOptions
+
+        game_ =
+            { game | boardOptions = { options | height = fullscreen } }
+    in
+    { model | fullscreen = fullscreen, game = game_ }
 
 
 view : Model -> Browser.Document Msg

@@ -28,6 +28,7 @@ type alias Model =
 type alias BoardOptions =
     { diceVisible : Bool
     , showEmojis : Bool
+    , height : Maybe Int
     }
 
 

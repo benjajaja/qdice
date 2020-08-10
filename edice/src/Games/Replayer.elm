@@ -46,6 +46,7 @@ init game =
     , boardOptions =
         { diceVisible = True
         , showEmojis = True
+        , height = Nothing
         }
     , players = players
     , turnIndex = 0

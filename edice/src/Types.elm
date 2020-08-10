@@ -159,7 +159,7 @@ type alias Model =
     , preferences : Preferences
     , sessionPreferences : SessionPreferences
     , games : Placeheld GamesModel
-    , fullscreen : Bool
+    , fullscreen : Maybe Int
     , comments : CommentsModel
     , replayer : Maybe ReplayerModel
     }

@@ -36,6 +36,13 @@ board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options 
 
             -- , preserveAspectRatio "xMidYMin meet"
             , class "edBoard--svg"
+            , Svg.Attributes.height <|
+                case options.height of
+                    Just height ->
+                        String.fromInt height
+
+                    Nothing ->
+                        ""
             ]
             [ die
             , Svg.Lazy.lazy avatarDefs <| Maybe.withDefault [] avatarUrls

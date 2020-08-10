@@ -19,8 +19,8 @@ import Time
 import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
 
 
-init : Maybe Table -> Maybe MapName -> ( Game.Types.Model, Cmd Msg )
-init table tableMap_ =
+init : Maybe Table -> Maybe MapName -> Maybe Int -> ( Game.Types.Model, Cmd Msg )
+init table tableMap_ height =
     let
         map : Result MapLoadError Land.Map
         map =
@@ -53,6 +53,7 @@ init table tableMap_ =
       , boardOptions =
             { diceVisible = True
             , showEmojis = False
+            , height = height
             }
       , hovered = Nothing
       , players = []
@@ -172,7 +173,7 @@ changeTable model table =
             tableMap table model.tableList
 
         ( game, cmd ) =
-            updateGameInfo (init (Just table) map) model.tableList
+            updateGameInfo (init (Just table) map model.fullscreen) model.tableList
 
         model_ =
             { model | game = game }
@@ -1023,7 +1024,7 @@ isChat entry =
 
 updateChatLog : Types.Model -> List ChatLogEntry -> ( Types.Model, Cmd Types.Msg )
 updateChatLog model entries =
-    if model.fullscreen then
+    if model.fullscreen /= Nothing then
         let
             game =
                 model.game

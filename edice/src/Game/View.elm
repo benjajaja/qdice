@@ -54,7 +54,7 @@ view model =
     div [ class "edMainScreen" ] <|
         [ div [ class "edGameBoardWrapper" ] <|
             if not model.game.params.twitter then
-                (if not model.fullscreen then
+                (if model.fullscreen == Nothing then
                     [ tableInfo model ]
 
                  else
@@ -79,7 +79,7 @@ view model =
                 , boardFooter model
                 ]
         ]
-            ++ (if not model.fullscreen && not model.game.params.twitter then
+            ++ (if model.fullscreen == Nothing && not model.game.params.twitter then
                     div
                         [ class <|
                             "edGame__meta cartonCard"
@@ -152,7 +152,7 @@ boardFooter model =
     div [ class "edGameBoardFooter" ] <|
         playerBar 0 model
             :: toolbar
-            ++ [ Html.Lazy.lazy2 chatOverlay model.fullscreen model.game.chatOverlay ]
+            ++ [ Html.Lazy.lazy2 chatOverlay (model.fullscreen /= Nothing) model.game.chatOverlay ]
 
 
 chatOverlay : Bool -> Maybe ( Time.Posix, ChatLogEntry ) -> Html Msg
