@@ -357,7 +357,7 @@ SELECT id, name, picture, points, level,
   ROW_NUMBER () OVER (ORDER BY points DESC) AS rank,
   level_points, awards
 FROM users
-ORDER BY points DESC
+ORDER BY points DESC, level DESC
 LIMIT $1 OFFSET $2`,
     values: [limit, limit * Math.max(0, page - 1)],
   });
