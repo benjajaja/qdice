@@ -32,18 +32,21 @@ board : Model -> Maybe Land.Emoji -> BoardOptions -> Svg Msg
 board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options =
     Html.div [ class "edBoard" ]
         [ Svg.svg
-            [ Svg.Attributes.viewBox viewBox
+            ([ Svg.Attributes.viewBox viewBox
 
-            -- , preserveAspectRatio "xMidYMin meet"
-            , class "edBoard--svg"
-            , Svg.Attributes.height <|
-                case options.height of
-                    Just height ->
-                        String.fromInt height
+             -- , preserveAspectRatio "xMidYMin meet"
+             , class "edBoard--svg"
+             ]
+                ++ (case options.height of
+                        Just height ->
+                            [ Svg.Attributes.height <|
+                                String.fromInt height
+                            ]
 
-                    Nothing ->
-                        ""
-            ]
+                        Nothing ->
+                            []
+                   )
+            )
             [ die
             , Svg.Lazy.lazy avatarDefs <| Maybe.withDefault [] avatarUrls
             , Svg.Lazy.lazy2 waterConnections pathCache map.waterConnections
