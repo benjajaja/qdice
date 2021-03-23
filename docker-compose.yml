@@ -41,12 +41,12 @@ services:
     env_file: .env
     volumes:
       - ${SCREENSHOT_PATH}:/screenshots
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+  # certbot:
+    # image: certbot/certbot
+    # volumes:
+      # - ./data/certbot/conf:/etc/letsencrypt
+      # - ./data/certbot/www:/var/www/certbot
+    # entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
   nginx:
     restart: always
     env_file: .env
@@ -57,11 +57,20 @@ services:
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+      - ./data/dhparam:/etc/ssl/certs # sudo openssl dhparam -out /home/sammy/node_project/dhparam/dhparam-2048.pem 2048
       - ${AVATAR_PATH}:/var/www/qdice.wtf/pictures:ro
       - ${SCREENSHOT_PATH}:/var/www/qdice.wtf/screenshots:ro
       - ./data/logs/nginx:/var/log/nginx
       - goaccess:/var/www/goaccess:ro
-    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/html
+    depends_on:
+      - nginx
+    command: certonly --webroot --webroot-path=/var/www/html --email ste3ls@gmail.com --agree-tos --no-eff-email --force-renewal -d qdice.wtf
   goaccess:
     image: allinurl/goaccess
     restart: always
@@ -80,4 +89,3 @@ networks:
 
 volumes:
   goaccess:
-
