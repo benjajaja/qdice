@@ -5,6 +5,7 @@ map-sources.json
 data/goaccess/html/
 data/logs/nginx/
 data/redis
+data/certbot/conf/csr
 starting_positions/maps
 starting_positions/src/__pycache__
 version
