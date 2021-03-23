@@ -3,13 +3,14 @@ version: "2"
 services:
   postgres:
     restart: always
-    build: ./postgres
+    image: postgres:9.6
+    container_name: postgres
     environment:
       POSTGRES_DB: "nodice"
       POSTGRES_USER: "bgrosse"
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./postgres:/docker-entrypoint-initdb.d/
   redis:
     restart: always
     image: redis:5.0.9-alpine
@@ -18,7 +19,8 @@ services:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     entrypoint: redis-server --appendonly yes
   emqx:
-    image: emqx/emqx:v4.1.5
+    restart: always
+    image: emqx/emqx:v3.2.8
     environment:
       EMQX_LOADED_PLUGINS: "emqx_management,emqx_auth_username,emqx_recon,emqx_retainer,emqx_dashboard"
       EMQX_DASHBOARD__DEFAULT_USER__PASSWORD: ${EMQX_DASHBOARD_PASSWORD}
@@ -27,7 +29,7 @@ services:
     ports:
       - 28083:18083
     volumes:
-      - ./data/emqx/acl.conf:/opt/emqx/etc/acl.conf
+      - ./acl.conf:/opt/emqx/etc/acl.conf
   nodice:
     restart: always
     image: bgrosse/qdice:backend
