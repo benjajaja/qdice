@@ -18,7 +18,7 @@ services:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     entrypoint: redis-server --appendonly yes
   emqx:
-    image: bgrosse/qdice:emqx
+    image: emqx/emqx:v4.1.5
     environment:
       EMQX_LOADED_PLUGINS: "emqx_management,emqx_auth_username,emqx_recon,emqx_retainer,emqx_dashboard"
       EMQX_DASHBOARD__DEFAULT_USER__PASSWORD: ${EMQX_DASHBOARD_PASSWORD}
@@ -26,6 +26,8 @@ services:
       EMQX_AUTH__USER__1__PASSWORD: ${MQTT_PASSWORD}
     ports:
       - 28083:18083
+    volumes:
+      - ./data/emqx/acl.conf:/opt/emqx/etc/acl.conf
   nodice:
     restart: always
     image: bgrosse/qdice:backend
