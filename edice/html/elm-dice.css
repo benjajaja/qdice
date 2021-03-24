@@ -1374,6 +1374,7 @@ input[type="range"]::-webkit-slider-runnable-track {
 .edComments__comment__body {
   margin-inline-start: 20px;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 .edComments__form__cancelReply {
   font-size: 0.8em;
