@@ -297,3 +297,6 @@ ALTER TABLE ONLY eliminations ADD CONSTRAINT eliminations_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY eliminations ADD CONSTRAINT eliminations_game_id_fkey FOREIGN KEY (game_id) REFERENCES games(id);
 ALTER TABLE ONLY eliminations ADD CONSTRAINT eliminations_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id);
 
+CREATE INDEX game_events_game_id ON game_events USING btree(game_id);
+CREATE INDEX comments_index ON comments USING btree(kind, kind_id);
+
