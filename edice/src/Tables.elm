@@ -74,6 +74,9 @@ isTournament table =
         "5MinuteFix" ->
             True
 
+        "MinuteMade" ->
+            True
+
         "Daily10k" ->
             True
 

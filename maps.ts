@@ -10,7 +10,11 @@ type LimitedTable = {
 };
 
 export const loadMap = (mapName: string): [Land[], Adjacency, string] => {
-  const { lands, adjacency, name } = mapJson.maps[mapName];
+  const map = mapJson.maps[mapName];
+  if (!map) {
+    throw new Error(`loadMap: unknown map "${map}"`);
+  }
+  const { lands, adjacency, name } = map;
   return [
     lands.map(land => ({ ...land, color: Color.Neutral, points: 0 })),
     adjacency,
