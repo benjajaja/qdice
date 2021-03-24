@@ -3,7 +3,7 @@
 if [ -d ~/nodice ]; then
   cd ~/nodice
 else
-  cd ~/o/nodice
+  cd ~/o/qdice
 fi
 export $(cat .env | xargs)
 export $(cat .local_env | xargs)
@@ -26,7 +26,11 @@ if [ ! -s $DIR/pg_dump.sql ]; then
 fi
 echo "Created DB archive."
 
-cp -R ~/data-avatars/ $DIR
+if [ -d ~/nodice ]; then
+  cp -R /avatars/ $DIR
+else
+  cp -R ~/data-avatars/ $DIR
+fi
 cp -R data/logs/nginx/ $DIR
 
 
