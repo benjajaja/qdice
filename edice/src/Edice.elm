@@ -148,7 +148,7 @@ init flags location key =
                     , oauthCmds
                     , [ loadGlobalSettings backend ]
                     , [ routeCmd ]
-                    , [ Task.perform UserZone Time.here ]
+                    , [ Task.perform UserZone <| Task.map2 (\z -> \t -> ( z, t )) Time.here Time.now ]
                     , [ gameCmd ]
                     , [ Task.perform (\v -> Resized (round v.viewport.width) (round v.viewport.height)) Browser.Dom.getViewport ]
                     ]
@@ -932,8 +932,8 @@ update msg model =
             in
             ( { model | time = newTime, game = game_2 }, cmd )
 
-        UserZone zone ->
-            ( { model | zone = zone }, Cmd.none )
+        UserZone ( zone, time ) ->
+            ( { model | zone = zone, time = time }, Cmd.none )
 
         SetLastHeartbeat time ->
             let

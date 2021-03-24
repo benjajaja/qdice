@@ -27,7 +27,7 @@ type Msg
     | OnUrlRequest Browser.UrlRequest
     | Frame Time.Posix
     | Resized Int Int
-    | UserZone Time.Zone
+    | UserZone ( Time.Zone, Time.Posix )
     | Animate Animation.Msg
     | MyProfileMsg MyProfile.Types.MyProfileMsg
     | ErrorToast String String
