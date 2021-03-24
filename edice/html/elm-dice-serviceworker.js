@@ -110,6 +110,7 @@ function preCache() {
           var files = maps
             .concat([
               "./",
+              "./?homescreen",
               "./die.svg",
               "./quedice.svg",
               "./favicons-2/favicon.png",
