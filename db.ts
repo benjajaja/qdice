@@ -189,7 +189,11 @@ export const getUserId = async (email: string): Promise<UserId> => {
   const rows = await pool.query("SELECT id FROM users WHERE email = $1", [
     email,
   ]);
-  return rows.rows[0].id;
+  if (rows.rows.length > 0) {
+    return rows.rows[0].id;
+  } else {
+    throw new Error("user not found");
+  }
 };
 
 export const updateUser = async (

@@ -44,7 +44,7 @@ export const login = async (req, res, next) => {
         const ok = await Scrypt.verify(buffer, req.body.password);
 
         if (!ok) {
-          return res.send(403, "bad password");
+          return res.send(403, "bad user/password");
         }
 
         const profile = await db.getUser(id);
@@ -55,8 +55,7 @@ export const login = async (req, res, next) => {
         res.sendRaw(200, token);
         next();
       } catch (e) {
-        logger.error("could not login with password", e);
-        next(e);
+        return res.send(403, "bad user/password");
       } finally {
         return;
       }
