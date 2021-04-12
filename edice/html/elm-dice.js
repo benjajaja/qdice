@@ -266,25 +266,24 @@ app.ports.requestNotifications.subscribe(function() {
 });
 
 app.ports.renounceNotifications.subscribe(function(jwt) {
-  if (!navigator || !navigator.serviceWorker) {
-    return;
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready.then(function(registration) {
+      return registration.pushManager
+        .getSubscription()
+        .then(function(subscription) {
+          try {
+            localStorage.removeItem("notifications");
+            app.ports.notificationsChange.send([
+              "denied",
+              JSON.stringify(subscription),
+              jwt,
+            ]);
+          } catch (e) {
+            Sentry.captureException(e);
+          }
+        });
+    });
   }
-  navigator.serviceWorker.ready.then(function(registration) {
-    return registration.pushManager
-      .getSubscription()
-      .then(function(subscription) {
-        try {
-          localStorage.removeItem("notifications");
-          app.ports.notificationsChange.send([
-            "denied",
-            JSON.stringify(subscription),
-            jwt,
-          ]);
-        } catch (e) {
-          Sentry.captureException(e);
-        }
-      });
-  });
 });
 
 function enablePush() {
@@ -373,13 +372,16 @@ function notification(title, actions, tag) {
   }
 }
 
-navigator.serviceWorker.addEventListener("message", function(event) {
-  if (event.data.msg === "notification-click") {
-    app.ports.notificationClick.send(event.data.tag);
-  } else if (event.data.msg === "notification") {
-    app.ports.pushNotification.send(event.data.json);
-  }
-});
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", function(event) {
+    if (event.data.msg === "notification-click") {
+      app.ports.notificationClick.send(event.data.tag);
+    } else if (event.data.msg === "notification") {
+      app.ports.pushNotification.send(event.data.json);
+    }
+  });
+}
+
 function urlBase64ToUint8Array(base64String) {
   var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   var base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
