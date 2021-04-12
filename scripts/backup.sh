@@ -16,7 +16,7 @@ FILE_PATH="/tmp/${FILENAME}"
 
 mkdir $DIR
 
-docker run -i --rm --network qdice -e PGPASSWORD=$POSTGRES_PASSWORD nodice_postgres \
+docker run -i --rm --network qdice -e PGPASSWORD=$POSTGRES_PASSWORD qdice_postgres \
   pg_dump -U bgrosse -h postgres -d nodice \
   > $DIR/pg_dump.sql
 

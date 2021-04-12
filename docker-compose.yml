@@ -4,7 +4,7 @@ services:
   postgres:
     restart: always
     image: postgres:9.6
-    container_name: postgres
+    container_name: qdice_postgres
     environment:
       POSTGRES_DB: "nodice"
       POSTGRES_USER: "bgrosse"
@@ -68,7 +68,7 @@ services:
       - goaccess:/var/www/goaccess:ro
   certbot:
     image: certbot/certbot
-    container_name: certbot
+    container_name: qdice_certbot
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/html
