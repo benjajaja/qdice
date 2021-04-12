@@ -145,7 +145,7 @@ intermediateStack pathCache { stack, dice } options land =
         diceAnimation =
             Dict.get land.emoji dice
     in
-    ( land.emoji
+    ( "stack_" ++ land.emoji
     , Svg.Lazy.lazy5 animatedStackDies pathCache animationAttrs diceAnimation options land
     )
 
@@ -162,14 +162,12 @@ animatedStackDies pathCache stack dice options land =
                 |> Maybe.map Animation.render
                 |> Maybe.withDefault Helpers.emptyList
     in
-    g [] <|
-        [ g
-            (class "edBoard--stack"
-                :: animationAttrs
-            )
-            [ Svg.Lazy.lazy5 landDies dice options land x_ y_
-            , Svg.Lazy.lazy4 capitalText land.capital x_ y_ land.color
-            ]
+    Svg.Keyed.node "g"
+        ([ class "edBoard--stack" ]
+            ++ animationAttrs
+        )
+        [ ( "dies", Svg.Lazy.lazy5 landDies dice options land x_ y_ )
+        , ( "text", Svg.Lazy.lazy4 capitalText land.capital x_ y_ land.color )
         ]
 
 
@@ -188,15 +186,7 @@ landDies diceAnimations options land x_ y_ =
                             (land.points - 1)
                    )
                 ++ (if options.showEmojis then
-                        [ ( "emoji"
-                          , Svg.text_
-                                [ x <| String.fromFloat (x_ - 5.0)
-                                , y <| String.fromFloat (y_ + 0.0)
-                                , fontSize "3"
-                                ]
-                                [ Svg.text land.emoji ]
-                          )
-                        ]
+                        [ ( "emoji", Svg.Lazy.lazy3 landEmoji x_ y_ land.emoji ) ]
 
                     else
                         []
@@ -234,12 +224,12 @@ landDie animations cx cy index =
                 Nothing ->
                     False
     in
-    ( String.fromInt index
+    ( "die_" ++ String.fromInt index
     , Svg.Lazy.lazy4 lazyDie cx cy index animation
     )
 
 
-lazyDie : Float -> Float -> Int -> Bool -> Svg.Svg msg
+lazyDie : Float -> Float -> Int -> Bool -> Svg.Svg a
 lazyDie x_ y_ index animated =
     let
         ( xOffset, yOffset ) =
@@ -262,12 +252,22 @@ lazyDie x_ y_ index animated =
                , y <| String.fromFloat <| y_ - yOffset - (toFloat (modBy 4 index) * 1.2)
                , textAnchor "middle"
                , alignmentBaseline "central"
-               , xlinkHref "#die"
+               , xlinkHref "#die_board"
                , height "3"
                , width "3"
                ]
         )
         []
+
+
+landEmoji : Float -> Float -> String -> Svg.Svg a
+landEmoji x_ y_ emoji =
+    Svg.text_
+        [ x <| String.fromFloat (x_ - 0.5)
+        , y <| String.fromFloat y_
+        , fontSize "3"
+        ]
+        [ Svg.Lazy.lazy Svg.text emoji ]
 
 
 waterConnections : PathCache -> List ( Land.Emoji, Land.Emoji ) -> Svg Msg

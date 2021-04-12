@@ -9,7 +9,7 @@ die : Svg msg
 die =
     defs []
         [ g
-            [ id "die"
+            [ id "die_board"
             , transform "scale(0.055)"
             ]
             [ Svg.path
