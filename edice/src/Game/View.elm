@@ -577,6 +577,7 @@ tableInfo model =
                                     ]
                                     [ text table
                                     ]
+                                , span [ class "edGameStatus__chip" ] [ Html.Lazy.lazy onlineCount model.tableList ]
                                 ]
 
                     Nothing ->
@@ -1006,3 +1007,16 @@ lastRollSum sum isFrom luck rolling =
                    )
         ]
         [ text <| String.fromInt <| sum ]
+
+
+onlineCount : List TableInfo -> Html msg
+onlineCount tables =
+    let
+        count =
+            if List.length tables /= 0 then
+                String.fromInt <| List.foldl (+) 0 <| List.map .watchCount tables
+
+            else
+                "0"
+    in
+    text <| "(" ++ count ++ " online)"

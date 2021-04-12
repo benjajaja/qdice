@@ -872,7 +872,7 @@ input[type="range"]::-webkit-slider-runnable-track {
   height: 0;
   width: 0;
   border-top: none;
-  border-left: 300px solid #519ab1;
+  border-left: 300px solid #eee;
   border-bottom: 30px solid transparent;
   content: ' ';
 }
