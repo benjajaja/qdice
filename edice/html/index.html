@@ -3,7 +3,13 @@
   <head>
     <meta charset="utf-8">
     <% if (!zip) { %><base href="/"><% } %>
-    <link href="<%= css %>" rel="stylesheet">
+    <link rel="preload" as="style" href="<%= css %>">
+    <link rel="preload" as="script" href="<%= script %>">
+    <link rel="preload" as="font" href="iconfont/MaterialIcons-Regular.woff2" crossorigin="anonymous">
+    <link rel="preload" as="font" href="fonts/rubik-v7-latin-regular.woff2" crossorigin="anonymous">
+    <link rel="preload" as="font" href="fonts/rubik-v7-latin-500.woff2" crossorigin="anonymous">
+    <link rel="stylesheet" href="<%= css %>">
+    <link rel="preload" as="image" href="quedice.svg">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- fullscreen mode -->
