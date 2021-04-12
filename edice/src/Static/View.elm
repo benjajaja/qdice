@@ -61,6 +61,10 @@ Before making a PR, I suggest to get in contact with me however you want, an iss
   End-to-end tests are run with docker and play a real game from beginning to end.
   The node.js server has a greater number of unit tests.
 * **CI/CD** - Everything is continuosly deployed in a _build -> unit test -> end-to-end test_ pipeline.
+
+## Gameplay, rules and AI
+* Notable contibution from Derek Thomas: starting positions are spread out evenly with an algorithm.
+* IA is simply rules based. There are "personalities" so that some bots prefer different strategies.
 """
         , Comments.view model.zone model.user model.comments <| Comments.staticComments page
         ]
