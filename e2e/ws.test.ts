@@ -4,7 +4,7 @@ describe("Websocket", () => {
       text: "Online",
     });
 
-    await page.evaluate(() => (window as any).mqttClient.end());
+    await page.evaluate(() => (window as any).mqttClient.disconnect());
 
     await expect(page).toMatchElement(testId("connection-status"), {
       text: "Offline",
@@ -15,16 +15,10 @@ describe("Websocket", () => {
       text: "Online",
     });
 
-    await page.evaluate(() => (window as any).mqttClient.end());
+    await page.evaluate(() => (window as any).mqttClient.disconnect());
 
     await expect(page).toMatchElement(testId("connection-status"), {
       text: "Offline",
-    });
-
-    await page.evaluate(() => (window as any).mqttClient.reconnect());
-
-    await expect(page).toMatchElement(testId("connection-status"), {
-      text: "Online",
     });
   });
 });

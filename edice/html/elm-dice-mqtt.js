@@ -1,4 +1,4 @@
-var mqtt = require("mqtt");
+var mqtt = require("paho-mqtt");
 
 function getMqttConfig(jwt) {
   if (
@@ -18,6 +18,8 @@ function getMqttConfig(jwt) {
     // e2e tests and screenshots
     return {
       protocol: "ws",
+      hostname: self.location.hostname,
+      port: 80,
       path: "mqtt",
       username: "elm",
       password: jwt,
@@ -37,6 +39,7 @@ function getMqttConfig(jwt) {
       protocol: "wss",
       path: "mqtt",
       hostname: "qdice.wtf",
+      port: 443,
       username: "elm",
       password: jwt,
     };
@@ -52,59 +55,41 @@ module.exports.connect = function(jwt) {
     .concat(["/", mqttConfig.path])
     .join("");
   var clientId = sessionClientId();
-  client = mqtt.connect(url, {
-    clientId: clientId,
-    username: mqttConfig.username,
+  client = new mqtt.Client(mqttConfig.hostname, mqttConfig.port, "/" + mqttConfig.path, clientId);
+  var willMessage = new mqtt.Message(clientId);
+  willMessage.destinationName = "death";
+  client.connect({
+    uris: [url],
+    userName: mqttConfig.username,
     password: mqttConfig.password,
-    resubscribe: false,
-    will: {
-      topic: "death",
-      payload: clientId,
-      properties: {
-        willDelayInterval: 1,
-      },
+    willMessage: willMessage,
+    onSuccess: function() {
+      postMessage({ type: "mqttOnConnected", payload: clientId });
+      connectionAttempts = 0;
     },
+    onFailure: function(_, error, message) {
+      console.error("connection error", error, message);
+    }
   });
 
   var connectionAttempts = 0;
 
   postMessage({ type: "mqttOnConnect", payload: "" });
 
-  client.on("connect", function(connack) {
-    postMessage({ type: "mqttOnConnected", payload: clientId });
-    connectionAttempts = 0;
-  });
-
-  client.on("message", function(topic, message) {
+  client.onMessageArrived = function(message) {
     postMessage({
       type: "mqttOnMessage",
-      payload: [topic, message.toString()],
+      payload: [message.destinationName, message.payloadString],
     });
-  });
+  };
 
-  client.on("error", function(error) {
-    console.error("mqtt error:", error);
-  });
-
-  client.on("reconnect", function() {
-    connectionAttempts = connectionAttempts + 1;
-    postMessage({ type: "mqttOnReconnect", payload: connectionAttempts });
-  });
-
-  client.on("close", function(event) {
-    console.error("mqtt close:", event);
+  client.onConnectionLost = function(code, message) {
+    console.error("mqtt connection lost:", code, message);
     postMessage({
       type: "mqttOnOffline",
       payload: connectionAttempts.toString(),
     });
-  });
-
-  client.on("offline", function() {
-    postMessage({
-      type: "mqttOnOffline",
-      payload: connectionAttempts.toString(),
-    });
-  });
+  };
 
   window.mqttClient = client; // for e2e
 };
@@ -118,22 +103,15 @@ var postMessage = function(message) {
 };
 
 module.exports.subscribe = function(payload) {
-  client.subscribe(payload, function(err, granted) {
-    if (err) {
-      postMessage({ type: "mqttOnError", payload: err.toString() });
-    } else {
-      granted.forEach(function(granted) {
-        postMessage({ type: "mqttOnSubscribed", payload: granted.topic });
-      });
+  client.subscribe(payload, {
+    onSuccess: function() {
+      postMessage({ type: "mqttOnSubscribed", payload: payload });
     }
   });
 };
 
 module.exports.unsubscribe = function(payload) {
-  client.unsubscribe(payload, function(err, granted) {
-    if (err) throw err;
-    //postMessage({ type: 'mqttOnUnSubscribed', payload: granted.shift().topic});
-  });
+  client.unsubscribe(payload);
 };
 
 module.exports.publish = function(payload) {
