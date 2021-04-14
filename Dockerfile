@@ -1,6 +1,6 @@
 # node.js server build
 
-FROM node:10.15.3-alpine AS server
+FROM node:12.14.1-alpine AS server
 
 WORKDIR /usr/src/nodice
 COPY package.json .
