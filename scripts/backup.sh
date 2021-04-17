@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 if [ -d ~/nodice ]; then
   cd ~/nodice
@@ -9,23 +9,18 @@ export $(cat .env | xargs)
 export $(cat .local_env | xargs)
 
 DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-DIR="/tmp/backup_${DATE}"
-FILENAME="backup_${DATE}.tgz"
-FILE_PATH="/tmp/${FILENAME}"
 
-
-mkdir $DIR
-
-docker run -i --rm --network qdice -e PGPASSWORD=$POSTGRES_PASSWORD qdice_postgres \
+docker run -i --rm --network qdice -e PGPASSWORD=$POSTGRES_PASSWORD postgres:9.6 \
   pg_dump -U bgrosse -h postgres -d nodice \
-  > $DIR/pg_dump.sql
+  -Z 9 -v | aws s3 cp - s3://qdice-postgres/backup_${DATE}.dump.gz
+echo "Streamed DB archive to S3: backup_${DATE}.dump.gz"
 
-if [ ! -s $DIR/pg_dump.sql ]; then
-  echo "pg_dump.sql is empty!"
-  exit 1
-fi
-echo "Created DB archive."
+DIR="/mnt/backups/backup_${DATE}"
+FILENAME="files_${DATE}.tgz"
+FILE_PATH="${DIR}/${FILENAME}"
 
+
+mkdir -p $DIR
 if [ -d ~/nodice ]; then
   cp -R /avatars/ $DIR
 else
@@ -36,13 +31,9 @@ cp -R data/logs/nginx/ $DIR
 
 tar czf $FILE_PATH $DIR
 
-aws2 glacier upload-archive --account-id - --vault-name qdice_postgres --body $FILE_PATH
+aws s3 cp $FILE_PATH "s3://qdice-postgres/${FILENAME}"
 
-echo "Uploaded DB to S3 Glacier."
-
-aws2 s3 cp $FILE_PATH "s3://qdice-postgres/${FILENAME}"
-
-echo "Uploaded DB to S3 bucket."
+echo "Uploaded avatars+logs to S3 bucket."
 
 rm $FILE_PATH
 rm -rf $DIR

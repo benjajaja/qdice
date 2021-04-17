@@ -22,3 +22,5 @@ EOF
 
 cat $path | docker run -i --rm --network qdice -e PGPASSWORD=$POSTGRES_PASSWORD qdice_postgres \
   psql -U bgrosse -h postgres -d nodice
+
+# wget -O - 'https://S3-URL/BUCKET/DB_NAME.dump.gz' |zcat |sudo -u postgres psql DB_NAME
