@@ -108,6 +108,28 @@ diceDefs =
             , transform "scale(0.031)"
             ]
             []
+        , Svg.path
+            [ id "shadow"
+            , transform "scale(0.5)"
+            , stroke "black"
+            , fill "black"
+            , strokeWidth "2"
+            , strokeLinejoin "round"
+            , opacity "0.3"
+            , d "M 0,0 1,0 2,1 1,2 -0.4,2 -1,1 Z"
+            ]
+            []
+        , Svg.path
+            [ id "shadow-double"
+            , transform "scale(0.5)"
+            , stroke "black"
+            , fill "black"
+            , strokeWidth "2"
+            , strokeLinejoin "round"
+            , opacity "0.3"
+            , d "M -2,-2 1,0 2,1 1,2 -0.4,2 -3,0 -3,-1 Z"
+            ]
+            []
         ]
 
 
