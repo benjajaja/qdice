@@ -1,6 +1,7 @@
-module Board.Die exposing (die, rollDie, shadow)
+module Board.Die exposing (diceDefs, rollDie, shadow, skinId)
 
 import Html.Lazy
+import Land exposing (DiceSkin(..))
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
@@ -92,13 +93,29 @@ displayIf iif i =
             "none"
 
 
-die : Svg msg
-die =
+diceDefs : Svg msg
+diceDefs =
     defs []
         [ Svg.image
             [ xlinkHref "assets/die.svg"
-            , id "die_board"
+            , id <| skinId Normal
+            , transform "scale(0.031)"
+            ]
+            []
+        , Svg.image
+            [ xlinkHref "assets/die_binary.svg"
+            , id <| skinId Bot
             , transform "scale(0.031)"
             ]
             []
         ]
+
+
+skinId : DiceSkin -> String
+skinId skin =
+    case skin of
+        Normal ->
+            "die_normal"
+
+        Bot ->
+            "die_bot"

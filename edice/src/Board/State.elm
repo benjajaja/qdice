@@ -1,12 +1,12 @@
 module Board.State exposing (init, removeColor, updateLands)
 
-import Animation exposing (px)
+import Animation
 import Array exposing (Array)
 import Board.PathCache
 import Board.Types exposing (..)
 import Dict
 import Ease
-import Land exposing (Color(..), LandUpdate)
+import Land exposing (Color(..), DiceSkin(..), LandUpdate)
 
 
 init : Land.Map -> Model
@@ -23,8 +23,8 @@ init map =
     Model map Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty } Nothing
 
 
-updateLands : Model -> List LandUpdate -> Maybe BoardMove -> Model
-updateLands model updates mMove =
+updateLands : Model -> List LandUpdate -> Maybe BoardMove -> List BoardPlayer -> Model
+updateLands model updates mMove players =
     if List.length updates == 0 then
         let
             move_ =
@@ -45,7 +45,7 @@ updateLands model updates mMove =
 
             landUpdates : List ( Land.Land, Array Bool )
             landUpdates =
-                List.map (updateLand updates) map.lands
+                List.map (updateLand updates players) map.lands
 
             lands_ =
                 List.map Tuple.first landUpdates
@@ -86,8 +86,8 @@ giveDiceAnimations landUpdates =
         landUpdates
 
 
-updateLand : List LandUpdate -> Land.Land -> ( Land.Land, Array Bool )
-updateLand updates land =
+updateLand : List LandUpdate -> List BoardPlayer -> Land.Land -> ( Land.Land, Array Bool )
+updateLand updates players land =
     let
         match =
             List.filter (\l -> l.emoji == land.emoji) updates
@@ -105,6 +105,7 @@ updateLand updates land =
                 ( { land
                     | color = landUpdate.color
                     , points = landUpdate.points
+                    , diceSkin = skinFromColor players landUpdate.color
                     , capital = landUpdate.capital
                   }
                 , updateLandAnimations land landUpdate
@@ -115,6 +116,16 @@ updateLand updates land =
 
         Nothing ->
             ( land, Array.empty )
+
+
+skinFromColor : List BoardPlayer -> Color -> DiceSkin
+skinFromColor players c =
+    case List.head <| List.filter (\{ color } -> color == c) players of
+        Just { skin } ->
+            skin
+
+        Nothing ->
+            Normal
 
 
 updateLandAnimations : Land.Land -> LandUpdate -> Array Bool
@@ -211,7 +222,7 @@ removeColor model color =
                     List.map
                         (\land ->
                             if land.color == color then
-                                { land | color = Neutral }
+                                { land | color = Neutral, diceSkin = Normal }
 
                             else
                                 land

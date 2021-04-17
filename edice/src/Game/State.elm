@@ -6,16 +6,15 @@ import Backend.MqttCommands exposing (attack, sendGameCommand)
 import Backend.Types exposing (Topic(..))
 import Board
 import Board.State
-import Board.Types exposing (BoardMove(..), Msg(..))
+import Board.Types exposing (BoardMove(..), BoardPlayer, Msg(..))
 import Browser.Dom as Dom
 import Game.Types exposing (..)
 import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
-import Land exposing (LandUpdate)
-import Maps exposing (load)
+import Land exposing (DiceSkin(..), LandUpdate)
+import Maps
 import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (MapName(..), Table, isTournament)
 import Task
-import Time
 import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
 
 
@@ -252,7 +251,7 @@ updateTableStatus model status =
              else
                 oldBoard
             )
-                |> (\b -> Board.State.updateLands b status.lands Nothing)
+                |> (\b -> Board.State.updateLands b status.lands Nothing (boardPlayers status.players))
                 |> (if hasStarted then
                         \b -> { b | avatarUrls = Just <| List.map (\p -> ( p.color, p.picture )) status.players }
 
@@ -397,7 +396,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                 game.board
 
             else
-                Board.State.updateLands game.board lands move
+                Board.State.updateLands game.board lands move (boardPlayers players)
 
         canMove =
             if not hasTurn then
@@ -620,13 +619,12 @@ showRoll model roll =
                             from.capital
                     }
                         :: (if success then
-                                [ { emoji = to.emoji
-                                  , color = from.color
-                                  , points = from.points - 1
-                                  , capital = Nothing
-                                  }
-                                ]
-                                    ++ (if success && from.capital == Nothing then
+                                { emoji = to.emoji
+                                , color = from.color
+                                , points = from.points - 1
+                                , capital = Nothing
+                                }
+                                    :: (if success && from.capital == Nothing then
                                             case to.capital of
                                                 Just tc ->
                                                     find (\l -> l.color == from.color && l.capital /= Nothing) game.board.map.lands
@@ -661,7 +659,7 @@ showRoll model roll =
                     []
 
         board_ =
-            Board.State.updateLands model.game.board updates (Just Board.Types.Idle)
+            Board.State.updateLands model.game.board updates (Just Board.Types.Idle) (boardPlayers players)
 
         game =
             model.game
@@ -924,6 +922,7 @@ updateTable model table msg =
                                                             []
                                                     )
                                                     (Just move_)
+                                                    (boardPlayers model.game.players)
                                             , lastRoll =
                                                 case move_ of
                                                     Board.Types.FromTo from to ->
@@ -1249,3 +1248,9 @@ playSound preferences sound =
 fetchTableTop : Types.Model -> Table -> ( Types.Model, Cmd Msg )
 fetchTableTop model table =
     ( model, Backend.HttpCommands.tableStats model.backend table )
+
+
+boardPlayers : List Player -> List BoardPlayer
+boardPlayers players =
+    List.map (\p -> { color = p.color, skin = if String.startsWith "bot_" p.id then Bot else Normal }) players
+

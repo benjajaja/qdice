@@ -3,7 +3,7 @@ module Board.View exposing (view)
 import Animation
 import Array exposing (Array)
 import Board.Colors exposing (contrastColors)
-import Board.Die exposing (die)
+import Board.Die exposing (diceDefs, skinId)
 import Board.PathCache
 import Board.Types exposing (..)
 import Dict
@@ -11,7 +11,7 @@ import Helpers exposing (dataTestId, dataTestValue)
 import Html
 import Html.Attributes
 import Html.Lazy
-import Land exposing (Capital, Land)
+import Land exposing (Capital, DiceSkin, Land)
 import String
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -47,7 +47,7 @@ board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options 
                             []
                    )
             )
-            [ die
+            [ diceDefs
             , Svg.Lazy.lazy avatarDefs <| Maybe.withDefault [] avatarUrls
             , Svg.Lazy.lazy2 waterConnections pathCache map.waterConnections
             , Svg.Lazy.lazy4 realLands
@@ -163,8 +163,8 @@ animatedStackDies pathCache stack dice options land =
                 |> Maybe.withDefault Helpers.emptyList
     in
     Svg.Keyed.node "g"
-        ([ class "edBoard--stack" ]
-            ++ animationAttrs
+        (class "edBoard--stack"
+            :: animationAttrs
         )
         [ ( "dies", Svg.Lazy.lazy5 landDies dice options land x_ y_ )
         , ( "text", Svg.Lazy.lazy4 capitalText land.capital x_ y_ land.color )
@@ -177,9 +177,9 @@ landDies diceAnimations options land x_ y_ =
         Svg.Keyed.node "g"
             [ class "edBoard--stack--inner" ]
         <|
-            [ ( "shadow", Html.Lazy.lazy3 Board.Die.shadow land.points x_ y_ ) ]
-                ++ (List.map
-                        (landDie diceAnimations x_ y_)
+            ( "shadow", Html.Lazy.lazy3 Board.Die.shadow land.points x_ y_ )
+                :: (List.map
+                        (landDie diceAnimations x_ y_ land.diceSkin)
                     <|
                         List.range
                             0
@@ -212,8 +212,8 @@ landDies diceAnimations options land x_ y_ =
             [ Svg.text <| String.fromInt land.points ]
 
 
-landDie : Maybe (Array Bool) -> Float -> Float -> Int -> ( String, Svg Msg )
-landDie animations cx cy index =
+landDie : Maybe (Array Bool) -> Float -> Float -> DiceSkin -> Int -> ( String, Svg Msg )
+landDie animations cx cy skin index =
     let
         animation : Bool
         animation =
@@ -225,12 +225,12 @@ landDie animations cx cy index =
                     False
     in
     ( "die_" ++ String.fromInt index
-    , Svg.Lazy.lazy4 lazyDie cx cy index animation
+    , Svg.Lazy.lazy5 lazyDie cx cy index animation skin
     )
 
 
-lazyDie : Float -> Float -> Int -> Bool -> Svg.Svg a
-lazyDie x_ y_ index animated =
+lazyDie : Float -> Float -> Int -> Bool -> DiceSkin -> Svg.Svg a
+lazyDie x_ y_ index animated skin =
     let
         ( xOffset, yOffset ) =
             if index >= 4 then
@@ -252,7 +252,7 @@ lazyDie x_ y_ index animated =
                , y <| String.fromFloat <| y_ - yOffset - (toFloat (modBy 4 index) * 1.2)
                , textAnchor "middle"
                , alignmentBaseline "central"
-               , xlinkHref "#die_board"
+               , xlinkHref <| "#" ++ skinId skin
                , height "3"
                , width "3"
                ]
@@ -321,7 +321,7 @@ capitalText capital x_ y_ color =
             g
                 [ class "edBoard--stack__capital" ]
             <|
-                [ Svg.circle
+                Svg.circle
                     [ cx <| String.fromFloat (x_ - 1.5)
                     , cy <| String.fromFloat (y_ + 1.0)
                     , r <| String.fromInt <| round (toFloat capitalAvatarSize / 2)
@@ -338,8 +338,7 @@ capitalText capital x_ y_ color =
                     , fill <| "url(#player_" ++ (color |> Board.Colors.colorIndex |> String.fromInt) ++ ")"
                     ]
                     []
-                ]
-                    ++ (if count > 0 then
+                    :: (if count > 0 then
                             [ Svg.text_
                                 [ class "edBoard--stack__reserveDice"
                                 , x <| String.fromFloat (x_ - 0.1)

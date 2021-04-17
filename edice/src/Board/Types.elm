@@ -1,9 +1,9 @@
-module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), BoardOptions, DiceAnimations, Model, Msg(..), PathCache, getLayout)
+module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), BoardOptions, BoardPlayer, DiceAnimations, Model, Msg(..), PathCache, getLayout)
 
 import Animation
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Land exposing (Color, Emoji, Land, Map, MapSize)
+import Land exposing (Color, DiceSkin, Emoji, Land, Map, MapSize)
 
 
 type Msg
@@ -54,6 +54,12 @@ type BoardMove
     = Idle
     | From Land
     | FromTo Land Land
+
+
+type alias BoardPlayer =
+    { color : Color
+    , skin : DiceSkin
+    }
 
 
 getLayout : Map -> ( MapSize, String )

@@ -4,7 +4,7 @@ import Array
 import Dict
 import Helpers exposing (combine, consoleDebug)
 import Hex
-import Land exposing (Cells, Emoji)
+import Land exposing (Cells, DiceSkin(..), Emoji)
 import Maps.Sources exposing (mapAdjacency, mapSourceString)
 import Regex
 import String
@@ -146,7 +146,7 @@ emojisToMap name raw =
             List.map (List.filter isEmptyEmoji) lines
                 |> foldLines
                 |> List.foldr dedupeEmojis []
-                |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1 Nothing)
+                |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1 Land.Normal Nothing)
     in
     Result.map
         (\a ->

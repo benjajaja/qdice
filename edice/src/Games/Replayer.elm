@@ -34,7 +34,7 @@ init game =
             Board.init <| Result.withDefault Maps.emptyMap map
 
         board_ =
-            Board.State.updateLands board game.lands Nothing
+            Board.State.updateLands board game.lands Nothing []
 
         players =
             List.indexedMap (mapGamePlayer game.lands) game.players
@@ -340,7 +340,7 @@ mapEvent model step =
                         Just ( fromLand, toLand ) ->
                             ( { model
                                 | board =
-                                    Board.State.updateLands model.board [] <| Just <| FromTo fromLand toLand
+                                    Board.State.updateLands model.board [] (Just <| FromTo fromLand toLand) []
                               }
                             , Nothing
                             , [ turnPlayerLogPart model.players model.turnIndex <| Just player
@@ -408,7 +408,7 @@ mapEvent model step =
                                     ( [], Nothing )
 
                         board =
-                            Board.State.updateLands model.board updates <| Just Idle
+                            Board.State.updateLands model.board updates (Just Idle) []
 
                         players =
                             List.filter
@@ -596,7 +596,7 @@ mapEvent model step =
                         | board =
                             case updates of
                                 Just u ->
-                                    Board.State.updateLands model.board u Nothing
+                                    Board.State.updateLands model.board u Nothing []
 
                                 Nothing ->
                                     model.board
@@ -747,8 +747,8 @@ removeFlagged model =
                         []
                         removedColors
                     )
-                <|
-                    Just model.board.move
+                    (Just model.board.move)
+                    []
 
             else
                 model.board

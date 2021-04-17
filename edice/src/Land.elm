@@ -1,4 +1,4 @@
-module Land exposing (Capital, Cells, Color(..), Emoji, Land, LandUpdate, Map, MapSize, Point, at, emptyEmoji, findLand, hasAttackableNeighbours, isBordering, landCenter, landPath, playerColor)
+module Land exposing (Capital, Cells, Color(..), DiceSkin(..), Emoji, Land, LandUpdate, Map, MapSize, Point, at, emptyEmoji, findLand, hasAttackableNeighbours, isBordering, landCenter, landPath, playerColor)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
@@ -6,6 +6,11 @@ import Helpers exposing (find, resultCombine)
 import Hex exposing (Direction(..), Hex, Point, borderLeftCorner, hexToOffset, offsetToHex)
 import List
 import Tables exposing (MapName)
+
+
+type DiceSkin
+    = Normal
+    | Bot
 
 
 type alias Cells =
@@ -25,6 +30,7 @@ type alias Land =
     , color : Color
     , emoji : Emoji
     , points : Int
+    , diceSkin : DiceSkin
     , capital : Maybe Capital
     }
 
