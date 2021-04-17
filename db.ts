@@ -408,6 +408,14 @@ export const userProfile = (
     voted,
     awards,
   } = rows[0];
+  const networks = rows.map(row => row.network).filter(R.identity);
+  const rankInt = parseInt(rank, 10);
+  let skin = 0;
+  if (rankInt === 1) {
+    skin = 3;
+  } else if (networks.length > 0) {
+    skin = 2;
+  }
   return {
     id: id.toString(),
     name,
@@ -419,8 +427,8 @@ export const userProfile = (
       row => row.network !== NETWORK_PASSWORD || row.network_id !== null
     ),
     points: parseInt(points, 10),
-    rank: parseInt(rank, 10),
-    networks: rows.map(row => row.network).filter(R.identity),
+    rank: rankInt,
+    networks,
     voted,
     awards: R.sortWith(
       [
@@ -442,6 +450,7 @@ export const userProfile = (
       awards
     ),
     ip,
+    skin,
   };
 };
 

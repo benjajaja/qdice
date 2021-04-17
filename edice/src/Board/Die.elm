@@ -142,17 +142,15 @@ diceDefs =
             , transform "scale(0.031)"
             ]
             []
+        , Svg.image
+            [ xlinkHref "assets/die_king.svg"
+            , id <| skinId King
+            , transform "scale(0.031)"
+            ]
+            []
         ]
 
 
 skinId : DiceSkin -> String
 skinId skin =
-    case skin of
-        Normal ->
-            "die_normal"
-
-        FatOne ->
-            "die_fatone"
-
-        Bot ->
-            "die_bot"
+    "die_skin_" ++ String.fromInt (Land.skinId skin)

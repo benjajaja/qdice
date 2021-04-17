@@ -107,6 +107,7 @@ export type UserLike = {
   readonly level: number;
   readonly points: number;
   readonly rank: number;
+  readonly skin: number;
 };
 
 export type User = UserLike & {

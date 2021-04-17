@@ -1,8 +1,8 @@
-module Game.Types exposing (..)
+module Game.Types exposing (Award, ChatLogEntry(..), Chatter, Elimination, EliminationReason(..), GameStatus(..), MapLoadError(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, RollUI, TableInfo, TableParams, TableStatus, TournamentConfig, TurnInfo, User, actionToString, isBot, makePlayer, statusToString, userColor)
 
 import Board
 import Browser.Dom as Dom
-import Land exposing (Color, Emoji, LandUpdate)
+import Land exposing (Color, DiceSkin(..), Emoji, LandUpdate)
 import LeaderBoard.ChartTypes exposing (Datum)
 import Tables exposing (Table)
 import Time exposing (Posix)
@@ -80,6 +80,7 @@ type alias Player =
     , awards : List Award
     , flag : Maybe Int
     , ready : Bool
+    , skin : DiceSkin
     }
 
 
@@ -280,6 +281,7 @@ makePlayer name =
     , reserveDice = 0
     , flag = Nothing
     , ready = False
+    , skin = Normal
     }
 
 

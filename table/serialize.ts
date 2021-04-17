@@ -89,6 +89,7 @@ export const trimPlayer = (player: Player) => {
       "flag",
       "ready",
       "awards",
+      "skin",
     ],
     player
   );

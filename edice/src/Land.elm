@@ -1,4 +1,4 @@
-module Land exposing (Capital, Cells, Color(..), DiceSkin(..), Emoji, Land, LandUpdate, Map, MapSize, Point, at, emptyEmoji, findLand, hasAttackableNeighbours, isBordering, landCenter, landPath, playerColor)
+module Land exposing (Capital, Cells, Color(..), DiceSkin(..), Emoji, Land, LandUpdate, Map, MapSize, Point, at, emptyEmoji, findLand, hasAttackableNeighbours, idSkin, isBordering, landCenter, landPath, playerColor, skinId)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
@@ -12,6 +12,7 @@ type DiceSkin
     = Normal
     | FatOne
     | Bot
+    | King
 
 
 type alias Cells =
@@ -396,3 +397,35 @@ canAttack map source target =
 
     else
         Ok False
+
+
+idSkin : Int -> DiceSkin
+idSkin i =
+    case i of
+        1 ->
+            Bot
+
+        2 ->
+            FatOne
+
+        3 ->
+            King
+
+        _ ->
+            Normal
+
+
+skinId : DiceSkin -> Int
+skinId skin =
+    case skin of
+        Normal ->
+            0
+
+        Bot ->
+            1
+
+        FatOne ->
+            2
+
+        King ->
+            3

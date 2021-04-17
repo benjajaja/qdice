@@ -102,6 +102,7 @@ export const addBots = (
     voted: [],
     awards: [],
     ip: undefined,
+    skin: 1,
   };
 
   return {

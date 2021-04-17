@@ -9,7 +9,7 @@ import Helpers
 import Iso8601
 import Json.Decode exposing (Decoder, andThen, bool, fail, field, index, int, lazy, list, map, map2, map3, map4, maybe, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
-import Land exposing (Color, LandUpdate, playerColor)
+import Land exposing (Color, DiceSkin, LandUpdate, playerColor)
 import LeaderBoard.ChartTypes exposing (Datum, PlayerRef)
 import Tables exposing (Table)
 import Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), GlobalQdice, LeaderBoardResponse, LoggedUser, OtherProfile, Preferences, Profile, ProfileStats, ProfileStatsStatistics, PushEvent(..), Replies(..), StaticPage(..), TableStatPlayer, TableStats)
@@ -180,6 +180,7 @@ playersDecoder =
         |> required "awards" (list awardDecoder)
         |> required "flag" (nullable int)
         |> required "ready" bool
+        |> required "skin" skinDecoder
 
 
 playerGameStatsDecoder : Decoder PlayerGameStats
@@ -746,3 +747,8 @@ playerIdNamePictureDecoder =
         |> required "name" string
         |> required "picture" string
         |> required "score" int
+
+
+skinDecoder : Decoder DiceSkin
+skinDecoder =
+    map Land.idSkin int

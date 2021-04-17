@@ -15,7 +15,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.Keyed
 import Icon
-import Land exposing (LandUpdate)
+import Land exposing (DiceSkin(..), LandUpdate)
 import Maps
 import Ordinal exposing (ordinal)
 import Snackbar
@@ -269,6 +269,7 @@ mapGamePlayer lands i p =
         []
         Nothing
         False
+        Normal
 
 
 sortedPlayers : Int -> List Player -> List TurnPlayer

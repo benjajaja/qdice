@@ -78,6 +78,7 @@ export const makePlayer = (
     ready: false,
     bot: null,
     ip: user.ip ?? null,
+    skin: user.skin,
   };
 };
 
