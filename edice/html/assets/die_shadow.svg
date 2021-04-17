@@ -26,7 +26,11 @@
   <defs
      id="defs4243" />
   <path
+     id="die_background"
+     d="M 32.757524,1.7752229 2.9930859,24.572472 l 0.071971,0.05513 V 55.045884 L 32.757525,77.8707 62.451525,55.045884 V 24.627598 l 0.07197,-0.05513 z"
+     style="fill:#ffffff;stroke-width:0.98" />
+  <path
      id="path8308"
-     style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:3.1232;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     d="M 62.583053,55.334374 34.968586,76.879078 c -1.012608,0.80536 -3.7936,0.84408 -4.829488,-0.003 L 1.7944287,55.031433 1.8127563,24.633495 29.475689,3.0905051 c 1.012608,-0.805361 3.7936,-0.844075 4.829488,0.0034 L 62.629636,24.960328 Z" />
+     style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:4.8;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 61.975633,55.024137 -27.062178,21.11381 c -0.992356,0.789253 -3.717728,0.827199 -4.732898,-0.0029 L 2.4027808,54.727255 2.4207418,24.937276 29.530416,3.8251458 c 0.992356,-0.7892538 3.717728,-0.8271935 4.732898,0.00333 L 62.021284,25.25757 Z" />
 </svg>

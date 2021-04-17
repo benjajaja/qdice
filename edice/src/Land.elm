@@ -10,6 +10,7 @@ import Tables exposing (MapName)
 
 type DiceSkin
     = Normal
+    | FatOne
     | Bot
 
 

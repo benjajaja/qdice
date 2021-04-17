@@ -97,14 +97,8 @@ diceDefs : Svg msg
 diceDefs =
     defs []
         [ Svg.image
-            [ xlinkHref "assets/die.svg"
-            , id <| skinId Normal
-            , transform "scale(0.031)"
-            ]
-            []
-        , Svg.image
-            [ xlinkHref "assets/die_binary.svg"
-            , id <| skinId Bot
+            [ xlinkHref "assets/die_shadow.svg"
+            , id "die_shadow"
             , transform "scale(0.031)"
             ]
             []
@@ -130,6 +124,24 @@ diceDefs =
             , d "M -2,-2 1,0 2,1 1,2 -0.4,2 -3,0 -3,-1 Z"
             ]
             []
+        , Svg.image
+            [ xlinkHref "assets/die.svg"
+            , id <| skinId Normal
+            , transform "scale(0.031)"
+            ]
+            []
+        , Svg.image
+            [ xlinkHref "assets/die_fat_one.svg"
+            , id <| skinId FatOne
+            , transform "scale(0.031)"
+            ]
+            []
+        , Svg.image
+            [ xlinkHref "assets/die_q.svg"
+            , id <| skinId Bot
+            , transform "scale(0.031)"
+            ]
+            []
         ]
 
 
@@ -138,6 +150,9 @@ skinId skin =
     case skin of
         Normal ->
             "die_normal"
+
+        FatOne ->
+            "die_fatone"
 
         Bot ->
             "die_bot"

@@ -1252,5 +1252,15 @@ fetchTableTop model table =
 
 boardPlayers : List Player -> List BoardPlayer
 boardPlayers players =
-    List.map (\p -> { color = p.color, skin = if String.startsWith "bot_" p.id then Bot else Normal }) players
+    List.map
+        (\p ->
+            { color = p.color
+            , skin =
+                if String.startsWith "bot_" p.id then
+                    Bot
 
+                else
+                    Normal
+            }
+        )
+        players

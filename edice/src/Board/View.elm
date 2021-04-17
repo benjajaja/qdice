@@ -174,17 +174,22 @@ animatedStackDies pathCache stack dice options land =
 landDies : Maybe (Array Bool) -> BoardOptions -> Land.Land -> Float -> Float -> Svg Msg
 landDies diceAnimations options land x_ y_ =
     if options.diceVisible == True then
+        let
+            diceList =
+                List.range
+                    0
+                    (land.points - 1)
+        in
         Svg.Keyed.node "g"
             [ class "edBoard--stack--inner" ]
         <|
             ( "shadow", Html.Lazy.lazy3 Board.Die.shadow land.points x_ y_ )
-                :: (List.map
-                        (landDie diceAnimations x_ y_ land.diceSkin)
-                    <|
-                        List.range
-                            0
-                            (land.points - 1)
-                   )
+                :: List.map
+                    (landDieShadow diceAnimations x_ y_)
+                    diceList
+                ++ List.map
+                    (landDie diceAnimations x_ y_ land.diceSkin)
+                    diceList
                 ++ (if options.showEmojis then
                         [ ( "emoji", Svg.Lazy.lazy3 landEmoji x_ y_ land.emoji ) ]
 
@@ -217,12 +222,7 @@ landDie animations cx cy skin index =
     let
         animation : Bool
         animation =
-            case animations |> Maybe.andThen (Array.get index) of
-                Just b ->
-                    b
-
-                Nothing ->
-                    False
+            animations |> Maybe.andThen (Array.get index) |> Maybe.withDefault False
     in
     ( "die_" ++ String.fromInt index
     , Svg.Lazy.lazy5 lazyDie cx cy index animation skin
@@ -237,7 +237,7 @@ lazyDie x_ y_ index animated skin =
                 ( 1.0, 1.1 )
 
             else
-                ( 2.2, 2 )
+                ( 2.2, 2.02 )
     in
     Svg.use
         ((if not animated then
@@ -253,6 +253,49 @@ lazyDie x_ y_ index animated skin =
                , textAnchor "middle"
                , alignmentBaseline "central"
                , xlinkHref <| "#" ++ skinId skin
+               , height "3"
+               , width "3"
+               ]
+        )
+        []
+
+
+landDieShadow : Maybe (Array Bool) -> Float -> Float -> Int -> ( String, Svg Msg )
+landDieShadow animations cx cy index =
+    let
+        animation : Bool
+        animation =
+            animations |> Maybe.andThen (Array.get index) |> Maybe.withDefault False
+    in
+    ( "die_" ++ String.fromInt index
+    , Svg.Lazy.lazy4 lazyDieShadow cx cy index animation
+    )
+
+
+lazyDieShadow : Float -> Float -> Int -> Bool -> Svg.Svg a
+lazyDieShadow x_ y_ index animated =
+    let
+        ( xOffset, yOffset ) =
+            if index >= 4 then
+                ( 1.0, 1.1 )
+
+            else
+                ( 2.2, 2.02 )
+    in
+    Svg.use
+        ((if not animated then
+            [ class "edBoard--dies" ]
+
+          else
+            [ class "edBoard--dies edBoard--dies__animated"
+            , Svg.Attributes.style <| "animation-delay: " ++ (String.fromFloat <| (*) 0.1 <| toFloat index) ++ "s"
+            ]
+         )
+            ++ [ x <| String.fromFloat <| x_ - xOffset
+               , y <| String.fromFloat <| y_ - yOffset - (toFloat (modBy 4 index) * 1.2)
+               , textAnchor "middle"
+               , alignmentBaseline "central"
+               , xlinkHref <| "#die_shadow"
                , height "3"
                , width "3"
                ]
