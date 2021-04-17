@@ -148,6 +148,12 @@ diceDefs =
             , transform "scale(0.031)"
             ]
             []
+        , Svg.image
+            [ xlinkHref "assets/die_black.svg"
+            , id <| skinId BlackDie
+            , transform "scale(0.031)"
+            ]
+            []
         ]
 
 

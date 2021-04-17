@@ -13,6 +13,7 @@ type DiceSkin
     | FatOne
     | Bot
     | King
+    | BlackDie
 
 
 type alias Cells =
@@ -411,6 +412,9 @@ idSkin i =
         3 ->
             King
 
+        4 ->
+            BlackDie
+
         _ ->
             Normal
 
@@ -429,3 +433,6 @@ skinId skin =
 
         King ->
             3
+
+        BlackDie ->
+            4

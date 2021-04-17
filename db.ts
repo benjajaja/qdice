@@ -411,7 +411,9 @@ export const userProfile = (
   const networks = rows.map(row => row.network).filter(R.identity);
   const rankInt = parseInt(rank, 10);
   let skin = 0;
-  if (rankInt === 1) {
+  if (id == 6) {
+    skin = 4;
+  } else if (rankInt === 1) {
     skin = 3;
   } else if (networks.length > 0) {
     skin = 2;
