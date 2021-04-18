@@ -133,43 +133,40 @@ gameStats status player =
         ]
 
     else
-        List.concat
-            [ [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
-                    [ Html.text <|
-                        if player.gameStats.position == 2 then
-                            "Pole"
+        Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+            [ Html.text <|
+                if player.gameStats.position == 2 then
+                    "Pole"
 
-                        else
-                            ordinal player.gameStats.position
-                    ]
-              ]
-            , case player.flag of
-                Just flag ->
-                    [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
-                        [ Html.text <| "🏳 " ++ ordinal flag ]
-                    ]
+                else
+                    ordinal player.gameStats.position
+            ]
+            :: (case player.flag of
+                    Just flag ->
+                        [ Html.div [ class "edPlayerChip__gameStats__item--strong" ]
+                            [ Html.text <| "🏳 " ++ ordinal flag ]
+                        ]
 
-                Nothing ->
-                    []
-            , [ Html.div [ class "edPlayerChip__gameStats__item edPlayerChip__gameStats__item--lands" ]
-                    [ Html.text <| "⬢ " ++ String.fromInt player.gameStats.totalLands ]
-              , Html.div [ class "edPlayerChip__gameStats__item edPlayerChip__gameStats__item--dice" ]
-                    [ Html.text <|
-                        ("⚂ "
-                            ++ String.fromInt player.gameStats.currentDice
-                            ++ (if player.reserveDice > 0 then
-                                    " + " ++ String.fromInt player.reserveDice
+                    Nothing ->
+                        Html.div [ class "edPlayerChip__gameStats__item edPlayerChip__gameStats__item--lands" ]
+                            [ Html.text <| String.fromInt player.gameStats.totalLands ++ "⬢" ]
+                            :: (if player.reserveDice > 0 then
+                                    [ Html.div [ class "edPlayerChip__gameStats__item edPlayerChip__gameStats__item--dice" ]
+                                        [ Html.text <|
+                                            "+"
+                                                ++ String.fromInt player.reserveDice
+                                                ++ "⚂"
+                                        ]
+                                    ]
 
                                 else
-                                    ""
+                                    []
                                )
-                        )
-                    ]
-              , Html.div [ class "edPlayerChip__gameStats__item" ]
-                    [ Html.text <| String.fromInt player.gameStats.score ++ pointsSymbol
-                    ]
-              ]
-            ]
+                            ++ [ Html.div [ class "edPlayerChip__gameStats__item" ]
+                                    [ Html.text <| String.fromInt player.gameStats.score ++ pointsSymbol
+                                    ]
+                               ]
+               )
 
 
 playerStats : Player -> List (Html Msg)
