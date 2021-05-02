@@ -98,8 +98,11 @@ setConnected model clientId =
     let
         backend =
             model.backend
+
+        status =
+            Subscribing clientId ( ( False, False ), Nothing )
     in
-    ( { model | backend = { backend | status = Subscribing clientId ( ( False, False ), Nothing ) } }
+    ( { model | backend = { backend | status = status } }
     , Cmd.batch <|
         [ subscribe <| Client clientId
         , subscribe AllClients
@@ -197,15 +200,16 @@ addSubscribed model topic =
     ( model_
     , case model_.backend.status of
         Online _ table ->
-            case backend.status of
+            case model_.backend.status of
                 Online _ _ ->
-                    cmd
+                    Cmd.batch
+                        [ cmd
+                        , sendHello model_.backend.jwt model_.backend.status
+                        , Backend.MqttCommands.enter model_.backend table
+                        ]
 
                 _ ->
-                    Cmd.batch
-                        [ Backend.MqttCommands.enter model_.backend table
-                        , cmd
-                        ]
+                    cmd
 
         _ ->
             cmd

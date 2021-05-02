@@ -1,4 +1,4 @@
-module Backend.Encoding exposing (authStateEncoder, encodeAuthNetwork, encodePlayerAction, loginEncoder, myProfileUpdateEncoder, passwordEncoder, profileEncoder)
+module Backend.Encoding exposing (authStateEncoder, encodeAuthNetwork, encodeClient, encodePlayerAction, loginEncoder, myProfileUpdateEncoder, passwordEncoder, profileEncoder)
 
 import Cropper
 import Game.Types exposing (PlayerAction(..), actionToString)
@@ -22,27 +22,33 @@ profileEncoder user =
         ]
 
 
-encodePlayerAction : Maybe String -> String -> PlayerAction -> Result String String
+encodePlayerAction : Maybe String -> String -> PlayerAction -> String
 encodePlayerAction jwt clientId action =
-    Ok <|
-        encode 2 <|
-            object <|
-                List.concat
-                    [ [ ( "type", string <| actionToString action ) ]
-                    , [ ( "client", string clientId ) ]
-                    , case jwt of
-                        Just jwt_ ->
-                            [ ( "token", string jwt_ ) ]
+    encode 2 <|
+        object <|
+            List.concat
+                [ [ ( "type", string <| actionToString action ) ]
+                , [ ( "client", string clientId ) ]
+                , case jwt of
+                    Just jwt_ ->
+                        [ ( "token", string jwt_ ) ]
 
-                        Nothing ->
-                            []
-                    , case actionPayload action of
-                        Just payload ->
-                            [ ( "payload", payload ) ]
+                    Nothing ->
+                        []
+                , case actionPayload action of
+                    Just payload ->
+                        [ ( "payload", payload ) ]
 
-                        Nothing ->
-                            []
-                    ]
+                    Nothing ->
+                        []
+                ]
+
+
+encodeClient : String -> String -> String
+encodeClient jwt clientId =
+    encode 2 <|
+        object <|
+            [ ( "client", string clientId ), ( "token", string jwt ) ]
 
 
 actionPayload : PlayerAction -> Maybe Value

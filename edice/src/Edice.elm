@@ -9,7 +9,7 @@ import Board
 import Board.Types
 import Browser
 import Browser.Dom
-import Browser.Events exposing (onAnimationFrame)
+import Browser.Events
 import Browser.Navigation exposing (Key)
 import Comments
 import Cropper

@@ -1,4 +1,4 @@
-port module Backend.MqttCommands exposing (attack, enter, exit, leave, sendGameCommand)
+port module Backend.MqttCommands exposing (attack, enter, exit, leave, sendGameCommand, sendHello)
 
 import Backend.Encoding exposing (..)
 import Backend.MessageCodification exposing (..)
@@ -20,33 +20,49 @@ publish : Maybe String -> ConnectionStatus -> Table -> PlayerAction -> Cmd Msg
 publish jwt status table action =
     case status of
         Online clientId t ->
-            case encodePlayerAction jwt clientId action of
-                Ok playerAction ->
-                    let
-                        topicString =
-                            encodeTopic <|
-                                Tables table ServerDirection
-                    in
-                    Cmd.batch <|
-                        [ ( topicString
-                          , playerAction
-                          )
-                            |> mqttPublish
-                        , Task.perform SetLastHeartbeat Time.now
-                        , consoleDebug <| "MQTT Publish " ++ topicString ++ ": " ++ actionToString action
-                        ]
-                            ++ (if t /= table then
-                                    [ consoleDebug <| "Warning: not subscribed but publish to table " ++ t ++ " (" ++ actionToString action ++ ")" ]
+            let
+                topicString =
+                    encodeTopic <|
+                        Tables table ServerDirection
+            in
+            Cmd.batch <|
+                [ ( topicString
+                  , encodePlayerAction jwt clientId action
+                  )
+                    |> mqttPublish
+                , Task.perform SetLastHeartbeat Time.now
+                , consoleDebug <| "MQTT Publish " ++ topicString ++ ": " ++ actionToString action
+                ]
+                    ++ (if t /= table then
+                            [ consoleDebug <| "Warning: not subscribed but publish to table " ++ t ++ " (" ++ actionToString action ++ ")" ]
 
-                                else
-                                    []
-                               )
-
-                Err err ->
-                    toastError ("Command error: " ++ err) err
+                        else
+                            []
+                       )
 
         _ ->
             consoleDebug <| "publish but not online: " ++ actionToString action
+
+
+sendHello : Maybe String -> ConnectionStatus -> Cmd Msg
+sendHello jwt status =
+    case status of
+        Online clientId _ ->
+            case jwt of
+                Just jwt2 ->
+                    Cmd.batch <|
+                        [ ( "hello"
+                          , encodeClient jwt2 clientId
+                          )
+                            |> mqttPublish
+                        , consoleDebug <| "hello"
+                        ]
+
+                Nothing ->
+                    consoleDebug "No JWT for hello"
+
+        _ ->
+            consoleDebug <| "hello but not online"
 
 
 sendGameCommand : Model -> Maybe Table -> PlayerAction -> Cmd Msg
