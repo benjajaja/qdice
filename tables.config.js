@@ -118,7 +118,7 @@ module.exports = {
         tournament: {
           frequency: "5minutely",
           prize: 1000,
-          fee: 0,
+          fee: 50,
         },
       },
     },

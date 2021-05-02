@@ -30,7 +30,6 @@ tableOfTables tableList =
                 , th [ align "right" ] [ text "Points" ]
                 , th [ align "right" ] [ text "Players" ]
                 , th [ align "right" ] [ text "Minimum" ]
-                , th [ align "right" ] [ text "Watching" ]
                 , th [ align "right" ] [ text "Bots" ]
                 , th [ align "right" ] [ text "Capitals" ]
                 , th [ align "right" ] [ text "Size" ]
@@ -46,7 +45,7 @@ tableOfTables tableList =
                         [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                         , dataTestId <| "go-to-table-" ++ table.table
                         , class <|
-                            if table.table == "Planeta" || table.playerCount > 0 then
+                            if table.playerCount > 0 then
                                 "edGameTable__row edGameTable__row--enabled"
 
                             else
@@ -74,7 +73,6 @@ tableOfTables tableList =
                             [ text <|
                                 String.fromInt table.startSlots
                             ]
-                        , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
                         , td [ align "right" ]
                             [ text <|
                                 if table.params.botLess then
@@ -120,9 +118,13 @@ tableOfTournaments zone time tableList =
                 [ th [ align "left" ] [ text "Bonus games" ]
                 , th [ align "left" ] [ text "Sched." ]
                 , th [ align "right" ] [ text "Prize" ]
+                , th [ align "right" ] [ text "Fee" ]
+                , th [ align "right" ] [ text "Points" ]
                 , th [ align "right" ] [ text "Players" ]
-                , th [ align "right" ] [ text "Min" ]
-                , th [ align "right" ] [ text "Watch" ]
+
+                -- , th [ align "right" ] [ text "Min" ]
+                -- , th [ align "right" ] [ text "Watch" ]
+                , th [ align "right" ] [ text "Bots" ]
                 ]
             ]
         , Html.Keyed.node "tbody" [] <|
@@ -133,7 +135,7 @@ tableOfTournaments zone time tableList =
                         [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                         , dataTestId <| "go-to-table-" ++ table.table
                         , class <|
-                            if table.playerCount > 0 then
+                            if table.table == "5MinuteFix" || table.table == "MinuteMade" || table.playerCount > 0 then
                                 "edGameTable__row edGameTable__row--enabled"
 
                             else
@@ -168,17 +170,44 @@ tableOfTournaments zone time tableList =
                                )
                             ++ [ td [ align "right" ]
                                     [ text <|
+                                        case table.params.tournament |> Maybe.map .fee |> Maybe.withDefault 0 of
+                                            0 ->
+                                                "Free"
+
+                                            n ->
+                                                formatPoints n
+                                    ]
+                               , td [ align "right" ]
+                                    [ text <|
+                                        case table.points of
+                                            0 ->
+                                                "Free"
+
+                                            n ->
+                                                formatPoints n
+                                    ]
+                               , td [ align "right" ]
+                                    [ text <|
                                         String.concat
                                             [ String.fromInt table.playerCount
                                             , " / "
                                             , String.fromInt table.playerSlots
                                             ]
                                     ]
+
+                               -- , td [ align "right" ]
+                               -- [ text <|
+                               -- String.fromInt table.startSlots
+                               -- ]
+                               -- , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
                                , td [ align "right" ]
                                     [ text <|
-                                        String.fromInt table.startSlots
+                                        if table.params.botLess then
+                                            "No"
+
+                                        else
+                                            "Yes"
                                     ]
-                               , td [ align "right" ] [ text <| String.fromInt table.watchCount ]
                                ]
                     )
                 )
