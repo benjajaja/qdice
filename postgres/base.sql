@@ -300,3 +300,4 @@ ALTER TABLE ONLY eliminations ADD CONSTRAINT eliminations_user_id_fkey FOREIGN K
 CREATE INDEX game_events_game_id ON game_events USING btree(game_id);
 CREATE INDEX comments_index ON comments USING btree(kind, kind_id);
 
+ALTER TABLE users ADD COLUMN last_daily_reward DATE DEFAULT NOW();

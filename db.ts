@@ -307,7 +307,7 @@ export const deleteUser = async (id: UserId) => {
   }
 };
 
-export const addScore = async (id: UserId, score: number) => {
+export const addScore = async (id: UserId, score: number, isDailyReward: boolean = false) => {
   logger.debug("addScore", id, score);
   if (typeof score !== "number" || isNaN(score)) {
     throw new Error("addScore did not get a number: " + score);
@@ -315,13 +315,20 @@ export const addScore = async (id: UserId, score: number) => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    const query = isDailyReward
+      ? `UPDATE users
+        SET points = GREATEST(points + $1, 0),
+            level_points = GREATEST(level_points + $1, 0),
+            last_daily_reward = NOW()
+        WHERE id = $2
+        RETURNING level, level_points`
+      : `UPDATE users
+        SET points = GREATEST(points + $1, 0),
+            level_points = GREATEST(level_points + $1, 0)
+        WHERE id = $2
+        RETURNING level, level_points`;
     const res = await client.query(
-      `
-      UPDATE users
-      SET points = GREATEST(points + $1, 0),
-          level_points = GREATEST(level_points + $1, 0)
-      WHERE id = $2
-      RETURNING level, level_points`,
+      query,
       [score, id]
     );
     const { level, level_points } = res.rows[0];

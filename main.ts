@@ -237,6 +237,7 @@ export const server = async () => {
 
   client.subscribe("events");
   client.subscribe("death");
+  client.subscribe("hello");
   client.on("error", (err: Error) => logger.error(err));
   client.on("close", () => logger.error("mqqt close"));
   client.on("disconnect", () => logger.error("mqqt disconnect"));

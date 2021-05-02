@@ -421,7 +421,6 @@ export const processCommand = async (table: Table, command: Command) => {
         "SetGameStart",
       ].indexOf(command.type) !== -1
     ) {
-      logger.debug(`tableStatus: ${command.type}`);
       publish.tableStatus(newTable);
     }
   }

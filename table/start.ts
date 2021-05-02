@@ -189,7 +189,6 @@ const changeMap = (
   }
 
   const [newLands, adjacency] = maps.loadMap(mapName);
-  logger.debug(`changed map of ${tableName} to ${mapName} (was ${oldMap})`);
   return {
     ...result,
     table: { ...result.table, mapName, adjacency },

@@ -107,7 +107,7 @@ module.exports = {
       mapName: "Cepero",
       playerSlots: 8,
       startSlots: 4,
-      points: 0,
+      points: 100,
       stackSize: 8,
       params: {
         noFlagRounds: 5,
