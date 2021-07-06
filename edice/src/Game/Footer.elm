@@ -135,7 +135,7 @@ tableOfTournaments zone time tableList =
                         [ onClick (Types.NavigateTo <| Types.GameRoute table.table)
                         , dataTestId <| "go-to-table-" ++ table.table
                         , class <|
-                            if table.table == "5MinuteFix" || table.table == "MinuteMade" || table.playerCount > 0 then
+                            if table.table == "5MinuteFix" || table.table == "MinuteMade" || table.table == "TableForTwo" || table.playerCount > 0 then
                                 "edGameTable__row edGameTable__row--enabled"
 
                             else

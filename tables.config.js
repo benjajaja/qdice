@@ -102,6 +102,27 @@ module.exports = {
       },
     },
     {
+      tag: "TableForTwo",
+      name: "TableForTwo",
+      mapName: "Montoya",
+      playerSlots: 8,
+      startSlots: 2,
+      points: 0,
+      stackSize: 8,
+      params: {
+        noFlagRounds: 5,
+        botLess: true,
+        startingCapitals: true,
+        readySlots: 2,
+        turnSeconds: null,
+        tournament: {
+          frequency: "minutely",
+          prize: 100,
+          fee: 0,
+        },
+      },
+    },
+    {
       tag: "5MinuteFix",
       name: "5MinuteFix",
       mapName: "Cepero",

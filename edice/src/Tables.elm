@@ -77,6 +77,9 @@ isTournament table =
         "MinuteMade" ->
             True
 
+        "TableForTwo" ->
+            True
+
         "Daily10k" ->
             True
 
