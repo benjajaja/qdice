@@ -7,6 +7,7 @@ import Board.Types exposing (..)
 import Dict
 import Ease
 import Land exposing (Color(..), DiceSkin(..), Emoji, Land, LandUpdate, Map)
+import List exposing (length)
 
 
 init : Map -> Model
@@ -25,7 +26,7 @@ init map =
 
 updateLands : Model -> List LandUpdate -> Maybe BoardMove -> List (BoardPlayer a) -> Model
 updateLands model updates mMove players =
-    if List.length updates == 0 then
+    if length updates == 0 then
         let
             move_ =
                 Maybe.withDefault model.move mMove
@@ -51,7 +52,7 @@ updateLands model updates mMove players =
                 List.map Tuple.first landUpdates
 
             map_ =
-                if List.length updates == 0 || lands_ == map.lands then
+                if length updates == 0 || lands_ == map.lands then
                     map
 
                 else
@@ -89,10 +90,33 @@ giveDiceAnimations landUpdates =
 updateLand : List LandUpdate -> List (BoardPlayer a) -> Land -> ( Land, Array Bool )
 updateLand updates players land =
     let
+        isThisLand =
+            .emoji >> (==) land.emoji
+
         match =
-            List.filter (\l -> l.emoji == land.emoji) updates
+            case updates of
+                [ a ] ->
+                    if isThisLand a then
+                        Just a
+
+                    else
+                        Nothing
+
+                [ a, b ] ->
+                    if isThisLand a then
+                        Just a
+
+                    else if isThisLand b then
+                        Just b
+
+                    else
+                        Nothing
+
+                _ ->
+                    List.filter (\l -> l.emoji == land.emoji) updates
+                        |> List.head
     in
-    case List.head match of
+    case match of
         Just landUpdate ->
             if
                 landUpdate.color
