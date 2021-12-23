@@ -34,7 +34,6 @@ import * as AsyncLock from "async-lock";
 
 import * as globalServer from "./global";
 import { leaderboard } from "./leaderboard";
-import { screenshot } from "./screenshot";
 import * as publish from "./table/publish";
 import * as user from "./user";
 import { profile } from "./profile";
@@ -173,7 +172,6 @@ export const server = async () => {
           req => req.path() === `${root}/leaderboard`,
           req => req.path() === `${root}/e2e`,
           req => req.path() === `${root}/push/key`,
-          req => req.path().indexOf(`${root}/screenshot`) === 0,
           req => req.path().indexOf(`${root}/profile`) === 0,
           req => req.path() === `${root}/topwebgames`,
           req => req.path().indexOf(`${root}/games`) === 0,
@@ -206,21 +204,6 @@ export const server = async () => {
   server.get(`${root}/findtable`, globalServer.findtable);
   server.get(`${root}/leaderboard`, leaderboard);
   server.get(`${root}/profile/:id`, profile);
-  server.get(
-    `${root}/screenshot/:table`,
-    restify.plugins.throttle({
-      burst: 1,
-      rate: 0.2,
-      ip: true,
-      overrides: {
-        localhost: {
-          burst: 0,
-          rate: 0, // unlimited
-        },
-      },
-    }),
-    screenshot
-  );
 
   server.listen(process.env.PORT || 5001, function() {
     logger.info("%s listening at %s port %s", server.name, server.url);

@@ -40,7 +40,7 @@ export const retry = async function retry() {
   try {
     return await connect();
   } catch (e) {
-    logger.error("pg connection error", e);
+    logger.error("pg connection error", e, process.env.PGHOST, process.env.PGPORT);
     await sleep(1000);
     return await retry();
   }

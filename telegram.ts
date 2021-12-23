@@ -11,7 +11,6 @@ import * as R from "ramda";
 import * as puppeteer from "puppeteer";
 import * as mqtt from "mqtt";
 import * as webPush from "web-push";
-import * as Twitter from "twitter";
 import { uploadFile } from "s3-bucket";
 import * as getFileFromUrl from "@appgeist/get-file-from-url";
 import { rand } from "./rand";
@@ -38,12 +37,6 @@ webPush.setVapidDetails(
 );
 
 const telegram = new Telegram(process.env.BOT_TOKEN);
-var twitter = new Twitter({
-  consumer_key: process.env.TWITTER_CONSUMER_KEY!,
-  consumer_secret: process.env.TWITTER_CONSUMER_SECRET!,
-  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY!,
-  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
-});
 const uid = new ShortUniqueId();
 
 const officialGroups = process.env.BOT_OFFICIAL_GROUPS
@@ -116,28 +109,6 @@ client.on("message", async (topic, message) => {
         }
       });
 
-      // if (process.env.TWITTER_CONSUMER_KEY) {
-      // try {
-      // await twitter.post("statuses/update", {
-      // status: `A game with "${event.user.name}" is about to start at https://qdice.wtf/${event.table}. Play now!`,
-      // });
-      // } catch (e) {
-      // logger.error(e);
-      // }
-      // }
-
-      //if (officialGroups.length) {
-      //const { table, players } = event;
-      //officialGroups.forEach(id => {
-      //sendScreenshot(id, table);
-      //});
-      //}
-
-      // case "elimination":
-      // if (event.user.telegram) {
-      // setScore(event.user.telegram, event.user.points);
-      // }
-      // break;
     } else if (event.type === "countdown") {
       console.log("offical", officialGroups);
       const { table, players } = event;
@@ -183,7 +154,6 @@ client.on("message", async (topic, message) => {
               .map(p => p.name)
               .join(", ")}: https://qdice.wtf/${table}`
           );
-          //sendScreenshot(id, table);
         });
       }
     }
@@ -209,73 +179,8 @@ client.on("message", async (topic, message) => {
         // );
         break;
     }
-    if (process.env.TWITTER_CONSUMER_KEY && eventId) {
-      try {
-        await postTwitterGame(tableName, gameId, command, eventId);
-      } catch (e) {
-        logger.error(e);
-      }
-    }
   }
 });
-
-const twitterGames: { [index: number]: { id: string; table: string } } = {};
-const postTwitterGame = async (
-  tableName: string,
-  gameId: number,
-  command: Command,
-  eventId: number
-) => {
-  if (command.type === "Start") {
-    const post = await twitter.post("statuses/update", {
-      status: `Game #${gameId} with ${command.players
-        .map(R.prop("name"))
-        .join(", ")} has started https://qdice.wtf/${tableName}!`,
-    });
-    logger.debug(post);
-    twitterGames[gameId] = post.id_str;
-  } else {
-    const post = twitterGames[gameId];
-    if (!post) {
-      logger.debug(`no twitter id for game ${gameId}`);
-      return;
-    }
-    let status: string | null = null;
-    switch (command.type) {
-      case "Roll":
-        status = `${command.attacker.name} attacked ${command.defender?.name ??
-          "Neutral"} from ${command.from} to ${command.to} and ${
-          R.sum(command.fromRoll) > R.sum(command.toRoll)
-            ? "succeeded"
-            : "failed"
-        }`;
-        break;
-      case "SitOut":
-      case "EndTurn":
-        const ssUrl = `http://renderer:3000?type=screenshot&url=http://nginx/${tableName}`;
-        logger.debug(ssUrl);
-        const screenshot = await getFileFromUrl({
-          url: ssUrl,
-          file: `tmp_image_${eventId}.png`,
-        });
-        const { url } = await uploadFile({
-          filePath: screenshot,
-          Key: `event_${eventId}`,
-        });
-        await new Promise((resolve, reject) =>
-          fs.unlink(screenshot, err => (err ? reject(err) : resolve()))
-        );
-        status = `${command.player.name}'s turn has finished. ${url}`;
-    }
-    logger.debug("posting", status);
-    if (status !== null) {
-      await twitter.post("statuses/update", {
-        status: `(${eventId}) @qdicewtf ${status}`,
-        in_reply_to_status_id: post,
-      });
-    }
-  }
-};
 
 db.connect().then(db => {
   console.log("connected to postgres");
@@ -515,29 +420,12 @@ const downloadAvatar = id => url => {
   return filename;
 };
 
-bot.command("ss", async ctx => {
-  sendScreenshot(ctx.chat.id, "");
-});
-
 let browserSingleton;
 const newPage = async () => {
   if (!browserSingleton) {
     browserSingleton = await puppeteer.launch();
   }
   return browserSingleton.newPage();
-};
-
-const sendScreenshot = async (id, table) => {
-  const page = await newPage();
-  await page.setViewport({ width: 800, height: 600 });
-  await page.goto(`https://qdice.wtf/${table}?screenshot`, {
-    waitUntil: "networkidle2",
-  });
-  const image = await page.screenshot({});
-
-  telegram.sendPhoto(id, {
-    source: image,
-  });
 };
 
 process.on("unhandledRejection", (reason, p) => {

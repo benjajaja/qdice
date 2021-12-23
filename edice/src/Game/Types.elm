@@ -161,7 +161,6 @@ type alias TableParams =
     , startingCapitals : Bool
     , readySlots : Maybe Int
     , turnSeconds : Maybe Int
-    , twitter : Bool
     , tournament : Maybe TournamentConfig
     }
 

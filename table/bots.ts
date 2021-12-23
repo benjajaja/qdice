@@ -115,12 +115,7 @@ export const addBots = (
 
 export const tickBotTurn = (table: Table): Command | undefined => {
   const player = table.players[table.turnIndex];
-  // if (table.params.twitter) {
-  // return { type: "SitOut", player };
-  // }
-  const passTimeNeeded = table.params.twitter
-    ? (table.params.turnSeconds ?? TURN_SECONDS) - 1
-    : 0.5;
+  const passTimeNeeded = 0.5;
   if (!havePassed(passTimeNeeded, table.turnStart)) {
     return;
   }
@@ -142,7 +137,6 @@ export const tickBotTurn = (table: Table): Command | undefined => {
   const positions = groupedPlayerPositions(table);
   const position = positions(player);
   if (
-    !table.params.twitter &&
     (table.players.every(p => p.bot !== null) ||
       player.bot.state.deadlockCount > BOT_DEADLOCK_MAX)
   ) {
@@ -270,8 +264,6 @@ const botSources = (table: Table, player: Player): Source[] => {
 export const tableThemed = (table: Table, player: Player): Player => {
   if (table.tag === "España") {
     return { ...player, ...spanishPersona(player.color) };
-  } else if (table.params.twitter) {
-    return { ...player, ...worldPersona(player.color) };
   }
   return player;
 };

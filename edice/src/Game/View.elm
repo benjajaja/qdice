@@ -53,7 +53,7 @@ view model =
     in
     div [ class "edMainScreen" ] <|
         [ div [ class "edGameBoardWrapper" ] <|
-            if not model.game.params.twitter then
+            if True then
                 (if model.fullscreen == Nothing then
                     [ tableInfo model ]
 
@@ -79,7 +79,7 @@ view model =
                 , boardFooter model
                 ]
         ]
-            ++ (if model.fullscreen == Nothing && not model.game.params.twitter then
+            ++ (if model.fullscreen == Nothing then
                     div
                         [ class <|
                             "edGame__meta cartonCard"
@@ -142,7 +142,7 @@ boardFooter : Model -> Html.Html Types.Msg
 boardFooter model =
     let
         toolbar =
-            if model.screenshot || model.game.params.twitter then
+            if model.screenshot then
                 []
 
             else

@@ -146,19 +146,14 @@ const start = async (
       return;
     }
 
-    const isTwitter = !!table.params.twitter;
     const { type, clientId, token, payload } = parsedMessage;
 
     lock.acquire(tableTag, async done => {
       try {
         let user: User | null = null;
-        if (isTwitter) {
-          user = parsedMessage.user ?? null;
-        } else {
-          user = (await (token
-            ? verifyJwt(token, process.env.JWT_SECRET!)
-            : null)) as User | null;
-        }
+        user = (await (token
+          ? verifyJwt(token, process.env.JWT_SECRET!)
+          : null)) as User | null;
 
         const table = await getTable(tableTag);
 

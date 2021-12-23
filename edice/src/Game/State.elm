@@ -86,7 +86,6 @@ init table tableMap_ height =
             , startingCapitals = False
             , readySlots = Nothing
             , turnSeconds = Nothing
-            , twitter = False
             , tournament = Nothing
             }
       , currentGame = Nothing
@@ -562,12 +561,7 @@ updateGameInfo ( model, cmd ) tableList =
                         , startSlots = tableInfo.startSlots
                         , points = tableInfo.points
                         , params = tableInfo.params
-                        , boardOptions =
-                            if tableInfo.params.twitter then
-                                { options | showEmojis = True }
-
-                            else
-                                options
+                        , boardOptions = options
                       }
                     , cmd
                     )

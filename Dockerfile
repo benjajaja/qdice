@@ -1,6 +1,7 @@
 # node.js server build
 
 FROM node:12.14.1-alpine AS server
+ENV NODE_ENV=production
 
 WORKDIR /usr/src/nodice
 COPY package.json .

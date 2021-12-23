@@ -1,6 +1,6 @@
 # node.js server build
 
-FROM zenato/puppeteer-renderer
+FROM node:12.14.1-alpine AS server
 
 WORKDIR /usr/src/nodice
 COPY package.json yarn.lock ./

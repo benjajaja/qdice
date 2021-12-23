@@ -407,7 +407,6 @@ tableParamsDecoder =
         |> required "startingCapitals" bool
         |> required "readySlots" (nullable int)
         |> required "turnSeconds" (nullable int)
-        |> optional "twitter" bool False
         |> optional "tournament" (map Just tournamentDecoder) Nothing
 
 

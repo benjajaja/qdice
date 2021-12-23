@@ -53,7 +53,6 @@ export type TableParams = {
   startingCapitals: boolean;
   readySlots: number | null;
   turnSeconds: number | null;
-  twitter: boolean | undefined;
   tournament: undefined | TournamentParam;
 };
 

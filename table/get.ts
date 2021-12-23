@@ -165,7 +165,6 @@ export const getStatuses = async (): Promise<readonly TableInfo[]> => {
       // R.descend(R.prop("watchCount")),
     ],
     tables
-      // .filter(table => !table.params.twitter)
       .map(table => ({
         ...R.omit(["lands", "players", "watchers", "adjacency"], table),
         landCount: table.lands.length,

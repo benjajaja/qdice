@@ -97,11 +97,7 @@ tableOfTables tableList =
                 )
             <|
                 List.filter
-                    (\tableInfo ->
-                        not tableInfo.params.twitter
-                            && tableInfo.params.tournament
-                            == Nothing
-                    )
+                    (\tableInfo -> tableInfo.params.tournament == Nothing)
                     tableList
         ]
 
@@ -212,9 +208,5 @@ tableOfTournaments zone time tableList =
                     )
                 )
             <|
-                List.filter
-                    (\tableInfo ->
-                        not tableInfo.params.twitter
-                    )
-                    tournaments
+                tournaments
         ]
