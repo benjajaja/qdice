@@ -6,10 +6,10 @@ import Board.PathCache
 import Board.Types exposing (..)
 import Dict
 import Ease
-import Land exposing (Color(..), DiceSkin(..), LandUpdate)
+import Land exposing (Color(..), DiceSkin(..), Emoji, Land, LandUpdate, Map)
 
 
-init : Land.Map -> Model
+init : Map -> Model
 init map =
     let
         ( layout, viewBox ) =
@@ -23,7 +23,7 @@ init map =
     Model map Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty } Nothing
 
 
-updateLands : Model -> List LandUpdate -> Maybe BoardMove -> List BoardPlayer -> Model
+updateLands : Model -> List LandUpdate -> Maybe BoardMove -> List (BoardPlayer a) -> Model
 updateLands model updates mMove players =
     if List.length updates == 0 then
         let
@@ -43,7 +43,7 @@ updateLands model updates mMove players =
             map =
                 model.map
 
-            landUpdates : List ( Land.Land, Array Bool )
+            landUpdates : List ( Land, Array Bool )
             landUpdates =
                 List.map (updateLand updates players) map.lands
 
@@ -72,7 +72,7 @@ updateLands model updates mMove players =
         }
 
 
-giveDiceAnimations : List ( Land.Land, Array Bool ) -> DiceAnimations
+giveDiceAnimations : List ( Land, Array Bool ) -> DiceAnimations
 giveDiceAnimations landUpdates =
     List.foldl
         (\( land, diceAnimations ) ->
@@ -86,7 +86,7 @@ giveDiceAnimations landUpdates =
         landUpdates
 
 
-updateLand : List LandUpdate -> List BoardPlayer -> Land.Land -> ( Land.Land, Array Bool )
+updateLand : List LandUpdate -> List (BoardPlayer a) -> Land -> ( Land, Array Bool )
 updateLand updates players land =
     let
         match =
@@ -118,7 +118,7 @@ updateLand updates players land =
             ( land, Array.empty )
 
 
-skinFromColor : List BoardPlayer -> Color -> DiceSkin
+skinFromColor : List (BoardPlayer a) -> Color -> DiceSkin
 skinFromColor players c =
     case List.head <| List.filter (\{ color } -> color == c) players of
         Just { skin } ->
@@ -128,9 +128,9 @@ skinFromColor players c =
             Normal
 
 
-updateLandAnimations : Land.Land -> LandUpdate -> Array Bool
+updateLandAnimations : Land -> LandUpdate -> Array Bool
 updateLandAnimations land landUpdate =
-    if landUpdate.color /= Land.Neutral && landUpdate.color == land.color && landUpdate.points > land.points then
+    if landUpdate.color /= Neutral && landUpdate.color == land.color && landUpdate.points > land.points then
         (List.range 0 (land.points - 1)
             |> List.map (always False)
         )
@@ -145,7 +145,7 @@ updateLandAnimations land landUpdate =
         Array.empty
 
 
-attackAnimations : PathCache -> BoardMove -> BoardMove -> Maybe ( Land.Emoji, AnimationState )
+attackAnimations : PathCache -> BoardMove -> BoardMove -> Maybe ( Emoji, AnimationState )
 attackAnimations pathCache move oldMove =
     case move of
         FromTo from to ->
@@ -163,7 +163,7 @@ attackAnimations pathCache move oldMove =
             Nothing
 
 
-translateStack : Bool -> PathCache -> Land.Land -> Land.Land -> AnimationState
+translateStack : Bool -> PathCache -> Land -> Land -> AnimationState
 translateStack reverse pathCache from to =
     let
         ( fx, fy ) =

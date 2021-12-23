@@ -14,8 +14,6 @@ type Msg
 
 type alias Model =
     { map : Map
-
-    -- , hovered : Maybe Land.Emoji
     , move : BoardMove
     , pathCache : PathCache
     , layout : MapSize
@@ -56,9 +54,10 @@ type BoardMove
     | FromTo Land Land
 
 
-type alias BoardPlayer =
-    { color : Color
-    , skin : DiceSkin
+type alias BoardPlayer extends =
+    { extends
+        | color : Color
+        , skin : DiceSkin
     }
 
 

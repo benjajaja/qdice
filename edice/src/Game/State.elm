@@ -6,11 +6,11 @@ import Backend.MqttCommands exposing (attack, sendGameCommand)
 import Backend.Types exposing (Topic(..))
 import Board
 import Board.State
-import Board.Types exposing (BoardMove(..), BoardPlayer, Msg(..))
+import Board.Types exposing (BoardMove(..), Msg(..))
 import Browser.Dom as Dom
 import Game.Types exposing (..)
 import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
-import Land exposing (DiceSkin(..), LandUpdate)
+import Land exposing (DiceSkin(..), LandUpdate, Map)
 import Maps
 import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (MapName(..), Table, isTournament)
@@ -21,7 +21,7 @@ import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
 init : Maybe Table -> Maybe MapName -> Maybe Int -> ( Game.Types.Model, Cmd Msg )
 init table tableMap_ height =
     let
-        map : Result MapLoadError Land.Map
+        map : Result MapLoadError Map
         map =
             case tableMap_ |> Result.fromMaybe "no current table-map" |> Result.andThen Maps.load of
                 Ok landMap ->
@@ -212,6 +212,8 @@ findPlayer game list =
         |> Maybe.andThen (\p -> find (.id >> (==) p.id) list)
 
 
+{-| usually out of game
+-}
 updateTableStatus : Types.Model -> Game.Types.TableStatus -> ( Types.Model, Cmd Msg )
 updateTableStatus model status =
     let
@@ -250,7 +252,7 @@ updateTableStatus model status =
              else
                 oldBoard
             )
-                |> (\b -> Board.State.updateLands b status.lands Nothing (boardPlayers status.players))
+                |> (\b -> Board.State.updateLands b status.lands Nothing status.players)
                 |> (if hasStarted then
                         \b -> { b | avatarUrls = Just <| List.map (\p -> ( p.color, p.picture )) status.players }
 
@@ -395,7 +397,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                 game.board
 
             else
-                Board.State.updateLands game.board lands move (boardPlayers players)
+                Board.State.updateLands game.board lands move players
 
         canMove =
             if not hasTurn then
@@ -570,6 +572,77 @@ updateGameInfo ( model, cmd ) tableList =
                     ( model, cmd )
 
 
+showMove : Types.Model -> Move -> Types.Model
+showMove model move =
+    let
+        game =
+            model.game
+
+        board =
+            game.board
+
+        newMove =
+            Maybe.map2
+                Board.Types.FromTo
+                (Land.findLand move.from board.map.lands)
+                (Land.findLand move.to board.map.lands)
+    in
+    case newMove of
+        Nothing ->
+            model
+
+        Just move_ ->
+            { model
+                | game =
+                    { game
+                        | board =
+                            Board.State.updateLands
+                                board
+                                (case move_ of
+                                    Board.Types.FromTo from _ ->
+                                        [ { color = from.color
+                                          , emoji = from.emoji
+                                          , points = from.points
+                                          , capital = from.capital
+                                          }
+                                        ]
+
+                                    _ ->
+                                        []
+                                )
+                                (Just move_)
+                                model.game.players
+                        , lastRoll =
+                            case move_ of
+                                Board.Types.FromTo from to ->
+                                    Just
+                                        { from =
+                                            ( from.color
+                                            , List.range 1 from.points
+                                                |> List.map (always 0)
+                                                |> Helpers.timeRandomDice model.time
+                                            )
+                                        , to =
+                                            ( to.color
+                                            , List.range 1 to.points
+                                                |> List.map (always 0)
+                                                |> Helpers.timeRandomDice model.time
+                                            )
+                                        , rolling =
+                                            if game.boardOptions.diceVisible then
+                                                Just model.time
+
+                                            else
+                                                Nothing
+                                        , timestamp = model.time
+                                        }
+
+                                _ ->
+                                    Nothing
+                    }
+            }
+
+
 showRoll : Types.Model -> Roll -> ( Types.Model, Cmd Msg )
 showRoll model roll =
     let
@@ -653,7 +726,7 @@ showRoll model roll =
                     []
 
         board_ =
-            Board.State.updateLands model.game.board updates (Just Board.Types.Idle) (boardPlayers players)
+            Board.State.updateLands model.game.board updates (Just Board.Types.Idle) players
 
         game =
             model.game
@@ -872,82 +945,9 @@ updateTable model table msg =
                         ( secondModel, Cmd.batch [ gameCmd, chatCmd ] )
 
                     Backend.Types.Move move ->
-                        let
-                            game =
-                                model.game
-
-                            board =
-                                game.board
-
-                            newMove =
-                                case Land.findLand move.from board.map.lands of
-                                    Nothing ->
-                                        Nothing
-
-                                    Just fromLand ->
-                                        case Land.findLand move.to board.map.lands of
-                                            Nothing ->
-                                                Nothing
-
-                                            Just toLand ->
-                                                Just <| Board.Types.FromTo fromLand toLand
-                        in
-                        case newMove of
-                            Nothing ->
-                                ( model, Cmd.none )
-
-                            Just move_ ->
-                                ( { model
-                                    | game =
-                                        { game
-                                            | board =
-                                                Board.State.updateLands
-                                                    board
-                                                    (case move_ of
-                                                        Board.Types.FromTo from _ ->
-                                                            [ { color = from.color
-                                                              , emoji = from.emoji
-                                                              , points = from.points
-                                                              , capital = from.capital
-                                                              }
-                                                            ]
-
-                                                        _ ->
-                                                            []
-                                                    )
-                                                    (Just move_)
-                                                    (boardPlayers model.game.players)
-                                            , lastRoll =
-                                                case move_ of
-                                                    Board.Types.FromTo from to ->
-                                                        Just
-                                                            { from =
-                                                                ( from.color
-                                                                , List.range 1 from.points
-                                                                    |> List.map (always 0)
-                                                                    |> Helpers.timeRandomDice model.time
-                                                                )
-                                                            , to =
-                                                                ( to.color
-                                                                , List.range 1 to.points
-                                                                    |> List.map (always 0)
-                                                                    |> Helpers.timeRandomDice model.time
-                                                                )
-                                                            , rolling =
-                                                                if game.boardOptions.diceVisible then
-                                                                    Just model.time
-
-                                                                else
-                                                                    Nothing
-                                                            , timestamp = model.time
-                                                            }
-
-                                                    _ ->
-                                                        Nothing
-                                        }
-                                  }
-                                , playSound model.sessionPreferences "kick"
-                                )
+                        ( showMove model move
+                        , playSound model.sessionPreferences "kick"
+                        )
 
                     Backend.Types.Eliminations eliminations players ->
                         let
@@ -1242,14 +1242,3 @@ playSound preferences sound =
 fetchTableTop : Types.Model -> Table -> ( Types.Model, Cmd Msg )
 fetchTableTop model table =
     ( model, Backend.HttpCommands.tableStats model.backend table )
-
-
-boardPlayers : List Player -> List BoardPlayer
-boardPlayers players =
-    List.map
-        (\p ->
-            { color = p.color
-            , skin = p.skin
-            }
-        )
-        players
