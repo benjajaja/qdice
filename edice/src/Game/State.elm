@@ -8,9 +8,10 @@ import Board
 import Board.State
 import Board.Types exposing (BoardMove(..), Msg(..))
 import Browser.Dom as Dom
+import Dict
 import Game.Types exposing (..)
 import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
-import Land exposing (DiceSkin(..), LandUpdate, Map)
+import Land exposing (DiceSkin(..), LandUpdate, Map, filterMapLands)
 import Maps
 import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (MapName(..), Table, isTournament)
@@ -286,10 +287,18 @@ updateTableStatus model status =
                         False
 
                     Just turnPlayer ->
-                        board_.map.lands
-                            |> List.filter (\land -> land.color == turnPlayer.color && land.points > 1)
-                            |> List.map (Board.canAttackFrom board_.map turnPlayer.color >> Result.toMaybe)
-                            |> List.any ((==) Nothing >> not)
+                        filterMapLands
+                            board_.map.lands
+                            (\land ->
+                                if land.color == turnPlayer.color && land.points > 1 then
+                                    Board.canAttackFrom board_.map turnPlayer.color land
+                                        |> Result.toMaybe
+
+                                else
+                                    Nothing
+                            )
+                            |> List.length
+                            |> (>) 0
 
         game_ =
             { game
@@ -409,10 +418,18 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                         False
 
                     Just turnPlayer ->
-                        board.map.lands
-                            |> List.filter (\land -> land.color == turnPlayer.color && land.points > 1)
-                            |> List.map (Board.canAttackFrom board.map turnPlayer.color >> Result.toMaybe)
-                            |> List.any ((==) Nothing >> not)
+                        filterMapLands
+                            board.map.lands
+                            (\land ->
+                                if land.color == turnPlayer.color && land.points > 1 then
+                                    Board.canAttackFrom board.map turnPlayer.color land
+                                        |> Result.toMaybe
+
+                                else
+                                    Nothing
+                            )
+                            |> List.length
+                            |> (>) 0
 
         game =
             model.game
@@ -694,7 +711,9 @@ showRoll model roll =
                                     :: (if success && from.capital == Nothing then
                                             case to.capital of
                                                 Just tc ->
-                                                    find (\l -> l.color == from.color && l.capital /= Nothing) game.board.map.lands
+                                                    game.board.map.lands
+                                                        |> Dict.values
+                                                        |> find (\l -> l.color == from.color && l.capital /= Nothing)
                                                         |> Maybe.andThen
                                                             (\capitalLand ->
                                                                 capitalLand.capital |> Maybe.map (Tuple.pair capitalLand)
@@ -741,10 +760,18 @@ showRoll model roll =
                         False
 
                     Just p ->
-                        board_.map.lands
-                            |> List.filter (\land -> land.color == p.color && land.points > 1)
-                            |> List.map (Board.canAttackFrom board_.map p.color >> Result.toMaybe)
-                            |> List.any ((==) Nothing >> not)
+                        filterMapLands
+                            board_.map.lands
+                            (\land ->
+                                if land.color == p.color && land.points > 1 then
+                                    Board.canAttackFrom board_.map p.color land
+                                        |> Result.toMaybe
+
+                                else
+                                    Nothing
+                            )
+                            |> List.length
+                            |> (>) 0
 
         lastRoll : Maybe RollUI
         lastRoll =

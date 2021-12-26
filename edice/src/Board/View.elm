@@ -11,7 +11,7 @@ import Helpers exposing (dataTestId, dataTestValue)
 import Html
 import Html.Attributes
 import Html.Lazy
-import Land exposing (Capital, DiceSkin, Land)
+import Land exposing (Capital, DiceSkin, LandDict)
 import String
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -60,7 +60,7 @@ board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options 
         ]
 
 
-realLands : PathCache -> BoardMove -> Maybe Land.Emoji -> List Land -> Svg Msg
+realLands : PathCache -> BoardMove -> Maybe Land.Emoji -> LandDict -> Svg Msg
 realLands pathCache move hovered lands =
     Svg.Keyed.node "g" [] <|
         List.map
@@ -69,7 +69,8 @@ realLands pathCache move hovered lands =
                 move
                 hovered
             )
-            lands
+        <|
+            Dict.values lands
 
 
 lazyLandElement : PathCache -> BoardMove -> Maybe Land.Emoji -> Land.Land -> ( Land.Emoji, Svg Msg )
@@ -122,10 +123,11 @@ landElement pathCache isSelected isHovered emoji color =
         []
 
 
-allDies : PathCache -> BoardAnimations -> List Land.Land -> BoardOptions -> Svg Msg
+allDies : PathCache -> BoardAnimations -> LandDict -> BoardOptions -> Svg Msg
 allDies pathCache animations lands options =
     Svg.Keyed.node "g" [] <|
-        List.map (intermediateStack pathCache animations options) lands
+        List.map (intermediateStack pathCache animations options) <|
+            Dict.values lands
 
 
 intermediateStack : PathCache -> BoardAnimations -> BoardOptions -> Land.Land -> ( Land.Emoji, Svg Msg )

@@ -1,4 +1,4 @@
-module Land exposing (Capital, Cells, Color(..), DiceSkin(..), Emoji, Land, LandUpdate, Map, MapSize, Point, at, emptyEmoji, findLand, hasAttackableNeighbours, idSkin, isBordering, landCenter, landPath, playerColor, skinId)
+module Land exposing (Capital, Cells, Color(..), DiceSkin(..), Emoji, Land, LandDict, LandUpdate, Map, MapSize, Point, at, emptyEmoji, filterLands, filterMapLands, findLand, hasAttackableNeighbours, idSkin, isBordering, landCenter, landPath, landsList, playerColor, skinId)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
@@ -57,13 +57,17 @@ type alias MapSize =
 
 type alias Map =
     { name : MapName
-    , lands : List Land
+    , lands : LandDict
     , width : Int
     , height : Int
     , adjacencyKeys : Dict Emoji Int
     , adjacency : Array (Array Bool)
     , waterConnections : List ( Emoji, Emoji )
     }
+
+
+type alias LandDict =
+    Dict Emoji Land
 
 
 type alias Border =
@@ -378,14 +382,30 @@ isBorderOnSideCube coord side other =
                 x_ == x + 1 && y_ == y + 1
 
 
-findLand : Emoji -> List Land -> Maybe Land
+findLand : Emoji -> LandDict -> Maybe Land
 findLand emoji lands =
-    find (\l -> l.emoji == emoji) lands
+    Dict.get emoji lands
+
+
+filterLands : LandDict -> (Land -> Bool) -> List Land
+filterLands lands fn =
+    landsList lands |> List.filter fn
+
+
+filterMapLands : LandDict -> (Land -> Maybe b) -> List b
+filterMapLands lands fn =
+    landsList lands |> List.filterMap fn
+
+
+landsList : LandDict -> List Land
+landsList =
+    Dict.values
 
 
 hasAttackableNeighbours : Map -> Land -> Result String Bool
 hasAttackableNeighbours map land =
     map.lands
+        |> landsList
         |> List.map (canAttack map land)
         |> resultCombine
         |> Result.map (List.any identity)

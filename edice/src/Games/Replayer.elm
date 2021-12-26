@@ -5,6 +5,7 @@ import Board
 import Board.Colors
 import Board.State
 import Board.Types exposing (BoardMove(..))
+import Dict
 import Game.PlayerCard exposing (TurnPlayer)
 import Game.Types exposing (GameStatus(..), MapLoadError(..), Player)
 import Games.Replayer.Types exposing (..)
@@ -374,11 +375,12 @@ mapEvent model step =
                                                 steal
                                                     |> Maybe.andThen
                                                         (\s ->
-                                                            Helpers.find
-                                                                (\l ->
-                                                                    l.color == from.color && l.capital /= Nothing
-                                                                )
-                                                                model.board.map.lands
+                                                            model.board.map.lands
+                                                                |> Dict.values
+                                                                |> Helpers.find
+                                                                    (\l ->
+                                                                        l.color == from.color && l.capital /= Nothing
+                                                                    )
                                                                 |> Maybe.map
                                                                     (\l ->
                                                                         [ LandUpdate l.emoji l.color l.points <|
@@ -414,7 +416,10 @@ mapEvent model step =
                         players =
                             List.filter
                                 (\p ->
-                                    List.filter (.color >> (==) p.color) board.map.lands
+                                    board.map.lands
+                                        |> Dict.values
+                                        |> List.filter
+                                            (.color >> (==) p.color)
                                         |> List.length
                                         |> Helpers.flip (>) 0
                                 )
@@ -522,11 +527,12 @@ mapEvent model step =
                                                         |> List.head
                                                         |> Maybe.andThen
                                                             (\p ->
-                                                                Helpers.find
-                                                                    (\l ->
-                                                                        l.color == p.color && l.capital /= Nothing
-                                                                    )
-                                                                    model.board.map.lands
+                                                                model.board.map.lands
+                                                                    |> Dict.values
+                                                                    |> Helpers.find
+                                                                        (\l ->
+                                                                            l.color == p.color && l.capital /= Nothing
+                                                                        )
                                                                     |> Maybe.map
                                                                         (\l ->
                                                                             [ LandUpdate l.emoji l.color l.points <|
@@ -741,7 +747,9 @@ removeFlagged model =
                     (List.foldl
                         (\color updates ->
                             updates
-                                ++ (List.filter (.color >> (==) color) model.board.map.lands
+                                ++ (model.board.map.lands
+                                        |> Dict.values
+                                        |> List.filter (.color >> (==) color)
                                         |> List.map (\l -> LandUpdate l.emoji Land.Neutral l.points Nothing)
                                    )
                         )
@@ -786,7 +794,9 @@ mapPlayer : ReplayerModel -> Maybe Int -> Int -> Player -> Player
 mapPlayer model score i p =
     let
         hisLands =
-            List.filter (.color >> (==) p.color) model.board.map.lands
+            model.board.map.lands
+                |> Dict.values
+                |> List.filter (.color >> (==) p.color)
 
         stats =
             p.gameStats

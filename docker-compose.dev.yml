@@ -12,6 +12,8 @@ services:
       - 11883:11883
   nginx:
     image: bgrosse/qdice:frontend-local
+    ports:
+      - 80:80
   redis:
     ports:
       - 6379:6379

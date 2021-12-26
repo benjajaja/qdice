@@ -6,7 +6,7 @@ import Board.PathCache
 import Board.Types exposing (..)
 import Dict
 import Ease
-import Land exposing (Color(..), DiceSkin(..), Emoji, Land, LandUpdate, Map)
+import Land exposing (Color(..), DiceSkin(..), Emoji, Land, LandDict, LandUpdate, Map)
 import List exposing (length)
 
 
@@ -18,59 +18,55 @@ init map =
 
         pathCache : Dict.Dict String String
         pathCache =
-            Board.PathCache.addToDict layout map.lands Dict.empty
-                |> Board.PathCache.addToDictLines layout map.lands map.waterConnections
+            Board.PathCache.addToDict layout (Land.landsList map.lands) Dict.empty
+                |> Board.PathCache.addToDictLines layout (Land.landsList map.lands) map.waterConnections
     in
     Model map Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty } Nothing
 
 
 updateLands : Model -> List LandUpdate -> Maybe BoardMove -> List (BoardPlayer a) -> Model
-updateLands model updates mMove players =
-    if length updates == 0 then
-        let
-            move_ =
-                Maybe.withDefault model.move mMove
+updateLands model updates mmove players =
+    let
+        map =
+            model.map
 
-            animations =
-                model.animations
-        in
-        { model
-            | animations = { animations | stack = attackAnimations model.pathCache move_ model.move }
-            , move = move_
-        }
+        ( lands, updated ) =
+            List.foldl (updateLand players) ( map.lands, [] ) updates
 
-    else
-        let
-            map =
-                model.map
+        map_ =
+            if length updates == 0 || lands == map.lands then
+                map
 
-            landUpdates : List ( Land, Array Bool )
-            landUpdates =
-                List.map (updateLand updates players) map.lands
-
-            lands_ =
-                List.map Tuple.first landUpdates
-
-            map_ =
-                if length updates == 0 || lands_ == map.lands then
-                    map
-
-                else
-                    { map
-                        | lands = lands_
-                    }
-
-            move_ =
-                Maybe.withDefault model.move mMove
-        in
-        { model
-            | map = map_
-            , move = move_
-            , animations =
-                { stack = attackAnimations model.pathCache move_ model.move
-                , dice = giveDiceAnimations landUpdates
+            else
+                { map
+                    | lands = lands
                 }
-        }
+    in
+    { model
+        | map = map_
+        , animations =
+            { stack = model.animations.stack
+            , dice = giveDiceAnimations updated
+            }
+    }
+        |> updateMove mmove
+
+
+updateMove : Maybe BoardMove -> Model -> Model
+updateMove mmove model =
+    case mmove of
+        Nothing ->
+            model
+
+        Just move ->
+            let
+                animations =
+                    model.animations
+            in
+            { model
+                | animations = { animations | stack = attackAnimations model.pathCache move model.move }
+                , move = move
+            }
 
 
 giveDiceAnimations : List ( Land, Array Bool ) -> DiceAnimations
@@ -87,59 +83,50 @@ giveDiceAnimations landUpdates =
         landUpdates
 
 
-updateLand : List LandUpdate -> List (BoardPlayer a) -> Land -> ( Land, Array Bool )
-updateLand updates players land =
-    let
-        isThisLand =
-            .emoji >> (==) land.emoji
+type alias AnimList =
+    List ( Land, Array Bool )
 
-        match =
-            case updates of
-                [ a ] ->
-                    if isThisLand a then
-                        Just a
 
-                    else
-                        Nothing
+type alias UpdateResult =
+    ( LandDict, AnimList )
 
-                [ a, b ] ->
-                    if isThisLand a then
-                        Just a
 
-                    else if isThisLand b then
-                        Just b
-
-                    else
-                        Nothing
-
-                _ ->
-                    List.filter (\l -> l.emoji == land.emoji) updates
-                        |> List.head
-    in
-    case match of
-        Just landUpdate ->
-            if
-                landUpdate.color
-                    /= land.color
-                    || landUpdate.points
-                    /= land.points
-                    || landUpdate.capital
-                    /= land.capital
-            then
-                ( { land
-                    | color = landUpdate.color
-                    , points = landUpdate.points
-                    , diceSkin = skinFromColor players landUpdate.color
-                    , capital = landUpdate.capital
-                  }
-                , updateLandAnimations land landUpdate
-                )
-
-            else
-                ( land, Array.empty )
-
+updateLand : List (BoardPlayer a) -> LandUpdate -> UpdateResult -> UpdateResult
+updateLand players update ( dict, list ) =
+    case Dict.get update.emoji dict of
         Nothing ->
-            ( land, Array.empty )
+            ( dict, list )
+
+        Just land ->
+            updateLandFound players update land ( dict, list )
+
+
+updateLandFound : List (BoardPlayer a) -> LandUpdate -> Land -> UpdateResult -> UpdateResult
+updateLandFound players update land ( dict, list ) =
+    if
+        update.color
+            /= land.color
+            || update.points
+            /= land.points
+            || update.capital
+            /= land.capital
+    then
+        let
+            newLand =
+                { land
+                    | color = update.color
+                    , points = update.points
+                    , diceSkin = skinFromColor players update.color
+                    , capital = update.capital
+                }
+
+            anims =
+                updateLandAnimations land update
+        in
+        ( Dict.insert land.emoji newLand dict, list ++ [ ( land, anims ) ] )
+
+    else
+        ( dict, list )
 
 
 skinFromColor : List (BoardPlayer a) -> Color -> DiceSkin
@@ -243,13 +230,14 @@ removeColor model color =
         map_ =
             { map
                 | lands =
-                    List.map
-                        (\land ->
-                            if land.color == color then
-                                { land | color = Neutral, diceSkin = Normal }
+                    Dict.map
+                        (\_ ->
+                            \land ->
+                                if land.color == color then
+                                    { land | color = Neutral, diceSkin = Normal }
 
-                            else
-                                land
+                                else
+                                    land
                         )
                         map.lands
             }

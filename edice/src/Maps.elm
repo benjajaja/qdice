@@ -1,10 +1,10 @@
 module Maps exposing (consoleLogMap, emptyMap, load, mapFromTable, symbols, toCharList)
 
 import Array
-import Dict
+import Dict exposing (Dict)
 import Helpers exposing (combine, consoleDebug)
 import Hex
-import Land exposing (Cells, DiceSkin(..), Emoji)
+import Land exposing (Cells, DiceSkin(..), Emoji, LandDict, landsList)
 import Maps.Sources exposing (mapAdjacency, mapSourceString)
 import Regex
 import String
@@ -19,7 +19,7 @@ type alias EmojiLand =
 
 type alias EmojiMap =
     { name : MapName
-    , lands : List Land.Land
+    , lands : Dict Emoji Land.Land
     , width : Int
     , height : Int
     , waterConnections : List ( Emoji, Emoji )
@@ -141,12 +141,13 @@ emojisToMap name raw =
         realHeight =
             List.length lines
 
-        lands : List Land.Land
+        lands : LandDict
         lands =
             List.map (List.filter isEmptyEmoji) lines
                 |> foldLines
                 |> List.foldr dedupeEmojis []
-                |> List.map (\l -> Land.Land l.cells Land.Neutral l.emoji 1 Land.Normal Nothing)
+                |> List.map (\l -> ( l.emoji, Land.Land l.cells Land.Neutral l.emoji 1 Land.Normal Nothing ))
+                |> Dict.fromList
     in
     Result.map
         (\a ->
@@ -226,7 +227,7 @@ toCharList : Land.Map -> List (List String)
 toCharList map =
     let
         lands =
-            map.lands |> List.reverse
+            landsList map.lands |> List.reverse
     in
     case lands of
         [] ->
@@ -334,7 +335,7 @@ symbols =
 
 emptyMap : Land.Map
 emptyMap =
-    Land.Map Null [] 40 40 Dict.empty Array.empty []
+    Land.Map Null Dict.empty 40 40 Dict.empty Array.empty []
 
 
 mapFromTable : Table -> Result String MapName

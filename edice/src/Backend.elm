@@ -6,7 +6,7 @@ import Backend.MqttCommands exposing (..)
 import Backend.Types exposing (..)
 import Game.Types exposing (PlayerAction(..), RollLog)
 import Helpers exposing (consoleDebug, find, toDiesEmojis)
-import Land exposing (Color(..))
+import Land exposing (Color(..), findLand)
 import String
 import Tables exposing (Table)
 import Time exposing (millisToPosix)
@@ -490,10 +490,10 @@ toRollLog model roll =
             model.game.players
 
         attackerLand =
-            find (\l -> l.emoji == roll.from.emoji) lands
+            findLand roll.from.emoji lands
 
         defenderLand =
-            find (\l -> l.emoji == roll.to.emoji) lands
+            findLand roll.to.emoji lands
 
         neutralPlayer : Game.Types.Player
         neutralPlayer =
