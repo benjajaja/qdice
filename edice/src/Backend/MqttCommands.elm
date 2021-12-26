@@ -50,13 +50,10 @@ sendHello jwt status =
         Online clientId _ ->
             case jwt of
                 Just jwt2 ->
-                    Cmd.batch <|
-                        [ ( "hello"
-                          , encodeClient jwt2 clientId
-                          )
-                            |> mqttPublish
-                        , consoleDebug <| "hello"
-                        ]
+                    ( "hello"
+                    , encodeClient jwt2 clientId
+                    )
+                        |> mqttPublish
 
                 Nothing ->
                     consoleDebug "No JWT for hello"

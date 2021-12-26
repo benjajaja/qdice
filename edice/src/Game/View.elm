@@ -14,7 +14,7 @@ import Game.State exposing (canSelect)
 import Game.Types exposing (ChatLogEntry(..), GameStatus(..), Msg(..), Player, PlayerAction(..), RollUI, TableInfo, isBot)
 import Helpers exposing (dataTestId, pointsSymbol, pointsToNextLevel)
 import Html exposing (..)
-import Html.Attributes exposing (class, disabled, height, href, src, style, width)
+import Html.Attributes exposing (class, disabled, height, href, id, src, style, width)
 import Html.Events exposing (onClick)
 import Html.Keyed
 import Html.Lazy
@@ -52,32 +52,38 @@ view model =
                 |> Html.map BoardMsg
     in
     div [ class "edMainScreen" ] <|
-        [ div [ class "edGameBoardWrapper" ] <|
-            if True then
-                (if model.fullscreen == Nothing then
-                    [ tableInfo model ]
+        [ div
+            [ id "edPlayableArea"
+            , class "edGameBoardWrapper"
 
-                 else
-                    [ button [ class "edGameStatus__button edGameFullscreenButton edGameStatus__button--landscape edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ]
-                    ]
-                )
-                    ++ [ header model
-                       , board
-                       , if model.game.boardOptions.diceVisible then
-                            lastRoll model.game.lastRoll
+            -- , style "max-height"
+            -- (case model.fullscreen of
+            -- Just height ->
+            -- String.fromInt height
+            --
+            -- Nothing ->
+            -- "?"
+            -- )
+            ]
+          <|
+            ((if model.fullscreen == Nothing then
+                tableInfo model
 
-                         else
-                            text ""
-                       , sitInModal model
-                       , boardFooter model
-                       , tableDetails model
-                       ]
+              else
+                button [ class "edGameStatus__button edGameFullscreenButton edGameStatus__button--landscape edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ]
+             )
+                :: [ header model
+                   , board
+                   , if model.game.boardOptions.diceVisible then
+                        lastRoll model.game.lastRoll
 
-            else
-                [ header model
-                , board
-                , boardFooter model
-                ]
+                     else
+                        text ""
+                   , sitInModal model
+                   , boardFooter model
+                   , tableDetails model
+                   ]
+            )
         ]
             ++ (if model.fullscreen == Nothing then
                     div
@@ -105,13 +111,13 @@ view model =
                                 ]
                            , div [ class "cartonCard" ] <|
                                 [ case model.tableStats of
-                                    Error err p ->
+                                    Error err _ ->
                                         div [] [ text <| "Could not load table statistics: " ++ err ]
 
-                                    Fetching p ->
+                                    Fetching _ ->
                                         div [] [ text <| "Loading statistics..." ]
 
-                                    Placeholder p ->
+                                    Placeholder _ ->
                                         div [] [ text <| "Waiting for load..." ]
 
                                     Fetched p ->

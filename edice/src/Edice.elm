@@ -146,11 +146,12 @@ init flags location key =
                       , backendCmd
                       ]
                     , oauthCmds
-                    , [ loadGlobalSettings backend ]
-                    , [ routeCmd ]
-                    , [ Task.perform UserZone <| Task.map2 (\z -> \t -> ( z, t )) Time.here Time.now ]
-                    , [ gameCmd ]
-                    , [ Task.perform (\v -> Resized (round v.viewport.width) (round v.viewport.height)) Browser.Dom.getViewport ]
+                    , [ loadGlobalSettings backend
+                      , routeCmd
+                      , Task.perform UserZone <| Task.map2 (\z -> \t -> ( z, t )) Time.here Time.now
+                      , gameCmd
+                      , Task.perform (\v -> Resized (round v.viewport.width) (round v.viewport.height)) Browser.Dom.getViewport
+                      ]
                     ]
     in
     ( model_, cmds )
