@@ -125,14 +125,24 @@ landElement pathCache isSelected isHovered emoji color =
 
 allDies : PathCache -> BoardAnimations -> LandDict -> BoardOptions -> Svg Msg
 allDies pathCache animations lands options =
-    Svg.Keyed.node "g" [] <|
-        List.map (intermediateStack pathCache animations options) <|
-            Dict.values lands
-
-
-intermediateStack : PathCache -> BoardAnimations -> BoardOptions -> Land.Land -> ( Land.Emoji, Svg Msg )
-intermediateStack pathCache { stack, dice } options land =
     let
+        zLands =
+            List.map (allDieswithAnimations pathCache animations options) <|
+                Dict.values lands
+
+        sortedLands =
+            List.sortBy Tuple.first zLands |> List.map Tuple.second
+    in
+    Svg.Keyed.node "g" [ class "group_dies" ] sortedLands
+
+
+allDieswithAnimations : PathCache -> BoardAnimations -> BoardOptions -> Land.Land -> ( Float, ( Land.Emoji, Svg Msg ) )
+allDieswithAnimations pathCache { stack, dice } options land =
+    let
+        center =
+            Board.PathCache.center pathCache land.emoji
+                |> Maybe.withDefault ( 0, 0 )
+
         animationAttrs =
             stack
                 |> Maybe.andThen
@@ -143,32 +153,26 @@ intermediateStack pathCache { stack, dice } options land =
                         else
                             Nothing
                     )
+                |> Maybe.map Animation.render
+                |> Maybe.withDefault Helpers.emptyList
 
         diceAnimation =
             Dict.get land.emoji dice
     in
-    ( "stack_" ++ land.emoji
-    , Svg.Lazy.lazy5 animatedStackDies pathCache animationAttrs diceAnimation options land
+    ( Tuple.second center
+    , ( land.emoji
+      , Svg.Lazy.lazy5 animatedStackDies center animationAttrs diceAnimation options land
+      )
     )
 
 
-animatedStackDies : PathCache -> Maybe AnimationState -> Maybe (Array Bool) -> BoardOptions -> Land.Land -> Svg Msg
-animatedStackDies pathCache stack dice options land =
-    let
-        ( x_, y_ ) =
-            Board.PathCache.center pathCache land.emoji
-                |> Maybe.withDefault ( 0, 0 )
-
-        animationAttrs =
-            stack
-                |> Maybe.map Animation.render
-                |> Maybe.withDefault Helpers.emptyList
-    in
+animatedStackDies : ( Float, Float ) -> List (Attribute Msg) -> Maybe (Array Bool) -> BoardOptions -> Land.Land -> Svg Msg
+animatedStackDies ( x_, y_ ) animationAttrs diceAnimation options land =
     Svg.Keyed.node "g"
         (class "edBoard--stack"
             :: animationAttrs
         )
-        [ ( "dies", Svg.Lazy.lazy5 landDies dice options land x_ y_ )
+        [ ( "dies", Svg.Lazy.lazy5 landDies diceAnimation options land x_ y_ )
         , ( "text", Svg.Lazy.lazy4 capitalText land.capital x_ y_ land.color )
         ]
 

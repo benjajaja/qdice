@@ -1,5 +1,6 @@
-module MapsTest exposing (..)
+module MapsTest exposing (suite)
 
+import Dict
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Helpers exposing (combine, resultCombine)
@@ -20,7 +21,7 @@ suite =
                             Expect.fail err
 
                         Ok map ->
-                            Expect.equal 42 <| List.length map.lands
+                            Expect.equal 42 <| List.length <| Dict.values map.lands
             ]
         , describe "Land.isBordering"
             [ test "adjacency" <|
