@@ -68,7 +68,7 @@ When a capital is defeated then all it's dice, including pocket dice, are **stol
   * [Qdice reddit](https://www.reddit.com/r/Qdice/) to post any questions or opinion
   * [Discord](https://discord.gg/E2m3Gra) to chat with fellow players
   * [@qdicewtf](https://twitter.com/qdicewtf) on twitter
-  * [github](https://github.com/gipsy-king/qdice) code and bugs
+  * [github](https://github.com/benjajaja/qdice) code and bugs
   * Comment here
 
 """

@@ -27,11 +27,11 @@ Created by <ste3ls@gmail.com>.
   * [Qdice reddit](https://www.reddit.com/r/Qdice/) to post any questions or opinion
   * [Discord](https://discord.gg/E2m3Gra) to chat with fellow players
   * [@qdicewtf](https://twitter.com/qdicewtf) same as with reddit
-  * [github](https://github.com/gipsy-king/qdice) same as with reddit
+  * [github](https://github.com/benjajaja/qdice) same as with reddit
 
 ## Development
 
-Qdice is **Free Open Source Software**! See repo here: [github.com/gipsy-king/qdice](https://github.com/gipsy-king/qdice).
+Qdice is **Free Open Source Software**! See repo here: [github.com/benjajaja/qdice](https://github.com/benjajaja/qdice).
 
 Before making a PR, I suggest to get in contact with me however you want, an issue in github is a good start.
 

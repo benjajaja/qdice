@@ -153,7 +153,7 @@ statusMessage route version status =
     div []
         [ span []
             [ text <| "Version: "
-            , a [ href <| "https://github.com/gipsy-king/qdice/commit/" ++ version ]
+            , a [ href <| "https://github.com/benjajaja/qdice/commit/" ++ version ]
                 [ text version ]
             , text <| ", Status: "
             ]
