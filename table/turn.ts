@@ -1,7 +1,4 @@
 import * as R from "ramda";
-import * as maps from "../maps";
-import { rand, shuffle } from "../rand";
-import logger from "../logger";
 import {
   Table,
   Land,
@@ -12,7 +9,6 @@ import {
   Emoji,
 } from "../types";
 import {
-  updateLand,
   groupedPlayerPositions,
   removePlayerCascade,
   killPoints,

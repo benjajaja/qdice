@@ -10,9 +10,10 @@ import AsyncLock = require("async-lock");
 import { createHandyClient } from "handy-redis";
 import { tableStatus } from "./publish";
 
-const redis = createHandyClient({
-  host: process.env.REDIS_HOST,
-});
+const redis = createHandyClient(
+  process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT, 10) : 6379,
+  process.env.REDIS_HOST,
+);
 
 let memoryTables: { [tag: string]: Table } = {};
 

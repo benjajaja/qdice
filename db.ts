@@ -1,5 +1,5 @@
 import * as R from "ramda";
-import { Pool } from "pg";
+import { Pool, PoolConfig } from "pg";
 import * as camelize from "camelize";
 import * as decamelize from "decamelize";
 
@@ -10,39 +10,47 @@ import {
   Table,
   Player,
   User,
-  Emoji,
-  Color,
-  Watcher,
   PushNotificationEvents,
-  CommandResult,
   Command,
   PlayerStats,
   EliminationReason,
 } from "./types";
 import { date, now, ts } from "./timestamp";
 import * as sleep from "sleep-promise";
-import AsyncLock = require("async-lock");
 import { EMPTY_PROFILE_PICTURE } from "./constants";
 
-const pool = new Pool({
+const config: PoolConfig = {
   host: process.env.PGHOST,
   port: parseInt(process.env.PGPORT!, 10),
   database: process.env.PGDATABASE,
   user: process.env.PGUSER,
   password: process.env.POSTGRES_PASSWORD,
-});
-
-export const connect = async function db() {
-  return await pool.connect();
+  connectionTimeoutMillis: 5000,
 };
 
-export const retry = async function retry() {
+const pool = new Pool(config);
+
+export const connect = async function db() {
+  return pool.connect();
+};
+
+export const retry = async function retry(fuse: number = 5) {
   try {
-    return await connect();
+    const conn = await connect();
+    console.log("db.retry is done.");
+    return conn;
   } catch (e) {
-    logger.error("pg connection error", e, process.env.PGHOST, process.env.PGPORT);
+    const printConfig = { ...config };
+    printConfig.password = printConfig.password
+      ? "******"
+      : "(WARNING: falsy value!)";
+    logger.debug("pg connection config: %s", printConfig);
+    logger.error("pg connection error: %s", e);
+    if (fuse === 0) {
+      throw e;
+    }
     await sleep(1000);
-    return await retry();
+    return await retry(fuse - 1);
   }
 };
 
@@ -307,7 +315,11 @@ export const deleteUser = async (id: UserId) => {
   }
 };
 
-export const addScore = async (id: UserId, score: number, isDailyReward: boolean = false) => {
+export const addScore = async (
+  id: UserId,
+  score: number,
+  isDailyReward: boolean = false
+) => {
   logger.debug("addScore", id, score);
   if (typeof score !== "number" || isNaN(score)) {
     throw new Error("addScore did not get a number: " + score);
@@ -327,10 +339,7 @@ export const addScore = async (id: UserId, score: number, isDailyReward: boolean
             level_points = GREATEST(level_points + $1, 0)
         WHERE id = $2
         RETURNING level, level_points`;
-    const res = await client.query(
-      query,
-      [score, id]
-    );
+    const res = await client.query(query, [score, id]);
     const { level, level_points } = res.rows[0];
     logger.debug("setLevel", level, level_points);
     if (level_points > 0) {

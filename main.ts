@@ -206,7 +206,7 @@ export const server = async () => {
   server.get(`${root}/profile/:id`, profile);
 
   server.listen(process.env.PORT || 5001, function() {
-    logger.info("%s listening at %s port %s", server.name, server.url);
+    logger.info("%s listening at %s %s", server.name, server.url, process.env.PORT || 5001);
   });
 
   logger.info("connecting to mqtt: " + process.env.MQTT_URL);
