@@ -30,6 +30,7 @@ import Routing.String exposing (routeToString)
 import Time exposing (posixToMillis)
 import Tournaments exposing (tournamentTime)
 import Types exposing (AuthNetwork(..), DialogType(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
+import Board.Types exposing (DiceVisible(..))
 
 
 view : Model -> Html Types.Msg
@@ -74,11 +75,9 @@ view model =
              )
                 :: [ header model
                    , board
-                   , if model.game.boardOptions.diceVisible then
-                        lastRoll model.game.lastRoll
-
-                     else
-                        text ""
+                   , case model.game.boardOptions.diceVisible of
+                       Numbers -> text ""
+                       _ -> lastRoll model.game.lastRoll
                    , sitInModal model
                    , boardFooter model
                    , tableDetails model
@@ -592,14 +591,14 @@ tableInfo model =
             ++ [ div [ class "edGameStatus__buttons" ]
                     [ button
                         [ class "edGameStatus__button edButton--icon"
-                        , onClick <| GameMsg <| ToggleDiceVisible <| not model.game.boardOptions.diceVisible
+                        , onClick <| GameMsg <| ToggleDiceVisible <| Board.cycleVisible model.game.boardOptions.diceVisible
+                          --not model.game.boardOptions.diceVisible
                         ]
                         [ Icon.icon <|
-                            if model.game.boardOptions.diceVisible then
-                                "visibility"
-
-                            else
-                                "visibility_off"
+                            case model.game.boardOptions.diceVisible of
+                              Visible -> "flash_off"
+                              Numbers -> "visibility_off"
+                              Animated -> "visibility"
                         ]
                     , button
                         [ class "edGameStatus__button edButton--icon", onClick <| SetSessionPreference <| Muted <| not model.sessionPreferences.muted ]

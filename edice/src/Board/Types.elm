@@ -1,4 +1,4 @@
-module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), BoardOptions, BoardPlayer, DiceAnimations, Model, Msg(..), PathCache, getLayout)
+module Board.Types exposing (AnimationState, BoardAnimations, BoardMove(..), BoardOptions, BoardPlayer, DiceAnimations, DiceVisible(..), Model, Msg(..), PathCache, getLayout)
 
 import Animation
 import Array exposing (Array)
@@ -24,11 +24,15 @@ type alias Model =
 
 
 type alias BoardOptions =
-    { diceVisible : Bool
+    { diceVisible : DiceVisible
     , showEmojis : Bool
     , height : Maybe Int
     }
 
+type DiceVisible
+    = Visible
+    | Numbers
+    | Animated
 
 type alias BoardAnimations =
     { stack : Maybe ( Emoji, AnimationState )

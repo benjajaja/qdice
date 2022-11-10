@@ -3,7 +3,7 @@ module Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, Comme
 import Animation
 import Array exposing (Array)
 import Backend.Types
-import Board
+import Board.Types
 import Browser
 import Browser.Navigation exposing (Key)
 import Dict exposing (Dict)
@@ -70,7 +70,7 @@ type Msg
     | ReplyComment CommentKind (Maybe ( Int, String ))
     | GetTableStats (Result String TableStats)
       -- game
-    | BoardMsg Board.Msg
+    | BoardMsg Board.Types.Msg
     | InputChat String
     | SendChat String
     | GameCmd PlayerAction

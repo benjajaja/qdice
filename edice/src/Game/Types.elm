@@ -1,11 +1,12 @@
 module Game.Types exposing (Award, ChatLogEntry(..), Chatter, Elimination, EliminationReason(..), GameStatus(..), MapLoadError(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, RollUI, TableInfo, TableParams, TableStatus, TournamentConfig, TurnInfo, User, actionToString, isBot, makePlayer, statusToString, userColor)
 
-import Board
+import Board.Types
 import Browser.Dom as Dom
 import Land exposing (Color, DiceSkin(..), Emoji, LandUpdate)
 import LeaderBoard.ChartTypes exposing (Datum)
 import Tables exposing (Table)
 import Time exposing (Posix)
+import Board.Types exposing (DiceVisible)
 
 
 type GameStatus
@@ -31,14 +32,14 @@ type PlayerAction
 
 type Msg
     = ScrollChat String (List ChatLogEntry) (Result Dom.Error Dom.Viewport)
-    | ToggleDiceVisible Bool
+    | ToggleDiceVisible DiceVisible
     | Hint (Maybe Datum)
 
 
 type alias Model =
     { table : Maybe Table
-    , board : Board.Model
-    , boardOptions : Board.BoardOptions
+    , board : Board.Types.Model
+    , boardOptions : Board.Types.BoardOptions
     , hovered : Maybe Land.Emoji
     , players : List Player
     , player : Maybe Player

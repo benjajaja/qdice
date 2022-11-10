@@ -137,14 +137,15 @@ allDies pathCache animations lands options =
 
 
 allDieswithAnimations : PathCache -> BoardAnimations -> BoardOptions -> Land.Land -> ( Float, ( Land.Emoji, Svg Msg ) )
-allDieswithAnimations pathCache { stack, dice } options land =
+allDieswithAnimations pathCache animations options land =
     let
         center =
             Board.PathCache.center pathCache land.emoji
                 |> Maybe.withDefault ( 0, 0 )
 
         animationAttrs =
-            stack
+          case options.diceVisible of
+            Animated -> animations.stack
                 |> Maybe.andThen
                     (\( emoji, animation ) ->
                         if emoji == land.emoji then
@@ -154,10 +155,13 @@ allDieswithAnimations pathCache { stack, dice } options land =
                             Nothing
                     )
                 |> Maybe.map Animation.render
-                |> Maybe.withDefault Helpers.emptyList
+                |> Maybe.withDefault []
+            _ -> []
 
         diceAnimation =
-            Dict.get land.emoji dice
+          case options.diceVisible of
+            Animated -> Dict.get land.emoji animations.dice
+            _ -> Nothing
     in
     ( Tuple.second center
     , ( land.emoji
@@ -179,7 +183,26 @@ animatedStackDies ( x_, y_ ) animationAttrs diceAnimation options land =
 
 landDies : Maybe (Array Bool) -> BoardOptions -> Land.Land -> Float -> Float -> Svg Msg
 landDies diceAnimations options land x_ y_ =
-    if options.diceVisible == True then
+    case options.diceVisible of
+      Numbers ->
+        let
+            ( color, oppositeColor ) =
+                contrastColors land.color ( 30, 225 )
+        in
+        text_
+            [ class "edBoard--stack edBoard--stack__text"
+            , x <| String.fromFloat x_
+            , y <| String.fromFloat y_
+            , oppositeColor
+                |> Board.Colors.cssRgb
+                |> stroke
+            , color
+                |> Board.Colors.cssRgb
+                |> fill
+            , textAnchor "middle"
+            ]
+            [ Svg.text <| String.fromInt land.points ]
+      _ ->
         let
             diceList =
                 List.range
@@ -203,24 +226,6 @@ landDies diceAnimations options land x_ y_ =
                         []
                    )
 
-    else
-        let
-            ( color, oppositeColor ) =
-                contrastColors land.color ( 30, 225 )
-        in
-        text_
-            [ class "edBoard--stack edBoard--stack__text"
-            , x <| String.fromFloat x_
-            , y <| String.fromFloat y_
-            , oppositeColor
-                |> Board.Colors.cssRgb
-                |> stroke
-            , color
-                |> Board.Colors.cssRgb
-                |> fill
-            , textAnchor "middle"
-            ]
-            [ Svg.text <| String.fromInt land.points ]
 
 
 landDie : Maybe (Array Bool) -> Float -> Float -> DiceSkin -> Int -> ( String, Svg Msg )
@@ -342,7 +347,11 @@ landColor : Bool -> Bool -> Land.Color -> String
 landColor selected hovered color =
     Board.Colors.base color
         |> (if selected then
+              (if color == Land.Neutral then
+                Board.Colors.downlight 0.2
+              else
                 Board.Colors.highlight 0.4
+              )
 
             else
                 identity

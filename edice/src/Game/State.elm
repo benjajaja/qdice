@@ -17,6 +17,7 @@ import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (MapName(..), Table, isTournament)
 import Task
 import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
+import Board.Types exposing (DiceVisible(..))
 
 
 init : Maybe Table -> Maybe MapName -> Maybe Int -> ( Game.Types.Model, Cmd Msg )
@@ -51,7 +52,7 @@ init table tableMap_ height =
     ( { table = table
       , board = board
       , boardOptions =
-            { diceVisible = True
+            { diceVisible = Visible
             , showEmojis = False
             , height = height
             }
@@ -646,11 +647,9 @@ showMove model move =
                                                 |> Helpers.timeRandomDice model.time
                                             )
                                         , rolling =
-                                            if game.boardOptions.diceVisible then
-                                                Just model.time
-
-                                            else
-                                                Nothing
+                                            case game.boardOptions.diceVisible of
+                                              Numbers -> Nothing
+                                              _ -> Just model.time
                                         , timestamp = model.time
                                         }
 

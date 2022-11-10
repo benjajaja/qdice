@@ -1,24 +1,12 @@
-module Board exposing (BoardOptions, Model, Msg, animations, canAttackFrom, canMove, init, updateAnimations, view)
+module Board exposing (animations, canAttackFrom, canMove, cycleVisible, init, updateAnimations, view)
 
 import Animation
 import Board.State
-import Board.Types exposing (BoardMove, Model)
+import Board.Types exposing (BoardMove, Model, Msg, BoardOptions, DiceVisible(..))
 import Board.View
 import Html
 import Html.Lazy
 import Land exposing (Color, Emoji, Land, Map, findLand)
-
-
-type alias Msg =
-    Board.Types.Msg
-
-
-type alias Model =
-    Board.Types.Model
-
-
-type alias BoardOptions =
-    Board.Types.BoardOptions
 
 
 init : Land.Map -> Model
@@ -29,6 +17,13 @@ init =
 view : Model -> Maybe Land.Emoji -> BoardOptions -> Html.Html Msg
 view =
     Html.Lazy.lazy3 Board.View.view
+
+cycleVisible : DiceVisible -> DiceVisible
+cycleVisible visible =
+  case visible of
+    Visible -> Animated
+    Animated -> Numbers
+    Numbers -> Visible
 
 
 animations : Model -> List Animation.State

@@ -22,6 +22,7 @@ import Ordinal exposing (ordinal)
 import Snackbar
 import Time
 import Types exposing (GamesMsg(..), GamesSubRoute(..), Model, Msg)
+import Board.Types exposing (DiceVisible(..))
 
 
 init : Game -> ReplayerModel
@@ -45,7 +46,7 @@ init game =
             | avatarUrls = Just <| List.map (\p -> ( p.color, p.picture )) players
         }
     , boardOptions =
-        { diceVisible = True
+        { diceVisible = Visible
         , showEmojis = True
         , height = Nothing
         }
