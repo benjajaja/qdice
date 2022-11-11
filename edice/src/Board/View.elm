@@ -38,12 +38,12 @@ board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options 
              , class "edBoard--svg"
              ]
                 ++ (case options.height of
-                        Just height ->
-                            [ Svg.Attributes.height <|
-                                String.fromInt height
-                            ]
+                        -- Just height ->
+                            -- [ Svg.Attributes.height <|
+                                -- String.fromInt height
+                            -- ]
 
-                        Nothing ->
+                        _ ->
                             []
                    )
             )

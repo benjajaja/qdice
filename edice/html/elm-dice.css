@@ -1236,11 +1236,11 @@ input[type="range"]::-webkit-slider-runnable-track {
   }
   .edBoard {
     margin-top: 0px;
-    margin-left: auto;
-    margin-right: auto;
+    /* margin-left: auto; */
+    /* margin-right: auto; */
   }
   .edBoard--svg {
-    max-height: 101%;
+    /* max-height: 101%; */
   }
   .edGame__meta, .edBoxes, .edGame__meta2, .edTables, .edPlayerBoxes, .edGameDetails {
     display: none !important;
