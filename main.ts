@@ -185,10 +185,7 @@ export const server = async () => {
     })
   );
 
-  if (process.argv.slice().pop() !== "--quit" && !process.env.API_ROOT) {
-    throw new Error("API_ROOT_is not set");
-  }
-  const root = process.env.API_ROOT;
+  const root = process.env.API_ROOT ?? "";
 
   const lock = new AsyncLock();
 
@@ -206,7 +203,12 @@ export const server = async () => {
   server.get(`${root}/profile/:id`, profile);
 
   server.listen(process.env.PORT || 5001, function() {
-    logger.info("%s listening at %s %s", server.name, server.url, process.env.PORT || 5001);
+    logger.info(
+      "%s listening at %s %s",
+      server.name,
+      server.url,
+      process.env.PORT || 5001
+    );
   });
 
   logger.info("connecting to mqtt: " + process.env.MQTT_URL);

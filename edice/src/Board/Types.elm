@@ -14,6 +14,7 @@ type Msg
 
 type alias Model =
     { map : Map
+    , boardOptions : BoardOptions
     , move : BoardMove
     , pathCache : PathCache
     , layout : MapSize

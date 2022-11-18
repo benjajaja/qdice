@@ -47,15 +47,15 @@ init table tableMap_ height =
                             Err NoTableNoMapError
 
         board =
-            Board.init <| Result.withDefault Maps.emptyMap map
+            Board.State.init
+               { diceVisible = Visible
+                  , showEmojis = False
+                  , height = height
+                  }
+               <| Result.withDefault Maps.emptyMap map
     in
     ( { table = table
       , board = board
-      , boardOptions =
-            { diceVisible = Visible
-            , showEmojis = False
-            , height = height
-            }
       , hovered = Nothing
       , players = []
       , player = Nothing
@@ -247,7 +247,7 @@ updateTableStatus model status =
         board_ =
             (if oldBoard.map.name /= status.mapName then
                 Maps.load status.mapName
-                    |> Result.map Board.State.init
+                    |> Result.map (Board.State.init oldBoard.boardOptions)
                     |> Result.toMaybe
                     |> Maybe.withDefault oldBoard
 
@@ -572,16 +572,11 @@ updateGameInfo ( model, cmd ) tableList =
             in
             case currentTableInfo of
                 Just tableInfo ->
-                    let
-                        options =
-                            model.boardOptions
-                    in
                     ( { model
                         | playerSlots = tableInfo.playerSlots
                         , startSlots = tableInfo.startSlots
                         , points = tableInfo.points
                         , params = tableInfo.params
-                        , boardOptions = options
                       }
                     , cmd
                     )
@@ -647,7 +642,7 @@ showMove model move =
                                                 |> Helpers.timeRandomDice model.time
                                             )
                                         , rolling =
-                                            case game.boardOptions.diceVisible of
+                                            case game.board.boardOptions.diceVisible of
                                               Numbers -> Nothing
                                               _ -> Just model.time
                                         , timestamp = model.time
@@ -1178,11 +1173,12 @@ update model game msg =
 
         ToggleDiceVisible visible ->
             let
-                options =
-                    model.game.boardOptions
+                board = model.game.board
+                options = board.boardOptions
+                newBoard = { board | boardOptions = { options | diceVisible = visible }}
             in
             ( { model
-                | game = { game | boardOptions = { options | diceVisible = visible } }
+                | game = { game | board = newBoard }
               }
             , Cmd.none
             )

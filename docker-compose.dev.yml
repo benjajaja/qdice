@@ -10,11 +10,16 @@ services:
       - 1883:1883
       - 18083:18083
       - 11883:11883
-  nginx:
-    image: bgrosse/qdice:frontend-local
-    ports:
-      - 80:80
   redis:
     ports:
       - 6380:6379
+  haproxy:
+    environment:
+      - STAGING=true
+      - CERT1=
+    volumes:
+      - ./haproxy/haproxy.local.cfg:/etc/haproxy/haproxy.cfg
+  matrix:
+    ports:
+      - 8008:8008
 

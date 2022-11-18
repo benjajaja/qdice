@@ -10,8 +10,8 @@ import Land exposing (Color(..), DiceSkin(..), Emoji, Land, LandDict, LandUpdate
 import List exposing (length)
 
 
-init : Map -> Model
-init map =
+init : BoardOptions -> Map -> Model
+init options map =
     let
         ( layout, viewBox ) =
             getLayout map
@@ -21,7 +21,7 @@ init map =
             Board.PathCache.addToDict layout (Land.landsList map.lands) Dict.empty
                 |> Board.PathCache.addToDictLines layout (Land.landsList map.lands) map.waterConnections
     in
-    Model map Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty } Nothing
+    Model map options Idle pathCache layout viewBox { stack = Nothing, dice = Dict.empty } Nothing
 
 
 updateLands : Model -> List LandUpdate -> Maybe BoardMove -> List (BoardPlayer a) -> Model
@@ -41,13 +41,16 @@ updateLands model updates mmove players =
                 { map
                     | lands = lands
                 }
+        animations = case model.boardOptions.diceVisible of
+            Animated -> 
+              { stack = model.animations.stack
+              , dice = giveDiceAnimations updated
+              }
+            _ -> model.animations
     in
     { model
         | map = map_
-        , animations =
-            { stack = model.animations.stack
-            , dice = giveDiceAnimations updated
-            }
+        , animations = animations
     }
         |> updateMove mmove
 
@@ -62,9 +65,13 @@ updateMove mmove model =
             let
                 animations =
                     model.animations
+                newAnimations =
+                  case model.boardOptions.diceVisible of
+                    Animated -> { animations | stack = attackAnimations model.pathCache move model.move }
+                    _ -> model.animations
             in
             { model
-                | animations = { animations | stack = attackAnimations model.pathCache move model.move }
+                | animations = newAnimations
                 , move = move
             }
 

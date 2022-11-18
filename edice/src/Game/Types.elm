@@ -39,7 +39,6 @@ type Msg
 type alias Model =
     { table : Maybe Table
     , board : Board.Types.Model
-    , boardOptions : Board.Types.BoardOptions
     , hovered : Maybe Land.Emoji
     , players : List Player
     , player : Maybe Player

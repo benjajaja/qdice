@@ -9,3 +9,5 @@ data/certbot/conf/csr
 starting_positions/maps
 starting_positions/src/__pycache__
 version
+data/haproxy
+data/matrix

@@ -33,7 +33,12 @@ init game =
             Maps.load game.map |> Result.mapError MapLoadError
 
         board =
-            Board.init <| Result.withDefault Maps.emptyMap map
+            Board.State.init 
+              { diceVisible = Visible
+              , showEmojis = True
+              , height = Nothing
+              }
+              <| Result.withDefault Maps.emptyMap map
 
         board_ =
             Board.State.updateLands board game.lands Nothing []
@@ -44,11 +49,6 @@ init game =
     { board =
         { board_
             | avatarUrls = Just <| List.map (\p -> ( p.color, p.picture )) players
-        }
-    , boardOptions =
-        { diceVisible = Visible
-        , showEmojis = True
-        , height = Nothing
         }
     , players = players
     , turnIndex = 0
@@ -153,7 +153,7 @@ gameReplayer model game =
                         List.take 4 <|
                             List.drop 4 <|
                                 sortedPlayers m.turnIndex m.players
-                , Board.view m.board Nothing m.boardOptions |> Html.map Types.BoardMsg
+                , Board.view m.board Nothing |> Html.map Types.BoardMsg
                 , Html.Keyed.node "div" [ class "edPlayerChips" ] <|
                     List.map (Game.PlayerCard.view Playing) <|
                         List.take 4 <|

@@ -12,7 +12,7 @@ in pkgs.mkShell rec {
 
   shellHook = ''
     export $(cat .env | xargs)
-    export $(cat .local_env | xargs)
+    #export $(cat .local_env | xargs)
     echo "Loaded .env and .local_env as env vars."
   '';
 }  

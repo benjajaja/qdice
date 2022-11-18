@@ -8,7 +8,6 @@ import Time exposing (Posix)
 
 type alias ReplayerModel =
     { board : Board.Types.Model
-    , boardOptions : Board.Types.BoardOptions
     , players : List Player
     , turnIndex : Int
     , game : Game

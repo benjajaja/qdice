@@ -20,16 +20,15 @@ import Svg.Keyed
 import Svg.Lazy
 
 
-view : Model -> Maybe Land.Emoji -> BoardOptions -> Html.Html Msg
-view model hovered options =
-    Html.Lazy.lazy3 board
+view : Model -> Maybe Land.Emoji -> Html.Html Msg
+view model hovered =
+    Html.Lazy.lazy2 board
         model
         hovered
-        options
 
 
-board : Model -> Maybe Land.Emoji -> BoardOptions -> Svg Msg
-board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options =
+board : Model -> Maybe Land.Emoji -> Svg Msg
+board { map, viewBox, pathCache, animations, move, avatarUrls, boardOptions } hovered =
     Html.div [ class "edBoard" ]
         [ Svg.svg
             ([ Svg.Attributes.viewBox viewBox
@@ -37,7 +36,7 @@ board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options 
              -- , preserveAspectRatio "xMidYMin meet"
              , class "edBoard--svg"
              ]
-                ++ (case options.height of
+                ++ (case boardOptions.height of
                         -- Just height ->
                             -- [ Svg.Attributes.height <|
                                 -- String.fromInt height
@@ -55,7 +54,7 @@ board { map, viewBox, pathCache, animations, move, avatarUrls } hovered options 
                 move
                 hovered
                 map.lands
-            , Svg.Lazy.lazy4 allDies pathCache animations map.lands options
+            , Svg.Lazy.lazy4 allDies pathCache animations map.lands boardOptions
             ]
         ]
 

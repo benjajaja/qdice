@@ -37,10 +37,9 @@ RUN yarn gzip
 # NGINX
 
 FROM nginx:mainline
-ARG ENV
 
 WORKDIR /
-COPY data/nginx/default.conf.${ENV} /etc/nginx/conf.d/default.conf
+COPY data/nginx/default.conf.local /etc/nginx/conf.d/default.conf
 COPY data/nginx/proxy_params /etc/nginx/proxy_params
 COPY data/nginx/.htpasswd /etc/nginx/.htpasswd
 

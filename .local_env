@@ -9,5 +9,6 @@ SCREENSHOT_HOST=http://localhost:5000
 SCREENSHOT_URL=http://localhost/screenshots
 E2E=
 REDIS_HOST=localhost
+REDIS_PORT=6380
 
 AVATAR_PATH=/home/gipsy/o/qdice/edice/html/pictures

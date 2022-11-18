@@ -38,6 +38,7 @@ import Types exposing (..)
 import Url exposing (Url)
 import Widgets
 import Widgets.Views
+import Board.Types exposing (DiceVisible(..))
 
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
@@ -657,7 +658,9 @@ update msg model =
                     model.game
 
                 board =
-                    Board.updateAnimations game.board animateMsg
+                    case game.board.boardOptions.diceVisible of
+                      Animated -> Board.updateAnimations game.board animateMsg
+                      _ -> game.board
 
                 loginPassword =
                     model.loginPassword
@@ -1090,11 +1093,14 @@ setPortrait model w h =
         game =
             model.game
 
+        board =
+            game.board
+
         options =
-            game.boardOptions
+            board.boardOptions
 
         game_ =
-            { game | boardOptions = { options | height = fullscreen } }
+            { game | board = { board | boardOptions = { options | height = fullscreen } } }
     in
     { model | fullscreen = fullscreen, game = game_ }
 

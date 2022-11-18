@@ -49,7 +49,6 @@ view model =
                     )
                     model.game.hovered
                 )
-                model.game.boardOptions
                 |> Html.map BoardMsg
     in
     div [ class "edMainScreen" ] <|
@@ -75,7 +74,7 @@ view model =
              )
                 :: [ header model
                    , board
-                   , case model.game.boardOptions.diceVisible of
+                   , case model.game.board.boardOptions.diceVisible of
                        Numbers -> text ""
                        _ -> lastRoll model.game.lastRoll
                    , sitInModal model
@@ -591,11 +590,11 @@ tableInfo model =
             ++ [ div [ class "edGameStatus__buttons" ]
                     [ button
                         [ class "edGameStatus__button edButton--icon"
-                        , onClick <| GameMsg <| ToggleDiceVisible <| Board.cycleVisible model.game.boardOptions.diceVisible
+                        , onClick <| GameMsg <| ToggleDiceVisible <| Board.cycleVisible model.game.board.boardOptions.diceVisible
                           --not model.game.boardOptions.diceVisible
                         ]
                         [ Icon.icon <|
-                            case model.game.boardOptions.diceVisible of
+                            case model.game.board.boardOptions.diceVisible of
                               Visible -> "flash_off"
                               Numbers -> "visibility_off"
                               Animated -> "visibility"
