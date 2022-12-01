@@ -63,6 +63,8 @@ type Msg
     | SetLoginPassword LoginPasswordStep
     | SetPassword ( String, String ) (Maybe String) -- (email, pass) check
     | UpdateUser LoggedUser String Preferences
+    | SteamTicket (String, String, String)
+      -- comments etc
     | GetComments CommentKind (Result String (List Comment))
     | InputComment CommentKind String
     | PostComment CommentKind (Maybe CommentKind) String
@@ -143,6 +145,7 @@ type alias Model =
     , time : Time.Posix
     , zone : Time.Zone
     , isTelegram : Bool
+    , isSteam : Bool
     , zip : Bool
     , screenshot : Bool
     , loginName : String
@@ -173,6 +176,7 @@ type alias Flags =
     , notificationsEnabled : Bool
     , muted : Bool
     , zip : Bool
+    , isSteam : Bool
     }
 
 
@@ -207,6 +211,7 @@ type AuthNetwork
     | Github
     | Reddit
     | Telegram
+    | Steam
 
 
 type alias MyOAuthModel =

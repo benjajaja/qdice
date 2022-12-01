@@ -39,6 +39,7 @@ import Url exposing (Url)
 import Widgets
 import Widgets.Views
 import Board.Types exposing (DiceVisible(..))
+import Backend.HttpCommands exposing (steamAuth)
 
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
@@ -92,6 +93,7 @@ init flags location key =
             , time = Time.millisToPosix 0
             , zone = Time.utc
             , isTelegram = flags.isTelegram
+            , isSteam = flags.isSteam
             , screenshot = flags.screenshot
             , zip = flags.zip
             , loginName = ""
@@ -1068,6 +1070,10 @@ update msg model =
 
                 Ok stats ->
                     ( { model | tableStats = Placeholder.Fetched stats }, Cmd.none )
+        SteamTicket (steamId, playerName, ticket) ->
+          (model
+          , steamAuth model steamId playerName ticket
+          )
 
 
 tableFromRoute : Route -> Maybe Table
@@ -1211,6 +1217,7 @@ subscriptions model =
         , pushRegister PushRegister
         , Helpers.notificationClick NotificationClick
         , Helpers.pushNotification PushNotification
+        , steam SteamTicket
         ]
 
 
@@ -1240,5 +1247,6 @@ port pushRegister : (PushSubscription -> msg) -> Sub msg
 
 port setSessionPreference : ( String, String ) -> Cmd msg
 
-
 port sentry : String -> Cmd msg
+
+port steam : (( String, String, String ) -> msg) -> Sub msg

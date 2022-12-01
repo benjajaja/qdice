@@ -1,29 +1,25 @@
 import * as fs from "fs";
-import * as path from "path";
 import * as R from "ramda";
 import * as errs from "restify-errors";
 import * as request from "request";
+import * as rp from "request-promise-native";
 import * as restify from "restify";
 import * as jwt from "jsonwebtoken";
 import * as Scrypt from "scrypt-kdf";
 import * as db from "./db";
 import * as publish from "./table/publish"; // avoid or refactor
 import logger from "./logger";
-import {
-  Preferences,
-  PushNotificationEvents,
-  User,
-  UserId,
-  Network,
-} from "./types";
+import { Preferences, User, UserId, Network } from "./types";
 import { Request } from "restify";
 import * as dataUrlStream from "data-url-stream";
 import { savePicture, downloadPicture, CropData } from "./helpers";
-import { NETWORK_PASSWORD } from "./db";
 
 const GOOGLE_OAUTH_SECRET = process.env.GOOGLE_OAUTH_SECRET;
 const GITHUB_OAUTH_SECRET = process.env.GITHUB_OAUTH_SECRET;
 const REDDIT_OAUTH_SECRET = process.env.REDDIT_OAUTH_SECRET;
+
+const STEAM_WEB_API_KEY = process.env.STEAM_WEB_API_KEY;
+const STEAM_APPID = process.env.STEAM_APPID;
 
 export const defaultPreferences = (): Preferences => ({});
 
@@ -61,6 +57,16 @@ export const login = async (req, res, next) => {
       }
     }
 
+    if (network === "steam") {
+      return steamAuth(
+        req.body.steamId,
+        req.body.playerName,
+        req.body.ticket,
+        res,
+        next
+      );
+    }
+
     const profile = await getProfile(
       network,
       req.body,
@@ -71,8 +77,10 @@ export const login = async (req, res, next) => {
     let user = await db.getUserFromAuthorization(network, profile.id);
     if (!user) {
       let name = profile.name;
-      if (network === "github" && profile.login) {
+      if (network === db.NETWORK_GITHUB && profile.login) {
         name = profile.login;
+      } else if (network === db.NETWORK_STEAM && profile.personaname) {
+        name = profile.personaname;
       }
       logger.debug("profile", profile);
       user = await db.createUser(
@@ -153,6 +161,9 @@ const getProfile = (
   code: string,
   referer: string
 ): Promise<any> => {
+  if (network === db.NETWORK_STEAM) {
+    return getSteamProfile(code);
+  }
   return new Promise((resolve, reject) => {
     const options = {
       [db.NETWORK_GOOGLE]: {
@@ -428,4 +439,98 @@ const saveAvatar = (
   const filename = `user_${id}_${suffix}.png`;
   const stream: fs.ReadStream = dataUrlStream(crop.url);
   return savePicture(filename, stream, R.omit(["url"], crop));
+};
+
+const steamAuth = async (
+  steamId: string,
+  playerName: string,
+  ticket: string,
+  res,
+  next
+) => {
+  if (!steamId || !ticket) {
+    return res.send(400, "Missing steamId/ticket");
+  }
+
+  try {
+    const body = await rp({
+      method: "GET",
+      url:
+        "https://api.steampowered.com/ISteamUserAuth/AuthenticateUserTicket/v1/",
+      qs: {
+        key: STEAM_WEB_API_KEY,
+        appid: STEAM_APPID,
+        ticket: ticket,
+      },
+    });
+    console.log("rp:", body);
+    const params = JSON.parse(body).response.params;
+    if (params.result !== "OK") {
+      return res.send(500, 'steam response not "OK"');
+    }
+    if (params.steamid !== steamId) {
+      return res.send(500, "mismatching steamids");
+    }
+
+    let user = await db.getUserFromAuthorization(db.NETWORK_STEAM, steamId);
+    if (!user) {
+      const profile = await getSteamProfile(steamId);
+      user = await db.createUser(
+        db.NETWORK_STEAM,
+        steamId, // network-id, not user-id
+        profile.personaname,
+        null,
+        "",
+        profile
+      );
+
+      // TODO move this into db.createUser somehow
+      let picture: string | null = null;
+      const pictureURL = profile.avatarfull ?? null;
+      if (pictureURL) {
+        try {
+          picture = await downloadPicture(user.id, pictureURL);
+        } catch (e) {
+          logger.error(e);
+        }
+      }
+      if (picture) {
+        user = await db.updateUser(user.id, {
+          name: null,
+          email: null,
+          picture,
+          password: null,
+        });
+      }
+    }
+
+    const token = jwt.sign(JSON.stringify(user), process.env.JWT_SECRET!);
+    res.sendRaw(200, token);
+    next();
+  } catch (e) {
+    return res.send(500, "error: " + e);
+  }
+};
+
+const getSteamProfile = async (
+  steamId: string
+): Promise<{
+  personaname: string;
+  avatarfull: string;
+  steamid: string;
+}> => {
+  const body = await rp({
+    method: "GET",
+    url: "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/",
+    qs: {
+      key: STEAM_WEB_API_KEY,
+      steamids: steamId,
+    },
+  });
+  const profile = JSON.parse(body).response.players[0];
+  if (profile.steamid !== steamId) {
+    throw new Error("mismatching steamids (profile)");
+  }
+  profile.id = profile.steamid;
+  return profile;
 };

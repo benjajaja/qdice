@@ -1,4 +1,4 @@
-FROM node:12.14.1-alpine
+FROM node:14.20.0-alpine
 
 # node_modules
 WORKDIR /usr/src/edice

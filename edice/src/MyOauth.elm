@@ -1,7 +1,7 @@
-port module MyOauth exposing (authorize, init, networkIdName, saveToken)
+port module MyOauth exposing (authorize, init, saveToken)
 
 import Backend.Decoding exposing (authStateDecoder)
-import Backend.Encoding exposing (authStateEncoder)
+import Backend.Encoding exposing (authStateEncoder, encodeAuthNetwork)
 import Backend.HttpCommands exposing (authenticate)
 import Backend.Types
 import Browser.Navigation
@@ -56,6 +56,9 @@ authorizationEndpoint network =
                 )
 
         Telegram ->
+            Nothing
+
+        Steam ->
             Nothing
 
         Password ->
@@ -130,23 +133,6 @@ authorize model state =
                     OAuth.AuthorizationCode.makeAuthorizationUrl authorization
 
         Nothing ->
-            toastError "Unknown auth method" <| networkIdName state.network
+            toastError "Unknown auth method" <| encodeAuthNetwork state.network
 
 
-networkIdName : AuthNetwork -> String
-networkIdName network =
-    case network of
-        Google ->
-            "google"
-
-        Github ->
-            "github"
-
-        Reddit ->
-            "reddit"
-
-        Telegram ->
-            "telegram"
-
-        Password ->
-            "password"

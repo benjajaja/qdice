@@ -57,21 +57,6 @@ services:
       - ${AVATAR_PATH}:/var/www/qdice.wtf/pictures:ro
       - ./data/logs/nginx:/var/log/nginx
       - goaccess:/var/www/goaccess:ro
-  ejabberd:
-    image: ejabberd/ecs
-    container_name: ejabberd
-    environment:
-      - CTL_ON_CREATE=register benjajaja qdice.wtf ${JABBER_ADMIN_PASSWORD}
-      - CTL_ON_START=registered_users qdice.wtf ;
-                     status
-    volumes:
-      - ./data/ejabberd/conf:/etc/letsencrypt
-      - ./ejabberd.yml:/home/ejabberd/conf/ejabberd.yml:ro
-      - ./data/ejabberd/database:/home/ejabberd/database
-    ports:
-      - "5222:5222"
-      - "5223:5223"
-      - "5269:5269"
   matrix:
     image: matrixdotorg/synapse
     container_name: matrix

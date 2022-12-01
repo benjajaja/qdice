@@ -11,3 +11,4 @@ starting_positions/src/__pycache__
 version
 data/haproxy
 data/matrix
+matrix/

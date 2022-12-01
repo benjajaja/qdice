@@ -1,22 +1,22 @@
 module MyProfile.MyProfile exposing (addNetworks, init, update, view)
 
+import Backend.Encoding exposing (encodeAuthNetwork)
 import Backend.HttpCommands
-import Browser.Dom as Dom
 import Cropper
 import File
 import File.Select as Select
-import Helpers exposing (consoleDebug)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Icon
-import MyOauth exposing (networkIdName, saveToken)
+import MyOauth exposing (saveToken)
 import MyProfile.Types exposing (..)
 import Routing exposing (navigateTo)
 import Routing.String exposing (linkAttr)
 import Snackbar exposing (toastError)
 import Task
 import Types exposing (AuthNetwork(..), LoggedUser, Model, Msg(..), PushEvent(..), Route(..), User(..))
+import Backend.Encoding exposing (encodeAuthNetwork)
 
 
 init : MyProfileModel
@@ -220,10 +220,10 @@ addNetworks model user =
                                             Nothing
                                         , addTo = Just user.id
                                         }
-                                , class <| "edLoginSocial edLoginSocial--" ++ networkIdName n
+                                , class <| "edLoginSocial edLoginSocial--" ++ encodeAuthNetwork n
                                 ]
-                                [ img [ src <| "assets/social_icons/" ++ networkIdName n ++ ".svg" ] []
-                                , text <| "Connect with " ++ networkIdName n
+                                [ img [ src <| "assets/social_icons/" ++ encodeAuthNetwork n ++ ".svg" ] []
+                                , text <| "Connect with " ++ encodeAuthNetwork n
                                 ]
                 )
                 available
@@ -365,6 +365,9 @@ networkDisplay nw =
 
         Telegram ->
             "Telegram"
+
+        Steam ->
+            "Steam"
 
         Reddit ->
             "Reddit"

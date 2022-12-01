@@ -8,11 +8,14 @@ in pkgs.mkShell rec {
     (yarn.override {
       nodejs = nodejs-14_x;
     })
+    electron_19
+    wine64
+    zip
   ];
 
   shellHook = ''
     export $(cat .env | xargs)
-    #export $(cat .local_env | xargs)
+    export $(cat .local_env | xargs)
     echo "Loaded .env and .local_env as env vars."
   '';
 }  

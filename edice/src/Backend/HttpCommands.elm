@@ -135,6 +135,16 @@ login model email password joinTable =
             expectString (GetToken joinTable)
         }
 
+steamAuth : Types.Model -> String -> String -> String -> Cmd Msg
+steamAuth model steamId playerName ticket =
+    Http.post
+        { url = model.backend.baseUrl ++ "/login/steam"
+        , body =
+            jsonBody <| steamAuthEncoder ( steamId, playerName, ticket )
+        , expect =
+            expectString (GetToken Nothing)
+        }
+
 
 updateAccount : Model -> MyProfileUpdate -> Cmd Msg
 updateAccount model newProfile =

@@ -1,4 +1,4 @@
-module Backend.Encoding exposing (authStateEncoder, encodeAuthNetwork, encodeClient, encodePlayerAction, loginEncoder, myProfileUpdateEncoder, passwordEncoder, profileEncoder)
+module Backend.Encoding exposing (authStateEncoder, encodeAuthNetwork, encodeClient, encodePlayerAction, loginEncoder, myProfileUpdateEncoder, passwordEncoder, profileEncoder, steamAuthEncoder)
 
 import Cropper
 import Game.Types exposing (PlayerAction(..), actionToString)
@@ -88,6 +88,10 @@ encodeAuthNetwork network =
         Telegram ->
             "telegram"
 
+        Steam ->
+            "steam"
+
+
 
 authStateEncoder : AuthState -> Value
 authStateEncoder state =
@@ -159,4 +163,12 @@ loginEncoder ( email, password ) =
     object
         [ ( "email", string email )
         , ( "password", string password )
+        ]
+
+steamAuthEncoder : ( String, String, String ) -> Value
+steamAuthEncoder ( steamId, playerName, ticket ) =
+    object
+        [ ( "steamId", string steamId )
+        , ( "playerName", string playerName )
+        , ( "ticket", string ticket )
         ]

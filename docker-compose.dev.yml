@@ -17,8 +17,6 @@ services:
     environment:
       - STAGING=true
       - CERT1=
-    volumes:
-      - ./haproxy/haproxy.local.cfg:/etc/haproxy/haproxy.cfg
   matrix:
     ports:
       - 8008:8008

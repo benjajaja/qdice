@@ -71,6 +71,9 @@ authNetworkDecoder =
                 "reddit" ->
                     Just Reddit
 
+                "steam" ->
+                    Just Steam
+
                 "password" ->
                     Just Password
 

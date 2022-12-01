@@ -3,3 +3,4 @@ dist
 elm-stuff
 map-sources.json
 src/Maps/Sources.elm
+out

@@ -1,5 +1,11 @@
 export type UserId = string;
-export type Network = "google" | "github" | "password" | "telegram" | "reddit";
+export type Network =
+  | "google"
+  | "github"
+  | "password"
+  | "telegram"
+  | "reddit"
+  | "steam";
 export type Emoji = string;
 export type Timestamp = number;
 

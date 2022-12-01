@@ -255,8 +255,8 @@ type alias TurnInfo =
 
 
 type MapLoadError
-    = NoTableNoMapError
-    | BadTableError
+    = NoTableNoMapError String
+    | BadTableError String
     | MapLoadError String
 
 

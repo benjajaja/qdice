@@ -1,10 +1,13 @@
 "use strict";
+
 if (location.hostname !== "localhost") {
   var Sentry = require("@sentry/browser");
   Sentry.init({
     dsn: "https://5658c32b571244958da8195b723bf5cb@sentry.io/1862179",
     release: typeof version === "string" ? version.substr(0, 7) : "dev",
   });
+} else if (location.hostname === "electron") {
+  history.replaceState(null, undefined, "http://electron/Planeta");
 }
 
 // window.onerror = function(messageOrEvent, source, lineno, colno, error) {
@@ -71,6 +74,7 @@ var app = Elm.App.init({
     notificationsEnabled: notificationsEnabled,
     muted: muted,
     zip: !!zip,
+    isSteam: window.electronAPI !== undefined,
   },
 });
 
@@ -402,3 +406,24 @@ app.ports.setSessionPreference.subscribe(function(keyValue) {
     Sentry.captureException(e);
   }
 });
+
+try {
+  window.electronAPI.steamId();
+  window.onmessage = function(event) { // queued
+      // event.source === window means the message is coming from the preload
+      // script, as opposed to from an <iframe> or other source.
+      if (event.source === window && event.data === 'main-world-port') {
+        var port = event.ports[0];
+        // Once we have the port, we can communicate directly with the main
+        // process.
+        port.onmessage = function(event) {
+          console.log('from main process:', event.data)
+          var data = JSON.parse(event.data);
+          // port.postMessage(event.data * 2)
+          app.ports.steam.send([data.steamId, data.playerName, data.ticket]);
+        }
+      }
+  };
+} catch (e) {
+  console.error(e);
+}

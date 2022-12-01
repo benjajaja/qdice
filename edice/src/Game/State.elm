@@ -38,13 +38,13 @@ init table tableMap_ height =
 
                                 Err _ ->
                                     if isTournament t then
-                                        Err NoTableNoMapError
+                                        Err <| NoTableNoMapError t
 
                                     else
-                                        Err BadTableError
+                                        Err <| BadTableError t
 
                         Nothing ->
-                            Err NoTableNoMapError
+                            Err <| NoTableNoMapError "(Nothing)"
 
         board =
             Board.State.init
@@ -111,11 +111,11 @@ init table tableMap_ height =
                 MapLoadError str ->
                     consoleDebug <| "Map loading error: " ++ str
 
-                NoTableNoMapError ->
-                    Cmd.none
+                NoTableNoMapError tableName ->
+                    toastError "This table/map does not seem to exist" ("NoTableNoMapError: " ++ tableName)
 
-                BadTableError ->
-                    toastError "This table does not seem to exist" "BadTableError"
+                BadTableError tableName ->
+                    toastError "This table does not seem to exist" ("BadTableError: " ++ tableName)
     )
 
 

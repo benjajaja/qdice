@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env sh
 export $(cat .env | xargs)
 export $(cat .local_env | xargs)
 
