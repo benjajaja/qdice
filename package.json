@@ -37,7 +37,7 @@
     "handy-redis": "^1.8.1",
     "jest": "24.9.0",
     "jpg-stream": "^1.1.2",
-    "jsdom": "^16.2.2",
+    "jsdom": "^16.5.0",
     "jsonwebtoken": "^8.1.0",
     "mqtt": "^3.0.0",
     "pg": "^8.8.0",
