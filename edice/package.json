@@ -1,5 +1,5 @@
 {
-  "name": "edice",
+  "name": "qdice",
   "version": "0.0.1",
   "author": "Benjamin Grosse",
   "license": "UNLICENSED",
@@ -80,7 +80,8 @@
     "forge": {
       "makers": [
         {
-          "name": "@electron-forge/maker-zip"
+          "name": "@electron-forge/maker-zip",
+          "platforms": ["linux", "win32", "darwin"]
         }
       ]
     }
