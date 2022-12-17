@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const fetch = require("electron-fetch").default;
 const mime = require("mime-type/with-db");
+const steamworks = require('steamworks.js');
 
 function createWindow() {
   // Create the browser window.
@@ -11,12 +12,13 @@ function createWindow() {
     height: 600,
     webPreferences: {
       webSecurity: false,
-      contextIsolation: true,
+      contextIsolation: false,
       nodeIntegration: true,
       preload: path.join(__dirname, 'preload.js'),
     },
     // titleBarStyle: 'hidden',
     autoHideMenuBar: true,
+    icon: 'favicons-2/favicon.png',
   });
 
   ipcMain.handle('steamworks:steamId', async (event) => {
@@ -41,52 +43,31 @@ function createWindow() {
 
     console.log("get steamid");
     console.time("steam");
-    const steamworks = require('steamworks.js');
-    const client = steamworks.init(480);
+    try {
+      const client = steamworks.init(2255020);
 
-    const ticket = await client.auth.getSessionTicket();
+      const ticket = await client.auth.getSessionTicket();
 
-    console.log(client.localplayer.getName(), client.localplayer.getSteamId().steamId64);
-    console.timeEnd("steam");
-    const playerName = client.localplayer.getName();
-    const steamId = client.localplayer.getSteamId().steamId64;
-    // win.webContents.send('steamworks', [steamId64, playerName]);
-    // const webContents = event.sender
-    // const win = BrowserWindow.fromWebContents(webContents)
-    // win.webContents.post
-    // win.webContents.postMessage(`${steamId64}:${playerName}`, null, [port1])
-    port2.postMessage(JSON.stringify({ steamId, playerName, ticket: ticket.getBytes().toString('hex'), }));
+      console.log(client.localplayer.getName(), client.localplayer.getSteamId().steamId64);
+      console.timeEnd("steam");
+      const playerName = client.localplayer.getName();
+      const steamId = client.localplayer.getSteamId().steamId64;
+      port2.postMessage(JSON.stringify({ steamId, playerName, ticket: ticket.getBytes().toString('hex'), }));
+    } catch (e) {
+      console.error("Steam communication error", e);
+      port2.postMessage(JSON.stringify({ error: e.toString() }));
+    }
   })
 
   // and load the index.html of the app.
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
   // win.loadURL("http://localhost:5000");
   intercept();
   win.loadURL("http://electron/Planeta");
 
-  // try {
-    // console.time("steam");
-    // const steamworks = require('steamworks.js');
-    // const client = steamworks.init(480);
-    // console.log(client.localplayer.getName(), client.localplayer.getSteamId().steamId64);
-    // console.timeEnd("steam");
-    // const playerName = client.localplayer.getName();
-    // const steamId64 = client.localplayer.getSteamId().steamId64;
-    // win.webContents.on('did-finish-load', () => {
-      // win.webContents.send('steamworks', [steamId64, playerName]);
-    // });
-  // } catch (e) {
-    // console.error(e);
-  // }
-
 }
 
 let indexLoaded = false;
-function createElmWindow() {
-  // intercept();
-  createWindow();
-}
-
 function intercept() {
   protocol.interceptBufferProtocol("http", function(req, callback) {
     let split = req.url.split("http://electron/")[1];
@@ -116,7 +97,7 @@ function intercept() {
           indexLoaded = true;
           split = "index.html";
         }
-        const filePath = path.join(".", "dist", split);
+        const filePath = path.join(".", "resources", "app", "dist", split);
         fs.readFile(filePath, (err, data) => {
           if (err) {
             console.error(err.toString());
@@ -147,6 +128,6 @@ function mimeType(req) {
   return m;
 }
 
-app.on("ready", createElmWindow);
+app.on("ready", createWindow);
 
-require('steamworks.js').electronEnableSteamOverlay();
+steamworks.electronEnableSteamOverlay();

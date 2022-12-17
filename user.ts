@@ -463,7 +463,7 @@ const steamAuth = async (
         ticket: ticket,
       },
     });
-    console.log("rp:", body);
+    console.log("steamapi reply:", body);
     const params = JSON.parse(body).response.params;
     if (params.result !== "OK") {
       return res.send(500, 'steam response not "OK"');

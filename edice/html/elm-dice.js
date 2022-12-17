@@ -419,8 +419,11 @@ try {
         port.onmessage = function(event) {
           console.log('from main process:', event.data)
           var data = JSON.parse(event.data);
-          // port.postMessage(event.data * 2)
-          app.ports.steam.send([data.steamId, data.playerName, data.ticket]);
+          if (data.error !== undefined) {
+            window.alert("Could not connect to steam: " + data.error)
+          } else {
+            app.ports.steam.send([data.steamId, data.playerName, data.ticket]);
+          }
         }
       }
   };
