@@ -8,3 +8,4 @@ src/Maps/Sources.elm
 html/pictures
 html/mapnames.json
 out
+electron

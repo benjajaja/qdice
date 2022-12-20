@@ -10,6 +10,8 @@ in pkgs.mkShell rec {
     })
     electron_19
     wine64
+    proton-caller
+    protontricks
     zip
   ];
 

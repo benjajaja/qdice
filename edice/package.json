@@ -17,7 +17,7 @@
     "deploy": "rsync -az --force --delete --progress --exclude-from=rsync_exclude.txt -e \"ssh -p22\" ./dist/ gipsy@92.222.66.113:/var/www/qdice.wtf/",
     "cowboy": "yarn build && yarn test && yarn deploy",
     "gzip": "gzip -k dist/index.html dist/elm-dice.*.* dist/fonts/* dist/sounds/* dist/manifest.json",
-    "native": "electron ."
+    "package": "sh ./scripts/package.sh"
   },
   "repository": {
     "type": "git",
@@ -75,18 +75,5 @@
     "electron": "^19.0.7",
     "elm-format": "^0.8.1",
     "webpack-dev-server": "^2.9.7"
-  },
-  "config": {
-    "forge": {
-      "makers": [
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": ["linux", "win32", "darwin"]
-        }
-      ],
-      "packagerConfig": {
-        "icon": "./html/favicons-2/favicon.ico"
-      }
-    }
   }
 }

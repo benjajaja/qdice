@@ -12,8 +12,8 @@ function createWindow() {
     height: 600,
     webPreferences: {
       webSecurity: false,
-      contextIsolation: false,
-      nodeIntegration: true,
+      contextIsolation: true,
+      nodeIntegration: false,
       preload: path.join(__dirname, 'preload.js'),
     },
     // titleBarStyle: 'hidden',
@@ -51,8 +51,12 @@ function createWindow() {
       console.log(client.localplayer.getName(), client.localplayer.getSteamId().steamId64);
       console.timeEnd("steam");
       const playerName = client.localplayer.getName();
-      const steamId = client.localplayer.getSteamId().steamId64;
-      port2.postMessage(JSON.stringify({ steamId, playerName, ticket: ticket.getBytes().toString('hex'), }));
+      const steamId = client.localplayer.getSteamId();
+      if (steamId === undefined) {
+        throw new Error("could not get steamid");
+      }
+      console.log("postMessage", { steamId: steamId.steamId64, playerName, ticket: ticket.getBytes().toString('hex'), })
+      port2.postMessage(JSON.stringify({ steamId: steamId.steamId64, playerName, ticket: ticket.getBytes().toString('hex'), }));
     } catch (e) {
       console.error("Steam communication error", e);
       port2.postMessage(JSON.stringify({ error: e.toString() }));
@@ -97,7 +101,8 @@ function intercept() {
           indexLoaded = true;
           split = "index.html";
         }
-        const filePath = path.join(".", "resources", "app", "dist", split);
+        const filePath = path.join(".", "resources", "app", split);
+        // const filePath = path.join(".", "dist", split);
         fs.readFile(filePath, (err, data) => {
           if (err) {
             console.error(err.toString());
