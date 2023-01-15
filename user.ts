@@ -29,6 +29,17 @@ export const login = async (req, res, next) => {
     if (!network) {
       return next(new errs.InternalError("unknown network"));
     }
+
+    if (network === "steam") {
+      return steamAuth(
+        req.body.steamId,
+        req.body.playerName,
+        req.body.ticket,
+        res,
+        next
+      );
+    }
+
     if (network === "password") {
       try {
         if ((req.body.email ?? "") === "" || (req.body.password ?? "") === "") {
@@ -57,16 +68,6 @@ export const login = async (req, res, next) => {
       }
     }
 
-    if (network === "steam") {
-      return steamAuth(
-        req.body.steamId,
-        req.body.playerName,
-        req.body.ticket,
-        res,
-        next
-      );
-    }
-
     const profile = await getProfile(
       network,
       req.body,
@@ -75,6 +76,9 @@ export const login = async (req, res, next) => {
     logger.debug("login", profile.id);
 
     let user = await db.getUserFromAuthorization(network, profile.id);
+    if (!user) {
+      return next(new errs.InternalError("registration is currently disabled"));
+    }
     if (!user) {
       let name = profile.name;
       if (network === db.NETWORK_GITHUB && profile.login) {
@@ -349,6 +353,8 @@ const hashPassword = async function(password: string) {
 };
 
 export const register = function(req: restify.Request, res, next) {
+  return next(new errs.BadRequestError("registration is currently disabled"));
+
   const profile =
     req.header("Origin").indexOf(".ssl.hwcdn.net") !== -1
       ? { itchio: true }

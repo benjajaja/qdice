@@ -224,10 +224,10 @@ export const server = async () => {
   client.subscribe("death");
   client.subscribe("hello");
   client.on("error", (err: Error) => logger.error(err));
-  client.on("close", () => logger.error("mqqt close"));
-  client.on("disconnect", () => logger.error("mqqt disconnect"));
-  client.on("offline", () => logger.error("mqqt offline"));
-  client.on("end", () => logger.error("mqqt end"));
+  client.on("close", e => logger.error("mqtt close", e));
+  client.on("disconnect", () => logger.error("mqtt disconnect"));
+  client.on("offline", e => logger.error("mqtt offline", e));
+  client.on("end", () => logger.error("mqtt end"));
 
   client.on("connect", () => {
     logger.info("connected to mqtt.");
