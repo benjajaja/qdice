@@ -104,7 +104,7 @@ view model =
                         ]
                         :: Game.Footer.footer model
                         ++ [ div [ class "edBoxes cartonCard" ] <|
-                                [ Html.Lazy.lazy3 playerBox model.user model.myProfile model.sessionPreferences
+                                [ Html.Lazy.lazy4 playerBox model.isSteam model.user model.myProfile model.sessionPreferences
                                 , Html.Lazy.lazy leaderboardBox model.leaderBoard
                                 ]
                            , div [ class "cartonCard" ] <|
@@ -702,8 +702,8 @@ tableDetails model =
                 []
 
 
-playerBox : User -> MyProfile.Types.MyProfileModel -> Types.SessionPreferences -> Html Msg
-playerBox user myProfile sessionPreferences =
+playerBox : Bool -> User -> MyProfile.Types.MyProfileModel -> Types.SessionPreferences -> Html Msg
+playerBox isSteam user myProfile sessionPreferences =
     div [ class "edBox edPlayerBox" ]
         [ div [ class "edBox__header" ] [ text "Profile " ]
         , div [ class "edBox__inner" ] <|
@@ -728,24 +728,30 @@ playerBox user myProfile sessionPreferences =
                         ]
                     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal logged.rank ]
                     , div [ class "edPlayerBox__settings" ] <|
-                        [ case logged.networks of
-                            [] ->
+                      if isSteam then
+                        []
+                      else
+                        [ if logged.networks == [] || logged.email == Nothing then
                                 div [ class "edPlayerBox__addNetworks" ] <|
                                     [ h3 [ style "color" "red" ]
                                         [ Icon.spinning "warning"
-                                        , text " Account has no login!"
+                                        , text " Account has no email or login!"
                                         ]
                                     , p []
-                                        [ text "Your player has no login. You could lose all your points, level and rank anytime you clear your browser's cache or something."
+                                        [ text "Qdice.wtf will move to "
+                                        , a [ href "https://store.steampowered.com/app/2255020/Qdice/" ]
+                                            [ text "Steam" ]
+                                        , text " and some mobile app stores."
                                         , br [] []
-                                        , text "To prevent this, you should add one of the following logins to your account:"
+                                        , text "Some currently active users will be picked to receive a free copy of the game. You need to set your email before January 1st 2023 to be elegible."
+                                        , text "Add one if the following logins to your account:"
                                         ]
                                     ]
                                         ++ MyProfile.MyProfile.addNetworks
                                             myProfile
                                             logged
 
-                            _ ->
+                          else
                                 text ""
                         , div []
                             [ a [ href "/me" ]
