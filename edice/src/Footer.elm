@@ -15,15 +15,29 @@ footer route version status =
         [ div [ class "edFooter--struts" ]
             [ div [ class "edFooter--boxes" ]
                 [ div [ class "edFooter--box edFooter--box__links" ] <|
-                    links1
+                    [ a [ href <| routeToString False HomeRoute, class "edFooter--box__link" ]
+                        [ img [ src "quedice.svg", width 24, height 24, style "margin-right" "2px" ] []
+                        , text "Play!"
+                        ]
+                    ]
                 , div [ class "edFooter--box edFooter--box__links" ] <|
-                    links2
+                    [ link (StaticPageRoute Help) "How to play" "help" ]
                 , div [ class "edFooter--box edFooter--box__links" ] <|
-                    links3
-                , div [ class "edFooter--box edFooter--box__links" ] <|
-                    links4
-                , div [ class "edFooter--box edFooter--box__links" ] <|
-                    links5
+                    [ a [ href "https://store.steampowered.com/app/2255020/Qdice/", class "edFooter--box__link" ]
+                        [ i [ class "material-icons" ] [ text "open_in_new" ]
+                        , text "Qdice on Steam"
+                        ]
+                    ]
+                -- , div [ class "edFooter--box edFooter--box__links" ] <|
+                    -- [ link (StaticPageRoute About) "What's Qdice.wtf?" "info" ]
+                -- , div [ class "edFooter--box edFooter--box__links" ] <|
+                    -- [ link CommentsRoute "Posts" "comment" ]
+                -- , div [ class "edFooter--box edFooter--box__links" ] <|
+                    -- [ a [ href "https://discord.gg/E2m3Gra", class "edFooter--box__link" ]
+                        -- [ i [ class "material-icons" ] [ text "headset" ]
+                        -- , text "Discord"
+                        -- ]
+                    -- ]
                 ]
             , div [ class "edFooter--row" ]
                 [ statusMessage route version status
@@ -31,41 +45,6 @@ footer route version status =
             ]
         ]
 
-
-links1 : List (Html Msg)
-links1 =
-    [ a [ href <| routeToString False HomeRoute, class "edFooter--box__link" ]
-        [ img [ src "quedice.svg", width 24, height 24, style "margin-right" "2px" ] []
-        , text "Play!"
-        ]
-    ]
-
-
-links2 : List (Html Msg)
-links2 =
-    [ link (StaticPageRoute Help) "How to play" "help"
-    ]
-
-
-links3 : List (Html Msg)
-links3 =
-    [ link (StaticPageRoute About) "What's Qdice.wtf?" "info"
-    ]
-
-
-links4 : List (Html Msg)
-links4 =
-    [ link CommentsRoute "Posts" "comment"
-    ]
-
-
-links5 : List (Html Msg)
-links5 =
-    [ a [ href "https://discord.gg/E2m3Gra", class "edFooter--box__link" ]
-        [ i [ class "material-icons" ] [ text "headset" ]
-        , text "Discord"
-        ]
-    ]
 
 
 link : Route -> String -> String -> Html Types.Msg
@@ -153,8 +132,9 @@ statusMessage route version status =
     div []
         [ span []
             [ text <| "Version: "
-            , a [ href <| "https://github.com/benjajaja/qdice/commit/" ++ version ]
-                [ text version ]
+            -- , a [ href <| "https://github.com/benjajaja/qdice/commit/" ++ version ]
+                -- [ text version ]
+            , text version
             , text <| ", Status: "
             ]
         , span [ dataTestId "connection-status" ] [ text <| message ++ " ", Icon.iconSized 8 icon ]

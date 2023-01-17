@@ -121,13 +121,13 @@ view model =
                                     Fetched p ->
                                         Html.Lazy.lazy2 tableLeaderboardBox model.game.chartHinted p
                                 ]
-                           , div [ class "cartonCard cartonCard--padded" ] <|
-                                case model.game.table of
-                                    Just table ->
-                                        [ Html.Lazy.lazy4 Comments.view model.zone model.user model.comments <| Comments.tableComments table ]
-
-                                    Nothing ->
-                                        []
+                           -- , div [ class "cartonCard cartonCard--padded" ] <|
+                                -- case model.game.table of
+                                    -- Just table ->
+                                        -- [ Html.Lazy.lazy4 Comments.view model.zone model.user model.comments <| Comments.tableComments table ]
+--
+                                    -- Nothing ->
+                                        -- []
                            ]
 
                 else
@@ -282,30 +282,31 @@ onlineButtons model =
             Nothing ->
                 case model.user of
                     Types.Anonymous ->
-                        case model.game.params.tournament of
-                            Just tournament ->
-                                findTableButton model
-                                    ++ [ button
-                                            [ class "edButton edGameHeader__button"
-                                            , onClick <| ShowLogin Types.LoginShow
-                                            , disabled <| tournament.fee /= 0 || model.game.points /= 0
-                                            ]
-                                            [ text <|
-                                                if tournament.fee == 0 then
-                                                    if model.game.points == 0 then
-                                                        "Log in to join for free"
-
-                                                    else
-                                                        "Minimum points: " ++ Helpers.formatPoints model.game.points
-
-                                                else
-                                                    "Game entry fee is " ++ Helpers.formatPoints tournament.fee
-                                            ]
-                                       ]
-
-                            Nothing ->
-                                findTableButton model
-                                    ++ [ joinButton "Play now" <| ShowLogin Types.LoginShowJoin ]
+                        []
+                        -- case model.game.params.tournament of
+                            -- Just tournament ->
+                                -- findTableButton model
+                                    -- ++ [ button
+                                            -- [ class "edButton edGameHeader__button"
+                                            -- , onClick <| ShowLogin Types.LoginShow
+                                            -- , disabled <| tournament.fee /= 0 || model.game.points /= 0
+                                            -- ]
+                                            -- [ text <|
+                                                -- if tournament.fee == 0 then
+                                                    -- if model.game.points == 0 then
+                                                        -- "Log in to join for free"
+--
+                                                    -- else
+                                                        -- "Minimum points: " ++ Helpers.formatPoints model.game.points
+--
+                                                -- else
+                                                    -- "Game entry fee is " ++ Helpers.formatPoints tournament.fee
+                                            -- ]
+                                       -- ]
+--
+                            -- Nothing ->
+                                -- findTableButton model
+                                    -- ++ [ joinButton "Play now" <| ShowLogin Types.LoginShowJoin ]
 
                     Types.Logged user ->
                         case model.game.params.tournament of
@@ -409,7 +410,8 @@ onlineButtons model =
                         if model.game.players |> List.any isBot then
                             case model.user of
                                 Types.Anonymous ->
-                                    [ joinButton "Join & Take over a bot" <| ShowLogin Types.LoginShowJoin ]
+                                    -- [ joinButton "Join & Take over a bot" <| ShowLogin Types.LoginShowJoin ]
+                                    []
 
                                 Types.Logged user ->
                                     if user.points >= model.game.points then
@@ -753,35 +755,33 @@ playerBox isSteam user myProfile sessionPreferences =
 
                           else
                                 text ""
-                        , div []
-                            [ a [ href "/me" ]
-                                [ text "Go to my Account & Settings"
-                                ]
-                            ]
-                        , if not sessionPreferences.notificationsEnabled then
-                            p [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
-
-                          else
-                            text ""
-                        , if not sessionPreferences.notificationsEnabled then
-                            div []
-                                [ button [ onClick RequestNotifications ]
-                                    [ text "Enable notifications"
-                                    , Icon.icon "sms"
-                                    ]
-                                ]
-
-                          else
-                            text ""
+                        -- , div []
+                            -- [ a [ href "/me" ]
+                                -- [ text "Go to my Account & Settings"
+                                -- ]
+                            -- ]
+                        -- , if not sessionPreferences.notificationsEnabled then
+                            -- p [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
+                          -- else
+                            -- text ""
+                        -- , if not sessionPreferences.notificationsEnabled then
+                            -- div []
+                                -- [ button [ onClick RequestNotifications ]
+                                    -- [ text "Enable notifications"
+                                    -- , Icon.icon "sms"
+                                    -- ]
+                                -- ]
+                          -- else
+                            -- text ""
                         ]
                     ]
 
                 Anonymous ->
-                    [ div [] [ text "You're not logged in." ]
-                    , button
-                        [ onClick <| ShowLogin Types.LoginShow
-                        ]
-                        [ text "Pick a username" ]
+                    [ div [] [ a [ href "https://store.steampowered.com/app/2255020/Qdice/" ] [ text "Click here to get this game on Steam!" ] ]
+                    -- , button
+                        -- [ onClick <| ShowLogin Types.LoginShow
+                        -- ]
+                        -- [ text "Pick a username" ]
                     ]
         ]
 
