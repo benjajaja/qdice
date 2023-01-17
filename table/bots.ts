@@ -54,7 +54,7 @@ const personas: Persona[] = [
   mkBot("Ioseb", "RandomCareless", "assets/bots/bot_ioseb.png"),
   mkBot("Napoleon", "ExtraCareful", "assets/bots/bot_napoleon.png"),
   mkBot("Franco", "ExtraCareful", "assets/bots/bot_franco.png"),
-  mkBot("Adolf", "RandomCareless", "assets/bots/bot_adolf.png"),
+  // mkBot("Arnold", "RandomCareless", "assets/bots/bot_adolf.png"), // forbidden in Germany!
   mkBot("Benito", "RandomCareless", "assets/bots/bot_benito.png"),
   mkBot("Nikolae", "TargetCareful", "assets/bots/bot_nikolae.png"),
   mkBot("Mao", "TargetCareful", "assets/bots/bot_mao.png"),
@@ -137,8 +137,8 @@ export const tickBotTurn = (table: Table): Command | undefined => {
   const positions = groupedPlayerPositions(table);
   const position = positions(player);
   if (
-    (table.players.every(p => p.bot !== null) ||
-      player.bot.state.deadlockCount > BOT_DEADLOCK_MAX)
+    table.players.every(p => p.bot !== null) ||
+    player.bot.state.deadlockCount > BOT_DEADLOCK_MAX
   ) {
     if (position > 1) {
       if (player.flag === null || player.flag < position) {
@@ -174,7 +174,10 @@ export const tickBotTurn = (table: Table): Command | undefined => {
       land => land.color === otherPlayer.color
     );
 
-    if (otherLands.length >= 10 && otherLands.length >= botLands.length * 1.25) {
+    if (
+      otherLands.length >= 10 &&
+      otherLands.length >= botLands.length * 1.25
+    ) {
       if (!player.bot.state.surrender) {
         return { type: "BotState", player, botCommand: "Surrender" };
       } else {
