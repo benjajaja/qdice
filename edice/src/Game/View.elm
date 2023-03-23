@@ -408,7 +408,7 @@ onlineButtons model =
                         findTableButton model
 
                     Nothing ->
-                        if model.game.players |> List.any isBot then
+                        if List.length model.game.players > 4 && (model.game.players |> List.any isBot) then
                             case model.user of
                                 Types.Anonymous ->
                                     -- [ joinButton "Join & Take over a bot" <| ShowLogin Types.LoginShowJoin ]

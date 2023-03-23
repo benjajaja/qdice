@@ -22,3 +22,5 @@ export const OUT_TURN_COUNT_ELIMINATION = 2;
 export const BOT_DEADLOCK_MAX = 10;
 
 export const EMPTY_PROFILE_PICTURE = "assets/empty_profile_picture.svg";
+
+export const MIN_TAKEOVER_PLAYERS = 4;

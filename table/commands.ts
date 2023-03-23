@@ -34,6 +34,7 @@ import {
   GAME_START_COUNTDOWN,
   ELIMINATION_REASON_SURRENDER,
   GAME_START_COUNTDOWN_FULL,
+  MIN_TAKEOVER_PLAYERS,
 } from "../constants";
 import logger from "../logger";
 import { isBot, tableThemed } from "./bots";
@@ -92,7 +93,8 @@ export const join = (
     if (
       !table.params.tournament &&
       clientId !== null &&
-      table.players.some(isBot)
+      table.players.some(isBot) &&
+      table.players.length > MIN_TAKEOVER_PLAYERS
     ) {
       return takeover(user, table, clientId);
     }
@@ -306,7 +308,8 @@ const takeover = (
     table.players.filter(isBot)
   );
 
-  const bestBot = sortedBots.length >= 2 ? sortedBots[1] : sortedBots[0];
+  const bestBot =
+    sortedBots.length >= 2 ? sortedBots[sortedBots.length - 2] : undefined;
 
   if (!bestBot) {
     throw new IllegalMoveError(

@@ -86,6 +86,7 @@ function intercept() {
 
     if (isFetch) {
       const url = "https://qdice.wtf/" + split;
+      // const url = "http://localhost:5000/api/" + split;
       fetch(url).then(res => res.buffer()).then(buffer => {
         callback(buffer)
       }).catch(err => {
