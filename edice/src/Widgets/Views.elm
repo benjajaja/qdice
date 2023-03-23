@@ -69,7 +69,7 @@ mainView model =
 
                     Logged user ->
                         -- [ div [] [ text "This section is currently disabled." ]]
-                        [ MyProfile.MyProfile.view model.myProfile user model.preferences model.sessionPreferences ]
+                        [ MyProfile.MyProfile.view model.myProfile model.isSteam user model.preferences model.sessionPreferences ]
 
         TokenRoute token ->
             viewWrapper

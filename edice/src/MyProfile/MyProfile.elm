@@ -37,8 +37,8 @@ init =
     }
 
 
-view : MyProfileModel -> LoggedUser -> Types.Preferences -> Types.SessionPreferences -> Html Msg
-view model user preferences sessionPreferences =
+view : MyProfileModel -> Bool -> LoggedUser -> Types.Preferences -> Types.SessionPreferences -> Html Msg
+view model isSteam user preferences sessionPreferences =
     div [ class "edPage" ]
         [ div [ class "edPageSection" ]
             [ h2 [] [ text "My Account" ]
@@ -47,17 +47,20 @@ view model user preferences sessionPreferences =
                 ]
             , profileForm model user
             ]
-        -- , div [ class "edPageSection" ] <|
-            -- [ h2 [] [ text "Notifications" ] ]
-                -- ++ notifications model user preferences sessionPreferences
-                -- ++ [ p []
-                        -- [ text "This feature is "
-                        -- , strong
-                            -- []
-                            -- [ text "not available on iOS. " ]
-                        -- , text "It exists since 2013 in Chrome and Firefox for Android."
-                        -- ]
-                   -- ]
+        , if isSteam then
+            text ""
+          else
+            div [ class "edPageSection" ] <|
+                h2 [] [ text "Notifications" ]
+                    :: notifications model user preferences sessionPreferences
+                    ++ [ p []
+                            [ text "This feature is "
+                            , strong
+                                []
+                                [ text "not available on iOS. " ]
+                            , text "It exists since 2013 in Chrome and Firefox for Android."
+                            ]
+                       ]
         , div [ class "edPageSection" ]
             [ h2 [] [ text "Access" ]
             , h5 [] [ text "Connected login methods or networks:" ]
@@ -80,9 +83,9 @@ view model user preferences sessionPreferences =
                     user
             ]
         , div [ class "edPageSection" ] <|
-            [ h2 [] [ text "Danger zone" ]
-            ]
-                ++ (case user.networks of
+            h2 [] [ text "Danger zone" ]
+            
+                :: (case user.networks of
                         [] ->
                             [ h5 [] [ text "Log out now:" ]
                             , p [] [ text "If you don't have any login method or network, then you can never recover this account!" ]
@@ -99,7 +102,7 @@ view model user preferences sessionPreferences =
 
 
 notifications : MyProfileModel -> LoggedUser -> Types.Preferences -> Types.SessionPreferences -> List (Html Msg)
-notifications model user preferences sessionPreferences =
+notifications _ _ preferences sessionPreferences =
     if not sessionPreferences.notificationsEnabled then
         [ div [] [ text "You can enable some notifications like when it's your turn, or when the game starts:" ]
         , div [] [ button [ onClick RequestNotifications ] [ text "Enable notifications" ] ]
@@ -127,21 +130,21 @@ notifications model user preferences sessionPreferences =
                 ]
             ]
 
-        -- , div []
-        -- [ label
-        -- [ class "edCheckbox--checkbox"
-        -- , onClick <|
-        -- PushRegisterEvent ( GameStart, not <| List.member GameStart preferences.pushEvents )
-        -- ]
-        -- [ Icon.icon <|
-        -- if List.member GameStart preferences.pushEvents then
-        -- "check_box"
-        --
-        -- else
-        -- "check_box_outline_blank"
-        -- , text "a game countdown starts"
-        -- ]
-        -- ]
+        , div []
+            [ label
+                [ class "edCheckbox--checkbox"
+                , onClick <|
+                PushRegisterEvent ( GameStart, not <| List.member GameStart preferences.pushEvents )
+                ]
+                [ Icon.icon <|
+                    if List.member GameStart preferences.pushEvents then
+                    "check_box"
+
+                    else
+                    "check_box_outline_blank"
+                , text "any game countdown starts"
+                ]
+            ]
         , div []
             [ label
                 [ class "edCheckbox--checkbox"

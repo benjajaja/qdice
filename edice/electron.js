@@ -102,7 +102,7 @@ function intercept() {
           split = "index.html";
         }
         const filePath = path.join(".", "resources", "app", split);
-        // const filePath = path.join(".", "dist", split);
+        // const filePath = path.join(".", "dist", split); // local electron only!
         fs.readFile(filePath, (err, data) => {
           if (err) {
             console.error(err.toString());
