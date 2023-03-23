@@ -21,7 +21,7 @@ import Game.State exposing (gameCommand)
 import Game.Types exposing (PlayerAction(..))
 import Games
 import Games.Replayer
-import Helpers exposing (httpErrorToString, is502, pipeUpdates)
+import Helpers exposing (httpErrorToString, isStatus, pipeUpdates)
 import Http exposing (Error(..))
 import LeaderBoard.State
 import MyOauth
@@ -117,7 +117,10 @@ init flags location key =
                 }
             , sessionPreferences =
                 { notificationsEnabled = flags.notificationsEnabled
-                , muted = flags.muted
+                , sound = if flags.muted then
+                    Mute
+                  else
+                    All
                 }
             , leaderBoard =
                 { loading = False
@@ -189,8 +192,8 @@ update msg model =
         GetGlobalSettings res ->
             case res of
                 Err err ->
-                    if is502 err then
-                        ( model, toastError "Server down, please retry" <| httpErrorToString err )
+                    if isStatus 502 err then
+                        ( model, toastError "Server down, please reload the game." <| httpErrorToString err )
 
                     else
                         ( model, toastError "Could not load global configuration!" <| httpErrorToString err )
@@ -361,9 +364,9 @@ update msg model =
                             model.backend
                     in
                     ( { model | user = Anonymous, backend = { backend | jwt = Nothing } }
-                    , if is502 err then
+                    , if isStatus 502 err then
                         Cmd.batch
-                            [ toastError "Server down, please retry" <| httpErrorToString err
+                            [ toastError "Server down, please reload the game." <| httpErrorToString err
                             , case model.route of
                                 HomeRoute ->
                                     Routing.goToBestTable model model.game.table True
@@ -371,6 +374,13 @@ update msg model =
                                 _ ->
                                     Cmd.none
                             ]
+
+                    else if isStatus 410 err then
+                        Cmd.batch
+                            [ toastError "Failed to authenticate user, please reload game." <| httpErrorToString err
+                            , Task.perform (always Logout) (Task.succeed ())
+                            ]
+
 
                       else
                         Cmd.batch
@@ -561,7 +571,11 @@ update msg model =
                     )
 
         SetPassword ( email, password ) passwordCheck ->
-            ( model
+            let
+                myProfile = model.myProfile
+                myProfile_ = { myProfile | addingPassword = True }
+            in
+            ( { model | myProfile = myProfile_ }
             , Backend.HttpCommands.updatePassword model.backend ( email, password ) passwordCheck
             )
 
@@ -1009,18 +1023,16 @@ update msg model =
                     model.sessionPreferences
             in
             case preference of
-                Muted muted ->
+                Sound muted ->
                     ( { model
                         | sessionPreferences =
-                            { preferences | muted = muted }
+                            { preferences | sound = muted }
                       }
                     , setSessionPreference
                         ( "muted"
-                        , if muted then
-                            "true"
-
-                          else
-                            "false"
+                        , case muted of
+                            Mute -> "true"
+                            _ -> "false"
                         )
                     )
 

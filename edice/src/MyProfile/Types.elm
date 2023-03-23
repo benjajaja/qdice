@@ -25,6 +25,7 @@ type alias MyProfileModel =
     , email : Maybe String
     , password : Maybe String
     , passwordCheck : Maybe String
+    , addingPassword : Bool
     , picture : Maybe String
     , cropper : Cropper.Model
     , deleteAccount : DeleteAccountState

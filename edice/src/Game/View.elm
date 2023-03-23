@@ -6,7 +6,6 @@ import Backend.Types exposing (ConnectionStatus(..))
 import Board
 import Board.Colors
 import Board.Die
-import Comments
 import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
@@ -31,6 +30,8 @@ import Time exposing (posixToMillis)
 import Tournaments exposing (tournamentTime)
 import Types exposing (AuthNetwork(..), DialogType(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
 import Board.Types exposing (DiceVisible(..))
+import Types exposing (cycleSoundPrefence)
+import Types exposing (SoundPreference(..))
 
 
 view : Model -> Html Types.Msg
@@ -602,13 +603,12 @@ tableInfo model =
                               Animated -> "visibility"
                         ]
                     , button
-                        [ class "edGameStatus__button edButton--icon", onClick <| SetSessionPreference <| Muted <| not model.sessionPreferences.muted ]
+                        [ class "edGameStatus__button edButton--icon", onClick <| SetSessionPreference <| Sound <| cycleSoundPrefence model.sessionPreferences.sound ]
                         [ Icon.icon <|
-                            if model.sessionPreferences.muted then
-                                "volume_off"
-
-                            else
-                                "volume_up"
+                            case model.sessionPreferences.sound of
+                              All -> "volume_up"
+                              Mute -> "volume_off"
+                              Notify -> "volume_down"
                         ]
                     ]
                ]
@@ -755,11 +755,12 @@ playerBox isSteam user myProfile sessionPreferences =
 
                           else
                                 text ""
-                        -- , div []
-                            -- [ a [ href "/me" ]
-                                -- [ text "Go to my Account & Settings"
-                                -- ]
-                            -- ]
+                        ]
+                    , div []
+                        [ a [ href "/me" ]
+                            [ text "Go to my Account & Settings"
+                            ]
+                        ]
                         -- , if not sessionPreferences.notificationsEnabled then
                             -- p [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
                           -- else
@@ -773,15 +774,14 @@ playerBox isSteam user myProfile sessionPreferences =
                                 -- ]
                           -- else
                             -- text ""
-                        ]
                     ]
 
                 Anonymous ->
                     [ div [] [ a [ href "https://store.steampowered.com/app/2255020/Qdice/" ] [ text "Click here to get this game on Steam!" ] ]
-                    -- , button
-                        -- [ onClick <| ShowLogin Types.LoginShow
-                        -- ]
-                        -- [ text "Pick a username" ]
+                    , button
+                        [ onClick <| ShowLogin Types.LoginShow
+                        ]
+                        [ text "Log in with password" ]
                     ]
         ]
 

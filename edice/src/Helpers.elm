@@ -1,4 +1,4 @@
-port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, flip, formatPoints, httpErrorToString, indexOf, is502, join, last, notification, notificationClick, pipeUpdates, playSound, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeRandomDice, timeUnits, toDie, toDiesEmojis, triple, tupleApply, tupleCombine)
+port module Helpers exposing (Synched, combine, consoleDebug, dataTestId, dataTestValue, emptyList, find, findIndex, flip, formatPoints, httpErrorToString, indexOf, isStatus, join, last, notification, notificationClick, pipeUpdates, pointsSymbol, pointsToNextLevel, pushNotification, resultCombine, timeRandomDice, timeUnits, toDie, toDiesEmojis, triple, tupleApply, tupleCombine)
 
 import Html exposing (Attribute)
 import Html.Attributes exposing (attribute)
@@ -7,10 +7,6 @@ import Time exposing (Posix)
 
 
 port consoleDebug : String -> Cmd msg
-
-
-port playSound : String -> Cmd msg
-
 
 port notification : Maybe String -> Cmd msg
 
@@ -100,20 +96,14 @@ httpErrorToString err =
             "Server/Client error: " ++ error
 
 
-is502 : Http.Error -> Bool
-is502 err =
+isStatus : Int -> Http.Error -> Bool
+isStatus code err =
     case err of
         BadStatus status ->
-            case status of
-                502 ->
-                    True
-
-                _ ->
-                    False
+            status == code
 
         _ ->
             False
-
 
 dataTestId : String -> Attribute msg
 dataTestId id =

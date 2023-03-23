@@ -15,45 +15,45 @@ body model joinTable =
     div [ dataTestId "login-dialog" ]
         [ div
             [ class "edLoginDialog__social" ]
+            -- [ div []
+                -- [ text "One-click sign-in:" ]
+            -- , button
+                -- [ onClick <|
+                    -- Authorize
+                        -- { network = Google
+                        -- , table = joinTable
+                        -- , addTo = Nothing
+                        -- }
+                -- , class "edLoginSocial edLoginSocial--google"
+                -- ]
+                -- [ img [ src "assets/social_icons/google.svg" ] []
+                -- , text "Sign in with Google"
+                -- ]
+            -- , button
+                -- [ onClick <|
+                    -- Authorize
+                        -- { network = Github
+                        -- , table = joinTable
+                        -- , addTo = Nothing
+                        -- }
+                -- , class "edLoginSocial edLoginSocial--github"
+                -- ]
+                -- [ img [ src "assets/social_icons/github.svg" ] []
+                -- , text "Sign in with GitHub"
+                -- ]
+            -- , button
+                -- [ onClick <|
+                    -- Authorize
+                        -- { network = Reddit
+                        -- , table = joinTable
+                        -- , addTo = Nothing
+                        -- }
+                -- , class "edLoginSocial edLoginSocial--reddit"
+                -- ]
+                -- [ img [ src "assets/social_icons/reddit.svg" ] []
+                -- , text "Sign in with Reddit"
+                -- ]
             [ div []
-                [ text "One-click sign-in:" ]
-            , button
-                [ onClick <|
-                    Authorize
-                        { network = Google
-                        , table = joinTable
-                        , addTo = Nothing
-                        }
-                , class "edLoginSocial edLoginSocial--google"
-                ]
-                [ img [ src "assets/social_icons/google.svg" ] []
-                , text "Sign in with Google"
-                ]
-            , button
-                [ onClick <|
-                    Authorize
-                        { network = Github
-                        , table = joinTable
-                        , addTo = Nothing
-                        }
-                , class "edLoginSocial edLoginSocial--github"
-                ]
-                [ img [ src "assets/social_icons/github.svg" ] []
-                , text "Sign in with GitHub"
-                ]
-            , button
-                [ onClick <|
-                    Authorize
-                        { network = Reddit
-                        , table = joinTable
-                        , addTo = Nothing
-                        }
-                , class "edLoginSocial edLoginSocial--reddit"
-                ]
-                [ img [ src "assets/social_icons/reddit.svg" ] []
-                , text "Sign in with Reddit"
-                ]
-            , div []
                 [ text "Email / Password:" ]
             , Html.form [ class "edLoginPassword", onSubmit <| SetLoginPassword <| StepNext 1 joinTable ]
                 [ div
@@ -91,23 +91,23 @@ body model joinTable =
                     ]
                 ]
             ]
-        , div [ class "edLoginDialog__register" ]
-            [ div []
-                [ text "... or just play for now:" ]
-            , Html.form [ onSubmit <| Register model.loginName joinTable ]
-                [ label []
-                    [ text "Name"
-                    , input
-                        [ type_ "text"
-                        , value model.loginName
-                        , onInput SetLoginName
-                        , class "edLoginDialog__name"
-                        , dataTestId "login-input"
-                        ]
-                        []
-                    ]
-                ]
-            ]
+        -- , div [ class "edLoginDialog__register" ]
+            -- [ div []
+                -- [ text "... or just play for now:" ]
+            -- , Html.form [ onSubmit <| Register model.loginName joinTable ]
+                -- [ label []
+                    -- [ text "Name"
+                    -- , input
+                        -- [ type_ "text"
+                        -- , value model.loginName
+                        -- , onInput SetLoginName
+                        -- , class "edLoginDialog__name"
+                        -- , dataTestId "login-input"
+                        -- ]
+                        -- []
+                    -- ]
+                -- ]
+            -- ]
         , div [ class "edLoginDialog__buttons" ]
             [ button
                 [ onClick <| ShowLogin LoginHide, dataTestId "login-close" ]

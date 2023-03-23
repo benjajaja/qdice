@@ -1,4 +1,4 @@
-module Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, DialogStatus(..), DialogType(..), Flags, GamesMsg(..), GamesSubRoute(..), GlobalQdice, GlobalSettings, LeaderBoardModel, LeaderBoardResponse, LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), LoginPasswordStep(..), Model, Msg(..), MyOAuthModel, OtherProfile, Preferences, Profile, ProfileStats, ProfileStatsStatistics, PushEvent(..), PushSubscription, Replies(..), Route(..), SessionPreference(..), SessionPreferences, StaticPage(..), TableStatPlayer, TableStats, User(..), UserId, UserPreferences, Username, commentKindKey, getUsername)
+module Types exposing (AuthNetwork(..), AuthState, Comment, CommentAuthor, CommentKind(..), CommentList(..), CommentModel, CommentPostStatus(..), CommentsModel, DialogStatus(..), DialogType(..), Flags, GamesMsg(..), GamesSubRoute(..), GlobalQdice, GlobalSettings, LeaderBoardModel, LeaderBoardResponse, LeaderboardMsg(..), LoggedUser, LoginDialogStatus(..), LoginPasswordStep(..), Model, Msg(..), MyOAuthModel, OtherProfile, Preferences, Profile, ProfileStats, ProfileStatsStatistics, PushEvent(..), PushSubscription, Replies(..), Route(..), SessionPreference(..), SessionPreferences, SoundPreference(..), StaticPage(..), TableStatPlayer, TableStats, User(..), UserId, UserPreferences, Username, commentKindKey, getUsername, cycleSoundPrefence)
 
 import Animation
 import Array exposing (Array)
@@ -341,13 +341,23 @@ type alias Preferences =
 
 type alias SessionPreferences =
     { notificationsEnabled : Bool
-    , muted : Bool
+    , sound : SoundPreference
     }
 
+type SoundPreference
+  = All
+  | Notify
+  | Mute
 
 type SessionPreference
-    = Muted Bool
+    = Sound SoundPreference
 
+cycleSoundPrefence: SoundPreference -> SoundPreference
+cycleSoundPrefence current =
+  case current of
+    All -> Mute
+    Mute -> Notify
+    Notify -> All
 
 type alias PushSubscription =
     String

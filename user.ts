@@ -263,6 +263,9 @@ export const me = async function(
   res,
   next
 ) {
+  if (typeof req.user === undefined) {
+    return next(new errs.GoneError("could not decode JWT"));
+  }
   try {
     const profile = await db.getUser(req.user.id, req.header("X-Real-IP"));
     const token = jwt.sign(JSON.stringify(profile), process.env.JWT_SECRET!);
@@ -343,7 +346,7 @@ export const password = async function(req, res, next) {
   }
 };
 
-const hashPassword = async function(password: string) {
+export const hashPassword = async function(password: string) {
   const buffer = await Scrypt.kdf(password, {
     logN: 15,
     r: 8,

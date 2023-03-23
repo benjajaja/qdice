@@ -133,7 +133,7 @@ app.ports.sentry.subscribe(function(message) {
 });
 
 var sounds = require("./sounds");
-app.ports.playSound.subscribe(sounds.play);
+app.ports.playSoundString.subscribe(sounds.play);
 
 const favicon = require("./favicon");
 app.ports.notification.subscribe(function(event) {
@@ -409,23 +409,24 @@ app.ports.setSessionPreference.subscribe(function(keyValue) {
 
 try {
   window.electronAPI.steamId();
-  window.onmessage = function(event) { // queued
-      // event.source === window means the message is coming from the preload
-      // script, as opposed to from an <iframe> or other source.
-      if (event.source === window && event.data === 'main-world-port') {
-        var port = event.ports[0];
-        // Once we have the port, we can communicate directly with the main
-        // process.
-        port.onmessage = function(event) {
-          console.log('from main process:', event.data)
-          var data = JSON.parse(event.data);
-          if (data.error !== undefined) {
-            window.alert("Could not connect to steam: " + data.error)
-          } else {
-            app.ports.steam.send([data.steamId, data.playerName, data.ticket]);
-          }
+  window.onmessage = function(event) {
+    // queued
+    // event.source === window means the message is coming from the preload
+    // script, as opposed to from an <iframe> or other source.
+    if (event.source === window && event.data === "main-world-port") {
+      var port = event.ports[0];
+      // Once we have the port, we can communicate directly with the main
+      // process.
+      port.onmessage = function(event) {
+        console.log("from main process:", event.data);
+        var data = JSON.parse(event.data);
+        if (data.error !== undefined) {
+          window.alert("Could not connect to steam: " + data.error);
+        } else {
+          app.ports.steam.send([data.steamId, data.playerName, data.ticket]);
         }
-      }
+      };
+    }
   };
 } catch (e) {
   console.error(e);

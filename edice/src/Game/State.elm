@@ -16,8 +16,12 @@ import Maps
 import Snackbar exposing (toastError, toastMessage)
 import Tables exposing (MapName(..), Table, isTournament)
 import Task
-import Types exposing (DialogStatus(..), Msg(..), SessionPreferences, User(..))
+import Types exposing (DialogStatus(..), Msg(..), SoundPreference(..), User(..))
 import Board.Types exposing (DiceVisible(..))
+import Types exposing (SessionPreference(..))
+import Types exposing (SessionPreference(..))
+import Sound exposing (playSound)
+import Sound exposing (Sound(..))
 
 
 init : Maybe Table -> Maybe MapName -> Maybe Int -> ( Game.Types.Model, Cmd Msg )
@@ -158,7 +162,7 @@ gameCommand model playerAction =
         sendGameCommand model.backend model.game.table playerAction
             :: (case playerAction of
                     Join ->
-                        [ playSound model.sessionPreferences "kick" ]
+                        [ playSound model.sessionPreferences Kick ]
 
                     _ ->
                         []
@@ -324,7 +328,7 @@ updateTableStatus model status =
     , Cmd.batch
         [ if hasStarted then
             Cmd.batch <|
-                playSound model.sessionPreferences "start"
+                playSound model.sessionPreferences Start
                     :: (if not hasTurn then
                             [ Helpers.notification <| Just "game-start" ]
 
@@ -336,7 +340,7 @@ updateTableStatus model status =
             Cmd.none
         , if hasFinished then
             Cmd.batch
-                [ playSound model.sessionPreferences "finish"
+                [ playSound model.sessionPreferences Finish
                 , Helpers.notification Nothing
                 ]
 
@@ -477,7 +481,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
                    )
           then
             Cmd.batch
-                [ playSound model.sessionPreferences "turn"
+                [ playSound model.sessionPreferences Turn
                 , Helpers.notification <| Just "game-turn"
                 ]
 
@@ -492,7 +496,7 @@ updateTurn model { turnIndex, turnStart, roundCount, giveDice, players, lands } 
         , receiveCmd
         ]
             ++ (if givenDiceCount > 0 then
-                    [ playSound model.sessionPreferences "giveDice" ]
+                    [ playSound model.sessionPreferences GiveDice ]
 
                 else
                     []
@@ -789,28 +793,28 @@ showRoll model roll =
                 , lastRoll = lastRoll
             }
 
-        soundName =
+        sound =
             if List.sum roll.from.roll > List.sum roll.to.roll then
                 case player of
                     Just p ->
                         case fromLand of
                             Just land ->
                                 if land.color == p.color then
-                                    "rollSuccessPlayer"
+                                    RollSuccessPlayer
 
                                 else
-                                    "rollSuccess"
+                                    RollSuccess
 
                             Nothing ->
-                                "rollSuccess"
+                                RollSuccess
 
                     Nothing ->
-                        "rollSuccess"
+                        RollSuccess
 
             else
-                "rollDefeat"
+                RollDefeat
     in
-    ( { model | game = game_ }, playSound model.sessionPreferences soundName )
+    ( { model | game = game_ }, playSound model.sessionPreferences sound )
 
 
 clickLand : Types.Model -> Land.Emoji -> ( Types.Model, Cmd Types.Msg )
@@ -967,7 +971,7 @@ updateTable model table msg =
 
                     Backend.Types.Move move ->
                         ( showMove model move
-                        , playSound model.sessionPreferences "kick"
+                        , playSound model.sessionPreferences Kick
                         )
 
                     Backend.Types.Eliminations eliminations players ->
@@ -1250,15 +1254,6 @@ updatePlayers model newPlayers removedColor =
 
         Nothing ->
             model_
-
-
-playSound : SessionPreferences -> String -> Cmd Msg
-playSound preferences sound =
-    if preferences.muted then
-        Cmd.none
-
-    else
-        Helpers.playSound sound
 
 
 fetchTableTop : Types.Model -> Table -> ( Types.Model, Cmd Msg )

@@ -31,7 +31,17 @@ const config: PoolConfig = {
 const pool = new Pool(config);
 
 export const connect = async function db() {
-  return pool.connect();
+  try {
+    return pool.connect();
+  } catch (e) {
+    const printConfig = { ...config };
+    printConfig.password = printConfig.password
+      ? "******"
+      : "(WARNING: falsy value!)";
+    logger.debug("pg connection config: %s", printConfig);
+    logger.error("pg connection error: %s", e);
+    throw e;
+  }
 };
 
 export const retry = async function retry(fuse: number = 5) {
@@ -40,12 +50,6 @@ export const retry = async function retry(fuse: number = 5) {
     console.log("db.retry is done.");
     return conn;
   } catch (e) {
-    const printConfig = { ...config };
-    printConfig.password = printConfig.password
-      ? "******"
-      : "(WARNING: falsy value!)";
-    logger.debug("pg connection config: %s", printConfig);
-    logger.error("pg connection error: %s", e);
     if (fuse === 0) {
       throw e;
     }

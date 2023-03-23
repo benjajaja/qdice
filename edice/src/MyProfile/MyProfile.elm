@@ -25,6 +25,7 @@ init =
     , email = Nothing
     , password = Nothing
     , passwordCheck = Nothing
+    , addingPassword = False
     , picture = Nothing
     , cropper =
         Cropper.init
@@ -46,17 +47,17 @@ view model user preferences sessionPreferences =
                 ]
             , profileForm model user
             ]
-        , div [ class "edPageSection" ] <|
-            [ h2 [] [ text "Notifications" ] ]
-                ++ notifications model user preferences sessionPreferences
-                ++ [ p []
-                        [ text "This feature is "
-                        , strong
-                            []
-                            [ text "not available on iOS. " ]
-                        , text "It exists since 2013 in Chrome and Firefox for Android."
-                        ]
-                   ]
+        -- , div [ class "edPageSection" ] <|
+            -- [ h2 [] [ text "Notifications" ] ]
+                -- ++ notifications model user preferences sessionPreferences
+                -- ++ [ p []
+                        -- [ text "This feature is "
+                        -- , strong
+                            -- []
+                            -- [ text "not available on iOS. " ]
+                        -- , text "It exists since 2013 in Chrome and Firefox for Android."
+                        -- ]
+                   -- ]
         , div [ class "edPageSection" ]
             [ h2 [] [ text "Access" ]
             , h5 [] [ text "Connected login methods or networks:" ]
@@ -161,7 +162,8 @@ notifications model user preferences sessionPreferences =
 
 availableNetworks : LoggedUser -> List AuthNetwork
 availableNetworks user =
-    List.filter (\i -> not <| List.member i user.networks) [ Google, Github, Reddit, Password ]
+    List.filter (\i -> not <| List.member i user.networks) [ Password ]
+    --[ Google, Github, Reddit, Password ]
 
 
 addNetworks : MyProfileModel -> LoggedUser -> List (Html Msg)
@@ -201,10 +203,9 @@ addNetworks model user =
                                                         [ disabled True ]
 
                                                     Just e ->
-                                                        -- case model.passwordCheck of
-                                                        -- Nothing ->
-                                                        -- [ disabled True ]
-                                                        -- Just c ->
+                                                      if model.addingPassword then
+                                                        [ disabled True ]
+                                                      else
                                                         [ onClick <| SetPassword ( e, p ) Nothing ]
                                         )
                                         [ text "Set login" ]
