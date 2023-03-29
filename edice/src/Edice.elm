@@ -271,8 +271,7 @@ update msg model =
 
                         needsTable : Maybe Table
                         needsTable =
-                            case model.game.table of
-                                Just currentTable ->
+                            Maybe.andThen (\currentTable ->
                                     joinTable
                                         |> Maybe.andThen
                                             (\t ->
@@ -282,9 +281,7 @@ update msg model =
                                                 else
                                                     Nothing
                                             )
-
-                                Nothing ->
-                                    Nothing
+                                            ) model.game.table
 
                         model_ =
                             { model | backend = backend_ }
@@ -790,7 +787,7 @@ update msg model =
                     Routing.navigateTo model.zip model.key <| GameRoute table
             )
 
-        UnknownTopicMessage error topic message status ->
+        UnknownTopicMessage error topic _ status ->
             ( model
             , toastError "I/O Error" <|
                 "UnknownTopicMessage \""
@@ -1139,7 +1136,7 @@ view model =
 mainViewSubscriptions : Model -> Sub Msg
 mainViewSubscriptions model =
     Sub.batch <|
-        [ Animation.subscription Animate <|
+        ( Animation.subscription Animate <|
             (case model.route of
                 GameRoute _ ->
                     Board.animations model.game.board
@@ -1163,8 +1160,8 @@ mainViewSubscriptions model =
                 ++ [ Tuple.first model.loginPassword.animations
                    , Tuple.second model.loginPassword.animations
                    ]
-        ]
-            ++ (case model.route of
+        )
+            :: (case model.route of
                     GamesRoute sub ->
                         case sub of
                             GameId _ _ ->
