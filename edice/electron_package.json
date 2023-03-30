@@ -7,9 +7,9 @@
   "main": "electron.js",
   "private": true,
   "dependencies": {
-    "electron-fetch": "^1.4.0",
-    "mime-type": "^3.0.7",
-    "mime-db": "^1.52.0",
+    "electron-fetch": "1.4.0",
+    "mime-type": "3.0.7",
+    "mime-db": "1.52.0",
     "steamworks.js": "0.0.25"
   },
   "devDependencies": {

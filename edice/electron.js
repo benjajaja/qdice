@@ -1,9 +1,14 @@
-const { app, BrowserWindow, protocol, ipcMain, MessageChannelMain } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  protocol,
+  ipcMain,
+  MessageChannelMain,
+} = require("electron");
 const path = require("path");
 const fs = require("fs");
 const fetch = require("electron-fetch").default;
-const mime = require("mime-type/with-db");
-const steamworks = require('steamworks.js');
+const steamworks = require("steamworks.js");
 
 function createWindow() {
   // Create the browser window.
@@ -14,17 +19,17 @@ function createWindow() {
       webSecurity: false,
       contextIsolation: true,
       nodeIntegration: false,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
     },
     // titleBarStyle: 'hidden',
     autoHideMenuBar: true,
-    icon: 'favicons-2/favicon.png',
+    icon: "favicons-2/favicon.png",
   });
 
-  ipcMain.handle('steamworks:steamId', async (event) => {
+  ipcMain.handle("steamworks:steamId", async event => {
     // We'll be sending one end of this channel to the main world of the
     // context-isolated page.
-    const { port1, port2 } = new MessageChannelMain()
+    const { port1, port2 } = new MessageChannelMain();
 
     // It's OK to send a message on the channel before the other end has
     // registered a listener. Messages will be queued until a listener is
@@ -32,11 +37,11 @@ function createWindow() {
     // port2.postMessage({ test: 21 })
 
     // We can also receive messages from the main world of the renderer.
-    port2.on('message', (event) => {
-      console.log('from renderer main world:', event.data)
-    })
-    port2.start()
-    win.webContents.postMessage('main-world-port', null, [port1]);
+    port2.on("message", event => {
+      console.log("from renderer main world:", event.data);
+    });
+    port2.start();
+    win.webContents.postMessage("main-world-port", null, [port1]);
 
     // The preload script will receive this IPC message and transfer the port
     // over to the main world.
@@ -48,27 +53,39 @@ function createWindow() {
 
       const ticket = await client.auth.getSessionTicket();
 
-      console.log(client.localplayer.getName(), client.localplayer.getSteamId().steamId64);
+      console.log(
+        client.localplayer.getName(),
+        client.localplayer.getSteamId().steamId64
+      );
       console.timeEnd("steam");
       const playerName = client.localplayer.getName();
       const steamId = client.localplayer.getSteamId();
       if (steamId === undefined) {
         throw new Error("could not get steamid");
       }
-      console.log("postMessage", { steamId: steamId.steamId64, playerName, ticket: ticket.getBytes().toString('hex'), })
-      port2.postMessage(JSON.stringify({ steamId: steamId.steamId64, playerName, ticket: ticket.getBytes().toString('hex'), }));
+      console.log("postMessage", {
+        steamId: steamId.steamId64,
+        playerName,
+        ticket: ticket.getBytes().toString("hex"),
+      });
+      port2.postMessage(
+        JSON.stringify({
+          steamId: steamId.steamId64,
+          playerName,
+          ticket: ticket.getBytes().toString("hex"),
+        })
+      );
     } catch (e) {
       console.error("Steam communication error", e);
       port2.postMessage(JSON.stringify({ error: e.toString() }));
     }
-  })
+  });
 
   // and load the index.html of the app.
   // win.webContents.openDevTools();
   // win.loadURL("http://localhost:5000");
   intercept();
   win.loadURL("http://electron/Planeta");
-
 }
 
 let indexLoaded = false;
@@ -77,32 +94,41 @@ function intercept() {
     let split = req.url.split("http://electron/")[1];
     if (split === undefined) {
       console.log("unhandled url", req.url);
-      fetch(req.url).then(res => res.buffer()).then(callback);
-      return
+      fetch(req.url)
+        .then(res => res.buffer())
+        .then(callback);
+      return;
     }
 
-    const isFetch = ///.*\.svg$/.test(req.url) === true ||
-      split.indexOf("pictures/") === 0;
+    const isFetch = split.indexOf("pictures/") === 0; ///.*\.svg$/.test(req.url) === true ||
 
     if (isFetch) {
       const url = "https://qdice.wtf/" + split;
       // const url = "http://localhost:5000/api/" + split;
-      fetch(url).then(res => res.buffer()).then(buffer => {
-        callback(buffer)
-      }).catch(err => {
-        console.error("fetch error", url, err.toString());
-        callback({
-          error: -2,
-          statusCode: 404,
+      fetch(url)
+        .then(res => res.buffer())
+        .then(buffer => {
+          callback(buffer);
+        })
+        .catch(err => {
+          console.error("fetch error", url, err.toString());
+          callback({
+            error: -2,
+            statusCode: 404,
+          });
         });
-      });
     } else {
       try {
         if (!indexLoaded && split === "Planeta") {
           indexLoaded = true;
           split = "index.html";
         }
-        const filePath = path.join(".", "resources", "app", split);
+        const filePath = path.join(
+          ".",
+          "resources",
+          "app",
+          split.split("#").shift()
+        );
         // const filePath = path.join(".", "dist", split); // local electron only!
         fs.readFile(filePath, (err, data) => {
           if (err) {
@@ -125,13 +151,39 @@ function intercept() {
   });
 }
 
+const db = {
+  svg: "image/svg+xml",
+  png: "image/png",
+  html: "text/html",
+  css: "text/css",
+  js: "text/javascript",
+  ogg: "audio/ogg",
+  woff: "font/woff",
+  woff2: "font/woff2",
+  ttf: "font/ttf",
+  eot: "application/vnd.ms-fontobject",
+  json: "application/json",
+  ico: "image/vnd.microsoft.icon",
+};
 function mimeType(req) {
-  const m = mime.lookup(req.url);
-  if (m === false) {
-    console.log("unknown mime type:", req.url);
+  try {
+    const mime = require("mime-type/with-db");
+    const m = mime.lookup(req.url);
+    if (m === false) {
+      console.log("unknown mime type:", req.url);
+      return req.headers["Accept"].split(",")[0];
+    }
+    return m;
+  } catch (e) {
+    console.error("mime module error", e);
+    const ext = req.url.split(".").pop();
+    const mimeType = db[ext];
+    if (mimeType !== undefined) {
+      return mimeType;
+    }
+
     return req.headers["Accept"].split(",")[0];
   }
-  return m;
 }
 
 app.on("ready", createWindow);

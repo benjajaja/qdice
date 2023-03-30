@@ -13,6 +13,7 @@ in pkgs.mkShell rec {
     proton-caller
     protontricks
     zip
+    steamPackages.steamcmd
   ];
 
   shellHook = ''

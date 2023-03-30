@@ -2,6 +2,8 @@
 set -e 
 set -x
 
+yarn build
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
 
 mkdir -p electron
@@ -11,8 +13,10 @@ cd ..
 
 cp -r electron.js preload.js dist/* electron/
 cp electron_package.json electron/package.json
+cp electron_yarn.lock electron/yarn.lock || true
 cd electron
 yarn
+cp yarn.lock ../electron_yarn.lock
 yarn electron-forge make --platform win32
 yarn electron-forge make --platform linux
 

@@ -1,0 +1,30 @@
+"AppBuild"
+{
+	"AppID" "2255020" // your AppID
+	"Desc" "This is a simple build script" // internal description for this build
+
+	"ContentRoot" "../electron/out" // root content folder, relative to location of this file
+	"BuildOutput" "../electron/out/build" // build output folder for build logs and build cache files
+
+	"Depots"
+	{
+		"2255021" // WIN
+		{
+			"FileMapping"
+			{
+				"LocalPath" "qdice-win32-x64/*" // all files from contentroot folder
+				"DepotPath" "." // mapped into the root of the depot
+				"recursive" "1" // include all subfolders
+			}
+		}
+		"2255022" // LINUX
+		{
+			"FileMapping"
+			{
+				"LocalPath" "qdice-linix-x64/*" // all files from contentroot folder
+				"DepotPath" "." // mapped into the root of the depot
+				"recursive" "1" // include all subfolders
+			}
+		}
+	}
+}
