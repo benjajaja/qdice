@@ -2,11 +2,11 @@ port module Edice exposing (init, pushSubscribe, started, subscriptions, updateW
 
 import Animation
 import Backend
-import Backend.HttpCommands exposing (getPushKey, loadGlobalSettings, loadMe, login, register, registerPush, registerPushEvent)
+import Backend.HttpCommands exposing (getPushKey, loadGlobalSettings, loadMe, login, register, registerPush, registerPushEvent, steamAuth)
 import Backend.MqttCommands exposing (sendGameCommand)
 import Backend.Types exposing (ConnectionStatus(..), TableMessage(..), TopicDirection(..))
 import Board
-import Board.Types
+import Board.Types exposing (DiceVisible(..))
 import Browser
 import Browser.Dom
 import Browser.Events
@@ -38,8 +38,6 @@ import Types exposing (..)
 import Url exposing (Url)
 import Widgets
 import Widgets.Views
-import Board.Types exposing (DiceVisible(..))
-import Backend.HttpCommands exposing (steamAuth)
 
 
 init : Flags -> Url -> Key -> ( Model, Cmd Msg )
@@ -117,10 +115,12 @@ init flags location key =
                 }
             , sessionPreferences =
                 { notificationsEnabled = flags.notificationsEnabled
-                , sound = if flags.muted then
-                    Mute
-                  else
-                    All
+                , sound =
+                    if flags.muted then
+                        Mute
+
+                    else
+                        All
                 }
             , leaderBoard =
                 { loading = False
@@ -271,7 +271,8 @@ update msg model =
 
                         needsTable : Maybe Table
                         needsTable =
-                            Maybe.andThen (\currentTable ->
+                            Maybe.andThen
+                                (\currentTable ->
                                     joinTable
                                         |> Maybe.andThen
                                             (\t ->
@@ -281,7 +282,8 @@ update msg model =
                                                 else
                                                     Nothing
                                             )
-                                            ) model.game.table
+                                )
+                                model.game.table
 
                         model_ =
                             { model | backend = backend_ }
@@ -372,12 +374,11 @@ update msg model =
                                     Cmd.none
                             ]
 
-                    else if isStatus 410 err then
+                      else if isStatus 410 err then
                         Cmd.batch
                             [ toastError "Failed to authenticate user, please reload game." <| httpErrorToString err
                             , Task.perform (always Logout) (Task.succeed ())
                             ]
-
 
                       else
                         Cmd.batch
@@ -569,8 +570,11 @@ update msg model =
 
         SetPassword ( email, password ) passwordCheck ->
             let
-                myProfile = model.myProfile
-                myProfile_ = { myProfile | addingPassword = True }
+                myProfile =
+                    model.myProfile
+
+                myProfile_ =
+                    { myProfile | addingPassword = True }
             in
             ( { model | myProfile = myProfile_ }
             , Backend.HttpCommands.updatePassword model.backend ( email, password ) passwordCheck
@@ -672,8 +676,11 @@ update msg model =
 
                 board =
                     case game.board.boardOptions.diceVisible of
-                      Animated -> Board.updateAnimations game.board animateMsg
-                      _ -> game.board
+                        Animated ->
+                            Board.updateAnimations game.board animateMsg
+
+                        _ ->
+                            game.board
 
                 loginPassword =
                     model.loginPassword
@@ -1028,8 +1035,11 @@ update msg model =
                     , setSessionPreference
                         ( "muted"
                         , case muted of
-                            Mute -> "true"
-                            _ -> "false"
+                            Mute ->
+                                "true"
+
+                            _ ->
+                                "false"
                         )
                     )
 
@@ -1079,10 +1089,11 @@ update msg model =
 
                 Ok stats ->
                     ( { model | tableStats = Placeholder.Fetched stats }, Cmd.none )
-        SteamTicket (steamId, playerName, ticket) ->
-          (model
-          , steamAuth model steamId playerName ticket
-          )
+
+        SteamTicket ( steamId, playerName, ticket ) ->
+            ( model
+            , steamAuth model steamId playerName ticket
+            )
 
 
 tableFromRoute : Route -> Maybe Table
@@ -1136,7 +1147,7 @@ view model =
 mainViewSubscriptions : Model -> Sub Msg
 mainViewSubscriptions model =
     Sub.batch <|
-        ( Animation.subscription Animate <|
+        (Animation.subscription Animate <|
             (case model.route of
                 GameRoute _ ->
                     Board.animations model.game.board
@@ -1256,6 +1267,8 @@ port pushRegister : (PushSubscription -> msg) -> Sub msg
 
 port setSessionPreference : ( String, String ) -> Cmd msg
 
+
 port sentry : String -> Cmd msg
+
 
 port steam : (( String, String, String ) -> msg) -> Sub msg

@@ -1,12 +1,11 @@
 module Game.Types exposing (Award, ChatLogEntry(..), Chatter, Elimination, EliminationReason(..), GameStatus(..), MapLoadError(..), Model, Move, Msg(..), Player, PlayerAction(..), PlayerGameStats, PlayerId, PlayerName, Roll, RollLog, RollPart, RollUI, TableInfo, TableParams, TableStatus, TournamentConfig, TurnInfo, User, actionToString, isBot, makePlayer, statusToString, userColor)
 
-import Board.Types
+import Board.Types exposing (DiceVisible)
 import Browser.Dom as Dom
 import Land exposing (Color, DiceSkin(..), Emoji, LandUpdate)
 import LeaderBoard.ChartTypes exposing (Datum)
 import Tables exposing (Table)
 import Time exposing (Posix)
-import Board.Types exposing (DiceVisible)
 
 
 type GameStatus

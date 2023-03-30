@@ -6,7 +6,7 @@ import Backend.MqttCommands exposing (attack, sendGameCommand)
 import Backend.Types exposing (Topic(..))
 import Board
 import Board.State
-import Board.Types exposing (BoardMove(..), Msg(..))
+import Board.Types exposing (BoardMove(..), DiceVisible(..), Msg(..))
 import Browser.Dom as Dom
 import Dict
 import Game.Types exposing (..)
@@ -14,14 +14,10 @@ import Helpers exposing (consoleDebug, find, indexOf, pipeUpdates)
 import Land exposing (DiceSkin(..), LandUpdate, Map, filterMapLands)
 import Maps
 import Snackbar exposing (toastError, toastMessage)
+import Sound exposing (Sound(..), playSound)
 import Tables exposing (MapName(..), Table, isTournament)
 import Task
-import Types exposing (DialogStatus(..), Msg(..), SoundPreference(..), User(..))
-import Board.Types exposing (DiceVisible(..))
-import Types exposing (SessionPreference(..))
-import Types exposing (SessionPreference(..))
-import Sound exposing (playSound)
-import Sound exposing (Sound(..))
+import Types exposing (DialogStatus(..), Msg(..), SessionPreference(..), SoundPreference(..), User(..))
 
 
 init : Maybe Table -> Maybe MapName -> Maybe Int -> ( Game.Types.Model, Cmd Msg )
@@ -52,11 +48,12 @@ init table tableMap_ height =
 
         board =
             Board.State.init
-               { diceVisible = Visible
-                  , showEmojis = False
-                  , height = height
-                  }
-               <| Result.withDefault Maps.emptyMap map
+                { diceVisible = Visible
+                , showEmojis = False
+                , height = height
+                }
+            <|
+                Result.withDefault Maps.emptyMap map
     in
     ( { table = table
       , board = board
@@ -647,8 +644,11 @@ showMove model move =
                                             )
                                         , rolling =
                                             case game.board.boardOptions.diceVisible of
-                                              Numbers -> Nothing
-                                              _ -> Just model.time
+                                                Numbers ->
+                                                    Nothing
+
+                                                _ ->
+                                                    Just model.time
                                         , timestamp = model.time
                                         }
 
@@ -1177,9 +1177,14 @@ update model game msg =
 
         ToggleDiceVisible visible ->
             let
-                board = model.game.board
-                options = board.boardOptions
-                newBoard = { board | boardOptions = { options | diceVisible = visible }}
+                board =
+                    model.game.board
+
+                options =
+                    board.boardOptions
+
+                newBoard =
+                    { board | boardOptions = { options | diceVisible = visible } }
             in
             ( { model
                 | game = { game | board = newBoard }

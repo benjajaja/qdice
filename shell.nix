@@ -14,6 +14,7 @@ in pkgs.mkShell rec {
     protontricks
     zip
     steamPackages.steamcmd
+    elmPackages.elm-format
   ];
 
   shellHook = ''

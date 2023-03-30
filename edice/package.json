@@ -73,7 +73,6 @@
     "@electron-forge/cli": "^6.0.3",
     "@electron-forge/maker-zip": "^6.0.3",
     "electron": "^19.0.7",
-    "elm-format": "^0.8.1",
     "webpack-dev-server": "^2.9.7"
   }
 }

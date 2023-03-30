@@ -6,6 +6,7 @@ import Backend.Types exposing (ConnectionStatus(..))
 import Board
 import Board.Colors
 import Board.Die
+import Board.Types exposing (DiceVisible(..))
 import Game.Chat
 import Game.Footer
 import Game.PlayerCard as PlayerCard exposing (TurnPlayer, playerPicture)
@@ -28,10 +29,7 @@ import Placeholder exposing (Placeheld(..))
 import Routing.String exposing (routeToString)
 import Time exposing (posixToMillis)
 import Tournaments exposing (tournamentTime)
-import Types exposing (AuthNetwork(..), DialogType(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), User(..))
-import Board.Types exposing (DiceVisible(..))
-import Types exposing (cycleSoundPrefence)
-import Types exposing (SoundPreference(..))
+import Types exposing (AuthNetwork(..), DialogType(..), GamesSubRoute(..), Model, Msg(..), PushEvent(..), Route(..), SessionPreference(..), SoundPreference(..), User(..), cycleSoundPrefence)
 
 
 view : Model -> Html Types.Msg
@@ -53,7 +51,7 @@ view model =
                 |> Html.map BoardMsg
     in
     div [ class "edMainScreen" ] <|
-        [ div
+        (div
             [ id "edPlayableArea"
             , class "edGameBoardWrapper"
 
@@ -66,25 +64,26 @@ view model =
             -- "?"
             -- )
             ]
-          <|
-            ((if model.fullscreen == Nothing then
+         <|
+            [ if model.fullscreen == Nothing then
                 tableInfo model
 
               else
                 button [ class "edGameStatus__button edGameFullscreenButton edGameStatus__button--landscape edButton--icon", onClick RequestFullscreen ] [ Icon.icon "zoom_out_map" ]
-             )
-                :: [ header model
-                   , board
-                   , case model.game.board.boardOptions.diceVisible of
-                       Numbers -> text ""
-                       _ -> lastRoll model.game.lastRoll
-                   , sitInModal model
-                   , boardFooter model
-                   , tableDetails model
-                   ]
-            )
-        ]
-            ++ (if model.fullscreen == Nothing then
+            , header model
+            , board
+            , case model.game.board.boardOptions.diceVisible of
+                Numbers ->
+                    text ""
+
+                _ ->
+                    lastRoll model.game.lastRoll
+            , sitInModal model
+            , boardFooter model
+            , tableDetails model
+            ]
+        )
+            :: (if model.fullscreen == Nothing then
                     div
                         [ class <|
                             "edGame__meta cartonCard"
@@ -122,13 +121,14 @@ view model =
                                     Fetched p ->
                                         Html.Lazy.lazy2 tableLeaderboardBox model.game.chartHinted p
                                 ]
+
                            -- , div [ class "cartonCard cartonCard--padded" ] <|
-                                -- case model.game.table of
-                                    -- Just table ->
-                                        -- [ Html.Lazy.lazy4 Comments.view model.zone model.user model.comments <| Comments.tableComments table ]
---
-                                    -- Nothing ->
-                                        -- []
+                           -- case model.game.table of
+                           -- Just table ->
+                           -- [ Html.Lazy.lazy4 Comments.view model.zone model.user model.comments <| Comments.tableComments table ]
+                           --
+                           -- Nothing ->
+                           -- []
                            ]
 
                 else
@@ -284,31 +284,31 @@ onlineButtons model =
                 case model.user of
                     Types.Anonymous ->
                         []
-                        -- case model.game.params.tournament of
-                            -- Just tournament ->
-                                -- findTableButton model
-                                    -- ++ [ button
-                                            -- [ class "edButton edGameHeader__button"
-                                            -- , onClick <| ShowLogin Types.LoginShow
-                                            -- , disabled <| tournament.fee /= 0 || model.game.points /= 0
-                                            -- ]
-                                            -- [ text <|
-                                                -- if tournament.fee == 0 then
-                                                    -- if model.game.points == 0 then
-                                                        -- "Log in to join for free"
---
-                                                    -- else
-                                                        -- "Minimum points: " ++ Helpers.formatPoints model.game.points
---
-                                                -- else
-                                                    -- "Game entry fee is " ++ Helpers.formatPoints tournament.fee
-                                            -- ]
-                                       -- ]
---
-                            -- Nothing ->
-                                -- findTableButton model
-                                    -- ++ [ joinButton "Play now" <| ShowLogin Types.LoginShowJoin ]
 
+                    -- case model.game.params.tournament of
+                    -- Just tournament ->
+                    -- findTableButton model
+                    -- ++ [ button
+                    -- [ class "edButton edGameHeader__button"
+                    -- , onClick <| ShowLogin Types.LoginShow
+                    -- , disabled <| tournament.fee /= 0 || model.game.points /= 0
+                    -- ]
+                    -- [ text <|
+                    -- if tournament.fee == 0 then
+                    -- if model.game.points == 0 then
+                    -- "Log in to join for free"
+                    --
+                    -- else
+                    -- "Minimum points: " ++ Helpers.formatPoints model.game.points
+                    --
+                    -- else
+                    -- "Game entry fee is " ++ Helpers.formatPoints tournament.fee
+                    -- ]
+                    -- ]
+                    --
+                    -- Nothing ->
+                    -- findTableButton model
+                    -- ++ [ joinButton "Play now" <| ShowLogin Types.LoginShowJoin ]
                     Types.Logged user ->
                         case model.game.params.tournament of
                             Just tournament ->
@@ -545,13 +545,12 @@ sitInModal model =
 tableInfo : Model -> Html Types.Msg
 tableInfo model =
     div [ class "edGameStatus" ] <|
-        [ a
+        a
             [ class "edLogo"
             , href <| routeToString model.zip <| Types.HomeRoute
             ]
             [ img [ src "quedice.svg", width 28, height 28, class "edLogo_img" ] [] ]
-        ]
-            ++ (case model.game.table of
+            :: (case model.game.table of
                     Just table ->
                         case model.game.currentGame of
                             Just id ->
@@ -594,21 +593,32 @@ tableInfo model =
                     [ button
                         [ class "edGameStatus__button edButton--icon"
                         , onClick <| GameMsg <| ToggleDiceVisible <| Board.cycleVisible model.game.board.boardOptions.diceVisible
-                          --not model.game.boardOptions.diceVisible
+
+                        --not model.game.boardOptions.diceVisible
                         ]
                         [ Icon.icon <|
                             case model.game.board.boardOptions.diceVisible of
-                              Visible -> "flash_off"
-                              Numbers -> "visibility_off"
-                              Animated -> "visibility"
+                                Visible ->
+                                    "flash_off"
+
+                                Numbers ->
+                                    "visibility_off"
+
+                                Animated ->
+                                    "visibility"
                         ]
                     , button
                         [ class "edGameStatus__button edButton--icon", onClick <| SetSessionPreference <| Sound <| cycleSoundPrefence model.sessionPreferences.sound ]
                         [ Icon.icon <|
                             case model.sessionPreferences.sound of
-                              All -> "volume_up"
-                              Mute -> "volume_off"
-                              Notify -> "volume_down"
+                                All ->
+                                    "volume_up"
+
+                                Mute ->
+                                    "volume_off"
+
+                                Notify ->
+                                    "volume_down"
                         ]
                     ]
                ]
@@ -624,7 +634,7 @@ tableDetails model =
                         []
 
                     _ ->
-                        [ div [ class "edGameStatus__chip" ] <|
+                        (div [ class "edGameStatus__chip" ] <|
                             [ text <|
                                 if model.game.playerSlots == 0 then
                                     "∅"
@@ -665,8 +675,8 @@ tableDetails model =
                                     else
                                         []
                                    )
-                        ]
-                            ++ (case model.game.params.tournament of
+                        )
+                            :: (case model.game.params.tournament of
                                     Nothing ->
                                         []
 
@@ -705,7 +715,7 @@ tableDetails model =
 
 
 playerBox : Bool -> User -> MyProfile.Types.MyProfileModel -> Types.SessionPreferences -> Html Msg
-playerBox isSteam user myProfile sessionPreferences =
+playerBox isSteam user myProfile _ =
     div [ class "edBox edPlayerBox" ]
         [ div [ class "edBox__header" ] [ text "Profile " ]
         , div [ class "edBox__inner" ] <|
@@ -730,10 +740,11 @@ playerBox isSteam user myProfile sessionPreferences =
                         ]
                     , div [ class "edPlayerBox__stat" ] [ text "Monthly rank: ", text <| ordinal logged.rank ]
                     , div [ class "edPlayerBox__settings" ] <|
-                      if isSteam then
-                        []
-                      else
-                        [ if logged.networks == [] || logged.email == Nothing then
+                        if isSteam then
+                            []
+
+                        else
+                            [ if logged.networks == [] || logged.email == Nothing then
                                 div [ class "edPlayerBox__addNetworks" ] <|
                                     [ h3 [ style "color" "red" ]
                                         [ Icon.spinning "warning"
@@ -753,27 +764,28 @@ playerBox isSteam user myProfile sessionPreferences =
                                             myProfile
                                             logged
 
-                          else
+                              else
                                 text ""
-                        ]
+                            ]
                     , div []
                         [ a [ href "/me" ]
                             [ text "Go to my Account & Settings"
                             ]
                         ]
-                        -- , if not sessionPreferences.notificationsEnabled then
-                            -- p [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
-                          -- else
-                            -- text ""
-                        -- , if not sessionPreferences.notificationsEnabled then
-                            -- div []
-                                -- [ button [ onClick RequestNotifications ]
-                                    -- [ text "Enable notifications"
-                                    -- , Icon.icon "sms"
-                                    -- ]
-                                -- ]
-                          -- else
-                            -- text ""
+
+                    -- , if not sessionPreferences.notificationsEnabled then
+                    -- p [] [ text "You can get notifications when the tab is in background and it's your turn or the game starts:" ]
+                    -- else
+                    -- text ""
+                    -- , if not sessionPreferences.notificationsEnabled then
+                    -- div []
+                    -- [ button [ onClick RequestNotifications ]
+                    -- [ text "Enable notifications"
+                    -- , Icon.icon "sms"
+                    -- ]
+                    -- ]
+                    -- else
+                    -- text ""
                     ]
 
                 Anonymous ->
@@ -969,8 +981,8 @@ lastRoll mRoll =
                             )
                         ]
                     <|
-                        [ ( "sum", Html.Lazy.lazy4 lastRollSum sumFrom True luck (rolling /= Nothing) ) ]
-                            ++ List.indexedMap (\i roll -> ( String.fromInt i, Board.Die.rollDie roll )) fromRoll
+                        ( "sum", Html.Lazy.lazy4 lastRollSum sumFrom True luck (rolling /= Nothing) )
+                            :: List.indexedMap (\i roll -> ( String.fromInt i, Board.Die.rollDie roll )) fromRoll
                   )
                 , ( "to"
                   , Html.Keyed.node "div"
@@ -988,8 +1000,8 @@ lastRoll mRoll =
                             )
                         ]
                     <|
-                        [ ( "sum", Html.Lazy.lazy4 lastRollSum sumTo False luck (rolling /= Nothing) ) ]
-                            ++ List.indexedMap (\i roll -> ( String.fromInt i, Board.Die.rollDie roll )) toRoll
+                        ( "sum", Html.Lazy.lazy4 lastRollSum sumTo False luck (rolling /= Nothing) )
+                            :: List.indexedMap (\i roll -> ( String.fromInt i, Board.Die.rollDie roll )) toRoll
                   )
                 ]
 
