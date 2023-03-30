@@ -518,9 +518,10 @@ gameChat model =
         [ Game.Chat.chatBox
             model.game.chatInput
             model.game.chatLog
-          <|
-            "chatLog-"
+            ("chatLog-"
                 ++ Maybe.withDefault "NOTABLE" model.game.table
+            )
+            model.user
         ]
 
 

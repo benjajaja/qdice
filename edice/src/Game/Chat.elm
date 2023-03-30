@@ -12,28 +12,33 @@ import Icon
 import Land exposing (Color)
 import Ordinal exposing (ordinal)
 import Routing.String exposing (routeToString)
-import Types exposing (GamesSubRoute(..), Msg(..), Route(..))
+import Types exposing (GamesSubRoute(..), Msg(..), Route(..), User(..))
 
 
-chatBox : String -> List ChatLogEntry -> String -> Html Types.Msg
-chatBox inputValue lines id_ =
+chatBox : String -> List ChatLogEntry -> String -> User -> Html Types.Msg
+chatBox inputValue lines id_ user =
     div [ class "chatbox" ] <|
         [ div [ class "chatbox--log", id id_ ]
             (List.map
                 chatLine
                 lines
             )
-        , div [ class "chatbox--actions" ]
-            [ Html.form [ onSubmit (SendChat inputValue), class "chatbox--actions-form" ]
-                [ input inputValue
-                , button
-                    [ type_ "submit"
-                    , class "chatbox--actions-button edButton"
-                    , attribute "aria-label" "submit chat message"
+        , case user of
+            Anonymous ->
+                text ""
+
+            Logged _ ->
+                div [ class "chatbox--actions" ]
+                    [ Html.form [ onSubmit (SendChat inputValue), class "chatbox--actions-form" ]
+                        [ input inputValue
+                        , button
+                            [ type_ "submit"
+                            , class "chatbox--actions-button edButton"
+                            , attribute "aria-label" "submit chat message"
+                            ]
+                            [ Icon.icon "keyboard_return" ]
+                        ]
                     ]
-                    [ Icon.icon "keyboard_return" ]
-                ]
-            ]
         ]
 
 
