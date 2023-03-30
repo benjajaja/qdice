@@ -151,7 +151,7 @@ const tick = async (tableTag: string, lock: AsyncLock) => {
         const persona =
           table.name === "Planeta" &&
           table.players.length === table.playerSlots - 1
-            ? mkBot("Covid-19", "RandomCareful", "assets/bots/bot_covid19.png")
+            ? mkBot("IA", "RandomCareful", "assets/bots/bot_ia.png")
             : null;
         command = addBots(table, persona);
       } else if (table.params.tournament) {
