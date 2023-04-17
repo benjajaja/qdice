@@ -3,7 +3,7 @@ set -e
 
 docker-compose build
 
-CONTAINERS="nodice nginx beancounter"
+CONTAINERS="nodice nginx beancounter haproxy"
 for CONTAINER in $CONTAINERS; do
   docker-compose pull $CONTAINER
 done
