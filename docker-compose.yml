@@ -11,6 +11,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d/
+      - ./data/postgres:/var/lib/postgresql/data
   redis:
     restart: always
     image: redis:5.0.9-alpine
@@ -19,6 +20,9 @@ services:
       - ./data/redis:/data
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     entrypoint: redis-server --appendonly yes
+    logging:
+      options:
+        max-size: 10m
   emqx:
     restart: always
     image: emqx/emqx:v3.2.8
@@ -40,11 +44,17 @@ services:
     depends_on:
       - postgres
       - emqx
+    logging:
+      options:
+        max-size: 10m
   beancounter:
     restart: always
     image: bgrosse/qdice:beancounter
     container_name: beancounter
     env_file: .env
+    logging:
+      options:
+        max-size: 10m
   nginx:
     restart: always
     env_file: .env
@@ -66,6 +76,9 @@ services:
       - ./data/matrix:/data
     environment:
       - SYNAPSE_CONFIG_DIR=/config
+    logging:
+      options:
+        max-size: 10m
   goaccess:
     image: allinurl/goaccess
     container_name: goaccess
@@ -77,6 +90,9 @@ services:
     command: "--no-global-config --config-file=/srv/data/goaccess.conf"
     cap_drop:
       - all
+    logging:
+      options:
+        max-size: 10m
   haproxy:
     image: ghcr.io/tomdess/docker-haproxy-certbot:master
     container_name: haproxy
@@ -102,6 +118,9 @@ services:
       - DKIM_SELECTOR=dkim
       - DKIM_SIGN_HEADERS=Date:From:To:Subject:Message-ID
       - DKIM_DOMAINS=qdice.wtf
+    logging:
+      options:
+        max-size: 10m
 
 volumes:
   goaccess:
